@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "atlas": "vite-node tools/build-atlas.ts",
+    "conform": "vite-node tools/conform-fx.ts -- --write",
     "inspect": "vite-node tools/inspect-sheet.ts --",
     "shot": "vite-node tools/screenshot.ts --",
     "typecheck": "tsc --noEmit && tsc -p tools --noEmit"

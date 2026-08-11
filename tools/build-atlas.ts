@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import {
   decodePng, encodePng, blankImage, blit, contentBounds, dominantBandBounds, type Image,
 } from './png.ts'
+import { loadPalette, makeQuantiser } from './conform-fx.ts'
 
 interface Frame {
   /** Position in the atlas. */
@@ -56,6 +57,11 @@ interface Manifest {
   }
   singles: { _base: string; files: Record<string, string> }
   singlesExtra?: { _base: string; files: Record<string, string> }
+  fx?: {
+    _base: string
+    cell: number
+    clips: Record<string, { path: string; row: number; frames: number }>
+  }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
 }
 
@@ -231,6 +237,78 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
     oy: b.y - img.height,
   })
 }
+}
+
+// ----------------------------------------------------------------------- fx
+
+// Conformed to the LimeZu palette on the way in (§10 step 3). The pack is drawn
+// by a different hand — more saturated, more arcade — and quantising here rather
+// than shipping a second copy of the art means there is exactly one generated
+// artefact to keep track of.
+const fx = manifest.fx
+if (fx && Object.keys(fx.clips ?? {}).length > 0) {
+  let quantiser: ReturnType<typeof makeQuantiser> | null = null
+  try {
+    quantiser = makeQuantiser(loadPalette())
+  } catch (e) {
+    errors.push((e as Error).message)
+  }
+
+  const cell = fx.cell
+  for (const [name, clip] of Object.entries(fx.clips)) {
+    const path = fx._base + clip.path
+    let sheet: Image
+    try {
+      sheet = decodePng(readFileSync(path))
+    } catch (e) {
+      errors.push(`${path}: ${(e as Error).message}`)
+      continue
+    }
+
+    const cols = Math.floor(sheet.width / cell)
+    const rows = Math.floor(sheet.height / cell)
+    if (clip.row >= rows) {
+      errors.push(`fx ${name}: ${path} has ${rows} colour rows, manifest asks for row ${clip.row}`)
+      continue
+    }
+    if (clip.frames > cols) {
+      errors.push(`fx ${name}: ${path} has ${cols} frames, manifest asks for ${clip.frames}`)
+      continue
+    }
+
+    // Conform a private copy: the same sheet may back more than one clip, and
+    // quantising is not idempotent across different palettes.
+    const conformed: Image = {
+      width: sheet.width,
+      height: sheet.height,
+      data: new Uint8Array(sheet.data),
+    }
+    quantiser?.conform(conformed)
+
+    const rowY = clip.row * cell
+    let packed = 0
+    for (let f = 0; f < clip.frames; f++) {
+      const sx = f * cell
+      const b = contentBounds(conformed, sx, rowY, cell, cell)
+      // A tail frame that has faded to nothing is normal, not an error — the
+      // clip just ends early. clipLengths records what was actually packed.
+      if (b.empty) break
+      pending.push({
+        name: `fx.${name}.${f}`,
+        img: conformed,
+        sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        // Centre pivot: an effect is centred on a point in the world.
+        ox: b.x - (sx + cell / 2),
+        oy: b.y - (rowY + cell / 2),
+      })
+      packed++
+    }
+    if (packed === 0) {
+      errors.push(`fx ${name}: ${path} row ${clip.row} is entirely transparent`)
+      continue
+    }
+    clipLengths[`fx.${name}`] = { play: packed }
+  }
 }
 
 // ------------------------------------------------------------------ terrain

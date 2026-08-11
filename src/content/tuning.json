@@ -50,7 +50,24 @@
     "damageNumbers": 64,
     "particles": 900,
     "hazards": 64,
-    "props": 120
+    "props": 120,
+    "effects": 256
+  },
+
+  "fx": {
+    "_note": "Conformed FX clips (art/sprites.json -> fx). `life` is how long the whole clip plays, in seconds — the renderer divides it by the clip's packed frame count, so retiming an effect is this number and nothing else. Effects are decoration: when the pool is full the sim drops them silently rather than perturbing a seeded run.",
+    "hitSpark":  { "life": 0.20, "scale": 0.55 },
+    "critStar":  { "life": 0.32, "scale": 0.80 },
+    "muzzle":    { "life": 0.16, "scale": 0.50 },
+    "slash":     { "life": 0.22, "scale": 0.90 },
+    "explosion": { "life": 0.55, "scale": 1.20 },
+    "gas":       { "life": 0.90, "scale": 1.10 },
+    "dust":      { "life": 0.40, "scale": 0.75 },
+    "shock":     { "life": 0.35, "scale": 1.30 },
+
+    "_rates": "Hit sparks on every hit would be 200 sparks a frame in a late wave and would bury the enemies. `hitSparkChance` is the fraction of non-crit hits that spark; crits always do, because a crit is the thing you want to notice.",
+    "hitSparkChance": 0.35,
+    "muzzleChance": 0.5
   },
 
   "crops": {

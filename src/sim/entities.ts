@@ -226,3 +226,37 @@ export function makeParticle(): Particle {
     colour: 0, size: 2, stains: false,
   }
 }
+
+/**
+ * One playing FX clip — a hit spark, a muzzle flash, an explosion.
+ *
+ * These are pure decoration: nothing reads an effect back, so the sim can drop
+ * one on the floor when the pool is full without changing the run. That is also
+ * why they carry no previous position — an effect lasts a few frames at a fixed
+ * point and interpolating it would buy nothing.
+ */
+export interface Effect {
+  active: boolean
+  /** Atlas clip name, without the `fx.` prefix or frame index. */
+  clip: string
+  x: number
+  y: number
+  /** Drift, so a spark on a moving target does not hang in the air behind it. */
+  vx: number
+  vy: number
+  life: number
+  maxLife: number
+  /** Radians. Directional clips (muzzle, slash) point along this. */
+  rotation: number
+  scale: number
+  /** Drawn under the sprite layer rather than over it — for ground effects
+   *  like the dash dust, which should not cover the player's feet. */
+  under: boolean
+}
+
+export function makeEffect(): Effect {
+  return {
+    active: false, clip: '', x: 0, y: 0, vx: 0, vy: 0, life: 0, maxLife: 0.3,
+    rotation: 0, scale: 1, under: false,
+  }
+}

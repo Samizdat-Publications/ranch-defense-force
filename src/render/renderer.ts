@@ -218,11 +218,15 @@ export class Renderer {
 
     this.drawHazards(ctx)
     this.drawTelegraphs(ctx)
+    // Ground effects (dash dust, the Dig In pulse) go under the sprite layer,
+    // so they read as being on the field rather than pasted over the player.
+    this.drawEffects(ctx, true)
 
     this.itemCount = 0
     this.collectSprites(alpha)
     this.sortAndDraw(ctx)
 
+    this.drawEffects(ctx, false)
     this.drawPickups(ctx, alpha)
     this.drawParticles(ctx)
     this.drawDamageNumbers(ctx)
@@ -448,6 +452,53 @@ export class Renderer {
           if (it.alpha !== 1) ctx.globalAlpha = 1
         }
       }
+      this.drawCalls++
+    }
+  }
+
+  /**
+   * The conformed FX clips (§10 step 3).
+   *
+   * Frame is chosen from the effect's remaining life against the clip's packed
+   * length, so retiming an effect is one number in `tuning.json` and the clip
+   * still plays end to end. Effects carry a centre pivot rather than the
+   * bottom-centre one every other sprite uses — an explosion is centred on a
+   * point, it does not stand on the ground — and they are drawn in pool order
+   * rather than y-sorted, because they are decoration layered over the field,
+   * not things in it.
+   */
+  private drawEffects(ctx: CanvasRenderingContext2D, under: boolean): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const w = this.world
+    const cam = this.camera
+    const left = cam.x - 96
+    const right = cam.x + cam.viewW + 96
+    const top = cam.y - 96
+    const bottom = cam.y + cam.viewH + 96
+
+    for (let i = 0; i < w.effects.live; i++) {
+      const e = w.effects.items[i]
+      if (e.under !== under) continue
+      if (e.x < left || e.x > right || e.y < top || e.y > bottom) continue
+
+      const len = atlas.clipLength(`fx.${e.clip}`, 'play')
+      const t = 1 - e.life / e.maxLife
+      let f = (t * len) | 0
+      if (f >= len) f = len - 1
+      const frame = atlas.get(`fx.${e.clip}.${f}`)
+      if (!frame) continue
+
+      ctx.save()
+      ctx.translate(e.x, e.y)
+      if (e.rotation !== 0) ctx.rotate(e.rotation)
+      if (e.scale !== 1) ctx.scale(e.scale, e.scale)
+      ctx.drawImage(
+        atlas.image,
+        frame.x, frame.y, frame.w, frame.h,
+        frame.ox, frame.oy, frame.w, frame.h,
+      )
+      ctx.restore()
       this.drawCalls++
     }
   }

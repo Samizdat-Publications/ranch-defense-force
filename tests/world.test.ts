@@ -148,4 +148,42 @@ describe('World invariants', () => {
     for (let i = 0; i < 120; i++) w.step(STEP, 1, 0, false)
     expect(w.player.x).toBe(x)
   })
+
+  it('plays fx during combat, and expires them', () => {
+    const w = runHeadless(41, 2400)
+    // Something must have fired: the run kills things and swings a weapon.
+    expect(w.kills).toBeGreaterThan(0)
+    let everLive = 0
+    for (let i = 0; i < 600; i++) {
+      const [mx, my, ab] = inputAt(2400 + i)
+      w.step(STEP, mx, my, ab)
+      everLive += w.effects.live
+    }
+    expect(everLive).toBeGreaterThan(0)
+    expect(w.effects.live).toBeLessThanOrEqual(w.effects.capacity)
+
+    // Effects are decoration and must drain on their own.
+    for (let i = 0; i < 300; i++) w.step(STEP, 0, 0, false)
+    const idle = w.effects.live
+    for (let i = 0; i < 300; i++) w.step(STEP, 0, 0, false)
+    expect(w.effects.live).toBeLessThanOrEqual(idle)
+  })
+
+  it('never lets an fx decision touch the rng stream', () => {
+    // The guarantee this protects: a seed replays exactly, whatever the art is
+    // doing. If a spark ever rolls `world.rng`, drawing fewer sparks would move
+    // every later spawn — so playFx is proven here to consume nothing.
+    const w = new World(77, 'kid')
+    for (let i = 0; i < 600; i++) w.step(STEP, 1, 0, false)
+
+    const before = w.rng.next()
+    const w2 = new World(77, 'kid')
+    for (let i = 0; i < 600; i++) w2.step(STEP, 1, 0, false)
+    for (let i = 0; i < 50; i++) {
+      w2.playFx('hitSpark', w2.player.x, w2.player.y)
+      w2.playFx('explosion', w2.player.x, w2.player.y)
+    }
+    expect(w2.effects.live).toBeGreaterThan(0)
+    expect(w2.rng.next()).toBe(before)
+  })
 })

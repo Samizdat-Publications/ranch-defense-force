@@ -174,6 +174,17 @@ for (let i = 0; i < world.enemies.live; i++) {
 drawList.sort((a, b) => a.y - b.y)
 for (const d of drawList) drawFrame(d.f, d.x, d.y)
 
+// FX clips, over the sprite layer. Same frame selection as the renderer.
+for (let i = 0; i < world.effects.live; i++) {
+  const e = world.effects.items[i]
+  const len = atlas.clipLengths[`fx.${e.clip}`]?.play ?? 1
+  const t = 1 - e.life / e.maxLife
+  let fi = (t * len) | 0
+  if (fi >= len) fi = len - 1
+  const f = atlas.frames[`fx.${e.clip}.${fi}`]
+  if (f) drawFrame(f, e.x, e.y)
+}
+
 for (let i = 0; i < world.pickups.live; i++) {
   const g = world.pickups.items[i]
   const f = atlas.frames[`pickup.${g.kind}`]
@@ -195,5 +206,6 @@ writeFileSync(out, encodePng(canvas))
 console.log(
   `${out}  ${canvas.width}x${canvas.height}\n` +
   `wave ${world.spawner.wave}  lv ${world.player.level}  enemies ${world.enemies.live}  ` +
-  `crops ${world.props.live}  kills ${world.kills}  sprites drawn ${drawList.length}`,
+  `crops ${world.props.live}  kills ${world.kills}  sprites drawn ${drawList.length}  ` +
+  `fx live ${world.effects.live}`,
 )

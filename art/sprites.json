@@ -84,6 +84,23 @@
     }
   },
 
+  "fx": {
+    "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (§10 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre — an explosion is centred on a point, it does not stand on the ground.",
+    "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",
+    "_base": "assets/effects-fx/Free/",
+    "cell": 64,
+    "clips": {
+      "hitSpark":  { "path": "Part 6/273.png",  "row": 5, "frames": 8 },
+      "critStar":  { "path": "Part 10/486.png", "row": 0, "frames": 12 },
+      "muzzle":    { "path": "Part 11/526.png", "row": 0, "frames": 9 },
+      "slash":     { "path": "Part 10/477.png", "row": 5, "frames": 12 },
+      "explosion": { "path": "Part 12/569.png", "row": 0, "frames": 13 },
+      "gas":       { "path": "Part 12/566.png", "row": 3, "frames": 13 },
+      "dust":      { "path": "Part 9/426.png",  "row": 4, "frames": 10 },
+      "shock":     { "path": "Part 9/436.png",  "row": 5, "frames": 9 }
+    }
+  },
+
   "terrainSource": {
     "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
     "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used — anything with a blob edge will not tile. Found with tools/_scan.ts.",

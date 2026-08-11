@@ -10,8 +10,8 @@ import { Pool } from '../core/pool'
 import { Rng } from '../core/rng'
 import { SpatialGrid } from '../core/spatial'
 import {
-  makeDamageNumber, makeEnemy, makeHazard, makeParticle, makePickup, makeProjectile, makeProp,
-  type DamageNumber, type Enemy, type Hazard, type Particle, type Pickup, type Projectile,
+  makeDamageNumber, makeEffect, makeEnemy, makeHazard, makeParticle, makePickup, makeProjectile, makeProp,
+  type DamageNumber, type Effect, type Enemy, type Hazard, type Particle, type Pickup, type Projectile,
   type Prop,
 } from './entities'
 import { Player } from './player'
@@ -60,6 +60,7 @@ export class World {
   readonly particles: Pool<Particle>
   readonly hazards: Pool<Hazard>
   readonly props: Pool<Prop>
+  readonly effects: Pool<Effect>
 
   private readonly grid: SpatialGrid
   private readonly gx: Float64Array
@@ -87,6 +88,18 @@ export class World {
 
   events: WorldEvents = {}
 
+  /**
+   * Fractional accumulators for the rate-limited cosmetic effects.
+   *
+   * Deliberately not RNG rolls. An effect must never touch `this.rng` — a
+   * cosmetic decision that consumed the sim's stream would mean the number of
+   * sparks drawn changed where the next enemy spawned, and the seed-replay
+   * guarantee would be hostage to the art. Accumulating the rate gives the exact
+   * same frequency, spread evenly across hits rather than clumped by tick.
+   */
+  private sparkAcc = 0
+  private muzzleAcc = 0
+
   private readonly spawnPoint = { x: 0, y: 0 }
   private readonly barkQueue: { x: number; y: number }[] = []
   private barkCooldown = 0
@@ -104,6 +117,7 @@ export class World {
     this.particles = new Pool(T.pools.particles, makeParticle)
     this.hazards = new Pool(T.pools.hazards, makeHazard)
     this.props = new Pool(T.pools.props, makeProp)
+    this.effects = new Pool(T.pools.effects, makeEffect)
 
     this.grid = new SpatialGrid(this.arenaW, this.arenaH, T.pools.enemies)
     this.gx = new Float64Array(T.pools.enemies)
@@ -393,6 +407,19 @@ export class World {
       if (slot.cooldownLeft <= 0) {
         const fire = FIRE[def.behaviour]
         if (fire) fire(ctx)
+        // One hook for every weapon, rather than the same two lines in eight
+        // behaviours. A swing gets its arc; anything that throws something gets
+        // a flash at the muzzle, rate-limited because six weapons at +200%
+        // attack speed is a lot of flashes.
+        if (def.behaviour === 'arcSwing') {
+          this.playFx('slash', p.x + Math.cos(p.facing) * 30, p.y + Math.sin(p.facing) * 30, p.facing)
+        } else if (def.type === 'ranged') {
+          this.muzzleAcc += T.fx.muzzleChance
+          if (this.muzzleAcc >= 1) {
+            this.muzzleAcc -= 1
+            this.playFx('muzzle', p.x + Math.cos(p.facing) * 16, p.y + Math.sin(p.facing) * 16, p.facing)
+          }
+        }
         slot.cooldownLeft += Math.max(0.05, def.cooldown)
       }
       if (sustain && def.cooldown > 0) sustain(ctx)
@@ -727,6 +754,15 @@ export class World {
         this.particles.free(i)
       }
     }
+    for (let i = this.effects.live - 1; i >= 0; i--) {
+      const e = this.effects.items[i]
+      e.life -= dt
+      e.x += e.vx * dt
+      e.y += e.vy * dt
+      e.vx *= 0.90
+      e.vy *= 0.90
+      if (e.life <= 0) this.effects.free(i)
+    }
     for (let i = this.telegraphs.length - 1; i >= 0; i--) {
       const t = this.telegraphs[i]
       t.life -= dt
@@ -755,6 +791,8 @@ export class World {
       p.x = Math.max(0, Math.min(this.arenaW, p.x + Math.cos(p.facing) * dist))
       p.y = Math.max(0, Math.min(this.arenaH, p.y + Math.sin(p.facing) * dist))
       this.burstParticles(p.px, p.py, 10, 0xd9c9a3)
+      // Under the sprites: the dash trail is on the ground, not in the air.
+      this.playFx('dust', p.px, p.py, p.facing, 1, 0, 0, true)
     }
   }
 
@@ -768,6 +806,8 @@ export class World {
       if (a.id === 'digIn') {
         const radius = (a.pulseRadius as number) ?? 140
         const kb = (a.pulseKnockback as number) ?? 260
+        // Scaled to the real pulse radius so what you see is what it hits.
+        this.playFx('shock', p.x, p.y, 0, radius / 60, 0, 0, true)
         const n = this.grid.query(p.x, p.y, radius, this.queryOut)
         for (let k = 0; k < n; k++) {
           const j = this.queryOut[k]
@@ -865,6 +905,18 @@ export class World {
     this.addDamageNumber(e.x, e.y - e.radius, dmg, isCrit)
     this.bleed(e.x, e.y, isCrit ? 5 : 3)
 
+    // A crit always announces itself; ordinary hits spark at a fixed rate, so
+    // a late wave reads as combat rather than as a wall of white.
+    if (isCrit) {
+      this.playFx('critStar', e.x, e.y - e.radius * 0.4)
+    } else {
+      this.sparkAcc += T.fx.hitSparkChance
+      if (this.sparkAcc >= 1) {
+        this.sparkAcc -= 1
+        this.playFx('hitSpark', e.x, e.y - e.radius * 0.4)
+      }
+    }
+
     if (s.lifestealPct > 0) {
       this.player.hp = Math.min(
         this.player.stats.maxHp,
@@ -899,6 +951,7 @@ export class World {
         h.slowPct = 0
         h.pullForce = 0
         h.tickAcc = 0
+        this.playFx('explosion', e.x, e.y, 0, 0.7)
       }
     } else if (special?.onDeath === 'gasBurst') {
       const h = this.spawnHazard()
@@ -914,6 +967,7 @@ export class World {
         h.slowPct = 0
         h.pullForce = 0
         h.tickAcc = 0
+        this.playFx('gas', e.x, e.y, 0, 1.4)
       }
     }
 
@@ -1074,6 +1128,41 @@ export class World {
       p.size = 2
       p.stains = false
     }
+  }
+
+  /**
+   * Play a conformed FX clip at a point.
+   *
+   * Pure decoration — nothing reads an effect back, so a full pool drops the
+   * request instead of growing. Deliberately takes no RNG: an effect must never
+   * be able to shift the sim's RNG stream, or turning effects off would change
+   * where enemies spawn and a seed would stop replaying. Any jitter an effect
+   * wants comes from the caller, out of the roll it was already making.
+   */
+  playFx(
+    clip: keyof typeof T.fx & string,
+    x: number,
+    y: number,
+    rotation = 0,
+    scaleMul = 1,
+    vx = 0,
+    vy = 0,
+    under = false,
+  ): void {
+    const def = T.fx[clip] as { life: number; scale: number } | undefined
+    if (!def) return
+    const e = this.effects.acquire()
+    if (!e) return
+    e.clip = clip
+    e.x = x
+    e.y = y
+    e.vx = vx
+    e.vy = vy
+    e.maxLife = def.life
+    e.life = def.life
+    e.rotation = rotation
+    e.scale = def.scale * scaleMul
+    e.under = under
   }
 
   private magnetiseAll(): void {
