@@ -15,7 +15,9 @@
  * the entire category.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { decodePng, encodePng, blankImage, blit, contentBounds, type Image } from './png.ts'
+import {
+  decodePng, encodePng, blankImage, blit, contentBounds, dominantBandBounds, type Image,
+} from './png.ts'
 
 interface Frame {
   /** Position in the atlas. */
@@ -43,7 +45,14 @@ interface Manifest {
   humanoids: Record<string, string>
   animals: {
     _base: string
-    sheets: Record<string, { path: string; rows: number; walkRow: number; framesPerDirection: number }>
+    sheets: Record<string, {
+      path: string
+      rows: number
+      walkRow: number
+      framesPerDirection: number
+      allDirections?: boolean
+      sideCols?: Record<string, number>
+    }>
   }
   singles: { _base: string; files: Record<string, string> }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
@@ -152,11 +161,25 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
     continue
   }
 
-  rig.directions.forEach((dir, dirIndex) => {
+  // Column where each rendered direction's clip starts. When only the side
+  // clips are usable, up and down alias onto them so an animal reads correctly
+  // at every facing — it just does not turn to face the camera.
+  const startCols: Record<string, number> = cfg.allDirections
+    ? Object.fromEntries(rig.directions.map((d, i) => [d, i * cfg.framesPerDirection]))
+    : {
+        right: cfg.sideCols?.right ?? 0,
+        left: cfg.sideCols?.left ?? 0,
+        down: cfg.sideCols?.right ?? 0,
+        up: cfg.sideCols?.left ?? 0,
+      }
+
+  for (const dir of rig.directions) {
+    const start = startCols[dir] ?? 0
     for (let f = 0; f < cfg.framesPerDirection; f++) {
-      const col = dirIndex * cfg.framesPerDirection + f
+      const col = start + f
       const sx = col * fw
-      const b = contentBounds(sheet, sx, rowY, fw, fh)
+      // Dominant band, not raw bounds: these sheets straddle the row boundary.
+      const b = dominantBandBounds(sheet, sx, rowY, fw, fh)
       if (b.empty) {
         errors.push(`${path}: walk ${dir} frame ${f} (col ${col}) is empty`)
         continue
@@ -173,7 +196,7 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
       // One extra atlas entry beats a special case in the renderer.
       if (f === 0) pending.push({ ...frame, name: `${id}.idle.${dir}.0` })
     }
-  })
+  }
 }
 
 // ------------------------------------------------------------------ singles

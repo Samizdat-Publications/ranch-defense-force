@@ -113,6 +113,30 @@ knowing before anyone plans content around "animals are free":
 animates a rooster at half speed. Animals ship no idle clip, so walk frame 0 is
 packed again under an idle key.
 
+### The animal sheets fought back
+
+First pass produced 10×50 "plank" enemies for the up and right facings. The
+cause is not a slicing bug: on the two-row animal sheets the front and back
+clips are drawn at proportions that do not match the side views — a rear-view
+pig measures **16×52 against a 28×32 side view** — and there is no 32px grid
+alignment that makes both read correctly.
+
+Rather than ship visibly broken sprites, only the two **side** clips are packed,
+and up/down alias onto them. Every animal now reads correctly at every facing;
+it simply does not turn to face the camera, which at this sprite size is close to
+unnoticeable. `sideCols` in `art/sprites.json` carries the column offsets, and
+the rooster (a single-row sheet whose four directions are all well-formed) still
+uses all four via `allDirections`.
+
+**Worth revisiting** with fresh eyes: the front/back clips are real art that is
+currently unused, and understanding their layout would give the animals proper
+facing. `tools/inspect-sheet.ts` and a scaled dump are how to approach it.
+
+Also added `dominantBandBounds` to the PNG helpers — takes the tallest
+*contiguous* band of occupied rows rather than raw bounds, so a frame window
+that catches a slice of a neighbouring clip discards it. A no-op for
+well-formed sprites; cheap insurance for the next sheet.
+
 ### Renderer
 
 446 frames, 1024×1024, 85KB. Draws at **2× integer zoom** — a 32px sprite at

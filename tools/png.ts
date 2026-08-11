@@ -239,6 +239,69 @@ export interface Bounds {
   empty: boolean
 }
 
+/**
+ * Content bounds of the tallest *contiguous* band of occupied rows in a
+ * sub-rect, rather than of everything in it.
+ *
+ * Needed because several animal sheets draw a sprite straddling the 32px row
+ * boundary, so a naive 32x64 window catches a slice of the clip above or below
+ * as well — which produced 10x50 "plank" dogs instead of 22x36 ones. Taking the
+ * dominant band throws the stray slice away. A single well-formed sprite has
+ * exactly one band, so this is a no-op for everything else.
+ *
+ * `gap` is how many blank rows end a band; 1 is right for pixel art where a
+ * sprite is drawn contiguously.
+ */
+export function dominantBandBounds(
+  img: Image, rx: number, ry: number, rw: number, rh: number, gap = 1,
+): Bounds {
+  const occupied: boolean[] = new Array(rh).fill(false)
+  for (let y = 0; y < rh; y++) {
+    const yy = ry + y
+    if (yy < 0 || yy >= img.height) continue
+    for (let x = 0; x < rw; x++) {
+      const xx = rx + x
+      if (xx < 0 || xx >= img.width) continue
+      if (img.data[(yy * img.width + xx) * 4 + 3] !== 0) {
+        occupied[y] = true
+        break
+      }
+    }
+  }
+
+  let bestStart = -1
+  let bestLen = 0
+  let start = -1
+  let blanks = 0
+  for (let y = 0; y < rh; y++) {
+    if (occupied[y]) {
+      if (start < 0) start = y
+      blanks = 0
+    } else if (start >= 0) {
+      blanks++
+      if (blanks >= gap) {
+        const len = y - blanks + 1 - start
+        if (len > bestLen) {
+          bestLen = len
+          bestStart = start
+        }
+        start = -1
+        blanks = 0
+      }
+    }
+  }
+  if (start >= 0) {
+    const len = rh - start
+    if (len > bestLen) {
+      bestLen = len
+      bestStart = start
+    }
+  }
+  if (bestStart < 0) return { x: rx, y: ry, w: 0, h: 0, empty: true }
+
+  return contentBounds(img, rx, ry + bestStart, rw, bestLen)
+}
+
 /** Tightest rectangle containing any non-transparent pixel in a sub-rect. */
 export function contentBounds(img: Image, rx: number, ry: number, rw: number, rh: number): Bounds {
   let minX = Infinity
