@@ -54,6 +54,22 @@ scale; paths below use the 16x16 names.
 
 Also present at `32x32/` and `48x48/`.
 
+## `assets/effects-fx/` — Effect and FX Pixel (free tier)
+
+196 files, ~28 MB. Added 2026-08-10 for hit sparks, muzzle flashes, explosions,
+and impact FX.
+
+Organized as `Free/Part 1/` … `Free/Part 15/`, each holding 12 numbered PNG
+spritesheets (`03.png`, `14.png`, `465.png`, …) plus a `Free Preview N.gif`.
+**The filenames carry no meaning — open the per-part preview GIF to see what a
+part contains,** and `Free/Free Preview All.gif` for everything at once. Worth
+renaming to semantic names (`fx_hit_spark.png`, `fx_explosion_small.png`) once
+you've picked the ones you're actually using.
+
+No license file ships with this pack. It's the free tier, so use is expected to
+be permitted, but confirm terms on the itch.io page before shipping anything
+public.
+
 ## Not in this repo
 
 Two Windows GUI tools shipped with the packs are **deliberately excluded** (see
