@@ -119,35 +119,48 @@ function simulate(
   }
 }
 
+const SEEDS = [20260810, 4242, 555, 31337, 7, 99]
+
 describe('a full run', () => {
-  it('completes all 24 waves with a focused build, in about 17 minutes', () => {
-    const r = simulate(20260810, 'hand', pickSmart, true)
-    expect(r.cleared).toBe(true)
-    expect(r.waveReached).toBeGreaterThan(WAVES.waveCount)
-    // 24 waves x 40s = 960s.
-    expect(r.seconds).toBeGreaterThan(900)
-    expect(r.seconds).toBeLessThan(1000)
-    expect(r.kills).toBeGreaterThan(1000)
-    expect(r.maxTier).toBe(4)
-  }, 300_000)
+  it('completes all 24 waves on most seeds, in about 17 minutes', () => {
+    // Surveyed rather than pinned to one seed: a single seed passing proves
+    // that seed, and balance work would silently start optimising for it.
+    const results = SEEDS.map((s) => simulate(s, 'hand', pickSmart, true))
+    const cleared = results.filter((r) => r.cleared)
+    expect(cleared.length).toBeGreaterThanOrEqual(Math.ceil(SEEDS.length / 2))
+
+    for (const r of cleared) {
+      // 24 waves x 40s = 960s.
+      expect(r.seconds).toBeGreaterThan(900)
+      expect(r.seconds).toBeLessThan(1000)
+      expect(r.kills).toBeGreaterThan(1000)
+      expect(r.maxTier).toBe(4)
+    }
+  }, 600_000)
+
+  it('treats both classes comparably — neither is a trap pick', () => {
+    // The Hand's -20% speed once left it clearing 1 seed in 6 while The Kid
+    // cleared all 6. Whatever the enemy speeds are, that gap must not reopen.
+    const hand = SEEDS.map((s) => simulate(s, 'hand', pickSmart, true)).filter((r) => r.cleared).length
+    const kid = SEEDS.map((s) => simulate(s, 'kid', pickSmart, true)).filter((r) => r.cleared).length
+    expect(Math.abs(hand - kid)).toBeLessThanOrEqual(2)
+    expect(hand).toBeGreaterThan(0)
+    expect(kid).toBeGreaterThan(0)
+  }, 600_000)
 
   it('does not complete with a build that takes nothing', () => {
-    const r = simulate(20260810, 'hand', pickNothing, true)
-    expect(r.cleared).toBe(false)
-    expect(r.waveReached).toBeLessThan(WAVES.waveCount)
-  }, 300_000)
+    for (const seed of SEEDS) {
+      const r = simulate(seed, 'hand', pickNothing, true)
+      expect(r.cleared).toBe(false)
+      expect(r.waveReached).toBeLessThan(WAVES.waveCount)
+    }
+  }, 600_000)
 
   it('rewards build quality — merging beats taking whatever came up', () => {
     const smart = simulate(4242, 'hand', pickSmart, false)
     const random = simulate(4242, 'hand', pickFirst, false)
     expect(smart.maxTier).toBeGreaterThanOrEqual(random.maxTier)
     expect(smart.waveReached).toBeGreaterThanOrEqual(random.waveReached)
-  }, 300_000)
-
-  it('runs The Kid to the end too', () => {
-    const r = simulate(555, 'kid', pickSmart, true)
-    expect(r.waveReached).toBeGreaterThan(12)
-    expect(r.kills).toBeGreaterThan(500)
   }, 300_000)
 
   it('replays a whole run identically from its seed', () => {

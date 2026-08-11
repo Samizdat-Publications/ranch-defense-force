@@ -1,8 +1,46 @@
 {
+  "whetstone": {
+    "name": "Whetstone",
+    "icon": "whetstone",
+    "cost": 18,
+    "rarity": "common",
+    "mods": {
+      "damagePct": 10
+    }
+  },
+  "hayHook": {
+    "name": "Hay Hook",
+    "icon": "hook",
+    "cost": 17,
+    "rarity": "uncommon",
+    "mods": {
+      "meleePct": 18
+    }
+  },
+  "slingBands": {
+    "name": "Sling Bands",
+    "icon": "bands",
+    "cost": 17,
+    "rarity": "uncommon",
+    "mods": {
+      "rangedPct": 18
+    }
+  },
+  "keroseneCan": {
+    "name": "Kerosene Can",
+    "icon": "can",
+    "cost": 26,
+    "rarity": "rare",
+    "mods": {
+      "damagePct": 25,
+      "maxHp": -15
+    }
+  },
   "feedSack": {
     "name": "Feed Sack",
     "icon": "food_grain_bag",
     "cost": 12,
+    "rarity": "common",
     "mods": {
       "maxHp": 20
     }
@@ -11,6 +49,7 @@
     "name": "Work Boots",
     "icon": "boots",
     "cost": 14,
+    "rarity": "common",
     "mods": {
       "moveSpeedPct": 8
     }
@@ -19,6 +58,7 @@
     "name": "Weather Vane",
     "icon": "vane",
     "cost": 18,
+    "rarity": "uncommon",
     "mods": {
       "attackSpeedPct": 12
     }
@@ -27,6 +67,7 @@
     "name": "Salt Lick",
     "icon": "salt",
     "cost": 15,
+    "rarity": "common",
     "mods": {
       "hpRegen": 1
     }
@@ -35,6 +76,7 @@
     "name": "Barbed Wire",
     "icon": "wire",
     "cost": 20,
+    "rarity": "uncommon",
     "mods": {},
     "special": "reflect",
     "reflectDamage": 5
@@ -43,6 +85,7 @@
     "name": "Tractor Plate",
     "icon": "plate",
     "cost": 22,
+    "rarity": "uncommon",
     "mods": {
       "armor": 4,
       "moveSpeedPct": -5
@@ -52,6 +95,7 @@
     "name": "Rooster Alarm",
     "icon": "rooster",
     "cost": 10,
+    "rarity": "common",
     "mods": {
       "pickupRadiusPct": 25
     }
@@ -60,6 +104,7 @@
     "name": "Silo Key",
     "icon": "key",
     "cost": 16,
+    "rarity": "common",
     "mods": {
       "harvestPct": 15
     }
@@ -68,6 +113,7 @@
     "name": "Four-Leaf",
     "icon": "clover",
     "cost": 18,
+    "rarity": "uncommon",
     "mods": {
       "luck": 10
     }
@@ -76,6 +122,7 @@
     "name": "Coffee Thermos",
     "icon": "coffee",
     "cost": 16,
+    "rarity": "uncommon",
     "mods": {
       "moveSpeedPct": 6,
       "attackSpeedPct": 6,
@@ -86,6 +133,7 @@
     "name": "Straw Hat",
     "icon": "hat",
     "cost": 24,
+    "rarity": "rare",
     "mods": {},
     "special": "auraDamageReduction",
     "radius": 60,
@@ -95,6 +143,7 @@
     "name": "Wet Rag",
     "icon": "rag",
     "cost": 20,
+    "rarity": "rare",
     "mods": {},
     "special": "gasGrace",
     "graceSeconds": 2

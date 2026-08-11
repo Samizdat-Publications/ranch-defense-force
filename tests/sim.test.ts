@@ -6,8 +6,9 @@ import {
 } from '../src/sim/formulas'
 import { Player } from '../src/sim/player'
 import { Spawner } from '../src/sim/spawner'
+import { OfferPool } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
-import { TUNING } from '../src/content'
+import { ITEMS, TUNING } from '../src/content'
 
 describe('stat resolution', () => {
   it('sums percentages additively, never multiplicatively', () => {
@@ -183,6 +184,53 @@ describe('Player build', () => {
     kid.init('kid')
     expect(kid.stats.moveSpeed).toBeGreaterThan(hand.stats.moveSpeed)
     expect(hand.stats.maxHp).toBeGreaterThan(kid.stats.maxHp)
+  })
+})
+
+describe('OfferPool', () => {
+  it('always includes at least one uncommon or better', () => {
+    const p = new Player()
+    p.init('hand')
+    // Many draws across many seeds — a guarantee that holds only usually is
+    // not a guarantee, and this is the card screen every level-up shows.
+    for (let seed = 1; seed <= 300; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      const offers = pool.draw(p, 3, 0, 0)
+      expect(offers.length).toBe(3)
+      expect(offers.some((o) => o.rarity !== 'common')).toBe(true)
+    }
+  })
+
+  it('never offers the same thing twice in one draw', () => {
+    const p = new Player()
+    p.init('kid')
+    for (let seed = 1; seed <= 200; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      const offers = pool.draw(p, 4, 0, 0)
+      expect(new Set(offers.map((o) => o.id)).size).toBe(offers.length)
+    }
+  })
+
+  it('reads rarity declared in items.json', () => {
+    const p = new Player()
+    p.init('hand')
+    const pool = new OfferPool(new Rng(1))
+    // Draw wide enough to see most of the pool.
+    const seen = new Map<string, string>()
+    for (let i = 0; i < 60; i++) {
+      for (const o of pool.draw(p, 6, i * 1000, 0)) seen.set(o.id, o.rarity)
+    }
+    expect(seen.get('whetstone')).toBe('common')
+    expect(seen.get('keroseneCan')).toBe('rare')
+    expect(seen.get('strawHat')).toBe('rare')
+  })
+
+  it('offers a source of raw damage scaling', () => {
+    // Weapon merging used to be the only way to scale damage at all.
+    const damageItems = Object.entries(ITEMS).filter(
+      ([, def]) => (def.mods?.damagePct ?? 0) > 0 || (def.mods?.meleePct ?? 0) > 0 || (def.mods?.rangedPct ?? 0) > 0,
+    )
+    expect(damageItems.length).toBeGreaterThan(0)
   })
 })
 

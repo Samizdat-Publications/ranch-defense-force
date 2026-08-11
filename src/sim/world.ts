@@ -207,11 +207,14 @@ export class World {
       const income = waveIncome(wasWave)
       this.player.feed += income
       this.wavesCleared = wasWave
-      this.events.onWaveComplete?.(wasWave, income)
       // Wave boundaries sweep up everything on the ground (§11).
       this.magnetiseAll()
       const next = wasWave + 1
+      // Advance before raising the event: a shop opened from the handler reads
+      // the wave number, and it should see the wave it is standing between,
+      // not the one that just ended.
       s.beginWave(next)
+      this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
       if (bossId) this.events.onBossWave?.(bossId)
     }

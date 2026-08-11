@@ -97,6 +97,9 @@ export interface ItemDef {
   icon: string
   cost: number
   mods: StatMods
+  /** Declared in items.json; drives card colour and the guaranteed-uncommon
+   *  slot in every offer set. */
+  rarity?: 'common' | 'uncommon' | 'rare'
   special?: string
   [k: string]: unknown
 }

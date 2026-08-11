@@ -153,7 +153,7 @@ const kiteAndSpray: EnemyBehaviour = ({ world, e, index, dt, playerX, playerY })
  */
 const charge: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
   // s0: 0 approach, 1 winding up, 2 charging, 3 staggered
-  const chargeSpeed = 220
+  const chargeSpeed = 260
   const dx = playerX - e.x
   const dy = playerY - e.y
   const dist = Math.hypot(dx, dy) || 1

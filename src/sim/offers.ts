@@ -94,11 +94,37 @@ export class OfferPool {
       }
       taken.add(idx)
       weights[idx] = 0
-      const offer = candidates[idx]
-      this.recentlyOffered.set(offer.id, now)
-      picked.push(offer)
+      picked.push(candidates[idx])
     }
+
+    this.guaranteeOneAboveCommon(candidates, taken, picked)
+    for (const offer of picked) this.recentlyOffered.set(offer.id, now)
     return picked
+  }
+
+  /**
+   * Every set of cards contains at least one uncommon or better.
+   *
+   * Without this a level-up can be three pieces of chaff, which is the worst
+   * moment in a run: the game stops, asks you to choose, and none of the
+   * choices matter. Replaces the last pick rather than adding a card, so the
+   * count the caller asked for is what it gets.
+   */
+  private guaranteeOneAboveCommon(
+    candidates: readonly Offer[],
+    taken: Set<number>,
+    picked: Offer[],
+  ): void {
+    if (picked.length === 0) return
+    if (picked.some((o) => o.rarity !== 'common')) return
+
+    const upgradeWeights = candidates.map((o, i) =>
+      o.rarity !== 'common' && !taken.has(i) ? (o.rarity === 'rare' ? 0.5 : 1) : 0,
+    )
+    if (upgradeWeights.every((w) => w === 0)) return // pool has nothing better
+
+    const idx = this.rng.weightedIndex(upgradeWeights)
+    picked[picked.length - 1] = candidates[idx]
   }
 
   private weaponOffer(id: string, def: WeaponDef, player: Player): Offer {
@@ -107,13 +133,16 @@ export class OfferPool {
     const detail = nextTier
       ? `Tier ${nextTier}: ${def.tiers[String(nextTier)] ?? 'stronger'} (+60% damage)`
       : `${def.type} · ${def.base} damage${def.cooldown > 0 ? ` / ${def.cooldown}s` : ''}`
+    // A weapon's rarity is its tier: merging is the offensive game, and a
+    // merge into tier 4 is the rarest thing the pool can hand you.
+    const rarity: Rarity = nextTier === null ? 'common' : nextTier >= 4 ? 'rare' : 'uncommon'
     return {
       kind: 'weapon',
       id,
       name: def.name,
       detail,
       cost: nextTier ? 14 + nextTier * 8 : 20,
-      rarity: nextTier ? 'uncommon' : 'common',
+      rarity,
       mods: {},
       mergesTo: nextTier,
     }
@@ -121,8 +150,11 @@ export class OfferPool {
 
   private itemOffer(id: string, def: ItemDef): Offer {
     const mods = def.mods ?? {}
-    const modCount = Object.keys(mods).length
-    const rarity: Rarity = def.special ? 'rare' : modCount > 1 ? 'uncommon' : 'common'
+    // Rarity is declared in items.json. The old heuristic (special = rare,
+    // multi-stat = uncommon) is kept only as a fallback for an item that has
+    // not been given one yet.
+    const rarity: Rarity = def.rarity
+      ?? (def.special ? 'rare' : Object.keys(mods).length > 1 ? 'uncommon' : 'common')
     return {
       kind: 'item',
       id,
