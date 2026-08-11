@@ -29,12 +29,23 @@ found a blocking bug no test caught. Combat changed a lot in M5 — play it.
 4. **Elites are spawn-time only** — an enemy cannot become one later. Now that
    the per-group roll is fixed this is a design question rather than a bug.
 
-### Known constraint
+### The repo is public now, and M0's live URL is unblocked
 
-GitHub Pages will not deploy from a private repo on a free plan, and the repo
-must stay private. The workflow builds and tests correctly; the deploy step
-fails. M0's "on a live URL" is unmet until the plan changes or the build is
-hosted privately elsewhere.
+Pages will not deploy from a private repo on a free plan, and the repo was
+private because the LimeZu licence forbids redistributing the packs. The owner
+obtained permission from LimeZu to publish this repository and chose to do so
+with the licence text in front of them, so both halves of that deadlock are
+gone. Pages is enabled and building from the workflow:
+
+**https://samizdat-publications.github.io/ranch-defense-force/**
+
+The permission is specific to this repository. `assets/` still never deploys —
+only the packed atlas ships — and the packs should not be copied into other
+projects.
+
+The deploy workflow ran `vite build` without `npm run atlas` for as long as it
+was never actually deploying, which would have published a game rendering every
+sprite as a coloured square. It builds the atlas now.
 
 ---
 

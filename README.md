@@ -6,9 +6,12 @@ Tuesday. Work the field until the light goes.
 
 TypeScript + Vite + Canvas 2D. No engine, no physics library, no UI framework.
 
-> **Private repo.** The art in `assets/` is commercially licensed but **may not
-> be redistributed**. Do not make this repository public and do not publish the
-> raw asset files — only the packed atlas ever ships. See [ASSETS.md](ASSETS.md).
+> **Art licence.** The art in `assets/` is commercially licensed from
+> [LimeZu](https://limezu.itch.io). This repository is public by specific
+> permission from LimeZu; the packs' own licence otherwise forbids
+> redistribution, so **that permission does not travel** — please don't lift
+> `assets/` into your own project or republish the packs. The game itself only
+> ever ships the packed atlas. See [ASSETS.md](ASSETS.md).
 
 ## Status
 

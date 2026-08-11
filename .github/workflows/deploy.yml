@@ -1,11 +1,18 @@
 name: Deploy
 
-# M0 asks for a Pages deploy on push. Note that GitHub Pages on a *private*
-# repo requires a paid plan — on a free account this workflow builds and tests
-# fine but the deploy step will fail. The repo has to stay private (the LimeZu
-# licence forbids redistribution), so if Pages is not available, publish the
-# built `dist/` somewhere private instead. Only `dist/` ever ships: it contains
-# the packed atlas, never `assets/`.
+# M0 asks for a Pages deploy on push.
+#
+# This was blocked for two milestones: Pages on a private repo needs a paid
+# plan, and the repo was private because the LimeZu licence forbids
+# redistributing the packs. The owner obtained permission from LimeZu to
+# publish, so the repo is public and this now runs end to end.
+#
+# `npm run atlas` is NOT optional here. It slices `assets/` into
+# `public/atlas.png`, which is gitignored precisely so generated art never
+# lands in a commit — which means a checkout has no atlas at all, and a build
+# that skips this step deploys a game that renders every sprite as a coloured
+# square. Only `dist/` is published, and it contains the packed atlas rather
+# than the source packs.
 
 on:
   push:
@@ -31,9 +38,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run atlas
       - run: npx tsc --noEmit
+      - run: npx tsc -p tools --noEmit
       - run: npx vitest run
       - run: npx vite build
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

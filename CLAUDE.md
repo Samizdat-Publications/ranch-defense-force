@@ -96,9 +96,18 @@ written in `tools/png.ts` on Node's zlib rather than pulling in `sharp` or
 
 ## Licensing
 
-The repo is private and stays private. `assets/` is never deployed — only the
-packed `public/atlas.png` ships. Credit LimeZu (limezu.itch.io) in the title
-screen and README; the UI pack's licence requires it.
+**The repo is public.** It was private for M0–M5 because the bundled
+`assets/modern-farm/LICENSE.txt` says in as many words: "YOU CAN'T: Resell or
+distribute the asset to others." The owner obtained permission from LimeZu to
+publish this repository, packs included, and made that call with the licence
+text in front of them. That permission is specific to this repo — it is not a
+general grant, so do not copy `assets/` into another project or republish the
+packs elsewhere.
+
+`assets/` still never deploys. Only the packed `public/atlas.png` ships, which
+is the "edit and use the asset in a project" the licence explicitly allows.
+Credit LimeZu (limezu.itch.io) in the title screen and README; the UI pack's
+licence requires it.
 
 ## Per-milestone
 
