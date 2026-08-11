@@ -75,6 +75,15 @@
     }
   },
 
+  "singlesExtra": {
+    "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. §11 wants gems readable above all else.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
+    "files": {
+      "pickup.feed": "Pickup_Crop_Grain_32x32.png",
+      "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
+    }
+  },
+
   "terrainSource": {
     "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
     "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used — anything with a blob edge will not tile. Found with tools/_scan.ts.",

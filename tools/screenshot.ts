@@ -174,17 +174,21 @@ for (let i = 0; i < world.enemies.live; i++) {
 drawList.sort((a, b) => a.y - b.y)
 for (const d of drawList) drawFrame(d.f, d.x, d.y)
 
-// Pickups, drawn flat like the renderer does.
 for (let i = 0; i < world.pickups.live; i++) {
   const g = world.pickups.items[i]
-  const s = g.kind === 'xp' ? 5 : 7
-  fillRect(
-    canvas,
-    Math.round((g.x - camX) * ZOOM - (s * ZOOM) / 2),
-    Math.round((g.y - camY) * ZOOM - (s * ZOOM) / 2),
-    s * ZOOM, s * ZOOM,
-    g.kind === 'xp' ? 0x5fd0c6 : 0xe0b040,
-  )
+  const f = atlas.frames[`pickup.${g.kind}`]
+  if (f) {
+    drawFrame(f, g.x, g.y)
+  } else {
+    const s = g.kind === 'xp' ? 5 : 7
+    fillRect(
+      canvas,
+      Math.round((g.x - camX) * ZOOM - (s * ZOOM) / 2),
+      Math.round((g.y - camY) * ZOOM - (s * ZOOM) / 2),
+      s * ZOOM, s * ZOOM,
+      g.kind === 'xp' ? 0x5fd0c6 : 0xe0b040,
+    )
+  }
 }
 
 writeFileSync(out, encodePng(canvas))

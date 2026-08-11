@@ -483,14 +483,20 @@ export class Renderer {
 
   private drawPickups(ctx: CanvasRenderingContext2D, alpha: number): void {
     const w = this.world
+    const img = this.atlas?.image
     for (let i = 0; i < w.pickups.live; i++) {
       const g = w.pickups.items[i]
       const x = g.px + (g.x - g.px) * alpha
       const y = g.py + (g.y - g.py) * alpha
       const bob = g.magnetised ? 0 : Math.sin(g.bob * 4) * 1.5
-      ctx.fillStyle = g.kind === 'xp' ? PALETTE.xp : PALETTE.feed
-      const s = g.kind === 'xp' ? 5 : 7
-      ctx.fillRect(Math.round(x - s / 2), Math.round(y - s / 2 + bob), s, s)
+      const f = this.atlas?.get(`pickup.${g.kind}`)
+      if (f && img) {
+        ctx.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy + bob), f.w, f.h)
+      } else {
+        ctx.fillStyle = g.kind === 'xp' ? PALETTE.xp : PALETTE.feed
+        const s = g.kind === 'xp' ? 5 : 7
+        ctx.fillRect(Math.round(x - s / 2), Math.round(y - s / 2 + bob), s, s)
+      }
       this.drawCalls++
     }
   }

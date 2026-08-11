@@ -55,6 +55,7 @@ interface Manifest {
     }>
   }
   singles: { _base: string; files: Record<string, string> }
+  singlesExtra?: { _base: string; files: Record<string, string> }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
 }
 
@@ -201,8 +202,14 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
 
 // ------------------------------------------------------------------ singles
 
-for (const [name, file] of Object.entries(manifest.singles?.files ?? {})) {
-  const path = manifest.singles._base + file
+const singleGroups = [manifest.singles, manifest.singlesExtra].filter(Boolean) as {
+  _base: string
+  files: Record<string, string>
+}[]
+
+for (const group of singleGroups) {
+for (const [name, file] of Object.entries(group.files ?? {})) {
+  const path = group._base + file
   let img: Image
   try {
     img = decodePng(readFileSync(path))
@@ -223,6 +230,7 @@ for (const [name, file] of Object.entries(manifest.singles?.files ?? {})) {
     ox: b.x - img.width / 2,
     oy: b.y - img.height,
   })
+}
 }
 
 // ------------------------------------------------------------------ terrain
