@@ -27,8 +27,16 @@ export interface Offer {
   mods: StatMods
   /** Set when taking this would merge an owned weapon up a tier. */
   mergesTo: number | null
+  /** Doubled magnitude. The level-up screen always has exactly one, and it is
+   *  always the uncommon-or-better card — so the choice is a smaller boost to
+   *  the stat you want against a double boost to one you want less. */
+  boosted: boolean
+  /** Tiers a weapon merge jumps: 2 when boosted, 1 otherwise. */
+  tierJump: number
   locked?: boolean
 }
+
+export type DrawMode = 'levelup' | 'shop'
 
 /** Seconds an offered id stays suppressed from later draws. */
 const MEMORY_SECONDS = 90
@@ -53,7 +61,13 @@ export class OfferPool {
    * Draw `count` distinct offers. `now` is world elapsed seconds, used for the
    * short memory. Luck widens the draw slightly toward rarer entries.
    */
-  draw(player: Player, count: number, now: number, luck: number): Offer[] {
+  draw(
+    player: Player,
+    count: number,
+    now: number,
+    luck: number,
+    mode: DrawMode = 'shop',
+  ): Offer[] {
     const candidates: Offer[] = []
 
     for (const [id, def] of Object.entries(WEAPONS) as [string, WeaponDef][]) {
@@ -71,6 +85,7 @@ export class OfferPool {
     }
 
     if (candidates.length === 0) return []
+    if (mode === 'levelup') return this.drawLevelUp(candidates, count, now, luck)
 
     const weights = candidates.map((o) => {
       const last = this.recentlyOffered.get(o.id)
@@ -100,6 +115,60 @@ export class OfferPool {
     this.guaranteeOneAboveCommon(candidates, taken, picked)
     for (const offer of picked) this.recentlyOffered.set(offer.id, now)
     return picked
+  }
+
+  /**
+   * The level-up screen: exactly one uncommon-or-better card at **double**
+   * magnitude, the rest common at normal magnitude.
+   *
+   * The point is the decision it forces. The boosted card is rarely the stat
+   * you were hoping for, so every level-up asks whether you want a small step
+   * toward the build you are aiming at, or a large step somewhere else. When
+   * the boosted card *is* what you wanted, that is the good roll.
+   *
+   * Doubling is level-up only. The shop is where you go to buy exactly what
+   * you need, and it charges you for the privilege; handing out doubles there
+   * too would flatten the difference between the two systems.
+   */
+  private drawLevelUp(candidates: Offer[], count: number, now: number, luck: number): Offer[] {
+    const commonIdx: number[] = []
+    const betterIdx: number[] = []
+    candidates.forEach((o, i) => (o.rarity === 'common' ? commonIdx : betterIdx).push(i))
+
+    const picked: Offer[] = []
+    const taken = new Set<number>()
+
+    const weightFor = (i: number): number => {
+      const o = candidates[i]
+      const last = this.recentlyOffered.get(o.id)
+      const suppressed = last !== undefined && now - last < MEMORY_SECONDS ? 0.15 : 1
+      const rare = o.rarity === 'rare' ? 0.4 + luck / 200 : 1
+      return suppressed * rare
+    }
+
+    // The boosted slot first, so a thin pool spends what it has on the card
+    // that matters most.
+    if (betterIdx.length > 0) {
+      const w = betterIdx.map(weightFor)
+      const chosen = betterIdx[this.rng.weightedIndex(w)]
+      taken.add(chosen)
+      picked.push(boost(candidates[chosen]))
+    }
+
+    const pool = commonIdx.length > 0 ? commonIdx : candidates.map((_, i) => i)
+    let guard = 0
+    while (picked.length < Math.min(count, candidates.length) && guard++ < 200) {
+      const available = pool.filter((i) => !taken.has(i))
+      if (available.length === 0) break
+      const chosen = available[this.rng.weightedIndex(available.map(weightFor))]
+      taken.add(chosen)
+      picked.push(candidates[chosen])
+    }
+
+    for (const o of picked) this.recentlyOffered.set(o.id, now)
+    // Shuffle so the boosted card is not always in slot 1 — it should have to
+    // be read for, not learned by position.
+    return this.rng.shuffle(picked)
   }
 
   /**
@@ -145,6 +214,8 @@ export class OfferPool {
       rarity,
       mods: {},
       mergesTo: nextTier,
+      boosted: false,
+      tierJump: 1,
     }
   }
 
@@ -164,7 +235,31 @@ export class OfferPool {
       rarity,
       mods,
       mergesTo: null,
+      boosted: false,
+      tierJump: 1,
     }
+  }
+}
+
+/** Double an offer's magnitude for the level-up screen's guaranteed slot. */
+function boost(offer: Offer): Offer {
+  const mods: StatMods = {}
+  for (const [k, v] of Object.entries(offer.mods)) {
+    mods[k as keyof StatMods] = (v as number) * 2
+  }
+  const doubledDetail = offer.kind === 'item'
+    ? describeMods(mods) || offer.detail
+    : offer.mergesTo !== null
+      ? `Tier ${Math.min(4, offer.mergesTo + 1)} — jumps two tiers`
+      : offer.detail
+  return {
+    ...offer,
+    mods,
+    boosted: true,
+    tierJump: 2,
+    detail: doubledDetail,
+    // Cost is untouched: the doubling is the reward for the rarity roll, not
+    // something the player pays extra for.
   }
 }
 
@@ -174,13 +269,20 @@ const PCT_KEYS = new Set([
   'dodgePct', 'lifestealPct',
 ])
 
-export function describeItem(def: ItemDef): string {
+export function describeMods(mods: StatMods): string {
   const parts: string[] = []
-  for (const [key, value] of Object.entries(def.mods ?? {})) {
+  for (const [key, value] of Object.entries(mods)) {
     const v = value as number
     const sign = v >= 0 ? '+' : ''
     parts.push(`${sign}${v}${PCT_KEYS.has(key) ? '%' : ''} ${humanKey(key)}`)
   }
+  return parts.join(' · ')
+}
+
+export function describeItem(def: ItemDef): string {
+  const parts: string[] = []
+  const base = describeMods(def.mods ?? {})
+  if (base) parts.push(base)
   if (def.special === 'reflect') parts.push(`reflects ${def.reflectDamage} to attackers`)
   if (def.special === 'auraDamageReduction') {
     parts.push(`enemies within ${def.radius}px deal ${def.reductionPct}% less`)

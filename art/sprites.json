@@ -26,6 +26,23 @@
     "maskedHauler": "assets/generated/characters/gas-enemy-02.png"
   },
 
+  "singles": {
+    "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
+    "files": {
+      "crop.corn": "Crop_Corn_Ripe_32x32.png",
+      "crop.pumpkin": "Crop_Pumpkin_Ripe_32x32.png",
+      "crop.watermelon": "Crop_Watermelon_Ripe_32x32.png",
+      "crop.cabbage": "Crop_Cabbage_Ripe_32x32.png",
+      "crop.tomato": "Crop_Tomato_Ripe_32x32.png",
+      "crop.grain": "Crop_Grain_Ripe_32x32.png",
+      "crop.chili": "Crop_Chili_Pepper_Ripe_32x32.png",
+      "crop.strawberry": "Crop_Strawberry_Ripe_32x32.png",
+      "crop.cauliflower": "Crop_Cauliflower_Ripe_32x32.png",
+      "crop.zucchini": "Crop_Zucchini_Ripe_32x32.png"
+    }
+  },
+
   "terrainSource": {
     "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
     "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used — anything with a blob edge will not tile. Found with tools/_scan.ts.",

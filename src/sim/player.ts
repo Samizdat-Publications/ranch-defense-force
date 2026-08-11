@@ -10,6 +10,12 @@ import { xpToNext } from './formulas'
 
 const P = TUNING.player
 
+export interface OwnedItem {
+  id: string
+  /** Doubled magnitude — the level-up screen's boosted pick. */
+  boosted: boolean
+}
+
 export interface WeaponSlot {
   id: string
   /** 1-4. Each tier is base damage x1.6 plus a rider (riders land in M5). */
@@ -57,7 +63,9 @@ export class Player {
   rooted = false
 
   weapons: WeaponSlot[] = []
-  items: string[] = []
+  /** Owned passives. A boosted copy came off the level-up screen's guaranteed
+   *  uncommon slot and counts double. */
+  items: OwnedItem[] = []
 
   readonly stats: DerivedStats = emptyDerived()
   /** Sources fed to the resolver. Index 0 is always the class block. */
@@ -96,9 +104,13 @@ export class Player {
     this.sources.length = 0
     this.sources.push(this.def.stats)
     this.sources.push(this.metaMods)
-    for (const id of this.items) {
-      const item = ITEM_MODS[id]
-      if (item) this.sources.push(item)
+    for (const owned of this.items) {
+      const item = ITEM_MODS[owned.id]
+      if (!item) continue
+      // A boosted copy is worth two — pushed twice rather than scaled, so the
+      // resolver stays a pure additive sum and nothing multiplies.
+      this.sources.push(item)
+      if (owned.boosted) this.sources.push(item)
     }
     const before = this.stats.maxHp
     resolveStats(this.sources, this.stats)
@@ -114,19 +126,24 @@ export class Player {
     return this.sources
   }
 
-  addItem(id: string): void {
-    this.items.push(id)
+  addItem(id: string, boosted = false): void {
+    this.items.push({ id, boosted })
     this.resolve()
+  }
+
+  /** Ids only, for the results screen and anything that just wants names. */
+  get itemIds(): string[] {
+    return this.items.map((i) => i.id)
   }
 
   /**
    * Add a weapon, or merge it up a tier if already owned (§7). Returns false
    * only when the slots are full and the weapon is new.
    */
-  addWeapon(id: string): boolean {
+  addWeapon(id: string, tierJump = 1): boolean {
     const existing = this.weapons.find((w) => w.id === id)
     if (existing) {
-      if (existing.tier < 4) existing.tier++
+      existing.tier = Math.min(4, existing.tier + tierJump)
       return true
     }
     if (this.weapons.length >= MAX_WEAPON_SLOTS) return false

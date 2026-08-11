@@ -130,9 +130,9 @@ function queueShop(): void {
 
 function applyOffer(offer: Offer): void {
   if (!world) return
-  if (offer.kind === 'weapon') world.player.addWeapon(offer.id)
+  if (offer.kind === 'weapon') world.player.addWeapon(offer.id, offer.tierJump)
   else {
-    world.player.addItem(offer.id)
+    world.player.addItem(offer.id, offer.boosted)
     world.refreshSpecialItems()
   }
 }

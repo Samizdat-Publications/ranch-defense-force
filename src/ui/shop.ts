@@ -10,7 +10,7 @@
  * The right-hand character sheet highlights anything that changed since the
  * last wave, and hovering a card previews its effect in a second colour.
  */
-import { STAT_KEYS, STAT_LABELS, WEAPONS } from '../content'
+import { ITEMS, STAT_KEYS, STAT_LABELS, WEAPONS } from '../content'
 import type { Offer, OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta, type DerivedStats } from '../sim/stats'
@@ -236,10 +236,13 @@ export class ShopScreen {
     if (p.items.length > 0) {
       this.sheetEl.appendChild(el('h3', { text: 'Passives' }))
       const counts = new Map<string, number>()
-      for (const id of p.items) counts.set(id, (counts.get(id) ?? 0) + 1)
+      // A boosted copy counts as two, which is exactly how it resolves.
+      for (const owned of p.items) {
+        counts.set(owned.id, (counts.get(owned.id) ?? 0) + (owned.boosted ? 2 : 1))
+      }
       for (const [id, n] of counts) {
         this.sheetEl.appendChild(el('div', { class: 'sheet-row' }, [
-          el('span', { text: id }),
+          el('span', { text: ITEMS[id]?.name ?? id }),
           el('span', { text: n > 1 ? `x${n}` : '' }),
         ]))
       }

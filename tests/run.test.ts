@@ -41,6 +41,7 @@ interface RunResult {
   kills: number
   weapons: number
   maxTier: number
+  items: number
   seconds: number
 }
 
@@ -63,8 +64,8 @@ function simulate(
   }
 
   const take = (o: Offer): void => {
-    if (o.kind === 'weapon') world.player.addWeapon(o.id)
-    else { world.player.addItem(o.id); world.refreshSpecialItems() }
+    if (o.kind === 'weapon') world.player.addWeapon(o.id, o.tierJump)
+    else { world.player.addItem(o.id, o.boosted); world.refreshSpecialItems() }
   }
 
   let ticks = 0
@@ -93,7 +94,9 @@ function simulate(
     ticks++
 
     if (pending > 0) {
-      const chosen = pick(offers.draw(world.player, 3, world.elapsed, world.player.stats.luck))
+      const chosen = pick(
+        offers.draw(world.player, 4, world.elapsed, world.player.stats.luck, 'levelup'),
+      )
       if (chosen) take(chosen)
       pending--
     }
@@ -115,6 +118,7 @@ function simulate(
     kills: world.kills,
     weapons: world.player.weapons.length,
     maxTier: Math.max(...world.player.weapons.map((w) => w.tier)),
+    items: world.player.items.length,
     seconds: world.elapsed,
   }
 }

@@ -90,6 +90,32 @@ describe('World invariants', () => {
     expect(w.damageDealt).toBeGreaterThan(0)
   })
 
+  it('scatters harvestable crops and pays feed for breaking them', () => {
+    const w = new World(77, 'hand')
+    expect(w.props.live).toBeGreaterThan(20)
+
+    // Stand the player on top of a crop and let the shovel do the work.
+    const target = w.props.items[0]
+    w.player.x = target.x
+    w.player.y = target.y
+    const before = w.props.live
+    const feedBefore = w.player.feed
+    for (let i = 0; i < 600; i++) w.step(STEP, 0, 0, false)
+
+    expect(w.cropsHarvested).toBeGreaterThan(0)
+    expect(w.props.live).toBeLessThan(before)
+    expect(w.player.feed).toBeGreaterThan(feedBefore)
+  })
+
+  it('regrows some crops at a wave boundary', () => {
+    const w = new World(78, 'hand')
+    // Strip the field.
+    for (let i = w.props.live - 1; i >= 0; i--) w.props.free(i)
+    expect(w.props.live).toBe(0)
+    for (let i = 0; i < 60 * 41; i++) w.step(STEP, 0, 0, false)
+    expect(w.props.live).toBeGreaterThan(0)
+  })
+
   it('pays wave income at a wave boundary', () => {
     const w = new World(3, 'hand')
     let paid = 0

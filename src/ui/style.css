@@ -120,6 +120,18 @@ html, body {
 .card-detail { font-size: 12px; opacity: 0.85; line-height: 1.4; }
 .card-cost { margin-top: auto; color: var(--gold); font-size: 13px; }
 .card-delta { font-size: 11px; color: var(--xp); line-height: 1.5; }
+.card.boosted {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold) inset, 0 6px 22px rgba(224, 176, 64, 0.28);
+}
+.card-boost {
+  align-self: flex-start;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: var(--gold);
+  padding: 1px 6px;
+}
 .card-lock {
   font-size: 11px; background: none; border: 1px solid var(--edge);
   color: var(--straw); cursor: pointer; padding: 2px 6px; font-family: inherit;

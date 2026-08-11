@@ -10,8 +10,9 @@ import { Pool } from '../core/pool'
 import { Rng } from '../core/rng'
 import { SpatialGrid } from '../core/spatial'
 import {
-  makeDamageNumber, makeEnemy, makeHazard, makeParticle, makePickup, makeProjectile,
+  makeDamageNumber, makeEnemy, makeHazard, makeParticle, makePickup, makeProjectile, makeProp,
   type DamageNumber, type Enemy, type Hazard, type Particle, type Pickup, type Projectile,
+  type Prop,
 } from './entities'
 import { Player } from './player'
 import { Spawner } from './spawner'
@@ -58,6 +59,7 @@ export class World {
   readonly damageNumbers: Pool<DamageNumber>
   readonly particles: Pool<Particle>
   readonly hazards: Pool<Hazard>
+  readonly props: Pool<Prop>
 
   private readonly grid: SpatialGrid
   private readonly gx: Float64Array
@@ -81,6 +83,7 @@ export class World {
   kills = 0
   damageDealt = 0
   wavesCleared = 0
+  cropsHarvested = 0
 
   events: WorldEvents = {}
 
@@ -100,6 +103,7 @@ export class World {
     this.damageNumbers = new Pool(T.pools.damageNumbers, makeDamageNumber)
     this.particles = new Pool(T.pools.particles, makeParticle)
     this.hazards = new Pool(T.pools.hazards, makeHazard)
+    this.props = new Pool(T.pools.props, makeProp)
 
     this.grid = new SpatialGrid(this.arenaW, this.arenaH, T.pools.enemies)
     this.gx = new Float64Array(T.pools.enemies)
@@ -112,6 +116,38 @@ export class World {
     this.player.px = this.player.x
     this.player.py = this.player.y
     this.refreshSpecialItems()
+    this.scatterCrops(T.crops.initialCount)
+  }
+
+  /**
+   * Scatter harvestable crops across the field, away from the player's feet so
+   * the opening seconds are not spent standing inside one.
+   */
+  private scatterCrops(count: number): void {
+    const c = T.crops
+    const pad = 80
+    for (let i = 0; i < count; i++) {
+      if (this.props.live >= c.maxCount) return
+      let x = 0
+      let y = 0
+      // A handful of attempts, then give up on this one rather than loop.
+      for (let attempt = 0; attempt < 8; attempt++) {
+        x = this.rng.range(pad, this.arenaW - pad)
+        y = this.rng.range(pad, this.arenaH - pad)
+        if (Math.hypot(x - this.player.x, y - this.player.y) >= c.minDistanceFromPlayer) break
+      }
+      const p = this.props.acquire()
+      if (!p) return
+      p.sprite = this.rng.pick(c.sprites)
+      p.x = x
+      p.y = y
+      p.maxHp = c.hp + c.hpPerWave * (this.spawner?.wave ?? 1)
+      p.hp = p.maxHp
+      p.radius = c.radius
+      p.feed = c.feedValue
+      p.flash = 0
+      p.dying = 0
+    }
   }
 
   // ---------------------------------------------------------------- tick
@@ -153,6 +189,7 @@ export class World {
 
     // 8-9. collisions, damage, deaths, drops
     this.collideProjectiles()
+    this.collideProjectilesWithCrops(dt)
     this.collideEnemiesWithPlayer(dt)
     this.updateHazards(dt)
 
@@ -214,6 +251,9 @@ export class World {
       // the wave number, and it should see the wave it is standing between,
       // not the one that just ended.
       s.beginWave(next)
+      // The field grows back a little each wave, so a player who cleared it
+      // early is not permanently out of crops to harvest.
+      this.scatterCrops(T.crops.regrowPerWave)
       this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
       if (bossId) this.events.onBossWave?.(bossId)
@@ -505,6 +545,63 @@ export class World {
     }
     // Watering can carries its slow in t0.
     if (p.behaviour === 'rotatingJet' && p.t0 > 0) e.stun = Math.max(e.stun, 0)
+  }
+
+  /**
+   * Crops take damage from anything that hits them. They are static and few
+   * (tens, against hundreds of enemies), so a direct scan is cheaper than
+   * maintaining a second grid for them.
+   */
+  private collideProjectilesWithCrops(dt: number): void {
+    for (let i = this.props.live - 1; i >= 0; i--) {
+      const c = this.props.items[i]
+      if (c.flash > 0) c.flash -= dt
+      if (c.dying > 0) {
+        c.dying -= dt
+        if (c.dying <= 0) this.props.free(i)
+        continue
+      }
+
+      for (let j = this.projectiles.live - 1; j >= 0; j--) {
+        const p = this.projectiles.items[j]
+        if (p.pierce === -1) continue
+        const dx = c.x - p.x
+        const dy = c.y - p.y
+        const want = c.radius + p.radius
+        if (dx * dx + dy * dy > want * want) continue
+
+        c.hp -= p.damage
+        c.flash = C.hitFlashSeconds
+        this.burstParticles(c.x, c.y, 3, 0x9ec96b)
+        if (!p.attached) {
+          if (p.pierce > 0) p.pierce--
+          else this.projectiles.free(j)
+        }
+        if (c.hp <= 0) {
+          this.harvest(c)
+          break
+        }
+      }
+    }
+  }
+
+  /** A broken crop pays out feed on the ground and a spray of leaves. */
+  private harvest(c: Prop): void {
+    this.cropsHarvested++
+    const f = this.pickups.acquire()
+    if (f) {
+      f.kind = 'feed'
+      f.x = c.x
+      f.y = c.y
+      f.px = f.x
+      f.py = f.y
+      f.value = c.feed
+      f.magnetised = false
+      f.speed = 0
+      f.bob = 0
+    }
+    this.burstParticles(c.x, c.y, 10, 0x9ec96b)
+    c.dying = C.deathSpinSeconds
   }
 
   private collideEnemiesWithPlayer(dt: number): void {
@@ -992,14 +1089,15 @@ export class World {
     this.specialItems.reflect = 0
     this.specialItems.auraRadius = 0
     this.specialItems.auraReduction = 0
-    for (const id of this.player.items) {
-      const def = ITEMS[id]
+    for (const owned of this.player.items) {
+      const def = ITEMS[owned.id]
       if (!def?.special) continue
+      const mult = owned.boosted ? 2 : 1
       if (def.special === 'reflect') {
-        this.specialItems.reflect += (def.reflectDamage as number) ?? 0
+        this.specialItems.reflect += ((def.reflectDamage as number) ?? 0) * mult
       } else if (def.special === 'auraDamageReduction') {
         this.specialItems.auraRadius = (def.radius as number) ?? 60
-        this.specialItems.auraReduction += (def.reductionPct as number) ?? 0
+        this.specialItems.auraReduction += ((def.reductionPct as number) ?? 0) * mult
       }
     }
   }

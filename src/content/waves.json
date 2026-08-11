@@ -49,8 +49,8 @@
   },
   "xp": {
     "formula": "ceil(6 + 3*L + 0.9*pow(L,1.55))",
-    "cardsPerLevel": 3,
-    "cardsAtHighLuck": 4
+    "cardsPerLevel": 4,
+    "cardsAtHighLuck": 5
   },
   "ambient": {
     "chickens": {

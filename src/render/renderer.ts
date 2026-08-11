@@ -92,7 +92,7 @@ export class Renderer {
     if (!dctx) throw new Error('decal canvas context unavailable')
     this.decalCtx = dctx
 
-    const cap = TUNING.pools.enemies + TUNING.pools.projectiles + 64
+    const cap = TUNING.pools.enemies + TUNING.pools.projectiles + TUNING.pools.props + 64
     for (let i = 0; i < cap; i++) {
       this.items.push({
         x: 0, y: 0, frame: null, colour: '', w: 0, h: 0, flash: false,
@@ -278,6 +278,28 @@ export class Renderer {
     const right = cam.x + cam.viewW + 64
     const top = cam.y - 96
     const bottom = cam.y + cam.viewH + 64
+
+    // Crops y-sort with everything else, so the player walks in front of and
+    // behind them rather than always on top.
+    for (let i = 0; i < w.props.live; i++) {
+      const c = w.props.items[i]
+      if (c.x < left || c.x > right || c.y < top || c.y > bottom) continue
+      const it = this.push()
+      if (!it) break
+      it.x = c.x
+      it.y = c.y
+      it.frame = this.atlas?.get(c.sprite) ?? null
+      it.flash = c.flash > 0
+      it.colour = '#8fbf5a'
+      it.w = c.radius * 2
+      it.h = c.radius * 2
+      if (c.dying > 0) {
+        const t = c.dying / TUNING.combat.deathSpinSeconds
+        it.scaleX = t
+        it.scaleY = t
+        it.rotation = (1 - t) * 3
+      }
+    }
 
     for (let i = 0; i < w.enemies.live; i++) {
       const e = w.enemies.items[i]

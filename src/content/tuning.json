@@ -49,7 +49,25 @@
     "pickups": 1500,
     "damageNumbers": 64,
     "particles": 900,
-    "hazards": 64
+    "hazards": 64,
+    "props": 120
+  },
+
+  "crops": {
+    "_note": "Harvestable vegetation scattered across the field. Broken by any weapon; pays feed. Regrows a little each wave so the field is never permanently stripped.",
+    "initialCount": 46,
+    "regrowPerWave": 5,
+    "maxCount": 70,
+    "hp": 18,
+    "hpPerWave": 4,
+    "feedValue": 2,
+    "radius": 11,
+    "minDistanceFromPlayer": 140,
+    "sprites": [
+      "crop.corn", "crop.pumpkin", "crop.watermelon", "crop.cabbage",
+      "crop.tomato", "crop.grain", "crop.chili", "crop.strawberry",
+      "crop.cauliflower", "crop.zucchini"
+    ]
   },
 
   "arena": {

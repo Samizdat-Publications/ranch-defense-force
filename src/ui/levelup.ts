@@ -73,7 +73,7 @@ export class LevelUpScreen {
     const count = world.player.stats.luck >= 40
       ? WAVES.xp.cardsAtHighLuck
       : WAVES.xp.cardsPerLevel
-    this.offers = pool.draw(world.player, count, world.elapsed, world.player.stats.luck)
+    this.offers = pool.draw(world.player, count, world.elapsed, world.player.stats.luck, 'levelup')
     this.render()
   }
 
@@ -91,12 +91,13 @@ export class LevelUpScreen {
 
     this.offers.forEach((offer, i) => {
       const card = el('div', {
-        class: `card rarity-${offer.rarity}`,
+        class: `card rarity-${offer.rarity}${offer.boosted ? ' boosted' : ''}`,
         style: { animationDelay: `${i * 60}ms` },
         onClick: () => this.pick(offer),
       }, [
         el('div', { class: 'card-key', text: `[${i + 1}]  ${offer.kind}` }),
         el('div', { class: 'card-name', text: offer.name }),
+        offer.boosted ? el('div', { class: 'card-boost', text: '2× DOUBLE' }) : null,
         el('div', { class: 'card-detail', text: offer.detail }),
       ])
 

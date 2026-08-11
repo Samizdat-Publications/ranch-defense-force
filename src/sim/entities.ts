@@ -106,6 +106,34 @@ export function makeProjectile(): Projectile {
   }
 }
 
+/**
+ * Harvestable crops standing in the field. They do not move or fight — they
+ * soak a couple of hits and pay out feed, which gives a player with spare
+ * seconds something to do with them and turns "the wave is thin right now"
+ * into an economic decision rather than dead time.
+ */
+export interface Prop {
+  active: boolean
+  /** Atlas frame key, e.g. `crop.pumpkin`. */
+  sprite: string
+  x: number
+  y: number
+  hp: number
+  maxHp: number
+  radius: number
+  feed: number
+  flash: number
+  /** Counts down after the killing blow, for the pop. */
+  dying: number
+}
+
+export function makeProp(): Prop {
+  return {
+    active: false, sprite: 'crop.corn', x: 0, y: 0, hp: 1, maxHp: 1,
+    radius: 11, feed: 1, flash: 0, dying: 0,
+  }
+}
+
 export type PickupKind = 'xp' | 'feed' | 'heal'
 
 export interface Pickup {

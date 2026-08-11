@@ -35,6 +35,7 @@ export class ResultsScreen {
       ['Wave reached', String(world.spawner.wave)],
       ['Time survived', `${mins}:${String(secs).padStart(2, '0')}`],
       ['Kills', String(world.kills)],
+      ['Crops harvested', String(world.cropsHarvested)],
       ['Damage dealt', String(Math.round(world.damageDealt))],
       ['Level', String(p.level)],
       ['Feed left', String(p.feed)],
@@ -44,7 +45,7 @@ export class ResultsScreen {
 
     const build = p.weapons
       .map((w) => `${WEAPONS[w.id]?.name ?? w.id} T${w.tier}`)
-      .concat(p.items.map((i) => i))
+      .concat(p.items.map((i) => (i.boosted ? `${i.id} (2×)` : i.id)))
       .join(' · ')
 
     this.inner.replaceChildren(

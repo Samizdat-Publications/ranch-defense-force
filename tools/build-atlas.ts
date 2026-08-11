@@ -41,6 +41,7 @@ interface Manifest {
     clips: Record<string, { rowPair: number; start: number; framesPerDirection: number }>
   }
   humanoids: Record<string, string>
+  singles: { _base: string; files: Record<string, string> }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
 }
 
@@ -113,6 +114,32 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
       }
     })
   }
+}
+
+// ------------------------------------------------------------------ singles
+
+for (const [name, file] of Object.entries(manifest.singles?.files ?? {})) {
+  const path = manifest.singles._base + file
+  let img: Image
+  try {
+    img = decodePng(readFileSync(path))
+  } catch (e) {
+    errors.push(`${path}: ${(e as Error).message}`)
+    continue
+  }
+  const b = contentBounds(img, 0, 0, img.width, img.height)
+  if (b.empty) {
+    errors.push(`${path}: entirely transparent`)
+    continue
+  }
+  pending.push({
+    name,
+    img,
+    sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+    // Bottom-centre pivot, same convention as the humanoids.
+    ox: b.x - img.width / 2,
+    oy: b.y - img.height,
+  })
 }
 
 // ------------------------------------------------------------------ terrain

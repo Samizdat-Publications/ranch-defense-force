@@ -201,6 +201,65 @@ describe('OfferPool', () => {
     }
   })
 
+  it('gives a level-up exactly one boosted uncommon-or-better card', () => {
+    const p = new Player()
+    p.init('hand')
+    for (let seed = 1; seed <= 300; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      const offers = pool.draw(p, 4, 0, 0, 'levelup')
+      expect(offers.length).toBe(4)
+
+      const boosted = offers.filter((o) => o.boosted)
+      expect(boosted.length).toBe(1)
+      // The boosted card is always the rare one, and never a common.
+      expect(boosted[0].rarity).not.toBe('common')
+      expect(offers.filter((o) => o.rarity !== 'common').length).toBe(1)
+    }
+  })
+
+  it('doubles the boosted card and leaves the others alone', () => {
+    const p = new Player()
+    p.init('hand')
+    let checked = 0
+    for (let seed = 1; seed <= 200 && checked < 20; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      const boosted = pool.draw(p, 4, 0, 0, 'levelup').find((o) => o.boosted)
+      if (!boosted || boosted.kind !== 'item') continue
+      const base = ITEMS[boosted.id].mods ?? {}
+      for (const [key, value] of Object.entries(base)) {
+        expect(boosted.mods[key as keyof typeof boosted.mods]).toBe((value as number) * 2)
+      }
+      checked++
+    }
+    expect(checked).toBeGreaterThan(0)
+  })
+
+  it('never boosts a shop card — the shop is where you pay for what you want', () => {
+    const p = new Player()
+    p.init('kid')
+    for (let seed = 1; seed <= 200; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      const offers = pool.draw(p, 4, 0, 0, 'shop')
+      expect(offers.every((o) => !o.boosted)).toBe(true)
+      expect(offers.every((o) => o.tierJump === 1)).toBe(true)
+    }
+  })
+
+  it('makes a boosted item resolve to exactly twice a plain one', () => {
+    const plain = new Player()
+    plain.init('hand')
+    plain.addItem('workBoots', false)
+    const doubled = new Player()
+    doubled.init('hand')
+    doubled.addItem('workBoots', true)
+
+    const base = new Player()
+    base.init('hand')
+    const gainPlain = plain.stats.moveSpeedPct - base.stats.moveSpeedPct
+    const gainDoubled = doubled.stats.moveSpeedPct - base.stats.moveSpeedPct
+    expect(gainDoubled).toBe(gainPlain * 2)
+  })
+
   it('never offers the same thing twice in one draw', () => {
     const p = new Player()
     p.init('kid')

@@ -111,6 +111,7 @@ export class DevOverlay {
         poolLine('pickups', world.pickups),
         poolLine('particles', world.particles),
         poolLine('hazards', world.hazards),
+        poolLine('crops', world.props),
         poolLine('dmgNums', world.damageNumbers),
         '',
         `hp ${world.player.hp.toFixed(0)}/${world.player.stats.maxHp.toFixed(0)}  lv ${world.player.level}`,
