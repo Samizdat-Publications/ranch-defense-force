@@ -20,19 +20,14 @@ found a blocking bug no test caught. Combat changed a lot in M5 — play it.
 
 ### What is outstanding
 
-1. **A balance pass on the new combat.** M5 changed what the game *is*: a weapon
-   that never worked now works, twenty-odd riders went live, and hazards became
-   lethal. Every number downstream of that is unvalidated in a real run. This is
-   the next job and it is in progress.
-2. **Boss art and M6** — Prize Bull (cow ×2) and Duster (tractor ×3), both
-   integer scale with a palette shift.
-3. **The animals' front/back clips** are real art currently unused. See the
-   "animal sheets fought back" section below.
-4. Fences and props for the arena; the fence is a drawn rectangle right now.
-5. **Elites are spawn-time only** — §8's one-in-ten on every fifth wave is
-   implemented as written, so an elite can fail to appear at all on an elite
-   wave. Still a design question rather than a bug.
-6. **Palette-index recolour** for enemy variants (§10 step 4).
+1. **Art direction** — boss art, the animals' unused front/back clips, fences
+   and props, palette-index enemy recolours. In progress.
+2. **A human playtest.** A first balance pass is done (`npm run balance`) and
+   found three bugs, but nobody has held the controls since the art landed.
+3. **M6 — bosses.** Prize Bull (wave 12) and Duster (wave 25) have entries in
+   `waves.json` and no behaviour and no art.
+4. **Elites are spawn-time only** — an enemy cannot become one later. Now that
+   the per-group roll is fixed this is a design question rather than a bug.
 
 ### Known constraint
 
@@ -43,7 +38,98 @@ hosted privately elsewhere.
 
 ---
 
-# Session 3 — M4 finished, M5 content
+# Session 3 — M4 finished, M5 content, first balance pass
+
+## The balance pass, and `npm run balance`
+
+`tools/balance.ts` runs the whole game many times headlessly and reports what
+happened: clear rate, which wave runs die on, what was on the field when they
+did, where the damage came from, and which weapons the offer pool actually hands
+out. `tests/run.test.ts` asks yes/no questions; this asks how and why, which is
+what a balance change needs before and after.
+
+    npm run balance -- 24 both
+
+Read it as *relative*. The pilots are crude bots and the absolute clear rate is
+not a prediction of how a person will do — but the same tool across a change
+is a real measurement.
+
+It immediately found three things, two of them bugs rather than balance.
+
+### Standing in acid made you invulnerable
+
+`damagePlayer` grants 0.5s of mercy invulnerability so a crowd cannot chain-hit
+you to death in three frames. Wiring hazards into it in M5 meant an acid pool
+ticking eight times a second handed out i-frames eight times a second. Standing
+in the pool made you immune to everything else on the field, and the pool itself
+landed about a quarter of the damage its JSON claimed, because most of its ticks
+fell inside the mercy window it had just granted itself.
+
+Environmental damage now neither grants i-frames nor is blocked by them, and
+skips the dodge roll — you cannot sidestep a cloud you are standing in.
+
+### The gas cloud was wider than the screen
+
+`cloudRadius 90` + `cloudGrowth 30` over `cloudDuration 6` is a final radius of
+**270**, against a camera view 520px wide. Fine while the cloud was decoration;
+once it damaged you it was not a hazard you could play around, it was a tax with
+no visible edge, and hazards were 44–60% of all damage taken. Growth is now 10,
+landing at 150 — half the screen, still frightening, walkable-out-of.
+
+### One elite roll was spawning a whole squad of elites
+
+The worst of the three. The spawner rolled `chance(0.1)` **once per group** and
+handed the result to every member, so one success turned a group of three to six
+into three to six elites at 4x health, arriving shoulder to shoulder. §8's "one
+in ten" means one in ten *enemies*. The roll moved into the per-enemy loop.
+
+The harness had found 2.6 elites alive at the average death and wave 5 — the
+first elite wave — killing more runs than any other. Afterwards: 1.2 elites at
+death, and the wave 5 spike is gone.
+
+| | before | after |
+|---|---|---|
+| The Hand, kiting | 71% | 79% |
+| The Kid, kiting | 83% | 100% |
+| hazard share of damage taken | 44–60% | 31–35% |
+
+### The class gap was the instrument, not the game
+
+Those numbers left The Hand at 79% and The Kid at 100%, and the parity test
+started failing. The temptation was to buff The Hand. That would have been
+wrong: **the bot only kites**, which is precisely The Kid's kit — fast, damage
+scaling with velocity — and precisely the opposite of The Hand's, which buys
+damage reduction by standing still and has an ability that roots it. A
+kiting-only harness reports The Hand as weaker no matter what the game does.
+
+Adding a `brawler` pilot that holds ground while healthy settled it:
+
+| | kiting | holding ground |
+|---|---|---|
+| The Hand | 79% | **92%** |
+| The Kid | **100%** | 83% |
+
+Each class is strong at its own game and weak at the other's, which is the
+design working. The Hand's wave-5 deaths vanish entirely when it is allowed to
+stand still. Nothing was tuned; `run.test.ts` now flies each class the way it is
+built to be played, and a new test asserts the cross-over above, so if the two
+classes ever stop being different the parity numbers stop lying about it.
+
+**The lesson worth keeping:** twice in this session a measurement was wrong
+before the game was — the tier probe that rewarded not killing, and the parity
+test that measured The Kid twice. Check what the instrument is actually asking
+before tuning anything to satisfy it.
+
+### Still open
+
+- The Kid clears 100% of 24 seeds kiting. The bot kites perfectly and a human
+  will not, but that is the number to watch if the game feels soft.
+- Deaths that remain cluster on waves 10 and 15 — elite waves, now with a
+  sensible number of elites on them.
+- Crop yield differs a lot by stance: a kiting Kid harvests ~38 a run against a
+  standing Hand's ~19, because it covers more ground. Feed income therefore
+  favours the runner. Probably fine, possibly worth a look.
+
 
 ## Conforming the FX pack
 

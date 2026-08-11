@@ -81,9 +81,12 @@ export class World {
   /** Blood pixels that landed this tick, drained by the decal layer. */
   readonly stains: number[] = []
 
-  // Run stats for the results screen.
+  // Run stats for the results screen, and for the balance harness — knowing
+  // *what* killed a run is most of knowing whether the run is fair.
   kills = 0
   damageDealt = 0
+  damageTakenFromContact = 0
+  damageTakenFromHazards = 0
   wavesCleared = 0
   cropsHarvested = 0
 
@@ -233,7 +236,13 @@ export class World {
     for (const req of s.pending) {
       for (let i = 0; i < req.count; i++) {
         s.pickSpawnPoint(this.player.x, this.player.y, this.arenaW, this.arenaH, this.spawnPoint)
-        this.spawnEnemy(req.typeId, this.spawnPoint.x, this.spawnPoint.y, req.elite)
+        // Rolled per enemy rather than per group. Rolling once for the group
+        // and handing the result to every member meant a single success spawned
+        // three to six elites shoulder to shoulder — the balance harness found
+        // 2.6 of them alive at the average death, and wave 5, the first elite
+        // wave, was killing more runs than any other.
+        const elite = req.eliteEligible && this.rng.chance(WAVES.elite.chance)
+        this.spawnEnemy(req.typeId, this.spawnPoint.x, this.spawnPoint.y, elite)
       }
     }
 
@@ -797,7 +806,7 @@ export class World {
           if (h.playerAcc >= 1) {
             const dmg = Math.floor(h.playerAcc)
             h.playerAcc -= dmg
-            this.damagePlayer(dmg)
+            this.damagePlayer(dmg, 'hazard')
           }
         } else {
           h.playerAcc = 0
@@ -1308,10 +1317,34 @@ export class World {
     e.vy = 0
   }
 
-  damagePlayer(amount: number): void {
+  /**
+   * Damage the player.
+   *
+   * `source` is not bookkeeping — it changes the rules. A blow you take from an
+   * enemy grants half a second of mercy invulnerability so a crowd cannot
+   * chain-hit you to death in three frames. Environmental damage must not, in
+   * either direction:
+   *
+   *  - It must not *grant* i-frames. Acid ticks eight times a second, and each
+   *    tick handing out 0.5s of invulnerability turned standing in a pool into
+   *    immunity from everything else on the field. The acid zombie's whole
+   *    purpose became a panic button.
+   *  - It must not *be blocked by* them, or a pool would deal roughly a quarter
+   *    of the damage-per-second its JSON says it does, because most of its ticks
+   *    would land inside the mercy window it had just granted itself.
+   *
+   * Environmental damage also skips the dodge roll: you cannot sidestep a cloud
+   * you are standing inside, and rolling for it several times a second would
+   * churn the sim's RNG for nothing.
+   */
+  damagePlayer(amount: number, source: 'contact' | 'hazard' = 'contact'): void {
     const p = this.player
-    if (p.invuln > 0 || !p.alive) return
-    if (this.rng.chance(p.stats.dodge)) return
+    if (!p.alive) return
+    const environmental = source === 'hazard'
+    if (!environmental) {
+      if (p.invuln > 0) return
+      if (this.rng.chance(p.stats.dodge)) return
+    }
 
     let dmg = amount * (1 - p.passiveDamageReduction)
     // Straw Hat: enemies close in deal less.
@@ -1320,8 +1353,13 @@ export class World {
     }
     dmg = dmg * (1 - p.stats.armor / (p.stats.armor + C.armorConstant))
 
-    p.hp -= Math.max(1, dmg)
-    p.invuln = P.invulnSecondsAfterHit
+    const taken = Math.max(environmental ? 0 : 1, dmg)
+    p.hp -= taken
+    if (environmental) this.damageTakenFromHazards += taken
+    else {
+      this.damageTakenFromContact += taken
+      p.invuln = P.invulnSecondsAfterHit
+    }
     this.addShake(T.camera.traumaPlayerHit)
   }
 

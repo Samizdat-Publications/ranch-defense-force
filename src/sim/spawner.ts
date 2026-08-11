@@ -14,12 +14,15 @@ import { threatBudget } from './formulas'
 import type { Rng } from '../core/rng'
 
 const spawnCfg = WAVES.spawn
-const eliteCfg = WAVES.elite
 
 export interface SpawnRequest {
   typeId: string
   count: number
-  elite: boolean
+  /**
+   * Whether this wave can produce elites at all. The per-enemy roll happens in
+   * the world, NOT here — see the note at the assignment below.
+   */
+  eliteEligible: boolean
 }
 
 export class Spawner {
@@ -83,9 +86,14 @@ export class Spawner {
     const count = Math.max(1, def.groupSize)
     const cost = def.threatCost * count
 
-    const elite = this.wave % WAVES.eliteEveryNWaves === 0 && this.rng.chance(eliteCfg.chance)
+    // Eligibility only. The chance roll used to live here, on the group — one
+    // 10% success turned every member of a group of three to six into an elite
+    // at once, which is a squad of 4x-health enemies arriving together rather
+    // than the sprinkle §8 describes. "One in ten" is one in ten *enemies*, so
+    // the world rolls it per spawn.
+    const eliteEligible = this.wave % WAVES.eliteEveryNWaves === 0
 
-    this.pending.push({ typeId, count, elite })
+    this.pending.push({ typeId, count, eliteEligible })
     this.spent += cost
     // Groups arrive on a rhythm that tightens as the wave escalates.
     this.nextIn = this.rng.range(0.5, 1.5) / bias

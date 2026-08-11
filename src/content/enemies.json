@@ -149,9 +149,10 @@
     "special": {
       "onDeath": "gasBurst",
       "cloudRadius": 90,
-      "cloudGrowth": 30,
+      "cloudGrowth": 10,
       "cloudDps": 10,
-      "cloudDuration": 6
+      "cloudDuration": 6,
+      "_note": "Growth was 30/s over 6s, which is a final radius of 270 \u2014 a cloud wider than the 520px camera view. That was survivable while the cloud was decoration; once it damaged the player it was not a hazard you could play around, it was a tax with no visible edge. 10/s lands at 150, which fills half the screen and can still be walked out of."
     },
     "xp": 4,
     "teaches": "punishes indiscriminate clearing"

@@ -45,11 +45,23 @@ interface RunResult {
   seconds: number
 }
 
+/**
+ * How the bot moves.
+ *
+ * `kite` runs from the crowd at all times; `brawl` holds ground while it is
+ * healthy and the crowd is off it. The distinction is load-bearing rather than
+ * cosmetic: kiting *is* The Kid's kit — fast, damage scaling with velocity —
+ * and the exact opposite of The Hand's, which buys damage reduction by standing
+ * still and has an ability that roots it in place. Measuring both classes with
+ * a kiting bot reports The Hand as weaker no matter what the game does.
+ */
+type Pilot = 'kite' | 'brawl' | 'wander'
+
 function simulate(
   seed: number,
   classId: string,
   pick: Picker,
-  kite: boolean,
+  pilot: Pilot,
 ): RunResult {
   const world = new World(seed, classId)
   const offers = new OfferPool(world.rng)
@@ -74,20 +86,34 @@ function simulate(
     const t = ticks * STEP
     let mx = Math.cos(t * 0.6)
     let my = Math.sin(t * 0.6)
-    if (kite && world.enemies.live > 0) {
+    if (pilot !== 'wander' && world.enemies.live > 0) {
       let cx = 0
       let cy = 0
+      let near = 0
       const n = Math.min(world.enemies.live, 60)
-      for (let i = 0; i < n; i++) { cx += world.enemies.items[i].x; cy += world.enemies.items[i].y }
-      const dx = world.player.x - cx / n
-      const dy = world.player.y - cy / n
-      const d = Math.hypot(dx, dy) || 1
-      // Bias back toward the arena centre so the bot doesn't pin itself on a wall.
-      mx = dx / d + ((world.arenaW / 2 - world.player.x) / world.arenaW) * 1.5
-      my = dy / d + ((world.arenaH / 2 - world.player.y) / world.arenaH) * 1.5
-      const m = Math.hypot(mx, my) || 1
-      mx /= m
-      my /= m
+      for (let i = 0; i < n; i++) {
+        const e = world.enemies.items[i]
+        cx += e.x
+        cy += e.y
+        if (Math.hypot(e.x - world.player.x, e.y - world.player.y) < 130) near++
+      }
+      const healthy = world.player.hp > world.player.stats.maxHp * 0.55
+      if (pilot === 'brawl' && healthy && near < 6) {
+        // Plant. This is the only way The Hand's standing-still damage
+        // reduction, and Dig In, ever come into play.
+        mx = 0
+        my = 0
+      } else {
+        const dx = world.player.x - cx / n
+        const dy = world.player.y - cy / n
+        const d = Math.hypot(dx, dy) || 1
+        // Bias back toward the arena centre so the bot doesn't pin itself on a wall.
+        mx = dx / d + ((world.arenaW / 2 - world.player.x) / world.arenaW) * 1.5
+        my = dy / d + ((world.arenaH / 2 - world.player.y) / world.arenaH) * 1.5
+        const m = Math.hypot(mx, my) || 1
+        mx /= m
+        my /= m
+      }
     }
 
     world.step(STEP, mx, my, ticks % 400 === 0)
@@ -129,7 +155,7 @@ describe('a full run', () => {
   it('completes all 24 waves on most seeds, in about 17 minutes', () => {
     // Surveyed rather than pinned to one seed: a single seed passing proves
     // that seed, and balance work would silently start optimising for it.
-    const results = SEEDS.map((s) => simulate(s, 'hand', pickSmart, true))
+    const results = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'kite'))
     const cleared = results.filter((r) => r.cleared)
     expect(cleared.length).toBeGreaterThanOrEqual(Math.ceil(SEEDS.length / 2))
 
@@ -145,31 +171,50 @@ describe('a full run', () => {
   it('treats both classes comparably — neither is a trap pick', () => {
     // The Hand's -20% speed once left it clearing 1 seed in 6 while The Kid
     // cleared all 6. Whatever the enemy speeds are, that gap must not reopen.
-    const hand = SEEDS.map((s) => simulate(s, 'hand', pickSmart, true)).filter((r) => r.cleared).length
-    const kid = SEEDS.map((s) => simulate(s, 'kid', pickSmart, true)).filter((r) => r.cleared).length
+    //
+    // Each class is flown the way it is built to be played. Measuring both with
+    // the kiting pilot is what this test used to do, and it is not a fair
+    // question: over 24 seeds the balance harness has The Hand at 79% kiting
+    // and 92% holding ground, and The Kid at 100% kiting and 83% holding. Both
+    // classes are strong; each is weak at the other's game. A parity test that
+    // only ever kites measures The Kid twice.
+    const hand = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'brawl')).filter((r) => r.cleared).length
+    const kid = SEEDS.map((s) => simulate(s, 'kid', pickSmart, 'kite')).filter((r) => r.cleared).length
     expect(Math.abs(hand - kid)).toBeLessThanOrEqual(2)
     expect(hand).toBeGreaterThan(0)
     expect(kid).toBeGreaterThan(0)
   }, 600_000)
 
+  it("each class does better at its own game than at the other's", () => {
+    // The claim the parity test above rests on, made explicit: if this ever
+    // inverts, the classes have stopped being different and the parity numbers
+    // stop meaning what they say.
+    const handStanding = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'brawl')).filter((r) => r.cleared).length
+    const handRunning = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'kite')).filter((r) => r.cleared).length
+    const kidRunning = SEEDS.map((s) => simulate(s, 'kid', pickSmart, 'kite')).filter((r) => r.cleared).length
+    const kidStanding = SEEDS.map((s) => simulate(s, 'kid', pickSmart, 'brawl')).filter((r) => r.cleared).length
+    expect(handStanding).toBeGreaterThanOrEqual(handRunning)
+    expect(kidRunning).toBeGreaterThanOrEqual(kidStanding)
+  }, 900_000)
+
   it('does not complete with a build that takes nothing', () => {
     for (const seed of SEEDS) {
-      const r = simulate(seed, 'hand', pickNothing, true)
+      const r = simulate(seed, 'hand', pickNothing, 'kite')
       expect(r.cleared).toBe(false)
       expect(r.waveReached).toBeLessThan(WAVES.waveCount)
     }
   }, 600_000)
 
   it('rewards build quality — merging beats taking whatever came up', () => {
-    const smart = simulate(4242, 'hand', pickSmart, false)
-    const random = simulate(4242, 'hand', pickFirst, false)
+    const smart = simulate(4242, 'hand', pickSmart, 'wander')
+    const random = simulate(4242, 'hand', pickFirst, 'wander')
     expect(smart.maxTier).toBeGreaterThanOrEqual(random.maxTier)
     expect(smart.waveReached).toBeGreaterThanOrEqual(random.waveReached)
   }, 300_000)
 
   it('replays a whole run identically from its seed', () => {
-    const a = simulate(31337, 'hand', pickSmart, true)
-    const b = simulate(31337, 'hand', pickSmart, true)
+    const a = simulate(31337, 'hand', pickSmart, 'kite')
+    const b = simulate(31337, 'hand', pickSmart, 'kite')
     expect(a).toEqual(b)
   }, 300_000)
 })
