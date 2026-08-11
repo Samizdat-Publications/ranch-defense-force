@@ -46,13 +46,15 @@ interface Manifest {
   humanoids: Record<string, string>
   animals: {
     _base: string
+    /** Order the direction clips appear across the sheet, left to right. */
+    directionOrder: string[]
     sheets: Record<string, {
       path: string
       rows: number
+      /** 64 on the two-row sheets, 32 on the rooster. NOT the cell size. */
+      frameWidth: number
       walkRow: number
       framesPerDirection: number
-      allDirections?: boolean
-      sideCols?: Record<string, number>
     }>
   }
   singles: { _base: string; files: Record<string, string> }
@@ -153,48 +155,45 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
     continue
   }
 
-  const cell = manifest.cell
-  const fw = cell
-  const fh = cell * cfg.rows
-  const rowY = cfg.walkRow * cell
-  const needCols = rig.directions.length * cfg.framesPerDirection
+  // These sheets are NOT on the 32px cell grid the humanoids use. Each walk
+  // band is four direction clips of six frames, and on the two-row sheets a
+  // frame is 64px wide with the animal centred in it — a side-view pig is 54px
+  // across and would be cut in half by a 32px slice. See art/sprites.json.
+  const fw = cfg.frameWidth
+  const fh = manifest.cell * cfg.rows
+  const rowY = cfg.walkRow * manifest.cell
+  const order = manifest.animals.directionOrder
+  const needWidth = order.length * cfg.framesPerDirection * fw
   clipLengths[id] = { walk: cfg.framesPerDirection, idle: 1 }
 
-  if (rowY + fh > sheet.height || needCols * fw > sheet.width) {
+  if (rowY + fh > sheet.height || needWidth > sheet.width) {
     errors.push(
-      `${path}: walk clip at row ${cfg.walkRow} needs ${needCols}x${cfg.rows} cells but the sheet ` +
-      `is ${Math.floor(sheet.width / cell)}x${Math.floor(sheet.height / cell)}`,
+      `${path}: walk clip at row ${cfg.walkRow} needs ${needWidth}x${fh}px but the sheet ` +
+      `is ${sheet.width}x${sheet.height}`,
     )
     continue
   }
 
-  // Column where each rendered direction's clip starts. When only the side
-  // clips are usable, up and down alias onto them so an animal reads correctly
-  // at every facing — it just does not turn to face the camera.
-  const startCols: Record<string, number> = cfg.allDirections
-    ? Object.fromEntries(rig.directions.map((d, i) => [d, i * cfg.framesPerDirection]))
-    : {
-        right: cfg.sideCols?.right ?? 0,
-        left: cfg.sideCols?.left ?? 0,
-        down: cfg.sideCols?.right ?? 0,
-        up: cfg.sideCols?.left ?? 0,
-      }
-
   for (const dir of rig.directions) {
-    const start = startCols[dir] ?? 0
+    const clipIndex = order.indexOf(dir)
+    if (clipIndex < 0) {
+      errors.push(`${path}: directionOrder has no entry for "${dir}"`)
+      continue
+    }
     for (let f = 0; f < cfg.framesPerDirection; f++) {
-      const col = start + f
-      const sx = col * fw
-      // Dominant band, not raw bounds: these sheets straddle the row boundary.
+      const sx = (clipIndex * cfg.framesPerDirection + f) * fw
+      // Dominant band, not raw bounds: cheap insurance if a frame window ever
+      // catches a slice of the clip above or below.
       const b = dominantBandBounds(sheet, sx, rowY, fw, fh)
       if (b.empty) {
-        errors.push(`${path}: walk ${dir} frame ${f} (col ${col}) is empty`)
+        errors.push(`${path}: walk ${dir} frame ${f} (x ${sx}) is empty`)
         continue
       }
       const frame = {
         name: `${id}.walk.${dir}.${f}`,
         img: sheet,
         sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        // Bottom-centre of the frame, same convention as the humanoids.
         ox: b.x - (sx + fw / 2),
         oy: b.y - (rowY + fh),
       }

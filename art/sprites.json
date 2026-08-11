@@ -27,33 +27,31 @@
   },
 
   "animals": {
-    "_note": "Unlike the thirteen generator exports, the animal sheets do NOT share one rig — each species has its own row layout, derived with tools/inspect-sheet.ts. `rows` is 1 for a 32x32 sprite and 2 for one spanning a stacked pair; `walkRow` is the index of the clip's TOP row.",
-    "_sideOnlyNote": "The two-row sheets lay out four direction clips per band, but the front/back clips are drawn at proportions that do not match the side views (a rear-view pig measures 16x52 against a 28x32 side view) and slicing them on the 32px grid produces tall thin sprites. Until that layout is understood, only the two side clips are packed and up/down alias onto them: sideCols gives the [start, count] of each side clip in columns. Every animal then reads correctly at every facing; it just does not turn to face you.",
+    "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it — a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
+    "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then — that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views — was wrong. Nothing is wrong with the art. All four facings are used now.",
+    "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it — which means it was previously drawing its right-facing side view whenever it walked down.",
     "_base": "assets/modern-farm/32x32/Animals_32x32/",
+    "directionOrder": ["right", "up", "left", "down"],
     "sheets": {
       "rooster": {
         "path": "Chickens_and_Roosters_32x32/Rooster_Brown_32x32.png",
-        "rows": 1, "walkRow": 3, "framesPerDirection": 6, "allDirections": true
+        "rows": 1, "frameWidth": 32, "walkRow": 3, "framesPerDirection": 6
       },
       "feralDog": {
         "path": "Dogs_32x32/Dog_Basenji_Brown_32x32.png",
-        "rows": 2, "walkRow": 4, "framesPerDirection": 12,
-        "sideCols": { "right": 0, "left": 24 }
+        "rows": 2, "frameWidth": 64, "walkRow": 4, "framesPerDirection": 6
       },
       "duckFlight": {
         "path": "Ducks_32x32/Duck_Brown_32x32.png",
-        "rows": 2, "walkRow": 2, "framesPerDirection": 12,
-        "sideCols": { "right": 0, "left": 24 }
+        "rows": 2, "frameWidth": 64, "walkRow": 2, "framesPerDirection": 6
       },
       "blownSheep": {
         "path": "Sheeps_32x32/Sheep_2_White_32x32.png",
-        "rows": 2, "walkRow": 2, "framesPerDirection": 12,
-        "sideCols": { "right": 0, "left": 24 }
+        "rows": 2, "frameWidth": 64, "walkRow": 2, "framesPerDirection": 6
       },
       "sickHog": {
         "path": "Pigs_32x32/Pig_Pink_32x32.png",
-        "rows": 2, "walkRow": 2, "framesPerDirection": 12,
-        "sideCols": { "right": 0, "left": 24 }
+        "rows": 2, "frameWidth": 64, "walkRow": 2, "framesPerDirection": 6
       }
     }
   },

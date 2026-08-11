@@ -14,6 +14,7 @@
     "conform": "vite-node tools/conform-fx.ts -- --write",
     "balance": "vite-node tools/balance.ts --",
     "inspect": "vite-node tools/inspect-sheet.ts --",
+    "pitch": "vite-node tools/sprite-pitch.ts --",
     "shot": "vite-node tools/screenshot.ts --",
     "typecheck": "tsc --noEmit && tsc -p tools --noEmit"
   },
