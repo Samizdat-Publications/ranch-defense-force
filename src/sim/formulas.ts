@@ -59,8 +59,13 @@ export function resolveDamage(
   critDamageBonusPct: number,
   targetArmor: number,
   scalar: number,
+  /** Vulnerability on the target itself (M5 marks), in percent. It joins the
+   *  same additive sum as every other percentage rather than multiplying on
+   *  top — the single-pass rule is about the whole formula, not just the
+   *  player's own stats. */
+  targetVulnPct = 0,
 ): number {
-  const raw = base * (1 + dmgPct / 100 + typePct / 100) + flatDmg
+  const raw = base * (1 + dmgPct / 100 + typePct / 100 + targetVulnPct / 100) + flatDmg
   const crit = isCrit ? raw * (combat.critMultiplierBase + critDamageBonusPct / 100) : raw
   const mitigated = crit * (1 - targetArmor / (targetArmor + combat.armorConstant))
   return Math.max(1, mitigated * scalar)

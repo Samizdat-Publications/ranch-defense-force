@@ -6,40 +6,33 @@ Handoff back to the next design pass, per `CLAUDE.md`. Latest session first.
 
 ## Start here
 
-**State:** M0–M4 done. A full 24-wave run plays start to finish in real pixel
-art — both classes, all ten enemy types, harvestable crops, baked terrain.
-66 tests pass. Everything is committed and pushed.
+**State:** M0–M5 done. A full 24-wave run plays start to finish in real pixel
+art, with conformed FX and every advertised weapon tier rider actually firing.
+84 tests pass.
 
 **First thing:** `npm install && npm run atlas && npm run dev`. The atlas is
 gitignored and generated; without it you get coloured squares.
 
-**Not yet played by a human since the art landed.** The last playtest was on the
-coloured-square build, and it found a blocking bug (the shop freeze) that no test
-caught. Play it before building on it.
+**Still not played by a human since the art landed.** Session 3 drove the sim
+and the UI directly and verified the shop → level-up → resume cycle by
+hit-testing, but nobody has held the controls. The last time a human did, they
+found a blocking bug no test caught. Combat changed a lot in M5 — play it.
 
-### What M4 still owes
+### What is outstanding
 
-1. **`tools/conform-fx.ts` and `art/palette.json`.** The FX pack is untouched and
-   unused. §10 step 3 is emphatic that dropping it in unconformed is the single
-   most likely way this ends up looking assembled rather than made — so nothing
-   uses it yet rather than using it raw. Doing this unlocks hit sparks, muzzle
-   flashes and explosions, which is most of what combat feel is missing.
-2. **Boss art** — Prize Bull (cow ×2) and Duster (tractor ×3), both integer
-   scale with a palette shift. Technically M6 but it is atlas work.
+1. **A balance pass on the new combat.** M5 changed what the game *is*: a weapon
+   that never worked now works, twenty-odd riders went live, and hazards became
+   lethal. Every number downstream of that is unvalidated in a real run. This is
+   the next job and it is in progress.
+2. **Boss art and M6** — Prize Bull (cow ×2) and Duster (tractor ×3), both
+   integer scale with a palette shift.
 3. **The animals' front/back clips** are real art currently unused. See the
    "animal sheets fought back" section below.
 4. Fences and props for the arena; the fence is a drawn rectangle right now.
-
-### Then M5 — content
-
-The largest honest gap: **the level-up and shop cards advertise tier riders that
-do not fire.** Every weapon has its base behaviour and the §7 ×1.6 per-tier
-damage scaling, but "T3: hits twice", "burn spreads on death" and the rest are
-text only. That is the most player-visible lie in the build.
-
-Also M5: enemy on-death specials only damage enemies, not the player (acid pools
-and gas clouds spawn and render but are harmless to you); elites are spawn-time
-only; gas has no readability treatment.
+5. **Elites are spawn-time only** — §8's one-in-ten on every fifth wave is
+   implemented as written, so an elite can fail to appear at all on an elite
+   wave. Still a design question rather than a bug.
+6. **Palette-index recolour** for enemy variants (§10 step 4).
 
 ### Known constraint
 
@@ -47,6 +40,108 @@ GitHub Pages will not deploy from a private repo on a free plan, and the repo
 must stay private. The workflow builds and tests correctly; the deploy step
 fails. M0's "on a live URL" is unmet until the plan changes or the build is
 hosted privately elsewhere.
+
+---
+
+# Session 3 — M4 finished, M5 content
+
+## Conforming the FX pack
+
+`tools/conform-fx.ts` extracts 32 colours from the LimeZu sheets by seeded
+k-means in Oklab and writes `art/palette.json`; `build-atlas.ts` imports the
+quantiser and conforms every FX frame as it packs. There is deliberately no
+directory of conformed PNGs on disk — one generated artefact is enough to keep
+track of.
+
+**The pack's real geometry, since the spec does not give it and the inspect tool
+mis-reports it:** each sheet is **64×64 cells**, columns are animation frames,
+and the nine **rows are colour variants of the same animation** (0 orange,
+1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue).
+`tools/inspect-sheet.ts` assumes 32px cells and will tell you a sheet is 26×18.
+Eight clips are packed, named semantically in `art/sprites.json`; the other 172
+files are never looked at again.
+
+### The conform looked wrong, and it was the palette, not the metric
+
+First attempt sampled terrain, crops and animals. The resulting 32 had **no
+saturated red between hue 20° and 40° and no light green at all**, so the
+explosion's `#d64f5a` body landed on the strawberry crimson `#cf2266` — the only
+saturated thing anywhere near that hue — and the gas cloud's bright `#cbf17a`
+highlight, which is most of its area, landed on cream. Two effects came out
+magenta and olive.
+
+The instinct was to blame nearest-in-Oklab and weight the distance. That was
+worth doing and is still in (matching runs in Oklch with hue and chroma charged
+above lightness, because a muted palette forces every saturated pixel to lose
+chroma somewhere and unweighted matching pays that bill by rotating hue). But it
+barely moved these two, and the diagnostic — dumping each clip's dominant
+colours with their nearest three palette entries — showed why: **there was
+nowhere right to send them.** Sampling `0_Complete_Tileset_32x32.png`, the whole
+pack on one sheet, fixed both outright.
+
+Worth remembering as a shape: when a quantiser picks badly, check the palette
+covers the region before tuning how you measure distance.
+
+### Effects never touch the sim's RNG
+
+`playFx` takes no RNG and the rate limits are fractional accumulators, not rolls.
+A cosmetic decision that consumed `world.rng` would mean the number of sparks
+drawn moved every later enemy spawn, and the seed-replay guarantee would be
+hostage to the art. There is a test for it.
+
+## M5 — the riders, and four bugs behind them
+
+Every rider named in `weapons.json` now fires, and the magnitudes are all JSON.
+Getting there needed infrastructure that did not exist: burn, bleed,
+vulnerability marks and slows on enemies, a rider payload on the projectile
+applied by `applyHit`, plus `shrinkHazards`, the melon rind, ranked target
+search, lure detonation and shard bounces.
+
+**Four things were not missing features but broken code:**
+
+1. **The axe dealt zero damage in every run ever played.** Orbiting blades
+   stamped their hits with a constant `-1`, and `spawnEnemy` initialises `e.t1`
+   to `-1`, so the "this stamp already hit this enemy" guard was true before the
+   blade touched anything. It is sold in the shop. Stamps now come from the tick
+   and re-arm on an interval.
+2. **The watering can's slow was a no-op.** It wrote the percentage into
+   projectile scratch, which was read by `e.stun = Math.max(e.stun, 0)`.
+3. **`applyHit` damaged before it applied statuses**, so a killing chili shot
+   never lit what it killed and T3 "burn spreads on death" could not fire at
+   all. Statuses land first now; a mark should also benefit the hit that applies
+   it.
+4. **Barn Dog T2 multiplied velocity by 1.5 every tick** it ran, which compounds
+   without bound. Speed is a target the dog steers toward now.
+
+Acid pools and gas clouds damage the player, which is what the acid zombie is
+*for*; they spawned, rendered and were harmless. Making them lethal made hazard
+readability a fairness requirement rather than polish, so harmful hazards now
+read in a different colour family from yours, carry a bright rim, and pulse —
+movement in the periphery is what you notice with two hundred enemies on screen,
+and it is reserved for the things that hurt.
+
+### The axe's orbit, and measuring weapons honestly
+
+Fixing the stamp bug exposed a second problem: at the design's 74px the blade
+sweeps a ring enemies are never in. Chasers press to about 25px, and a blade
+orbiting at 74 passes 49px clear of them. The axe worked only at a sprint.
+
+The orbit now interpolates between a 42px floor and the design's 74 on
+`velocityFraction`, so it tightens as you slow. This keeps the wide sweep the
+design drew for a moving player, makes the axe a real pick for The Hand, and
+reads in play — the blades visibly draw in when you plant your feet. T2's
+"+25% radius" scales only the wide end: the floor is geometry, not a tunable,
+and scaling it pushed a T2 axe back out of contact and made the rider worse than
+no rider.
+
+**The measurement mattered as much as the fix.** The first probe topped a ring of
+enemies back up as they died, which measures throughput *and* how long
+replacements take to walk in — and those pull against each other, so a stronger
+tier clears faster, stands idle, and scores lower. It reported a T2 axe as worse
+than T1. The tier test now holds the dummies at 1e9 hp and measures output
+alone. Any future weapon comparison should use that rig and not the other one.
+
+---
 
 ---
 

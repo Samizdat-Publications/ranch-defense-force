@@ -52,6 +52,33 @@ export interface Enemy {
   /** Distance travelled, which drives bob and step timing — a sprite that bobs
    *  with distance rather than time stops looking like it is treadmilling. */
   travelled: number
+
+  // --- status effects (M5) ---------------------------------------------
+  // Kept as their own fields rather than in the t0/s0 scratch: behaviours own
+  // that scratch and would clobber a burn the moment an enemy changed state.
+
+  /** Damage per second while `burnLife > 0`. */
+  burnDps: number
+  burnLife: number
+  /** Fractional damage carried between ticks, so 4 dps at 60Hz is not 60 zeroes. */
+  burnAcc: number
+  /** Who lit it, so a spreading burn cannot re-light its own source forever. */
+  burnGen: number
+
+  /** Bleed: the same shape as burn, but it does not spread and it stacks from
+   *  a different source, so a dog bite and a chili are readable apart. */
+  bleedDps: number
+  bleedLife: number
+  bleedAcc: number
+
+  /** Vulnerability mark: extra percent damage taken while `markLife > 0`. */
+  markPct: number
+  markLife: number
+
+  /** Movement slow, as a percent, while `slowLife > 0`. Stacks with the
+   *  standing-in-a-puddle slow by taking the larger of the two. */
+  slowPct: number
+  slowLife: number
 }
 
 export function makeEnemy(): Enemy {
@@ -61,6 +88,9 @@ export function makeEnemy(): Enemy {
     behaviour: 'chase', elite: false, flash: 0, stun: 0, facing: 0,
     t0: 0, t1: 0, s0: 0, s1: 0, touchCd: 0, knockbackImmune: false,
     dying: 0, hpBuffPct: 0, anim: 0, travelled: 0,
+    burnDps: 0, burnLife: 0, burnAcc: 0, burnGen: 0,
+    bleedDps: 0, bleedLife: 0, bleedAcc: 0,
+    markPct: 0, markLife: 0, slowPct: 0, slowLife: 0,
   }
 }
 
@@ -95,6 +125,30 @@ export interface Projectile {
   type: 'melee' | 'ranged' | 'orbit' | 'aura' | 'utility' | 'minion'
   t0: number
   t1: number
+
+  // --- what a hit applies, beyond damage (M5) ---------------------------
+  // Dedicated fields rather than more t0/t1 scratch: the scratch already means
+  // a different thing per behaviour, and a rider that had to share it with
+  // splash radius would be a bug waiting for the next weapon.
+
+  /** How many enemies this attached hitbox may still hit in the current
+   *  window. Re-armed by the weapon; ignored by unattached projectiles, which
+   *  use `pierce`. */
+  hitsLeft: number
+  /** Seconds until this hitbox re-arms and may hit its targets again. */
+  rearm: number
+  /** Seconds of stun a hit applies. */
+  stunOnHit: number
+  burnDps: number
+  burnSeconds: number
+  bleedDps: number
+  bleedSeconds: number
+  /** Vulnerability the hit leaves on the target. */
+  markPct: number
+  markSeconds: number
+  /** Movement slow the hit applies. */
+  slowOnHit: number
+  slowSeconds: number
 }
 
 export function makeProjectile(): Projectile {
@@ -103,6 +157,9 @@ export function makeProjectile(): Projectile {
     damage: 0, radius: 6, life: 0, pierce: 0, hitStamp: -1, isCrit: false,
     behaviour: 'stream', attached: false, angle: 0, angularVelocity: 0,
     orbitRadius: 0, knockback: 0, type: 'ranged', t0: 0, t1: 0,
+    hitsLeft: 999, rearm: 0, stunOnHit: 0, burnDps: 0, burnSeconds: 0,
+    bleedDps: 0, bleedSeconds: 0, markPct: 0, markSeconds: 0,
+    slowOnHit: 0, slowSeconds: 0,
   }
 }
 
@@ -176,18 +233,25 @@ export interface Hazard {
   growth: number
   life: number
   maxLife: number
+  /** Damage per second to ENEMIES standing inside. */
   dps: number
+  /** Damage per second to the PLAYER standing inside. Separate from `dps`
+   *  because acid and gas hurt you and not the things that made them, while a
+   *  slop puddle is the other way round. */
+  playerDps: number
   slowPct: number
   pullForce: number
   /** Accumulates so damage-over-time applies in whole points, not fractions
    *  that round to zero every tick. */
   tickAcc: number
+  playerAcc: number
 }
 
 export function makeHazard(): Hazard {
   return {
     active: false, kind: 'slow', x: 0, y: 0, radius: 0, growth: 0,
-    life: 0, maxLife: 1, dps: 0, slowPct: 0, pullForce: 0, tickAcc: 0,
+    life: 0, maxLife: 1, dps: 0, playerDps: 0, slowPct: 0, pullForce: 0,
+    tickAcc: 0, playerAcc: 0,
   }
 }
 

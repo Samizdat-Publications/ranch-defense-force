@@ -50,10 +50,17 @@ const PALETTE = {
   melee: '#f2ead2',
   xp: '#5fd0c6',
   feed: '#e0b040',
+  // Hazards split into two families that must never be confused, because one
+  // helps you and the other kills you. Yours are earthy and cool; theirs are
+  // sickly, brighter than anything else on a green field, and ringed.
   hazardSlow: 'rgba(94, 74, 46, 0.55)',
+  hazardSlowRim: 'rgba(140, 112, 70, 0.75)',
   hazardLure: 'rgba(214, 176, 84, 0.35)',
-  hazardGas: 'rgba(150, 190, 120, 0.32)',
-  hazardAcid: 'rgba(120, 200, 100, 0.38)',
+  hazardLureRim: 'rgba(236, 206, 128, 0.7)',
+  hazardGas: 'rgba(196, 214, 108, 0.34)',
+  hazardGasRim: 'rgba(226, 240, 150, 0.85)',
+  hazardAcid: 'rgba(150, 226, 74, 0.40)',
+  hazardAcidRim: 'rgba(198, 250, 120, 0.9)',
   telegraph: 'rgba(220, 90, 90, 0.28)',
   blood: '#a02c2c',
 }
@@ -503,18 +510,64 @@ export class Renderer {
     }
   }
 
+  /**
+   * Ground hazards.
+   *
+   * These were flat translucent discs in near-identical greens, which was
+   * survivable while acid and gas were decoration. They damage the player now,
+   * so telling "this is yours" from "this will kill you" at a glance became a
+   * fairness requirement rather than a polish item.
+   *
+   * Three things carry that:
+   *  - **Colour family.** Your slop and lure are earthy brown and gold; their
+   *    acid and gas are yellow-greens brighter than any grass on the field, so
+   *    they never read as terrain.
+   *  - **A rim.** The disc alone has no edge, and the edge is the thing you
+   *    actually need — it is where the damage starts. Harmful hazards get a
+   *    brighter, thicker one.
+   *  - **A pulse, on harmful hazards only.** Movement in the periphery is what
+   *    catches the eye when there are two hundred enemies on screen, and it is
+   *    reserved for the ones that hurt so it always means the same thing.
+   *
+   * Everything fades over its last half second, so a cloud thinning out is
+   * distinguishable from one about to expand into you.
+   */
   private drawHazards(ctx: CanvasRenderingContext2D): void {
     const w = this.world
     for (let i = 0; i < w.hazards.live; i++) {
       const h = w.hazards.items[i]
-      ctx.fillStyle =
+      const harmful = h.kind === 'gas' || h.kind === 'acid'
+
+      const fill =
         h.kind === 'slow' ? PALETTE.hazardSlow
         : h.kind === 'lure' ? PALETTE.hazardLure
         : h.kind === 'gas' ? PALETTE.hazardGas
         : PALETTE.hazardAcid
+      const rim =
+        h.kind === 'slow' ? PALETTE.hazardSlowRim
+        : h.kind === 'lure' ? PALETTE.hazardLureRim
+        : h.kind === 'gas' ? PALETTE.hazardGasRim
+        : PALETTE.hazardAcidRim
+
+      // Fade out over the last half second rather than vanishing on a frame.
+      const fade = h.life < 0.5 ? Math.max(0, h.life / 0.5) : 1
+      // Harmful hazards breathe. 2.6 rad/s is quick enough to catch the eye and
+      // slow enough not to strobe.
+      const pulse = harmful ? 0.82 + Math.sin(w.elapsed * 2.6 + h.x * 0.05) * 0.18 : 1
+
+      ctx.globalAlpha = fade
+      ctx.fillStyle = fill
       ctx.beginPath()
       ctx.arc(h.x, h.y, h.radius, 0, Math.PI * 2)
       ctx.fill()
+
+      ctx.globalAlpha = fade * pulse
+      ctx.strokeStyle = rim
+      ctx.lineWidth = harmful ? 2 : 1
+      ctx.beginPath()
+      ctx.arc(h.x, h.y, h.radius - (harmful ? 1 : 0.5), 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.globalAlpha = 1
       this.drawCalls++
     }
   }

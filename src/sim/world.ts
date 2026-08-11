@@ -11,7 +11,8 @@ import { Rng } from '../core/rng'
 import { SpatialGrid } from '../core/spatial'
 import {
   makeDamageNumber, makeEffect, makeEnemy, makeHazard, makeParticle, makePickup, makeProjectile, makeProp,
-  type DamageNumber, type Effect, type Enemy, type Hazard, type Particle, type Pickup, type Projectile,
+  type DamageNumber, type Effect, type Enemy, type Hazard, type HazardKind,
+  type Particle, type Pickup, type Projectile,
   type Prop,
 } from './entities'
 import { Player } from './player'
@@ -206,6 +207,7 @@ export class World {
     this.collideProjectilesWithCrops(dt)
     this.collideEnemiesWithPlayer(dt)
     this.updateHazards(dt)
+    this.updateStatuses(dt)
 
     // 10. pickups
     this.updatePickups(dt)
@@ -305,6 +307,11 @@ export class World {
 
       // Hazard effects on movement, applied before integration.
       let slow = 0
+      if (e.slowLife > 0) {
+        e.slowLife -= dt
+        if (e.slowLife <= 0) e.slowPct = 0
+        else slow = e.slowPct / 100
+      }
       for (let h = 0; h < this.hazards.live; h++) {
         const hz = this.hazards.items[h]
         const d = Math.hypot(hz.x - e.x, hz.y - e.y)
@@ -434,11 +441,24 @@ export class World {
         if (p.behaviour === 'arcLob') {
           this.areaDamage(p.x, p.y, p.t0, p.damage, 'ranged', 60)
           this.burstParticles(p.x, p.y, 6, 0x6ab04c)
+          this.playFx('explosion', p.x, p.y, 0, p.t0 / 60)
+          // T3 "leaves a slippery rind": t1 carries the radius, 0 when untiered.
+          if (p.t1 > 0) this.leaveRind(p.x, p.y, p.t1)
         }
         this.projectiles.free(i)
         continue
       }
-      if (p.attached) continue
+      if (p.attached) {
+        // T3 shovel "hits twice": the swing re-arms once part-way through its
+        // life, so everything still inside the arc takes a second hit.
+        if (p.behaviour === 'arcSwing' && p.t1 > 0 && p.life <= p.t0) {
+          p.t1--
+          p.hitStamp = this.tick
+          p.hitsLeft = 999
+          this.playFx('slash', p.x, p.y, p.angle)
+        }
+        continue
+      }
 
       p.px = p.x
       p.py = p.y
@@ -461,9 +481,23 @@ export class World {
         const dx = tx - p.x
         const dy = ty - p.y
         const d = Math.hypot(dx, dy) || 1
-        const speed = 210
+        // Set from the weapon (angularVelocity is the dog's speed slot), so the
+        // T2 rider is a different target speed rather than a multiplier applied
+        // to the current one — the latter compounds every tick.
+        const speed = p.angularVelocity > 0 ? p.angularVelocity : 210
         p.vx = (dx / d) * speed
         p.vy = (dy / d) * speed
+
+        // Bite on a timer rather than every tick of contact, so a faster dog
+        // wins by reaching more enemies instead of losing by dwelling less.
+        p.rearm -= dt
+        if (p.rearm <= 0) {
+          p.rearm = typeof WEAPONS.barnDog?.biteInterval === 'number'
+            ? WEAPONS.barnDog.biteInterval
+            : 0.5
+          p.hitStamp = this.tick
+          p.hitsLeft = 999
+        }
       }
 
       p.x += p.vx * dt
@@ -484,7 +518,12 @@ export class World {
         if (bounced) {
           p.t0--
           if (p.t0 <= 0) {
-            this.splitShards(p, p.t1)
+            const w = WEAPONS.eggToss
+            const slot = this.player.weapons.find((s2) => s2.id === 'eggToss')
+            const shardBounces = (slot?.tier ?? 1) >= 4
+              ? (typeof w?.t4ShardBounces === 'number' ? w.t4ShardBounces : 1)
+              : 0
+            this.splitShards(p, p.t1, shardBounces)
             this.projectiles.free(i)
             continue
           }
@@ -497,14 +536,24 @@ export class World {
     }
   }
 
-  private splitShards(p: Projectile, count: number): void {
+  /**
+   * Break a projectile into a ring of shards.
+   *
+   * `bounces` is the egg's T4 rider: shards that bounce keep the bounceSplit
+   * behaviour with a bounce budget, and split into nothing when it runs out, so
+   * the rider cannot recurse into an unbounded shower.
+   */
+  private splitShards(p: Projectile, count: number, bounces = 0): void {
+    const mul = typeof WEAPONS.eggToss?.shardDamageMultiplier === 'number'
+      ? WEAPONS.eggToss.shardDamageMultiplier
+      : 0.55
     for (let i = 0; i < count; i++) {
       const s = this.spawnProjectile()
       if (!s) return
       const a = (i / count) * Math.PI * 2
       s.weaponId = p.weaponId
       s.type = 'ranged'
-      s.behaviour = 'stream'
+      s.behaviour = bounces > 0 ? 'bounceSplit' : 'stream'
       s.attached = false
       s.x = p.x
       s.y = p.y
@@ -513,11 +562,54 @@ export class World {
       s.vx = Math.cos(a) * 280
       s.vy = Math.sin(a) * 280
       s.radius = 5
-      s.damage = p.damage * 0.5
-      s.life = 0.7
+      s.damage = p.damage * mul
+      s.life = bounces > 0 ? 1.4 : 0.7
       s.pierce = 0
       s.knockback = 20
       s.hitStamp = -1
+      s.t0 = bounces
+      s.t1 = 0 // a bouncing shard splits into nothing: no recursion
+    }
+  }
+
+  /**
+   * The melon's T3 rind: a small slick where a melon landed.
+   *
+   * Separate from `throwPuddle` because it is a rider on a different weapon and
+   * a shared helper would have to take every puddle parameter to serve both.
+   */
+  private leaveRind(x: number, y: number, radius: number): void {
+    const w = WEAPONS.melonLob
+    const h = this.spawnHazard()
+    if (!h) return
+    h.kind = 'slow'
+    h.x = x
+    h.y = y
+    h.radius = radius
+    h.growth = 0
+    h.maxLife = typeof w?.t3RindSeconds === 'number' ? w.t3RindSeconds : 4
+    h.life = h.maxLife
+    h.slowPct = typeof w?.t3RindSlowPct === 'number' ? w.t3RindSlowPct : 40
+    h.dps = 0
+    h.pullForce = 0
+    h.tickAcc = 0
+  }
+
+  /**
+   * Shrink hazards of a kind that overlap a point — the watering can's T3
+   * washing gas out of the air. A cloud that runs out of radius is removed by
+   * the hazard pass on its next tick.
+   */
+  shrinkHazards(kind: HazardKind, x: number, y: number, radius: number, amount: number): void {
+    for (let i = this.hazards.live - 1; i >= 0; i--) {
+      const h = this.hazards.items[i]
+      if (h.kind !== kind) continue
+      if (Math.hypot(h.x - x, h.y - y) > radius + h.radius) continue
+      h.radius -= amount
+      // Stop it growing back: a gas cloud expands, and washing it would
+      // otherwise be a losing race against its own growth.
+      h.growth = 0
+      if (h.radius <= 4) this.hazards.free(i)
     }
   }
 
@@ -533,18 +625,28 @@ export class World {
         const e = this.enemies.items[j]
         if (e.dying > 0) continue
 
-        // Attached hitboxes sweep across many ticks; stamping stops one swing
-        // hitting the same enemy sixty times.
-        if (p.attached && e.t1 === p.hitStamp && p.hitStamp !== 0) continue
+        // Hitboxes that persist across many ticks stamp what they hit, so one
+        // swing does not land sixty times. Keyed on the stamp rather than on
+        // `attached` because the barn dog is unattached and needs it too: it
+        // overlaps its target for many ticks, and without a stamp its damage
+        // was a function of how long it dwelt, which made the T2 speed rider
+        // strictly worse than no rider at all.
+        const stamped = p.hitStamp !== -1
+        if (stamped && e.t1 === p.hitStamp) continue
 
         const dx = e.x - p.x
         const dy = e.y - p.y
         const want = e.radius + p.radius
         if (dx * dx + dy * dy > want * want) continue
 
-        if (p.attached) e.t1 = p.hitStamp
+        if (stamped) {
+          if (p.hitsLeft <= 0) continue
+          p.hitsLeft--
+          e.t1 = p.hitStamp
+        }
         this.applyHit(j, p)
-        if (!p.attached) {
+        // Minions are never spent by hitting; they are refreshed by the weapon.
+        if (!p.attached && p.type !== 'minion') {
           if (p.pierce > 0) {
             p.pierce--
           } else {
@@ -560,6 +662,21 @@ export class World {
     const e = this.enemies.items[enemyIndex]
     const type = p.type === 'melee' || p.type === 'orbit' ? 'melee' : 'ranged'
     const isCrit = this.rng.chance(this.player.stats.critChance)
+
+    // Statuses land BEFORE the damage, so a killing blow still leaves them on
+    // the corpse. Applying them after meant a chili shot that killed outright
+    // never lit what it killed, and the T3 "burn spreads on death" rider could
+    // therefore never fire at all. A mark works the same way: the hit that
+    // applies it should benefit from it.
+    if (p.stunOnHit > 0 && !e.knockbackImmune) e.stun = Math.max(e.stun, p.stunOnHit)
+    if (p.burnDps > 0) this.applyBurn(e, p.burnDps, p.burnSeconds)
+    if (p.bleedDps > 0) this.applyBleed(e, p.bleedDps, p.bleedSeconds)
+    if (p.markPct > 0) this.applyMark(e, p.markPct, p.markSeconds)
+    if (p.slowOnHit > 0) {
+      if (p.slowOnHit > e.slowPct) e.slowPct = p.slowOnHit
+      if (p.slowSeconds > e.slowLife) e.slowLife = p.slowSeconds
+    }
+
     this.damageEnemy(enemyIndex, p.damage, type, isCrit)
 
     if (!e.active || e.dying > 0) return
@@ -570,8 +687,6 @@ export class World {
       e.kx += (dx / d) * p.knockback
       e.ky += (dy / d) * p.knockback
     }
-    // Watering can carries its slow in t0.
-    if (p.behaviour === 'rotatingJet' && p.t0 > 0) e.stun = Math.max(e.stun, 0)
   }
 
   /**
@@ -662,9 +777,33 @@ export class World {
       h.life -= dt
       if (h.growth > 0) h.radius += h.growth * dt
       if (h.life <= 0) {
+        // Grain Lure T3 "detonates for 60": a lure carries its blast in `dps`,
+        // which it otherwise does not use, and spends it as it expires.
+        if (h.kind === 'lure' && h.dps > 0) {
+          this.areaDamage(h.x, h.y, h.radius, h.dps, 'ranged', 200)
+          this.playFx('explosion', h.x, h.y, 0, h.radius / 50)
+          this.addShake(0.3)
+        }
         this.hazards.free(i)
         continue
       }
+      // Hazards that hurt the player. Acid pools and gas clouds spawned and
+      // rendered but were harmless before this — the pools were the enemy's
+      // whole point and they were decoration.
+      if (h.playerDps > 0 && this.player.alive) {
+        const pd = Math.hypot(this.player.x - h.x, this.player.y - h.y)
+        if (pd <= h.radius) {
+          h.playerAcc += h.playerDps * dt
+          if (h.playerAcc >= 1) {
+            const dmg = Math.floor(h.playerAcc)
+            h.playerAcc -= dmg
+            this.damagePlayer(dmg)
+          }
+        } else {
+          h.playerAcc = 0
+        }
+      }
+
       if (h.dps > 0) {
         h.tickAcc += h.dps * dt
         if (h.tickAcc >= 1) {
@@ -682,6 +821,87 @@ export class World {
         }
       }
     }
+  }
+
+  /**
+   * Damage-over-time and timed marks on enemies (M5).
+   *
+   * Runs inside step 9 (damage resolve), after direct hits, so a burn tick can
+   * finish something a hit left at 1hp and the kill still routes through
+   * `killEnemy` with its drops and on-death special.
+   *
+   * Reverse-iterated: a tick can kill, and `damageEnemy` swap-pops the slot.
+   */
+  private updateStatuses(dt: number): void {
+    for (let i = this.enemies.live - 1; i >= 0; i--) {
+      const e = this.enemies.items[i]
+      if (!e.active || e.dying > 0) continue
+
+      if (e.markLife > 0) {
+        e.markLife -= dt
+        if (e.markLife <= 0) e.markPct = 0
+      }
+
+      // Whole points only. 4 dps at 60Hz is 0.066 a tick, and rounding that per
+      // tick is sixty zeroes — the accumulator is what makes a burn do damage.
+      if (e.burnLife > 0) {
+        e.burnLife -= dt
+        e.burnAcc += e.burnDps * dt
+        if (e.burnAcc >= 1) {
+          const dmg = Math.floor(e.burnAcc)
+          e.burnAcc -= dmg
+          this.damageEnemy(i, dmg, 'ranged', false, true)
+          if (!e.active || e.dying > 0) continue
+        }
+        if (e.burnLife <= 0) {
+          e.burnDps = 0
+          e.burnAcc = 0
+        }
+      }
+
+      if (e.bleedLife > 0) {
+        e.bleedLife -= dt
+        e.bleedAcc += e.bleedDps * dt
+        if (e.bleedAcc >= 1) {
+          const dmg = Math.floor(e.bleedAcc)
+          e.bleedAcc -= dmg
+          this.damageEnemy(i, dmg, 'melee', false, true)
+          if (!e.active || e.dying > 0) continue
+        }
+        if (e.bleedLife <= 0) {
+          e.bleedDps = 0
+          e.bleedAcc = 0
+        }
+      }
+    }
+  }
+
+  /**
+   * Light an enemy on fire. Refreshes rather than stacks: the strongest source
+   * wins and the duration resets, so six chili shots are a hotter fire and not
+   * six independent bookkeeping entries.
+   *
+   * `gen` marks which spread wave lit it, so a T3 chain cannot bounce back and
+   * forth between two corpses forever.
+   */
+  applyBurn(e: Enemy, dps: number, duration: number, gen = 0): void {
+    if (!e.active || e.dying > 0) return
+    if (dps > e.burnDps) e.burnDps = dps
+    if (duration > e.burnLife) e.burnLife = duration
+    if (gen > e.burnGen) e.burnGen = gen
+  }
+
+  applyBleed(e: Enemy, dps: number, duration: number): void {
+    if (!e.active || e.dying > 0) return
+    if (dps > e.bleedDps) e.bleedDps = dps
+    if (duration > e.bleedLife) e.bleedLife = duration
+  }
+
+  /** Mark an enemy to take extra damage for a while. */
+  applyMark(e: Enemy, pct: number, duration: number): void {
+    if (!e.active || e.dying > 0) return
+    if (pct > e.markPct) e.markPct = pct
+    if (duration > e.markLife) e.markLife = duration
   }
 
   private updatePickups(dt: number): void {
@@ -864,25 +1084,77 @@ export class World {
     e.knockbackImmune = def.knockbackImmune === true
     e.dying = 0
     e.hpBuffPct = 0
+    e.burnDps = 0
+    e.burnLife = 0
+    e.burnAcc = 0
+    e.burnGen = 0
+    e.bleedDps = 0
+    e.bleedLife = 0
+    e.bleedAcc = 0
+    e.markPct = 0
+    e.markLife = 0
     // Stagger the animation phase so a group of ten does not walk in lockstep.
     e.anim = this.rng.range(0, 2)
     e.travelled = this.rng.range(0, 40)
     return e
   }
 
+  /**
+   * Pooled, so a slot arrives carrying whatever the last projectile left in it.
+   * The rider payload is cleared here rather than in each behaviour: a weapon
+   * that does not burn should never inherit a burn from the chili shot that
+   * used the slot before it, and relying on twelve behaviours to each remember
+   * that is how it would eventually happen.
+   */
   spawnProjectile(): Projectile | null {
-    return this.projectiles.acquire()
+    const p = this.projectiles.acquire()
+    if (!p) return null
+    p.hitsLeft = 999
+    p.rearm = 0
+    p.stunOnHit = 0
+    p.burnDps = 0
+    p.burnSeconds = 0
+    p.bleedDps = 0
+    p.bleedSeconds = 0
+    p.markPct = 0
+    p.markSeconds = 0
+    p.slowOnHit = 0
+    p.slowSeconds = 0
+    p.t0 = 0
+    p.t1 = 0
+    return p
   }
 
+  /** Pooled like projectiles, so the rider fields are cleared on the way out. */
   spawnHazard(): Hazard | null {
-    return this.hazards.acquire()
+    const h = this.hazards.acquire()
+    if (!h) return null
+    h.playerDps = 0
+    h.playerAcc = 0
+    h.tickAcc = 0
+    h.growth = 0
+    h.dps = 0
+    h.slowPct = 0
+    h.pullForce = 0
+    return h
   }
 
   /**
    * The one place enemy damage is applied. Everything — weapons, hazards,
    * reflect, boss attacks — comes through here so the formula lives once.
+   *
+   * `fromDot` marks a damage-over-time tick. It still kills, drops and counts,
+   * but it draws no number and no spark: a burn ticks several times a second
+   * per enemy, and forty burning enemies would empty the 64-slot damage-number
+   * pool every frame and bury the hits that the player actually aimed.
    */
-  damageEnemy(index: number, amount: number, type: 'melee' | 'ranged' | 'utility', isCrit: boolean): void {
+  damageEnemy(
+    index: number,
+    amount: number,
+    type: 'melee' | 'ranged' | 'utility',
+    isCrit: boolean,
+    fromDot = false,
+  ): void {
     const e = this.enemies.items[index]
     if (!e.active || e.dying > 0) return
     const s = this.player.stats
@@ -897,23 +1169,26 @@ export class World {
       s.critDamagePct,
       0,
       1,
+      e.markLife > 0 ? e.markPct : 0,
     )
 
     e.hp -= dmg
     e.flash = C.hitFlashSeconds
     this.damageDealt += dmg
-    this.addDamageNumber(e.x, e.y - e.radius, dmg, isCrit)
-    this.bleed(e.x, e.y, isCrit ? 5 : 3)
+    if (!fromDot) {
+      this.addDamageNumber(e.x, e.y - e.radius, dmg, isCrit)
+      this.bleed(e.x, e.y, isCrit ? 5 : 3)
 
-    // A crit always announces itself; ordinary hits spark at a fixed rate, so
-    // a late wave reads as combat rather than as a wall of white.
-    if (isCrit) {
-      this.playFx('critStar', e.x, e.y - e.radius * 0.4)
-    } else {
-      this.sparkAcc += T.fx.hitSparkChance
-      if (this.sparkAcc >= 1) {
-        this.sparkAcc -= 1
-        this.playFx('hitSpark', e.x, e.y - e.radius * 0.4)
+      // A crit always announces itself; ordinary hits spark at a fixed rate, so
+      // a late wave reads as combat rather than as a wall of white.
+      if (isCrit) {
+        this.playFx('critStar', e.x, e.y - e.radius * 0.4)
+      } else {
+        this.sparkAcc += T.fx.hitSparkChance
+        if (this.sparkAcc >= 1) {
+          this.sparkAcc -= 1
+          this.playFx('hitSpark', e.x, e.y - e.radius * 0.4)
+        }
       }
     }
 
@@ -935,6 +1210,29 @@ export class World {
     this.kills++
     const def = ENEMIES[e.typeId]
 
+    // Chili Shot T3 "burn spreads on death": a burning corpse lights its
+    // neighbours. `burnGen` caps the chain — a spread fire cannot spread again,
+    // or one lit enemy in a dense wave would set the whole field alight in a
+    // few frames and the rider would be a screen clear rather than a rider.
+    if (e.burnLife > 0 && e.burnGen === 0) {
+      const chili = this.player.weapons.find((s2) => s2.id === 'chiliShot')
+      if (chili && chili.tier >= 3) {
+        const w = WEAPONS.chiliShot
+        const radius = typeof w?.t3SpreadRadius === 'number' ? w.t3SpreadRadius : 90
+        const mul = typeof w?.t3SpreadDamageMultiplier === 'number' ? w.t3SpreadDamageMultiplier : 0.6
+        const n = this.grid.query(e.x, e.y, radius, this.queryOut)
+        for (let k = 0; k < n; k++) {
+          const j = this.queryOut[k]
+          if (j >= this.enemies.live || j === index) continue
+          const other = this.enemies.items[j]
+          if (other.dying > 0) continue
+          if (Math.hypot(other.x - e.x, other.y - e.y) > radius) continue
+          this.applyBurn(other, e.burnDps * mul, e.burnLife, 1)
+        }
+        this.playFx('explosion', e.x, e.y, 0, radius / 90)
+      }
+    }
+
     // On-death specials from enemies.json.
     const special = def?.special as Record<string, unknown> | undefined
     if (special?.onDeath === 'acidPool') {
@@ -947,7 +1245,8 @@ export class World {
         h.growth = 0
         h.maxLife = (special.poolDuration as number) ?? 5
         h.life = h.maxLife
-        h.dps = 0 // hurts the player, not enemies; player damage in M5
+        h.dps = 0 // acid hurts you, not the things that spilled it
+        h.playerDps = (special.poolDps as number) ?? 8
         h.slowPct = 0
         h.pullForce = 0
         h.tickAcc = 0
@@ -964,6 +1263,7 @@ export class World {
         h.maxLife = (special.cloudDuration as number) ?? 6
         h.life = h.maxLife
         h.dps = 0
+        h.playerDps = (special.cloudDps as number) ?? 10
         h.slowPct = 0
         h.pullForce = 0
         h.tickAcc = 0
@@ -1210,20 +1510,34 @@ export class World {
     return best
   }
 
-  findFurthestEnemyWithin(x: number, y: number, maxRange: number): number {
-    let best = -1
-    let bestD2 = 0
+  /**
+   * The furthest enemy in range, or the `rank`-th furthest.
+   *
+   * The rank is the fishing rod's T3 "drags three": it hooks the three furthest
+   * rather than the same one three times. Selection-scanning `rank` times is
+   * fine at rank <= 3 and avoids sorting the whole live set to pick from the
+   * top of it.
+   */
+  findFurthestEnemyWithin(x: number, y: number, maxRange: number, rank = 0): number {
     const max2 = maxRange * maxRange
-    for (let i = 0; i < this.enemies.live; i++) {
-      const e = this.enemies.items[i]
-      if (e.dying > 0) continue
-      const dx = e.x - x
-      const dy = e.y - y
-      const d2 = dx * dx + dy * dy
-      if (d2 <= max2 && d2 > bestD2) {
-        bestD2 = d2
-        best = i
+    let cutoff = Infinity
+    let best = -1
+    for (let r = 0; r <= rank; r++) {
+      best = -1
+      let bestD2 = -1
+      for (let i = 0; i < this.enemies.live; i++) {
+        const e = this.enemies.items[i]
+        if (e.dying > 0) continue
+        const dx = e.x - x
+        const dy = e.y - y
+        const d2 = dx * dx + dy * dy
+        if (d2 <= max2 && d2 < cutoff && d2 > bestD2) {
+          bestD2 = d2
+          best = i
+        }
       }
+      if (best < 0) return -1
+      cutoff = bestD2
     }
     return best
   }
