@@ -1,0 +1,235 @@
+{
+  "$comment": [
+    "Source-of-truth asset manifest. The ONLY place a file path appears.",
+    "tools/build-atlas.ts reads this, slices, trims, records pivots, and packs",
+    "public/atlas.png + atlas.json. The game never reads assets/ at runtime.",
+    "Rename to sprites.json and extend. Paths are relative to the repo root."
+  ],
+  "scale": 32,
+  "humanoidGrid": {
+    "cols": 56,
+    "rows": 22,
+    "cell": 32,
+    "assertSize": [
+      1792,
+      704
+    ]
+  },
+  "humanoidRows": {
+    "$comment": "Only slice the rows the game uses. Confirm indices against Farmer_Generator_Pieces/ANIMATIONS_GUIDE_TOOLS.png before trusting these.",
+    "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 6
+    },
+    "walk": {
+      "row": 1,
+      "frames": 18,
+      "fps": 12
+    },
+    "run": {
+      "row": 2,
+      "frames": 18,
+      "fps": 14
+    },
+    "hit": {
+      "row": 3,
+      "frames": 1
+    },
+    "death": {
+      "row": 3,
+      "frames": 1,
+      "note": "no death frames needed — spin + scale to zero in code"
+    }
+  },
+  "humanoids": {
+    "farmer": {
+      "file": "assets/generated/farmer.png"
+    },
+    "female_farmer": {
+      "file": "assets/generated/Female Farmer.png"
+    },
+    "zombie": {
+      "file": "assets/generated/Zombie.png"
+    },
+    "zombie2": {
+      "file": "assets/generated/zombie2.png"
+    },
+    "acid_zombie": {
+      "file": "assets/generated/Acid Zombie.png"
+    },
+    "gas_enemy": {
+      "file": "assets/generated/gas enemy.png"
+    },
+    "gas_enemy2": {
+      "file": "assets/generated/gas enemy2.png"
+    }
+  },
+  "animals": {
+    "$base": "assets/modern-farm/32x32/Animals_32x32/",
+    "rooster": {
+      "dir": "Chickens_and_Roosters_32x32/"
+    },
+    "dog": {
+      "dir": "Dogs_32x32/",
+      "note": "has run + bark"
+    },
+    "duck": {
+      "dir": "Ducks_32x32/"
+    },
+    "sheep": {
+      "dir": "Sheeps_32x32/"
+    },
+    "pig": {
+      "dir": "Pigs_32x32/"
+    },
+    "cow": {
+      "dir": "Cows_32x32/",
+      "usedBy": "prizeBull",
+      "drawScale": 2,
+      "paletteShift": "nearBlackRedEye"
+    }
+  },
+  "vehicles": {
+    "tractor": {
+      "dir": "assets/modern-farm/32x32/Vehicles_32x32/",
+      "usedBy": "duster",
+      "drawScale": 3,
+      "paletteShift": "rustRed"
+    }
+  },
+  "weapons": {
+    "$base": "assets/modern-farm/",
+    "tool_shovel": {
+      "file": "Farmer_Generator_Pieces/Tools/32x32/Tool_Shovel.png"
+    },
+    "tool_axe": {
+      "file": "Farmer_Generator_Pieces/Tools/32x32/Tool_Axe.png"
+    },
+    "tool_watering_can": {
+      "file": "Farmer_Generator_Pieces/Tools/32x32/Tool_Watering_Can.png"
+    },
+    "tool_fishing_rod": {
+      "file": "Farmer_Generator_Pieces/Tools/32x32/Tool_Fishing_Rod.png"
+    },
+    "prop_bucket": {
+      "file": "32x32/Single_Files_32x32/Props_and_Buildings_32x32/Bucket_1_Single_32x32.png"
+    },
+    "prop_hammer": {
+      "file": "32x32/Single_Files_32x32/Props_and_Buildings_32x32/Hammer_1_Woodwork_Crafting_Table_32x32.png"
+    },
+    "crop_corn": {
+      "sheet": "Icons/Icons_32x32/Icons_32x32.png",
+      "name": "Crops_Corn"
+    },
+    "crop_watermelon": {
+      "sheet": "Icons/Icons_32x32/Icons_32x32.png",
+      "name": "Crops_Watermelon"
+    },
+    "crop_chili": {
+      "sheet": "Icons/Icons_32x32/Icons_32x32.png",
+      "name": "Crops_Chili_Pepper"
+    },
+    "food_egg": {
+      "sheet": "Icons/Icons_32x32/Icons_32x32.png",
+      "name": "Food_Egg"
+    },
+    "food_grain_bag": {
+      "sheet": "Icons/Icons_32x32/Icons_32x32.png",
+      "name": "Food_Grain_Bag"
+    }
+  },
+  "terrain": {
+    "$base": "assets/modern-farm/32x32/",
+    "ground": {
+      "file": "1_Terrains_32x32.png"
+    },
+    "autotiles": {
+      "dir": "Autotiles_32x32/"
+    },
+    "fences": {
+      "file": "2_Fences_32x32.png"
+    },
+    "props": {
+      "file": "3_Props_and_Buildings_32x32.png"
+    },
+    "cropGrowth": {
+      "dir": "Crops_Growth_32x32/",
+      "usedBy": "duster phase 2 burning rows"
+    },
+    "pickups": {
+      "file": "7_Pickup_Items_32x32.png"
+    }
+  },
+  "ui": {
+    "$base": "assets/modern-ui/32x32/",
+    "frames": {
+      "file": "Modern_UI_Style_1.png",
+      "note": "pick one style, never mix"
+    },
+    "gamepad": {
+      "file": "Modern_UI_Gamepad.png"
+    },
+    "portraits": {
+      "dir": "Portrait_Generator/"
+    }
+  },
+  "fx": {
+    "$comment": "Filenames in the FX pack are meaningless numbers — identify from the preview GIFs, then record semantic names here. ALL fx go through tools/conform-fx.ts.",
+    "$base": "assets/effects-fx/Free/",
+    "fx_hit_small": {
+      "file": "Part 1/TODO.png",
+      "frames": 5,
+      "fps": 24
+    },
+    "fx_hit_heavy": {
+      "file": "Part 1/TODO.png",
+      "frames": 6,
+      "fps": 24
+    },
+    "fx_muzzle": {
+      "file": "Part 2/TODO.png",
+      "frames": 4,
+      "fps": 30
+    },
+    "fx_explosion_small": {
+      "file": "Part 3/TODO.png",
+      "frames": 8,
+      "fps": 20
+    },
+    "fx_explosion_large": {
+      "file": "Part 3/TODO.png",
+      "frames": 10,
+      "fps": 18
+    },
+    "fx_smoke": {
+      "file": "Part 4/TODO.png",
+      "frames": 8,
+      "fps": 14
+    },
+    "fx_dust": {
+      "file": "Part 4/TODO.png",
+      "frames": 6,
+      "fps": 16
+    },
+    "fx_gas_loop": {
+      "file": "Part 5/TODO.png",
+      "frames": 8,
+      "fps": 10,
+      "loop": true
+    },
+    "fx_acid_loop": {
+      "file": "Part 5/TODO.png",
+      "frames": 8,
+      "fps": 10,
+      "loop": true
+    }
+  },
+  "palette": {
+    "file": "art/palette.json",
+    "extractFrom": [
+      "assets/modern-farm/32x32/0_Complete_Tileset_32x32.png"
+    ],
+    "colours": 32
+  }
+}

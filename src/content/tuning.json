@@ -1,0 +1,58 @@
+{
+  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
+
+  "player": {
+    "baseMoveSpeed": 160,
+    "basePickupRadius": 70,
+    "baseRadius": 12,
+    "baseCritChancePct": 5,
+    "baseCritDamagePct": 0,
+    "invulnSecondsAfterHit": 0.5,
+    "contactDamageInterval": 0.5
+  },
+
+  "caps": {
+    "dodgePct": 60,
+    "attackSpeedPct": 300,
+    "damageNumbers": 40
+  },
+
+  "combat": {
+    "critMultiplierBase": 1.5,
+    "armorConstant": 40,
+    "knockbackDecay": 8,
+    "hitstopSecondsOnCrit": 0.04,
+    "hitFlashSeconds": 0.06,
+    "deathSpinSeconds": 0.2
+  },
+
+  "camera": {
+    "deadZoneRadius": 40,
+    "lerp": 0.12,
+    "leadDistance": 30,
+    "traumaPlayerHit": 0.4,
+    "traumaBossCharge": 0.7,
+    "traumaDecayPerSecond": 1.2,
+    "maxShakePixels": 18
+  },
+
+  "pickups": {
+    "magnetAcceleration": 1400,
+    "magnetInitialSpeed": 60,
+    "collectRadius": 14,
+    "gemLifetimeSeconds": 0
+  },
+
+  "pools": {
+    "enemies": 800,
+    "projectiles": 1200,
+    "pickups": 1500,
+    "damageNumbers": 64,
+    "particles": 900,
+    "hazards": 64
+  },
+
+  "arena": {
+    "edgePadding": 24
+  }
+}

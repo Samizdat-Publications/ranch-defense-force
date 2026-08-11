@@ -1,0 +1,185 @@
+{
+  "shovel": {
+    "name": "Shovel",
+    "type": "melee",
+    "sprite": "tool_shovel",
+    "base": 18,
+    "cooldown": 0.7,
+    "behaviour": "arcSwing",
+    "arcDegrees": 110,
+    "range": 78,
+    "knockback": 190,
+    "tiers": {
+      "2": "+30% arc width",
+      "3": "hits twice",
+      "4": "knockback stuns 0.4s"
+    }
+  },
+  "axe": {
+    "name": "Axe",
+    "type": "orbit",
+    "sprite": "tool_axe",
+    "base": 13,
+    "cooldown": 0,
+    "behaviour": "orbit",
+    "orbitRadius": 74,
+    "orbitSpeed": 3,
+    "scalesWithMoveSpeed": true,
+    "tiers": {
+      "2": "+25% radius",
+      "3": "second blade",
+      "4": "blades pierce"
+    }
+  },
+  "wateringCan": {
+    "name": "Watering Can",
+    "type": "aura",
+    "sprite": "tool_watering_can",
+    "base": 4,
+    "cooldown": 0.35,
+    "behaviour": "rotatingJet",
+    "radius": 130,
+    "slowPct": 30,
+    "tiers": {
+      "2": "+50% slow",
+      "3": "washes gas clouds away",
+      "4": "+40% radius"
+    }
+  },
+  "fishingRod": {
+    "name": "Fishing Rod",
+    "type": "utility",
+    "sprite": "tool_fishing_rod",
+    "base": 26,
+    "cooldown": 1.8,
+    "behaviour": "hookFurthest",
+    "range": 420,
+    "dragSpeed": 340,
+    "tiers": {
+      "2": "+damage on landing",
+      "3": "drags three",
+      "4": "dragged enemies take +25%"
+    }
+  },
+  "seedSpitter": {
+    "name": "Seed Spitter",
+    "type": "ranged",
+    "sprite": "crop_corn",
+    "base": 6,
+    "cooldown": 0.22,
+    "behaviour": "stream",
+    "projectileSpeed": 420,
+    "spreadDegrees": 14,
+    "tiers": {
+      "2": "-20% spread",
+      "3": "+2 projectiles",
+      "4": "pierces 1"
+    }
+  },
+  "melonLob": {
+    "name": "Melon Lob",
+    "type": "ranged",
+    "sprite": "crop_watermelon",
+    "base": 15,
+    "cooldown": 1.1,
+    "behaviour": "arcLob",
+    "splashRadius": 50,
+    "tiers": {
+      "2": "+30% splash",
+      "3": "leaves a slippery rind",
+      "4": "splits into three"
+    }
+  },
+  "chiliShot": {
+    "name": "Chili Shot",
+    "type": "ranged",
+    "sprite": "crop_chili",
+    "base": 8,
+    "cooldown": 0.5,
+    "behaviour": "pierceShot",
+    "pierce": 2,
+    "burnDps": 4,
+    "burnDuration": 3,
+    "tiers": {
+      "2": "+2s burn",
+      "3": "burn spreads on death",
+      "4": "pierce 4"
+    }
+  },
+  "eggToss": {
+    "name": "Egg Toss",
+    "type": "ranged",
+    "sprite": "food_egg",
+    "base": 11,
+    "cooldown": 0.9,
+    "behaviour": "bounceSplit",
+    "bounces": 2,
+    "tiers": {
+      "2": "+1 bounce",
+      "3": "splits into four",
+      "4": "shards also bounce"
+    }
+  },
+  "slopBucket": {
+    "name": "Slop Bucket",
+    "type": "ranged",
+    "sprite": "prop_bucket",
+    "base": 20,
+    "cooldown": 2,
+    "behaviour": "throwPuddle",
+    "puddleRadius": 90,
+    "puddleDuration": 5,
+    "slowPct": 50,
+    "tiers": {
+      "2": "+2s puddle",
+      "3": "the slick damages",
+      "4": "+60% radius"
+    }
+  },
+  "framingHammer": {
+    "name": "Framing Hammer",
+    "type": "melee",
+    "sprite": "prop_hammer",
+    "base": 34,
+    "cooldown": 1.6,
+    "behaviour": "slam",
+    "radius": 68,
+    "stunDuration": 0.6,
+    "tiers": {
+      "2": "+stun",
+      "3": "shockwave ring",
+      "4": "ring knocks back"
+    }
+  },
+  "grainLure": {
+    "name": "Grain Lure",
+    "type": "utility",
+    "sprite": "food_grain_bag",
+    "base": 0,
+    "cooldown": 6,
+    "behaviour": "lure",
+    "pullRadius": 260,
+    "pullForce": 150,
+    "duration": 4,
+    "tiers": {
+      "2": "+2s",
+      "3": "detonates for 60",
+      "4": "+80% radius"
+    }
+  },
+  "barnDog": {
+    "name": "Barn Dog",
+    "type": "minion",
+    "sprite": "dog",
+    "base": 10,
+    "cooldown": 1,
+    "behaviour": "minionHunt",
+    "leashRadius": 420,
+    "targetPriority": "nearestSmall",
+    "tiers": {
+      "2": "+50% dog speed",
+      "3": "two dogs",
+      "4": "dogs cause bleed"
+    }
+  }
+}

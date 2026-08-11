@@ -1,0 +1,62 @@
+{
+  "arena": {
+    "width": 2400,
+    "height": 1600
+  },
+  "waveCount": 24,
+  "waveDuration": 40,
+  "continuous": true,
+  "bossWaves": {
+    "12": "prizeBull",
+    "25": "duster"
+  },
+  "shopAfterWaves": [
+    5,
+    10,
+    15,
+    20,
+    24
+  ],
+  "eliteEveryNWaves": 5,
+  "elite": {
+    "chance": 0.1,
+    "hpMultiplier": 4,
+    "drawScale": 1.5,
+    "outline": "gold",
+    "guaranteedFeed": true
+  },
+  "threatBudget": {
+    "formula": "30 + 22*n + 1.4*n*n"
+  },
+  "pressureCeiling": 380,
+  "spawn": {
+    "minDistanceFromPlayer": 220,
+    "sources": [
+      "arenaEdge",
+      "cornTile"
+    ],
+    "finalQuarterBias": 1.4
+  },
+  "waveScalar": {
+    "formula": "1 + 0.06*(wave-1)"
+  },
+  "economy": {
+    "waveIncome": "6 + 3*n",
+    "interestPct": 8,
+    "interestCap": 12,
+    "shopReroll": "3 + 2*rerollsThisShop",
+    "levelReroll": 4
+  },
+  "xp": {
+    "formula": "ceil(6 + 3*L + 0.9*pow(L,1.55))",
+    "cardsPerLevel": 3,
+    "cardsAtHighLuck": 4
+  },
+  "ambient": {
+    "chickens": {
+      "count": 6,
+      "feedValue": 2,
+      "stopSpawningAfterWave": 14
+    }
+  }
+}

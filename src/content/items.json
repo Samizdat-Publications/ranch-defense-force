@@ -1,0 +1,102 @@
+{
+  "feedSack": {
+    "name": "Feed Sack",
+    "icon": "food_grain_bag",
+    "cost": 12,
+    "mods": {
+      "maxHp": 20
+    }
+  },
+  "workBoots": {
+    "name": "Work Boots",
+    "icon": "boots",
+    "cost": 14,
+    "mods": {
+      "moveSpeedPct": 8
+    }
+  },
+  "weatherVane": {
+    "name": "Weather Vane",
+    "icon": "vane",
+    "cost": 18,
+    "mods": {
+      "attackSpeedPct": 12
+    }
+  },
+  "saltLick": {
+    "name": "Salt Lick",
+    "icon": "salt",
+    "cost": 15,
+    "mods": {
+      "hpRegen": 1
+    }
+  },
+  "barbedWire": {
+    "name": "Barbed Wire",
+    "icon": "wire",
+    "cost": 20,
+    "mods": {},
+    "special": "reflect",
+    "reflectDamage": 5
+  },
+  "tractorPlate": {
+    "name": "Tractor Plate",
+    "icon": "plate",
+    "cost": 22,
+    "mods": {
+      "armor": 4,
+      "moveSpeedPct": -5
+    }
+  },
+  "roosterAlarm": {
+    "name": "Rooster Alarm",
+    "icon": "rooster",
+    "cost": 10,
+    "mods": {
+      "pickupRadiusPct": 25
+    }
+  },
+  "siloKey": {
+    "name": "Silo Key",
+    "icon": "key",
+    "cost": 16,
+    "mods": {
+      "harvestPct": 15
+    }
+  },
+  "fourLeaf": {
+    "name": "Four-Leaf",
+    "icon": "clover",
+    "cost": 18,
+    "mods": {
+      "luck": 10
+    }
+  },
+  "coffeeThermos": {
+    "name": "Coffee Thermos",
+    "icon": "coffee",
+    "cost": 16,
+    "mods": {
+      "moveSpeedPct": 6,
+      "attackSpeedPct": 6,
+      "maxHp": -10
+    }
+  },
+  "strawHat": {
+    "name": "Straw Hat",
+    "icon": "hat",
+    "cost": 24,
+    "mods": {},
+    "special": "auraDamageReduction",
+    "radius": 60,
+    "reductionPct": 15
+  },
+  "wetRag": {
+    "name": "Wet Rag",
+    "icon": "rag",
+    "cost": 20,
+    "mods": {},
+    "special": "gasGrace",
+    "graceSeconds": 2
+  }
+}

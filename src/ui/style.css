@@ -1,0 +1,167 @@
+/* M0-M3 UI. Deliberately plain: the LimeZu panel frames land in M4/M6 as
+   border-image on these same elements, so the structure here is the structure
+   then. Everything hugs the edges — the centre 70% stays clear (§12). */
+
+:root {
+  --straw: #d9c9a3;
+  --ink: #241f1a;
+  --panel: rgba(28, 24, 20, 0.92);
+  --edge: #6b5a3e;
+  --gold: #e0b040;
+  --green: #7fb069;
+  --red: #a02c2c;
+  --xp: #5fd0c6;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #14171b;
+  color: var(--straw);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  overflow: hidden;
+  -webkit-font-smoothing: none;
+}
+
+#stage { position: relative; width: 100vw; height: 100vh; }
+#game { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+#ui { position: absolute; inset: 0; pointer-events: none; }
+#ui > * { pointer-events: auto; }
+
+/* ------------------------------------------------------------------ HUD */
+
+.hud { position: absolute; inset: 0; pointer-events: none; font-size: 13px; }
+
+.hud-hp {
+  position: absolute; top: 12px; left: 12px;
+  width: 240px; height: 22px;
+  background: #2b2521; border: 2px solid var(--edge);
+}
+.hud-hp-chase { position: absolute; inset: 0; width: 100%; background: #f0e6d2; transition: width 380ms ease-out; }
+.hud-hp-fill { position: absolute; inset: 0; width: 100%; background: var(--red); }
+.hud-hp-text {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 12px; color: #fff; text-shadow: 1px 1px 0 #000;
+}
+
+.hud-wave {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  text-align: center; text-shadow: 2px 2px 0 #000;
+}
+.hud-wave-n { font-size: 20px; font-weight: bold; }
+.hud-wave-timer { font-size: 12px; opacity: 0.8; }
+
+.hud-feed {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 16px; color: var(--gold); text-shadow: 2px 2px 0 #000;
+}
+
+.hud-xp {
+  position: absolute; bottom: 8px; left: 8px; right: 8px; height: 8px;
+  background: #2b2521; border: 1px solid var(--edge);
+}
+.hud-xp-fill { height: 100%; width: 0; background: var(--xp); }
+.hud-level {
+  position: absolute; bottom: 20px; left: 10px;
+  font-size: 12px; opacity: 0.9; text-shadow: 1px 1px 0 #000;
+}
+
+.hud-weapons { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+.hud-slot {
+  width: 46px; height: 46px; background: var(--panel); border: 2px solid var(--edge);
+  position: relative; display: grid; place-items: center; font-size: 10px; text-align: center;
+  line-height: 1.1; padding: 2px; overflow: hidden;
+}
+.hud-slot-tier { position: absolute; top: 1px; right: 3px; color: var(--gold); font-size: 10px; }
+.hud-slot-cd { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); transform-origin: bottom; }
+
+.hud-ability {
+  position: absolute; bottom: 22px; right: 12px;
+  width: 54px; height: 54px; background: var(--panel);
+  border: 2px solid var(--edge); display: grid; place-items: center;
+  font-size: 11px; text-align: center; position: absolute;
+}
+.hud-ability.ready { border-color: var(--gold); color: var(--gold); }
+
+/* -------------------------------------------------------------- screens */
+
+.screen {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: rgba(10, 12, 14, 0.78); backdrop-filter: blur(2px);
+}
+.screen-inner { max-width: min(1000px, 92vw); max-height: 92vh; overflow: auto; }
+.screen h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: 1px; }
+.screen h2 { margin: 0 0 14px; font-size: 16px; font-weight: normal; opacity: 0.75; }
+
+.cards { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+.card {
+  width: 232px; min-height: 190px; background: var(--panel);
+  border: 3px solid var(--edge); padding: 12px;
+  display: flex; flex-direction: column; gap: 6px; cursor: pointer;
+  animation: rise 220ms ease-out backwards;
+}
+.card:hover { border-color: var(--straw); }
+.card.rarity-uncommon { border-color: var(--green); }
+.card.rarity-rare { border-color: var(--gold); }
+.card.locked { outline: 2px dashed var(--gold); outline-offset: 2px; }
+.card.unaffordable { opacity: 0.45; cursor: not-allowed; }
+.card-key { font-size: 11px; opacity: 0.6; }
+.card-name { font-size: 16px; font-weight: bold; }
+.card-detail { font-size: 12px; opacity: 0.85; line-height: 1.4; }
+.card-cost { margin-top: auto; color: var(--gold); font-size: 13px; }
+.card-delta { font-size: 11px; color: var(--xp); line-height: 1.5; }
+.card-lock {
+  font-size: 11px; background: none; border: 1px solid var(--edge);
+  color: var(--straw); cursor: pointer; padding: 2px 6px; font-family: inherit;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+.row { display: flex; gap: 12px; align-items: flex-start; }
+.actions { display: flex; gap: 10px; margin-top: 16px; justify-content: center; }
+
+button.btn {
+  font-family: inherit; font-size: 14px; padding: 8px 16px;
+  background: var(--panel); color: var(--straw);
+  border: 2px solid var(--edge); cursor: pointer;
+}
+button.btn:hover:not(:disabled) { border-color: var(--straw); }
+button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+button.btn.primary { border-color: var(--gold); color: var(--gold); }
+
+.sheet {
+  background: var(--panel); border: 2px solid var(--edge);
+  padding: 12px; min-width: 260px; font-size: 12px;
+}
+.sheet h3 { margin: 0 0 8px; font-size: 14px; }
+.sheet-row { display: flex; justify-content: space-between; gap: 12px; padding: 1px 0; }
+.sheet-row.changed { color: var(--xp); }
+
+.stat-line { display: flex; justify-content: space-between; padding: 2px 0; font-size: 13px; }
+
+/* ------------------------------------------------------------------ dev */
+
+#dev {
+  position: absolute; top: 0; right: 0; padding: 8px;
+  font-size: 11px; line-height: 1.45; color: #9fe6c0;
+  text-shadow: 1px 1px 0 #000; pointer-events: none; text-align: right;
+}
+#dev.hidden { display: none; }
+#dev .dev-panel { pointer-events: auto; display: inline-block; text-align: left; background: rgba(0,0,0,0.55); padding: 6px 8px; }
+#dev input {
+  font-family: inherit; font-size: 11px; width: 110px;
+  background: #11151a; color: #9fe6c0; border: 1px solid #2f4a3c; padding: 2px 4px;
+}
+#dev canvas { display: block; margin-top: 4px; background: rgba(0,0,0,0.4); }
+#dev button {
+  font-family: inherit; font-size: 10px; background: #11151a; color: #9fe6c0;
+  border: 1px solid #2f4a3c; cursor: pointer; padding: 2px 5px;
+}
+.dev-warn { color: #ffb454; }

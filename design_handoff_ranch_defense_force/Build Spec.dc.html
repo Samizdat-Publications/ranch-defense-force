@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#e6e1d6; }
+  doc-page:not(:defined) { visibility:hidden; }
+  a { color:#8a5a12; text-decoration:underline; text-underline-offset:2px; }
+  a:hover { color:#2c4636; }
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+
+<doc-page margin="0.8in">
+
+<div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8070;display:flex;justify-content:space-between;border-bottom:1px solid #d8d2c4;padding-bottom:8px;margin-bottom:44px">
+  <span>Build Spec v2.0</span><span>Samizdat-Publications/ranch-defense-force</span><span>Aug 2026</span>
+</div>
+
+<div style="margin-bottom:50px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#a8761f;margin-bottom:18px">Canton, Ohio · one level · two classes</div>
+  <h1 style="font-family:Archivo,sans-serif;font-weight:800;font-size:64px;line-height:0.94;letter-spacing:-0.03em;color:#1b1a17;margin:0 0 20px">Ranch<br>Defense Force</h1>
+  <p style="font-family:'Source Serif 4',serif;font-size:19px;line-height:1.5;color:#4a463d;max-width:31em;margin:0">A wave-based bullet-heaven built entirely from art already staged in the repo. Every sprite named in this document is a file that exists. Nothing here needs to be drawn.</p>
+</div>
+
+<div style="border:1px solid #6b3f2a;background:#f7f2ec;padding:20px 22px;margin-bottom:48px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#6b3f2a;margin-bottom:10px">The premise</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:16.5px;line-height:1.6;color:#2c2a24;margin:0 0 12px">Something came off the crop duster that went over low on Tuesday. By Thursday the hands had stopped going home. You are the last person on the property who still has a job to do, and the job is what it always was: work the field until the light goes.</p>
+  <p style="font-family:'Source Serif 4',serif;font-size:16.5px;line-height:1.6;color:#2c2a24;margin:0">One sentence, and every asset in the packs is paid for. The zombie farmhands are the people who breathed it. The figures in gas masks are the ones who knew it was coming and came anyway. The livestock got it too. And the tractor is still out in the far field running the pattern somebody gave it on Tuesday morning, because nobody ever told it to stop.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#d8d2c4;border-top:1px solid #d8d2c4;border-bottom:1px solid #d8d2c4;margin-bottom:50px">
+  <div style="background:#f7f4ec;padding:16px 14px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:7px">Stack</div>
+    <div style="font-family:Archivo,sans-serif;font-size:14px;font-weight:600;color:#1b1a17;line-height:1.3">TypeScript + Vite<br>Canvas 2D, no engine</div>
+  </div>
+  <div style="background:#f7f4ec;padding:16px 14px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:7px">Scale</div>
+    <div style="font-family:Archivo,sans-serif;font-size:14px;font-weight:600;color:#1b1a17;line-height:1.3">32×32 everywhere<br>no exceptions</div>
+  </div>
+  <div style="background:#f7f4ec;padding:16px 14px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:7px">Slice</div>
+    <div style="font-family:Archivo,sans-serif;font-size:14px;font-weight:600;color:#1b1a17;line-height:1.3">24 waves, 2 classes<br>10 enemies, 2 bosses</div>
+  </div>
+  <div style="background:#f7f4ec;padding:16px 14px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:7px">New art needed</div>
+    <div style="font-family:Archivo,sans-serif;font-size:14px;font-weight:600;color:#2c4636;line-height:1.3">None</div>
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">01 — The stack call</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 16px;line-height:1.15">Plain TypeScript on a 2D canvas, built with Vite</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 14px">No game engine. A bullet-heaven needs three things an engine does not help with: thousands of pooled entities per frame, a fixed-timestep simulation, and a single sprite atlas blitted in one pass. Everything else — scenes, physics bodies, tweens, an editor — is API surface that gets in the way when a model is writing the code.</p>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 20px">Canvas 2D holds well over a thousand sprites at 60fps in Chrome when they all come from one atlas and you never touch <code style="font-family:'JetBrains Mono',monospace;font-size:14px;background:#efeade;padding:1px 5px;border-radius:3px">save/restore</code> per sprite. That is above the ceiling this game needs. The escape hatch, if profiling disagrees, is swapping the renderer module for a WebGL sprite batcher — nothing else changes, because rendering sits behind one interface.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:46px;break-inside:avoid">
+  <div style="border:1px solid #d8d2c4;background:#f2eee3;padding:16px 18px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Rejected</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f"><strong>Phaser</strong> — its GameObject model fights pooling. <strong>Godot</strong> — best engine for the genre, worst agent loop: no fast text-only iteration, scene files hostile to diffs. <strong>Electron</strong> — 200MB of Chromium for a 3MB game; wrap in Tauri later if desktop is wanted.</div>
+  </div>
+  <div style="border-left:3px solid #a8761f;padding:2px 0 2px 16px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin-bottom:8px">Dependency budget</div>
+    <p style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:#2c2a24;margin:0">vite · typescript · vitest<br>and nothing else.<br><br>No physics lib, no ECS lib, no UI framework.<br>HUD and menus are DOM over the canvas.</p>
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">02 — Architecture</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">Data in JSON, behaviour in modules</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 20px">Every number in this document lives in a JSON file, not in code, so balance is a data edit. Behaviour that cannot be data — a boss phase, a weapon's firing pattern — is a named function in a lookup table that the JSON references by string key.</p>
+
+<pre style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#2c2a24;background:#f2eee3;border:1px solid #d8d2c4;padding:18px 20px;margin:0 0 24px;overflow-x:auto;break-inside:avoid">src/
+  main.ts       boot, canvas sizing, atlas load, scene switch
+  core/         loop · input · rng (seeded) · pool · spatial (64px grid)
+                atlas · audio
+  sim/          world · player · enemy · spawner · weapon · projectile
+                damage · pickup · stats
+  content/      classes.json  weapons.json  items.json  enemies.json
+                waves.json  upgrades.json  meta.json
+  behaviours/   weapons.ts  enemies.ts  bosses.ts  (string key -> fn)
+  render/       renderer (camera, y-sort, one atlas)
+                terrain (baked once) · vfx · decals (blood, stains)
+  ui/           hud · levelup · shop · homestead · menu · results  (DOM)
+
+tools/          build-atlas.ts   slice the LimeZu + generated sheets
+                conform-fx.ts    quantise the FX pack to the LimeZu palette
+art/            palette.json     32 colours extracted from the packs
+                sprites.json     source-of-truth manifest (see §09)</pre>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:46px;break-inside:avoid">
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Tick order — never reorder</div>
+    <ol style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.55;color:#2c2a24;margin:0;padding-left:20px">
+      <li>input sample</li>
+      <li>player move + clamp to arena</li>
+      <li>spawner: wave timer, threat budget</li>
+      <li>enemy steering + separation</li>
+      <li>rebuild spatial grid</li>
+      <li>weapon cooldowns → fire</li>
+      <li>projectile integrate</li>
+      <li>collisions: proj→enemy, enemy→player</li>
+      <li>damage resolve, deaths, drops</li>
+      <li>pickups magnet + collect</li>
+      <li>vfx, decals, camera</li>
+      <li>despawn offscreen, return to pools</li>
+    </ol>
+  </div>
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Non-negotiables</div>
+    <ul style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.55;color:#2c2a24;margin:0;padding-left:20px">
+      <li>Fixed 1/60s step with an accumulator; render interpolates. Never tie physics to frame time.</li>
+      <li>Zero allocation in the hot loop. Pool everything; reverse-iterate and swap-pop, never <code style="font-family:'JetBrains Mono',monospace;font-size:13px">.filter()</code> per frame.</li>
+      <li>Collision is circle-vs-circle against the hash grid. No AABB trees, no physics library.</li>
+      <li>All randomness through the seeded RNG, so a run replays from its seed.</li>
+      <li>Sim and render never import each other's internals.</li>
+    </ul>
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">03 — The loop</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">Continuous waves, cards mid-fight, a shop every fifth</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 20px">Waves flow into one another with no break — wave 8 begins on the frame wave 7 ends. Only two things stop the game: a level-up card screen, which fires the instant a gem tips you over, and the shop, which opens after waves 5, 10, 15, 20 and once more before the final boss. Twenty-four waves at 40 seconds puts a run at roughly 17 minutes.</p>
+
+<table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:22px;break-inside:avoid">
+  <thead><tr style="border-bottom:1.5px solid #1b1a17">
+    <th style="text-align:left;padding:8px 10px 8px 0;font-weight:700;color:#1b1a17">Phase</th>
+    <th style="text-align:left;padding:8px 10px;font-weight:700;color:#1b1a17">Duration</th>
+    <th style="text-align:left;padding:8px 0 8px 10px;font-weight:700;color:#1b1a17">What happens</th>
+  </tr></thead>
+  <tbody style="color:#2c2a24">
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:8px 10px 8px 0">Wave <em>n</em> (1–24)</td><td style="padding:8px 10px">40s, no gap</td><td style="padding:8px 0 8px 10px">Threat budget spends down. Survivors carry into the next wave.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:8px 10px 8px 0">Level-up</td><td style="padding:8px 10px">instant freeze</td><td style="padding:8px 0 8px 10px">3 cards from the full pool. Resume the moment one is picked.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:8px 10px 8px 0">Shop — 5, 10, 15, 20</td><td style="padding:8px 10px">untimed</td><td style="padding:8px 0 8px 10px">Arena clears. 4 slots, reroll, lock. Same pool as level-ups.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:8px 10px 8px 0">Wave 12</td><td style="padding:8px 10px">—</td><td style="padding:8px 0 8px 10px">Mid-boss: the Prize Bull, alongside normal spawns.</td></tr>
+    <tr><td style="padding:8px 10px 8px 0">Wave 25</td><td style="padding:8px 10px">—</td><td style="padding:8px 0 8px 10px">Final shop, then the Duster. No trash until phase 2.</td></tr>
+  </tbody>
+</table>
+
+<div style="border-left:3px solid #a8761f;padding:2px 0 2px 16px;margin:0 0 24px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin-bottom:8px">Two upgrade systems, one pool</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.6;color:#2c2a24;margin:0 0 8px">Level-ups and the shop draw from exactly the same pool. The difference is agency and cost. A level-up is free, fast, and random — three cards, take one, keep running. The shop is slow and paid: four slots you can reroll and individually lock for next time, which makes it where you go <em>hunting</em> for the item that finishes a build.</p>
+  <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.6;color:#2c2a24;margin:0">Level-ups give you what the run offers. The shop lets you go get what the build needs. Feed pays for both — a level-up reroll costs 4 feed, so mid-fight greed has a price.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:46px;break-inside:avoid">
+  <div style="background:#f2eee3;border:1px solid #d8d2c4;padding:16px 18px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">XP &amp; levelling</div>
+    <p style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.65;color:#2c2a24;margin:0 0 10px">xpToNext(L) = ceil( 6 + 3·L + 0.9·L^1.55 )</p>
+    <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f;margin:0">Enemies drop one gem worth their tier value. Expect ~34 levels across a 24-wave run. Three cards per level, four at high luck.</p>
+  </div>
+  <div style="background:#f2eee3;border:1px solid #d8d2c4;padding:16px 18px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Economy — "feed"</div>
+    <p style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.65;color:#2c2a24;margin:0 0 10px">waveIncome(n) = 6 + 3·n<br>shopReroll  = 3 + 2·rerollsThisShop<br>levelReroll = 4 flat</p>
+    <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f;margin:0">Paid at each wave boundary. Unspent feed earns 8% interest at every shop, capped at 12 — a real choice between saving and buying.</p>
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">04 — Between runs</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">The Homestead: four tracks, one currency</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 18px">A run pays out <strong>acres</strong>: <code style="font-family:'JetBrains Mono',monospace;font-size:14px;background:#efeade;padding:1px 5px;border-radius:3px">acres = 2·wavesCleared + 25·bossKill + 10·firstTimeThisTier</code>. Three of the four tracks make the game <em>wider</em>; only one makes it easier, and that one is hard-capped.</p>
+
+<div style="display:grid;gap:12px;margin-bottom:20px">
+  <div style="display:grid;grid-template-columns:150px 1fr;gap:18px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid">
+    <div><div style="font-family:Archivo,sans-serif;font-weight:700;font-size:16px;color:#1b1a17">The Bunkhouse</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a8070;margin-top:2px">40 / 90 / 150 / 240</div></div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.58;color:#3a372f"><strong>Classes.</strong> The Hand and The Kid are free. Four more sit behind escalating prices — and here the generator is the whole answer: a new class is a new export from the Farmer Generator plus a stat block and one ability. Show them locked as dark silhouettes from day one.</div>
+  </div>
+  <div style="display:grid;grid-template-columns:150px 1fr;gap:18px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid">
+    <div><div style="font-family:Archivo,sans-serif;font-weight:700;font-size:16px;color:#1b1a17">The Seed Catalog</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a8070;margin-top:2px">15–40 each</div></div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.58;color:#3a372f"><strong>Pool expansion — the important one.</strong> Runs begin with 8 of the 12 weapons and 12 of the 20 items. The rest are locked until bought, then appear in every future run. This makes runs more varied instead of more powerful, which is the only meta progression that doesn't quietly wreck your balance.</div>
+  </div>
+  <div style="display:grid;grid-template-columns:150px 1fr;gap:18px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid">
+    <div><div style="font-family:Archivo,sans-serif;font-weight:700;font-size:16px;color:#1b1a17">The Feed Store</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a8070;margin-top:2px">5 ranks, capped</div></div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.58;color:#3a372f"><strong>Permanent stats.</strong> +5 max HP, +2% move speed, +1 armor, +3% harvest, +2% luck — five ranks each at escalating cost. Total effect at full purchase lands near +25% and no further. Players want this track; bounding it is what stops it invalidating §05.</div>
+  </div>
+  <div style="display:grid;grid-template-columns:150px 1fr;gap:18px;break-inside:avoid">
+    <div><div style="font-family:Archivo,sans-serif;font-weight:700;font-size:16px;color:#1b1a17">The County Fair</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a8070;margin-top:2px">earned, not bought</div></div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.58;color:#3a372f"><strong>Difficulty tiers.</strong> Killing the Duster unlocks Tier 2, and each tier after. Every tier adds +25% enemy HP and one named modifier — the gas lingers twice as long, no shop rerolls, the corn grows back over cleared ground, dogs hunt in fours. Tiers multiply the acre payout, so climbing beats farming Tier 1.</div>
+  </div>
+</div>
+
+<div style="border-left:3px solid #2c4636;padding:2px 0 2px 16px;margin-bottom:46px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2c4636;margin-bottom:8px">Save format</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.6;color:#2c2a24;margin:0">One versioned JSON blob in localStorage: <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">{ v, acres, unlockedClasses[], unlockedPool[], feedStoreRanks{}, tierCleared, bestRun }</code>. Store purchases, never derived values — recompute stat totals at run start. Ship a migration function from v1 on day one, because you will change this shape.</p>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">05 — Combat math</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">One damage formula, fourteen stats</h3>
+
+<pre style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;color:#2c2a24;background:#f2eee3;border:1px solid #d8d2c4;padding:18px 20px;margin:0 0 20px;overflow-x:auto;break-inside:avoid">raw   = weapon.base × (1 + dmgPct + typePct) + flatDmg
+crit  = roll(critChance) ? raw × (1.5 + critDmgBonus) : raw
+final = max(1, crit × (1 − armor / (armor + 40)))
+       × waveScalar        // enemies only: 1 + 0.06·(wave−1)</pre>
+
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0 28px;margin-bottom:20px">
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">Offence</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.75;color:#2c2a24">Damage % · Melee % · Ranged % · Attack speed · Crit chance · Crit damage · Range · Projectile count</div>
+  </div>
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">Defence &amp; utility</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.75;color:#2c2a24">Max HP · HP regen · Armor · Dodge · Lifesteal · Move speed · Pickup radius · Luck · Harvest (feed gain)</div>
+  </div>
+</div>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 46px">Stat resolution is one pass: sum flat bonuses, sum percentage bonuses additively, apply once. No multiplicative stacking anywhere — it is the fastest way to break a game like this, and it keeps every upgrade card's value predictable to the player. Dodge caps at 60%, armor has no cap because of its diminishing curve, attack speed caps at +300%.</p>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">06 — The two classes</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 8px;line-height:1.15">Two people left on the property</h3>
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 24px">Both are Farmer Generator exports on the identical rig, so they cost nothing extra to support. They differ on the movement axis, which changes what every item in the shared pool is worth to you — move speed is survival for one and nearly dead weight for the other, armor is the reverse.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:26px">
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;break-inside:avoid">
+    <div style="background:#2c4636;padding:14px 18px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#a9c4b0;margin-bottom:5px">Class 01 · Anchor</div>
+      <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:28px;color:#f7f4ec;letter-spacing:-0.02em">The Hand</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#8fae98;margin-top:5px">sheet: farmer.png</div>
+    </div>
+    <div style="padding:16px 18px">
+      <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.55;color:#3a372f;margin:0 0 14px;font-style:italic">Thirty years on this ground. Slow, hard to move, and not especially worried.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9;color:#2c2a24;border-top:1px solid #e2ddd0;border-bottom:1px solid #e2ddd0;padding:10px 0;margin-bottom:14px">
+        HP <strong>140</strong> &nbsp;·&nbsp; Speed <strong>−20%</strong><br>
+        Armor <strong>+6</strong> &nbsp;·&nbsp; Regen <strong>+1.5/s</strong><br>
+        Pickup radius <strong>+40%</strong> &nbsp;·&nbsp; Crit <strong>−50%</strong>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8070;margin-bottom:5px">Passive — Braced</div>
+      <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.5;color:#3a372f;margin:0 0 12px">Standing still for 1s grants stacking damage reduction, +6% per second to 30%. Resets on move.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8070;margin-bottom:5px">Ability — Dig In <span style="color:#a8761f">(14s)</span></div>
+      <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.5;color:#3a372f;margin:0 0 12px">Plants the shovel. Immovable and 70% damage reduction for 2.5s, ending in a knockback pulse that clears 140px. Uses the digging animation rows verbatim.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8070;margin-bottom:5px">Starting weapon — Shovel</div>
+      <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.5;color:#3a372f;margin:0">Slow forward arc, heavy knockback, generous hitbox. No aim skill required.</p>
+    </div>
+  </div>
+
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;break-inside:avoid">
+    <div style="background:#6b3f2a;padding:14px 18px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#e0bda6;margin-bottom:5px">Class 02 · Momentum</div>
+      <div style="font-family:Archivo,sans-serif;font-weight:800;font-size:28px;color:#f7f4ec;letter-spacing:-0.02em">The Kid</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#c9a58c;margin-top:5px">sheet: Female Farmer.png</div>
+    </div>
+    <div style="padding:16px 18px">
+      <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.55;color:#3a372f;margin:0 0 14px;font-style:italic">Home from school for the summer. Only ever safe at speed; stopping is the mistake.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9;color:#2c2a24;border-top:1px solid #e2ddd0;border-bottom:1px solid #e2ddd0;padding:10px 0;margin-bottom:14px">
+        HP <strong>75</strong> &nbsp;·&nbsp; Speed <strong>+35%</strong><br>
+        Armor <strong>0</strong> &nbsp;·&nbsp; Dodge <strong>+10%</strong><br>
+        Crit damage <strong>+25%</strong> &nbsp;·&nbsp; Regen <strong>0</strong>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8070;margin-bottom:5px">Passive — Momentum</div>
+      <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.5;color:#3a372f;margin:0 0 12px">Damage scales with current speed: +1% per 2% of max velocity, to +50%. Falls to zero when standing.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8070;margin-bottom:5px">Ability — Bolt <span style="color:#a8761f">(6s)</span></div>
+      <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.5;color:#3a372f;margin:0 0 12px">Dash 180px with i-frames, leaving a dust trail that blinds pursuers for 2s. Uses the run rows plus a stretched afterimage; no new frames.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8070;margin-bottom:5px">Starting weapon — Seed Spitter</div>
+      <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.5;color:#3a372f;margin:0">Fast, inaccurate stream of corn kernels. Rewards running through the pack.</p>
+    </div>
+  </div>
+</div>
+
+<div style="border-left:3px solid #a8761f;padding:2px 0 2px 16px;margin-bottom:46px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin-bottom:8px">Adding classes later</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#2c2a24;margin:0">Pick a new <em>axis</em>, not a new stat spread. Range, summons, luck, and a class that rewards standing in the gas would give six that never overlap. Each costs one generator export and one JSON block. The remaining sheets already in <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">uploads/</code> — farmer2, farmer3, farmer4, 1, 2 — are the candidates.</p>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">07 — Weapons &amp; upgrades</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">Twelve weapons, six slots, four tiers</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 14px">One structural decision drives all of this: <strong>weapons do not attach to the player</strong>. They orbit, arc, and fly on their own, moved by code. That is how the genre works anyway, and it means every weapon is a single static sprite the engine rotates and translates — no rig, no per-class animation, no new art. Buying a duplicate merges it up a tier rather than filling a second slot; each tier scales base damage ×1.6 and adds one behavioural rider, so a maxed weapon is qualitatively different, not just bigger.</p>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 22px">All twelve source sprites already exist in the repo. The four tools live in <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">Farmer_Generator_Pieces/Tools/32x32/</code>; the produce comes from <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">Icons/Icons_32x32/</code>; the rest from <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">Single_Files_32x32/</code>.</p>
+
+<table style="width:100%;border-collapse:collapse;font-family:'Source Serif 4',serif;font-size:14.5px;margin-bottom:24px">
+  <thead><tr style="border-bottom:1.5px solid #1b1a17">
+    <th style="text-align:left;padding:8px 10px 8px 0;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Weapon</th>
+    <th style="text-align:left;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Dmg / CD</th>
+    <th style="text-align:left;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Sprite</th>
+    <th style="text-align:left;padding:8px 0 8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Behaviour · tier 3 rider</th>
+  </tr></thead>
+  <tbody style="color:#2c2a24">
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Shovel</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">18 / 0.7s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Tool_Shovel</td><td style="padding:9px 0 9px 10px">Forward arc, heavy knockback. T3: hits twice.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Axe</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">13 / cont.</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Tool_Axe</td><td style="padding:9px 0 9px 10px">Orbits the player, spinning. Scales with move speed. T3: second blade.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Watering Can</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">4 / 0.35s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Tool_Watering_Can</td><td style="padding:9px 0 9px 10px">Rotating jet, 130px. Slows on hit. T3: the water washes gas clouds away.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Fishing Rod</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">26 / 1.8s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Tool_Fishing_Rod</td><td style="padding:9px 0 9px 10px">Hooks the furthest enemy in range and drags it to you. T3: drags three.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Seed Spitter</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">6 / 0.22s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Crops_Corn</td><td style="padding:9px 0 9px 10px">Fast inaccurate stream. T3: +2 projectiles.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Melon Lob</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">15 / 1.1s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Crops_Watermelon</td><td style="padding:9px 0 9px 10px">Arcs to target, 50px splash. T3: leaves a slippery rind.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Chili Shot</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">8 / 0.5s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Crops_Chili_Pepper</td><td style="padding:9px 0 9px 10px">Pierces 2, applies burn. T3: burn spreads on death.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Egg Toss</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">11 / 0.9s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Food_Egg</td><td style="padding:9px 0 9px 10px">Bounces twice, splits on the second. T3: splits into four.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Slop Bucket</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">20 / 2.0s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Bucket_1_Single</td><td style="padding:9px 10px;padding:9px 0 9px 10px">Thrown; leaves a slick that halves speed for 5s. T3: the slick damages.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Framing Hammer</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">34 / 1.6s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Hammer_1_Woodwork</td><td style="padding:9px 0 9px 10px">Overhead slam, small radius, stuns. T3: shockwave ring.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 10px 9px 0"><strong>Grain Lure</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">0 / 6s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Food_Grain_Bag</td><td style="padding:9px 0 9px 10px">Drops a sack that pulls enemies toward it for 4s. Enables every AoE build. T3: detonates.</td></tr>
+    <tr><td style="padding:9px 10px 9px 0"><strong>Barn Dog</strong></td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">10 / 1.0s</td><td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px">Dogs_32x32</td><td style="padding:9px 0 9px 10px">Autonomous, hunts the nearest small enemy using its own run animation. T3: two dogs.</td></tr>
+  </tbody>
+</table>
+
+<div style="background:#f2eee3;border:1px solid #d8d2c4;padding:16px 18px;margin-bottom:46px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Passive items — every icon already exists</div>
+  <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.7;color:#2c2a24">
+    <strong>Feed Sack</strong> +20 max HP · <strong>Work Boots</strong> +8% speed · <strong>Weather Vane</strong> +12% attack speed · <strong>Salt Lick</strong> +1.0 regen · <strong>Barbed Wire</strong> reflect 5 to contact attackers · <strong>Tractor Plate</strong> +4 armor, −5% speed · <strong>Rooster Alarm</strong> +25% pickup radius · <strong>Silo Key</strong> +15% harvest · <strong>Four-Leaf</strong> +10 luck · <strong>Coffee Thermos</strong> +6% speed, +6% attack speed, −10 max HP · <strong>Straw Hat</strong> enemies within 60px deal 15% less · <strong>Wet Rag</strong> immune to gas for the first 2s of contact
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">08 — Level one: the Whitacre place</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">Late-summer corn, a fence line, and something in the rows</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 22px">A single open arena, 2400 × 1600, camera-followed with a soft dead zone. Not a maze — sight lines are the game. Corn rows on two edges are the only occluders, drawn above the player, and things come out of them. Terrain is baked once into an offscreen canvas from <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">1_Terrains_32x32.png</code> and the autotiles, then blitted as one image per frame. Props — barn, silo footing, fences, troughs, hay, the well — come from <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">Single_Files_32x32/Props_and_Buildings_32x32/</code>.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:26px;break-inside:avoid">
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">Ambient life</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24">Uninfected chickens wander and scatter when anything nears. Worth 2 feed if you kill them, which is a small and unkind choice. They stop appearing after wave 14 — nobody remarks on it.</div>
+  </div>
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">Gas</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24">The one hazard that isn't an enemy. Clouds linger, expand slightly, and deal damage per second inside. They are the readability problem in a game this dense, so: gas is the only thing on screen allowed to be a translucent overlay, and it renders <em>below</em> all sprites.</div>
+  </div>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-family:'Source Serif 4',serif;font-size:14px;margin-bottom:24px">
+  <thead><tr style="border-bottom:1.5px solid #1b1a17">
+    <th style="text-align:left;padding:8px 8px 8px 0;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Enemy</th>
+    <th style="text-align:left;padding:8px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">HP/Spd/Dmg</th>
+    <th style="text-align:left;padding:8px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Waves</th>
+    <th style="text-align:left;padding:8px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Sheet</th>
+    <th style="text-align:left;padding:8px 0 8px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#1b1a17">Behaviour — and what it teaches</th>
+  </tr></thead>
+  <tbody style="color:#2c2a24">
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Farmhand</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">14 / 65 / 6</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">1–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">Zombie</td><td style="padding:9px 0 9px 8px">Straight shamble, spawns in tens. The chaff that makes AoE feel good.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Rooster</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">9 / 145 / 4</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">2–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">Chickens_and_Roosters</td><td style="padding:9px 0 9px 8px">Fast, erratic, no separation. Hard to single-target, melts to anything wide.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Feral Dog</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">30 / 110 / 10</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">4–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">Dogs</td><td style="padding:9px 0 9px 8px">Packs of four, flanks rather than beelines, and barks — a 1s audio-visual tell that a second pack is inbound. Teaches: check behind you.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Duck Flight</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">12 / 170 / 7</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">5–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">Ducks</td><td style="padding:9px 0 9px 8px">Eight at once, fly a straight lane past you and loop back. Teaches: don't stand in a lane.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Acid Zombie</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">40 / 70 / 12</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">6–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">Acid Zombie</td><td style="padding:9px 0 9px 8px">Ordinary chaser that leaves a corrosive pool <em>where it dies</em>. Teaches: kill things somewhere you don't need to stand.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Masked Sprayer</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">45 / 85 / 14</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">7–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">gas enemy</td><td style="padding:9px 0 9px 8px">The only ranged enemy. Holds at 260px and sprays a telegraphed cone. Teaches: priority targeting.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Blown Sheep</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">120 / 45 / 18</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">9–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">Sheeps</td><td style="padding:9px 0 9px 8px">Immune to knockback, 60% damage reduction from the front. Slow, never stops. Teaches: get behind things.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Sick Hog</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">160 / 60→220 / 25</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">10–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">Pigs</td><td style="padding:9px 0 9px 8px">Lines up, charges straight, overshoots, staggers 1.5s. The window is the reward.</td></tr>
+    <tr style="border-bottom:1px solid #e2ddd0"><td style="padding:9px 8px 9px 0"><strong>Gas Zombie</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">55 / 75 / 10</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">12–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">zombie2</td><td style="padding:9px 0 9px 8px">Bloated. Bursts into a spreading gas cloud on death, and the cloud outlives it by 6s. Punishes indiscriminate clearing.</td></tr>
+    <tr><td style="padding:9px 8px 9px 0"><strong>Masked Hauler</strong></td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">220 / 50 / 22</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px">14–24</td><td style="padding:9px 8px;font-family:'JetBrains Mono',monospace;font-size:11px">gas enemy2</td><td style="padding:9px 0 9px 8px">Slow tank that grants +40% HP to every enemy within 150px. Kill it first or kill nothing. Teaches: read the field, not the nearest target.</td></tr>
+  </tbody>
+</table>
+<p style="font-family:'Source Serif 4',serif;font-size:13.5px;line-height:1.5;color:#6a6458;margin:0 0 26px;font-style:italic">Every sheet above is 1792×704 at 32px. <code style="font-family:'JetBrains Mono',monospace;font-size:12.5px">Gas zombie.png</code> was an accidental 16×16 export and is not used — <code style="font-family:'JetBrains Mono',monospace;font-size:12.5px">zombie2.png</code> takes that slot.</p>
+
+<div style="background:#f2eee3;border:1px solid #d8d2c4;padding:16px 18px;margin-bottom:26px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">The spawn director</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24;margin:0 0 10px">Each wave has a <em>threat budget</em>, not a spawn list: <code style="font-family:'JetBrains Mono',monospace;font-size:13px">budget(n) = 30 + 22·n + 1.4·n²</code>. The director spends it on enemies unlocked at that wave, weighted per-enemy, spread across the wave with a bias toward a heavy final quarter. Spawns come from arena edges and corn tiles, never within 220px of the player.</p>
+  <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24;margin:0 0 10px">Because waves never stop, the director holds a <strong>pressure ceiling</strong>: above 380 live enemies it withholds spawns until the count drops. Without it, a player who falls behind compounds into an unwinnable screen by wave 15 and the run is decided long before it ends.</p>
+  <p style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24;margin:0">Every fifth wave, one enemy in ten spawns as an <strong>elite</strong>: ×4 HP, ×1.5 draw size, a gold outline, guaranteed feed drop. Same sprite, palette-shifted outline — no new art.</p>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">09 — The two bosses</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 16px;line-height:1.15">Made by scaling things that already exist</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 20px">Both bosses are existing sprites drawn at integer scale with a palette shift. <strong>Integer only — ×2 or ×3, never ×2.5</strong>, or the pixel grid breaks and the whole screen stops being pixel art. A 32px cow at ×2.2 is a blurry cow; at ×2 with a darkened palette and a slow, heavy walk cycle it is a different animal entirely. Scale plus timing does the work that new art would otherwise do.</p>
+
+<div style="border:1px solid #8a6a3a;background:#f7f4ec;margin-bottom:20px;break-inside:avoid">
+  <div style="background:#8a6a3a;padding:12px 18px;display:flex;justify-content:space-between;align-items:baseline">
+    <span style="font-family:Archivo,sans-serif;font-weight:700;font-size:19px;color:#f7f4ec;letter-spacing:-0.01em">Wave 12 — The Prize Bull</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#e2d0b4">Cows_32x32 @ ×2 · 900 HP</span>
+  </div>
+  <div style="padding:16px 18px">
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#2c2a24;margin:0 0 12px">He took a blue ribbon at the county fair two years running and he is nine hundred pounds of it. Palette shifted to near-black with red eyes, walk cycle slowed to half speed so every step lands heavy.</p>
+    <div style="display:grid;gap:9px;font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">
+      <div><strong style="font-family:Archivo,sans-serif;font-weight:600;color:#1b1a17">Charge</strong> Paws the ground for 1.2s facing you — the tell is a dust puff loop at his feet — then crosses the entire arena in a straight line, damaging everything in the lane including his own trash. Slams the far fence and staggers 2s.</div>
+      <div><strong style="font-family:Archivo,sans-serif;font-weight:600;color:#1b1a17">Stampede</strong> Below 50%, every charge summons four Sick Hogs that charge alongside him in the same lane. The lane becomes the whole fight.</div>
+      <div><strong style="font-family:Archivo,sans-serif;font-weight:600;color:#1b1a17">Why he's here</strong> Wave 12 is where a build either works or doesn't, and a boss that only ever attacks in a straight line tells the player exactly which it is without killing them for a bad build. Normal spawns continue throughout.</div>
+    </div>
+  </div>
+</div>
+
+<div style="border:1px solid #6b3f2a;background:#f7f4ec;margin-bottom:22px;break-inside:avoid">
+  <div style="background:#6b3f2a;padding:12px 18px;display:flex;justify-content:space-between;align-items:baseline">
+    <span style="font-family:Archivo,sans-serif;font-weight:700;font-size:19px;color:#f7f4ec;letter-spacing:-0.01em">Wave 25 — The Duster</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#e0bda6">Vehicles_32x32 tractor @ ×3 · 2,400 HP</span>
+  </div>
+  <div style="padding:16px 18px">
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#2c2a24;margin:0 0 12px">Nobody is driving it. It has been running the same pattern since Tuesday morning and the tank on the back is still three-quarters full.</p>
+    <div style="display:grid;gap:10px;font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">
+      <div><strong style="font-family:Archivo,sans-serif;font-weight:600;color:#1b1a17">Phase 1 — The Pattern</strong> It drives a fixed agricultural back-and-forth across the arena at a steady, unhurried speed, laying a strip of gas behind it. It does not chase, ever. The fight is about where you stand relative to a machine that will not deviate — the arena slowly fills with lanes you can't be in, and the danger is entirely of your own making. Rust-red palette, no other change.</div>
+      <div><strong style="font-family:Archivo,sans-serif;font-weight:600;color:#1b1a17">Phase 2 (below 50%) — Off the Rails</strong> The pattern breaks. It turns, finds you, and comes on directly and slowly, dragging its gas strip behind it in a curve. Hay bales fly off the back on a timer and bounce off the fences. Farmhands and Gas Zombies pour continuously from the corn. The rows burn inward from the edges over ninety seconds, shrinking the arena to roughly a third.</div>
+      <div><strong style="font-family:Archivo,sans-serif;font-weight:600;color:#1b1a17">Tells</strong> Every attack has a ≥0.7s wind-up with a ground decal. No unavoidable damage anywhere in the fight — the arena shrink is the only pressure that can't be dodged, and it's slow enough to plan around.</div>
+      <div><strong style="font-family:Archivo,sans-serif;font-weight:600;color:#1b1a17">Death</strong> It doesn't explode. It slows, coughs, and stops, and the gas thins out. Then the light goes.</div>
+    </div>
+  </div>
+</div>
+
+<div style="border-left:3px solid #a8761f;padding:2px 0 2px 16px;margin-bottom:46px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin-bottom:8px">Boss rendering rules</div>
+  <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.65;color:#2c2a24">
+    Nearest-neighbour, integer scale only.<br>
+    Palette shift by remapping through <code style="font-family:'JetBrains Mono',monospace;font-size:13px">palette.json</code> indices, not by a CSS filter or globalAlpha tint — index remapping keeps the art flat, filters make it muddy.<br>
+    Slow the animation frame rate rather than adding frames; big things read as heavy when they move at 6fps against everything else's 12.<br>
+    Health bar pinned to the top of the screen, not floating over the sprite. Name in the UI pack's frame.
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">10 — Art pipeline</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 16px;line-height:1.15">One rig, one scale, one atlas</h3>
+
+<div style="border:1px solid #2c4636;background:#f2f5f0;padding:18px 20px;margin-bottom:22px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2c4636;margin-bottom:10px">The generator exports are the best thing in the project</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:15.5px;line-height:1.6;color:#2c2a24;margin:0 0 10px">All thirteen sheets share one grid: <strong>56 columns × 22 rows</strong>, 1792×704 at 32px per cell. Player, zombies, acid variants, gas-mask figures — identical layout, identical frame order, identical pivot. That means one slicer config, one animation state machine, and one code path for every humanoid in the game. Swapping a character is swapping an atlas page index and nothing else.</p>
+  <p style="font-family:'Source Serif 4',serif;font-size:15.5px;line-height:1.6;color:#2c2a24;margin:0">It also means new enemies are nearly free forever. A new export is a new enemy with full animation for the cost of a JSON entry — which is why §04's Bunkhouse track and the difficulty tiers can promise content without promising art.</p>
+</div>
+
+<div style="display:grid;gap:14px;margin-bottom:24px">
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:9px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#f7f4ec;background:#2c4636;padding:3px 8px;letter-spacing:0.08em">STEP 1</span>
+      <span style="font-family:Archivo,sans-serif;font-weight:700;font-size:19px;color:#1b1a17;letter-spacing:-0.01em">Hold the scale, and enforce it in code</span>
+    </div>
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#3a372f;margin:0 0 10px">32×32 everywhere. The packs ship 16, 32 and 48; only the 32 directories are ever read. This already went wrong once — <code style="font-family:'JetBrains Mono',monospace;font-size:13px">Gas zombie.png</code> came out at 896×352, the 16px export, and would have silently rendered at half size. It's excluded, but the next one won't announce itself either.</p>
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#3a372f;margin:0"><strong>So the atlas builder asserts it.</strong> Every humanoid sheet must be exactly 1792×704 or the build fails loudly with the filename. Thirty seconds of code that removes an entire category of bug you would otherwise find by eye, late, in a crowd of two hundred sprites.</p>
+  </div>
+
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:9px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#f7f4ec;background:#a8761f;padding:3px 8px;letter-spacing:0.08em">STEP 2</span>
+      <span style="font-family:Archivo,sans-serif;font-weight:700;font-size:19px;color:#1b1a17;letter-spacing:-0.01em">Build one atlas from a manifest</span>
+    </div>
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#3a372f;margin:0 0 10px"><code style="font-family:'JetBrains Mono',monospace;font-size:13px">tools/build-atlas.ts</code> reads <code style="font-family:'JetBrains Mono',monospace;font-size:13px">art/sprites.json</code> — the only place a file path ever appears — slices each source by its declared grid, trims to content bounds, records a bottom-centre pivot and a collision radius, and packs everything into <code style="font-family:'JetBrains Mono',monospace;font-size:13px">public/atlas.png</code> + <code style="font-family:'JetBrains Mono',monospace;font-size:13px">atlas.json</code> with 2px bleed. Runs offline; the game never sees the packs.</p>
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#3a372f;margin:0">Only slice the rows you actually use. Twenty-two rows per humanoid is generous; the game needs idle, walk, run, a hit pose and a death pose. Slicing all 22 for 13 characters wastes most of the atlas on animations nobody will ever see.</p>
+  </div>
+
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:9px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#f7f4ec;background:#6b3f2a;padding:3px 8px;letter-spacing:0.08em">STEP 3</span>
+      <span style="font-family:Archivo,sans-serif;font-weight:700;font-size:19px;color:#1b1a17;letter-spacing:-0.01em">Conform the FX pack to LimeZu's palette</span>
+    </div>
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#3a372f;margin:0 0 10px">The FX pack is the one thing in the repo drawn by a different hand, and it is more saturated and more arcade than LimeZu's muted farm palette. Dropping it in raw is the single most likely way this game ends up looking assembled rather than made.</p>
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#3a372f;margin:0 0 10px"><code style="font-family:'JetBrains Mono',monospace;font-size:13px">tools/conform-fx.ts</code> fixes it: extract 32 colours from the LimeZu sheets into <code style="font-family:'JetBrains Mono',monospace;font-size:13px">art/palette.json</code>, then quantise every FX frame to the nearest entry <em>in Oklab, not RGB</em>. Same shapes, same timing, now the same game. Do this before judging whether an effect works — plenty will look wrong raw and right conformed.</p>
+    <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#3a372f;margin:0">The FX filenames are meaningless numbers. Pick the eight or ten you need off the preview GIFs, rename them semantically in <code style="font-family:'JetBrains Mono',monospace;font-size:13px">sprites.json</code>, and never look at the other 186 again.</p>
+  </div>
+
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:9px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#f7f4ec;background:#1b1a17;padding:3px 8px;letter-spacing:0.08em">STEP 4</span>
+      <span style="font-family:Archivo,sans-serif;font-weight:700;font-size:19px;color:#1b1a17;letter-spacing:-0.01em">Get variety from code, not from files</span>
+    </div>
+    <div style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.65;color:#3a372f">
+      <strong>Palette-index recolour</strong> — one sheet becomes four enemy variants by remapping palette indices at atlas-build time. This is how you get tiered enemies without more exports.<br>
+      <strong>Bob and lean</strong> — 2px vertical sine tied to distance travelled, 4–8° rotation into the direction of travel. Applies to sprites that have no run cycle.<br>
+      <strong>Squash and stretch</strong> — scaleY 1.0→1.08 on the same phase, scaleX inverse.<br>
+      <strong>Hit flash</strong> — redraw the sprite in white with <code style="font-family:'JetBrains Mono',monospace;font-size:13px">globalCompositeOperation:'source-atop'</code> for 60ms.<br>
+      <strong>Death</strong> — no death frames needed: spin, scale to zero over 200ms, spray palette-coloured pixels.
+    </div>
+  </div>
+</div>
+
+<div style="background:#f2eee3;border:1px solid #d8d2c4;padding:16px 18px;margin-bottom:46px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Licensing — build discipline, not paperwork</div>
+  <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24">The repo stays private. <code style="font-family:'JetBrains Mono',monospace;font-size:13px">assets/</code> is never deployed — only the packed <code style="font-family:'JetBrains Mono',monospace;font-size:13px">atlas.png</code> ships, which is a composited game build rather than a redistributable pack. Credit LimeZu in the title screen and the README; the UI pack's licence requires it, the farm pack's appreciates it. Confirm the FX pack's free-tier terms on its itch page before anything goes public.</div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">11 — Game feel &amp; blood</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">The checklist that separates fun from functional</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 18px">In this genre feel <em>is</em> the game — the mechanics are trivially simple. Build these in during the first milestone, not as polish afterwards, because without them nothing can be evaluated.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px;margin-bottom:24px">
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">On hit</div>
+    <ul style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24;margin:0 0 18px;padding-left:18px">
+      <li>60ms white flash on the target</li>
+      <li>2px knockback along the hit vector</li>
+      <li>Damage number rises 20px, fades 500ms, jitters ±4px so stacks stay readable</li>
+      <li>One conformed FX frame from the pack, scaled to the hit's damage</li>
+      <li>40ms hitstop on crits only — never on chaff, or it reads as lag</li>
+    </ul>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">Camera</div>
+    <ul style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24;margin:0;padding-left:18px">
+      <li>40px dead zone, 0.12 lerp</li>
+      <li>Leads the player 30px in the movement direction</li>
+      <li>Trauma-based shake: player hit 0.4, bull charge 0.7, decays quadratically</li>
+    </ul>
+  </div>
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">Readability rules</div>
+    <ul style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24;margin:0 0 18px;padding-left:18px">
+      <li>Enemy projectiles are the only saturated magenta on screen. Nothing else may use that hue.</li>
+      <li>Gas is the only translucent thing, and it renders below all sprites.</li>
+      <li>Separation steering keeps a pile from fully occluding the player.</li>
+      <li>The player renders at 85% opacity when a crowd overlaps them, so you never lose yourself.</li>
+      <li>Cap simultaneous damage numbers at 40; merge the rest.</li>
+    </ul>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:9px;border-bottom:1px solid #d8d2c4;padding-bottom:6px">Pickup joy</div>
+    <ul style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24;margin:0;padding-left:18px">
+      <li>Gems accelerate toward the player rather than lerping — the greed curve</li>
+      <li>Ascending pitch on consecutive pickups within 300ms, resets after</li>
+      <li>Wave boundaries auto-collect everything in one sweep</li>
+    </ul>
+  </div>
+</div>
+
+<div style="border-left:3px solid #8a2c2c;padding:2px 0 2px 16px;margin-bottom:46px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a2c2c;margin-bottom:8px">Blood — cute, but it stains</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.6;color:#2c2a24;margin:0 0 10px">One flat palette red (<code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">#A02C2C</code>) plus one darker tone for stains. Never bright, never wet-looking, never more than two colours — that restraint is what keeps it funny rather than grim against LimeZu's soft palette.</p>
+  <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.65;color:#2c2a24">
+    <strong>Hit</strong> — 3–5 red pixels along the hit normal, gravity-affected, 400ms life.<br>
+    <strong>Death</strong> — 8–14 pixels in a cone away from the killing blow, scaled to enemy size. Roosters spray a token 2 so a swarm doesn't redden the screen.<br>
+    <strong>Stains</strong> — landed pixels stamp a permanent decal onto a separate offscreen canvas above the baked terrain: zero per-frame cost at any count. Cap 400; oldest fade over 2s.<br>
+    <strong>Why it matters</strong> — by wave 20 the ground where you like to stand is visibly dark. That accumulated record of your own run is the best feedback in the game and costs almost nothing.<br>
+    <strong>Player damage never sprays</strong> — a red screen-edge vignette instead, so you always know whose blood it is.<br>
+    <strong>Acid and gas deaths</strong> — green, same system, different palette index.
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">12 — Screens</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 16px;line-height:1.15">Five screens, all DOM, all framed by the UI pack</h3>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 20px">Every panel, button and frame comes from <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">modern-ui/32x32/Modern_UI_Style_1.png</code>, sliced as CSS <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">border-image</code> so frames stretch cleanly to any size. Pick Style 1 or Style 2 and never mix them. The Portrait Generator gives each class a face for the picker and the results screen.</p>
+
+<div style="display:grid;gap:14px;margin-bottom:24px">
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:#1b1a17;margin-bottom:8px">HUD — always visible, never in the way</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#3a372f">Top-left: HP bar with a delayed white damage-chaser. Top-centre: wave number and a depleting timer ring. Top-right: feed. Bottom-centre: a thin XP bar spanning the width — the one element the player actually watches. Bottom-left: six weapon slots with cooldown wipes. Bottom-right: ability icon with radial cooldown and a key hint from the gamepad glyph sheet. Everything hugs the edges; the centre 70% stays clear.</div>
+  </div>
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:#1b1a17;margin-bottom:8px">Level-up — three cards, one decision</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#3a372f">Game dims and freezes. Three cards slide up staggered 60ms apart: icon, name, one line of effect, rarity edge (common straw / uncommon green / rare gold). The delta on any stat the card changes is written out — "+12% attack speed → 1.24/s" — because a player who can't see the effect won't feel the upgrade. Keys 1–3 select. Reroll costs 4 feed.</div>
+  </div>
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:#1b1a17;margin-bottom:8px">Shop — the planning screen</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#3a372f">Left: four cards with prices, an escalating-cost reroll, and a lock toggle per card that carries it to the next shop. Right: the live character sheet — six weapon slots, owned passives, the full stat block with anything changed since last wave highlighted. Hovering a card previews its effect on that block in a second colour. "Back to work" button, bottom right, always reachable.</div>
+  </div>
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:#1b1a17;margin-bottom:8px">Results — the thing that starts the next run</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#3a372f">Wave reached, time survived, kills, damage dealt, the build you ended with, acres earned, run seed. Two buttons: "Run it back", which restarts with the same class immediately, and "Homestead" if there are acres to spend. Never make the player walk back through a menu.</div>
+  </div>
+  <div style="border:1px solid #d8d2c4;background:#f7f4ec;padding:16px 18px;break-inside:avoid">
+    <div style="font-family:Archivo,sans-serif;font-weight:700;font-size:17px;color:#1b1a17;margin-bottom:8px">Homestead — the between-runs screen <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:400;color:#8a8070;letter-spacing:0.08em">CONTENT IN §04</span></div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#3a372f">A farmyard laid out as four buildings you click into, drawn from the props sheet. Acres fixed top-right with the current tier beside it. Inside each building: a plain grid of purchase cards — name, effect, cost, owned rank. Locked classes render as solid dark silhouettes with their price, never as empty slots. Anything affordable gets a warm outline, so the screen answers "what can I buy right now" without reading a word. One "Head out" button leading to the class picker.</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:46px;break-inside:avoid">
+  <div style="background:#f2eee3;border:1px solid #d8d2c4;padding:16px 18px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Controls</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24">WASD / arrows / left stick to move. Space or right trigger for the class ability. That is the whole game — weapons fire themselves. Full gamepad support from day one; it's thirty lines and the UI pack already ships the glyphs.</div>
+  </div>
+  <div style="background:#f2eee3;border:1px solid #d8d2c4;padding:16px 18px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8a8070;margin-bottom:10px">Audio — the one real gap</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.6;color:#2c2a24">Neither pack ships sound. Sixteen effects and three music layers still need sourcing. WebAudio, no library, voice cap of 8 per sound with a 40ms retrigger guard — or two hundred roosters dying at once will blow out the mix.</div>
+  </div>
+</div>
+
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">13 — Performance budget</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">The numbers that must hold</h3>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#d8d2c4;border:1px solid #d8d2c4;margin-bottom:20px;break-inside:avoid">
+  <div style="background:#f7f4ec;padding:14px"><div style="font-family:Archivo,sans-serif;font-weight:800;font-size:26px;color:#1b1a17;line-height:1">800</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8070;margin-top:5px">Enemy cap</div></div>
+  <div style="background:#f7f4ec;padding:14px"><div style="font-family:Archivo,sans-serif;font-weight:800;font-size:26px;color:#1b1a17;line-height:1">1200</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8070;margin-top:5px">Projectile cap</div></div>
+  <div style="background:#f7f4ec;padding:14px"><div style="font-family:Archivo,sans-serif;font-weight:800;font-size:26px;color:#1b1a17;line-height:1">16.6ms</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8070;margin-top:5px">Frame ceiling</div></div>
+  <div style="background:#f7f4ec;padding:14px"><div style="font-family:Archivo,sans-serif;font-weight:800;font-size:26px;color:#1b1a17;line-height:1">&lt;5MB</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8070;margin-top:5px">Total download</div></div>
+</div>
+
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 46px">Terrain bakes once at load and blits as a single image per frame — never per-tile draws. Sprites y-sort with a counting sort into 8px buckets, not <code style="font-family:'JetBrains Mono',monospace;font-size:14px;background:#efeade;padding:1px 5px;border-radius:3px">Array.sort</code>. Blood decals live on their own canvas and cost nothing. Ship a dev overlay from milestone one: frame time graph, entity counts by pool, draw calls, and a wave-skip key. Without it, balancing twenty-four waves means playing twenty-four waves.</p>
+
+<sc-if value="{{ showBuildOrder }}" hint-placeholder-val="{{ true }}">
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">14 — Build order</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 8px;line-height:1.15">Nine milestones, each playable</h3>
+<p style="font-family:'Source Serif 4',serif;font-size:16px;line-height:1.62;color:#2c2a24;margin:0 0 22px">Every milestone ends in something runnable in a browser and judgeable. Do not proceed past M2 until movement and shooting feel good with squares on screen — if it isn't fun with squares, no amount of pixel art will save it.</p>
+
+<div style="display:grid;gap:12px;margin-bottom:24px">
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M0</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Skeleton</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">Vite + TS, canvas, fixed-step loop, input, camera, dev overlay, and a Pages deploy from the private repo on push. <em>Ships:</em> a square you can walk around a field of colour at a locked 60fps, on a URL.</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M1</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Combat core</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">Pools, spatial grid, one chasing enemy, one auto-firing weapon, the damage formula, death, hit flash, damage numbers, screenshake. <em>Ships:</em> squares killing squares, and it already feels good.</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M2</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Progression</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">XP gems, magnet, level-up card screen, the stat resolver, six passives. <em>Ships:</em> a run that gets meaningfully stronger.</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M3</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Wave &amp; shop loop</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">Spawn director with the pressure ceiling, all 24 waves continuous, feed economy, shop at 5/10/15/20 with reroll and lock, weapon slots and tier merging, results screen. <em>Ships:</em> the complete loop, still with squares.</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M4</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Art pipeline</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">sprites.json, build-atlas.ts with the 1792×704 assertion, palette extraction, conform-fx.ts, terrain bake, the draw-time animation transforms. <em>Ships:</em> the same game, now made of pixels. Deliberately before the content milestone — content is much easier to judge once it looks right.</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M5</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Content</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">Both classes with passives and abilities, all 12 weapons, all 12 passives, all 10 enemies with real behaviours, elites, gas as a hazard. <em>Ships:</em> the designed game.</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M6</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Bosses, blood &amp; audio</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">The Prize Bull, the Duster's two phases with telegraphs, the blood decal system, 16 sounds, three music layers, title and pause screens.</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;border-bottom:1px solid #e2ddd0;padding-bottom:12px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M7</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">The Homestead</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">Acres payout, the four meta tracks, the save blob with its migration function, the locked-pool filter, difficulty tiers and their modifiers. <em>Ships:</em> a reason to press "run it back".</div></div></div>
+  <div style="display:grid;grid-template-columns:52px 1fr;gap:16px;break-inside:avoid"><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#a8761f">M8</div><div><div style="font-family:Archivo,sans-serif;font-weight:600;font-size:16px;color:#1b1a17;margin-bottom:3px">Balance &amp; ship</div><div style="font-family:'Source Serif 4',serif;font-size:14.5px;line-height:1.55;color:#3a372f">Seeded playtests, tune the JSON only, settings and best run to localStorage, Tauri wrap if desktop is wanted. Target: a competent player clears Tier 1 in about six runs.</div></div></div>
+</div>
+
+<div style="border-left:3px solid #2c4636;padding:2px 0 2px 16px;margin-bottom:46px;break-inside:avoid">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2c4636;margin-bottom:8px">Instruction to carry into every milestone</div>
+  <p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.6;color:#2c2a24;margin:0">At the end of each milestone write <code style="font-family:'JetBrains Mono',monospace;font-size:13.5px;background:#efeade;padding:1px 5px">NOTES.md</code>: what was built, what deviated from this spec and why, what feels wrong in play, and the two or three design decisions now needed. That file is the handoff back for the next design pass.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{ showOpenQuestions }}" hint-placeholder-val="{{ true }}">
+<h2 style="font-family:Archivo,sans-serif;font-weight:700;font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a8761f;margin:0 0 6px;padding-top:8px;border-top:2px solid #1b1a17">15 — Open</h2>
+<h3 style="font-family:Archivo,sans-serif;font-weight:700;font-size:31px;letter-spacing:-0.02em;color:#1b1a17;margin:0 0 18px;line-height:1.15">The judgement calls still sitting in this document</h3>
+<div style="display:grid;gap:11px;font-family:'Source Serif 4',serif;font-size:15px;line-height:1.58;color:#2c2a24;margin-bottom:20px">
+  <div><strong style="font-family:Archivo,sans-serif;font-weight:600">Audio is unsourced.</strong> The only genuine gap in the whole project. Sixteen effects and three music layers. Worth deciding early whether that's another purchase or synthesised in WebAudio.</div>
+  <div><strong style="font-family:Archivo,sans-serif;font-weight:600">Twenty-four waves at 40 seconds.</strong> A 17-minute run. If playtests say it drags, cut to 20 waves before touching any other number — run length is the first dial, not enemy HP.</div>
+  <div><strong style="font-family:Archivo,sans-serif;font-weight:600">Shop and level-ups share one pool.</strong> Clean, but a shop can offer what a level-up just gave you. If that feels bad, the fix is a short memory — nothing offered twice within 90 seconds — not two separate pools.</div>
+  <div><strong style="font-family:Archivo,sans-serif;font-weight:600">Ten enemies is a lot for one level.</strong> If M5 sprawls, cut the Masked Hauler and Blown Sheep first and bring them back as Tier 2 additions.</div>
+  <div><strong style="font-family:Archivo,sans-serif;font-weight:600">Gas readability is untested.</strong> Translucent hazards in a 400-entity screen are a real risk. If it reads badly, switch gas from a filled area to an animated outline with a sparse interior.</div>
+  <div><strong style="font-family:Archivo,sans-serif;font-weight:600">The Duster's phase 1 might be too passive.</strong> A boss that never chases you is an unusual choice and either lands beautifully or feels like an obstacle course. Judge it in play; the fix is giving it one tracking attack, not making it chase.</div>
+</div>
+<p style="font-family:'Source Serif 4',serif;font-size:15px;line-height:1.6;color:#6a6458;margin:0;font-style:italic">Everything here is cheap to change before M3 and expensive after it.</p>
+</sc-if>
+
+</doc-page>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showBuildOrder&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;},&quot;showOpenQuestions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showBuildOrder: this.props.showBuildOrder ?? true,
+      showOpenQuestions: this.props.showOpenQuestions ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

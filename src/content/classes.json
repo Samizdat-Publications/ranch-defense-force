@@ -1,0 +1,66 @@
+{
+  "hand": {
+    "name": "The Hand",
+    "sheet": "farmer",
+    "unlocked": true,
+    "blurb": "Thirty years on this ground. Slow, hard to move, and not especially worried.",
+    "stats": {
+      "maxHp": 140,
+      "moveSpeedPct": -20,
+      "armor": 6,
+      "hpRegen": 1.5,
+      "pickupRadiusPct": 40,
+      "critChancePct": -50
+    },
+    "passive": {
+      "id": "braced",
+      "desc": "Standing still 1s grants +6% damage reduction per second to 30%. Resets on move.",
+      "stillDelay": 1,
+      "drPerSec": 6,
+      "drMax": 30
+    },
+    "ability": {
+      "id": "digIn",
+      "name": "Dig In",
+      "cooldown": 14,
+      "duration": 2.5,
+      "desc": "Immovable, 70% damage reduction, ends in a 140px knockback pulse.",
+      "damageReductionPct": 70,
+      "pulseRadius": 140,
+      "pulseKnockback": 260,
+      "animRow": "dig"
+    },
+    "startingWeapon": "shovel"
+  },
+  "kid": {
+    "name": "The Kid",
+    "sheet": "female_farmer",
+    "unlocked": true,
+    "blurb": "Home from school for the summer. Only ever safe at speed; stopping is the mistake.",
+    "stats": {
+      "maxHp": 75,
+      "moveSpeedPct": 35,
+      "armor": 0,
+      "dodgePct": 10,
+      "critDamagePct": 25,
+      "hpRegen": 0
+    },
+    "passive": {
+      "id": "momentum",
+      "desc": "+1% damage per 2% of max velocity, to +50%. Zero when standing.",
+      "dmgPerVelocityPct": 0.5,
+      "dmgMax": 50
+    },
+    "ability": {
+      "id": "bolt",
+      "name": "Bolt",
+      "cooldown": 6,
+      "dashDistance": 180,
+      "iFrames": 0.35,
+      "desc": "Dash with i-frames, leaving a dust trail that blinds pursuers 2s.",
+      "blindDuration": 2,
+      "animRow": "run"
+    },
+    "startingWeapon": "seedSpitter"
+  }
+}
