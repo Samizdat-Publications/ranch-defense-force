@@ -32,8 +32,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -44,10 +44,13 @@ jobs:
       - run: npx vitest run
       - run: npx vite build
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
+  # The action versions matter. GitHub now forces Node 20 actions onto Node 24,
+  # and deploy-pages@v4 fails there with "HttpError: self-signed certificate"
+  # before it uploads anything. The v5 line is the Node 24 build.
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -56,4 +59,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
