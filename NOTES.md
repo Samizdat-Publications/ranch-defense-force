@@ -6,9 +6,18 @@ Handoff back to the next design pass, per `CLAUDE.md`. Latest session first.
 
 ## Start here
 
-**State:** M0–M5 done. A full 24-wave run plays start to finish in real pixel
-art, with conformed FX and every advertised weapon tier rider actually firing.
-84 tests pass.
+**State:** M0–M5 done, and **M0's "on a live URL" is finally met** — the repo
+is public and Pages deploys on push:
+
+**https://samizdat-publications.github.io/ranch-defense-force/**
+
+A full 24-wave run plays start to finish in real pixel art, with conformed FX,
+every advertised weapon tier rider firing, and animals that turn to face you.
+85 tests pass.
+
+Verified on the live build, not just locally: the atlas serves (438 frames,
+122KB), the animal facings are in it, and every `assets/` path 404s — only the
+packed atlas ships.
 
 **First thing:** `npm install && npm run atlas && npm run dev`. The atlas is
 gitignored and generated; without it you get coloured squares.
