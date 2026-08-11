@@ -4,6 +4,52 @@ Handoff back to the next design pass, per `CLAUDE.md`. Latest session first.
 
 ---
 
+## Start here
+
+**State:** M0–M4 done. A full 24-wave run plays start to finish in real pixel
+art — both classes, all ten enemy types, harvestable crops, baked terrain.
+66 tests pass. Everything is committed and pushed.
+
+**First thing:** `npm install && npm run atlas && npm run dev`. The atlas is
+gitignored and generated; without it you get coloured squares.
+
+**Not yet played by a human since the art landed.** The last playtest was on the
+coloured-square build, and it found a blocking bug (the shop freeze) that no test
+caught. Play it before building on it.
+
+### What M4 still owes
+
+1. **`tools/conform-fx.ts` and `art/palette.json`.** The FX pack is untouched and
+   unused. §10 step 3 is emphatic that dropping it in unconformed is the single
+   most likely way this ends up looking assembled rather than made — so nothing
+   uses it yet rather than using it raw. Doing this unlocks hit sparks, muzzle
+   flashes and explosions, which is most of what combat feel is missing.
+2. **Boss art** — Prize Bull (cow ×2) and Duster (tractor ×3), both integer
+   scale with a palette shift. Technically M6 but it is atlas work.
+3. **The animals' front/back clips** are real art currently unused. See the
+   "animal sheets fought back" section below.
+4. Fences and props for the arena; the fence is a drawn rectangle right now.
+
+### Then M5 — content
+
+The largest honest gap: **the level-up and shop cards advertise tier riders that
+do not fire.** Every weapon has its base behaviour and the §7 ×1.6 per-tier
+damage scaling, but "T3: hits twice", "burn spreads on death" and the rest are
+text only. That is the most player-visible lie in the build.
+
+Also M5: enemy on-death specials only damage enemies, not the player (acid pools
+and gas clouds spawn and render but are harmless to you); elites are spawn-time
+only; gas has no readability treatment.
+
+### Known constraint
+
+GitHub Pages will not deploy from a private repo on a free plan, and the repo
+must stay private. The workflow builds and tests correctly; the deploy step
+fails. M0's "on a live URL" is unmet until the plan changes or the build is
+hosted privately elsewhere.
+
+---
+
 # Session 2 — playtest fixes, M4 art pipeline
 
 ## The shop freeze

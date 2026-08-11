@@ -1,5 +1,18 @@
 # Asset map
 
+> **⚠ Correction, added after the fact.** The `assets/generated/` paths below are
+> **stale**. The sheets were normalised to lowercase-hyphen names in subfolders
+> before this handoff arrived: `assets/generated/farmer.png` is now
+> `assets/generated/characters/farmer-01.png`. Full mapping in
+> `assets/generated/README.md`.
+>
+> **`art/sprites.json` is the live manifest** and carries the real paths — it is
+> the only place a file path appears, per §10. Treat this file as design intent,
+> not as a path reference.
+>
+> Also: `Gas zombie.png`, listed below as an excluded 16×16 export, **does not
+> exist** in the repo. All 12 committed sheets are 1792×704.
+
 Every game entity mapped to a real path in `Samizdat-Publications/ranch-defense-force`.
 **Only 32×32 directories are ever read.** This file is the source for
 `art/sprites.json`.
