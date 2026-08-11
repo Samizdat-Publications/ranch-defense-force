@@ -41,6 +41,10 @@ interface Manifest {
     clips: Record<string, { rowPair: number; start: number; framesPerDirection: number }>
   }
   humanoids: Record<string, string>
+  animals: {
+    _base: string
+    sheets: Record<string, { path: string; rows: number; walkRow: number; framesPerDirection: number }>
+  }
   singles: { _base: string; files: Record<string, string> }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
 }
@@ -63,6 +67,9 @@ interface Pending {
 
 const pending: Pending[] = []
 const errors: string[] = []
+/** Frames per direction, per sheet — a rooster walks in 6 and a pig in 12, so
+ *  the renderer cannot assume one number. */
+const clipLengths: Record<string, Record<string, number>> = {}
 
 // ---------------------------------------------------------------- humanoids
 
@@ -87,8 +94,10 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
 
   const fw = rig.frameWidth
   const fh = rig.frameHeight
+  clipLengths[id] = {}
 
   for (const [clipName, clip] of Object.entries(rig.clips)) {
+    clipLengths[id][clipName] = clip.framesPerDirection
     const rowY = clip.rowPair * 2 * manifest.cell
     rig.directions.forEach((dir, dirIndex) => {
       for (let f = 0; f < clip.framesPerDirection; f++) {
@@ -114,6 +123,57 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
       }
     })
   }
+}
+
+// ------------------------------------------------------------------ animals
+
+for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
+  const path = manifest.animals._base + cfg.path
+  let sheet: Image
+  try {
+    sheet = decodePng(readFileSync(path))
+  } catch (e) {
+    errors.push(`${path}: ${(e as Error).message}`)
+    continue
+  }
+
+  const cell = manifest.cell
+  const fw = cell
+  const fh = cell * cfg.rows
+  const rowY = cfg.walkRow * cell
+  const needCols = rig.directions.length * cfg.framesPerDirection
+  clipLengths[id] = { walk: cfg.framesPerDirection, idle: 1 }
+
+  if (rowY + fh > sheet.height || needCols * fw > sheet.width) {
+    errors.push(
+      `${path}: walk clip at row ${cfg.walkRow} needs ${needCols}x${cfg.rows} cells but the sheet ` +
+      `is ${Math.floor(sheet.width / cell)}x${Math.floor(sheet.height / cell)}`,
+    )
+    continue
+  }
+
+  rig.directions.forEach((dir, dirIndex) => {
+    for (let f = 0; f < cfg.framesPerDirection; f++) {
+      const col = dirIndex * cfg.framesPerDirection + f
+      const sx = col * fw
+      const b = contentBounds(sheet, sx, rowY, fw, fh)
+      if (b.empty) {
+        errors.push(`${path}: walk ${dir} frame ${f} (col ${col}) is empty`)
+        continue
+      }
+      const frame = {
+        name: `${id}.walk.${dir}.${f}`,
+        img: sheet,
+        sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        ox: b.x - (sx + fw / 2),
+        oy: b.y - (rowY + fh),
+      }
+      pending.push(frame)
+      // Animals have no separate idle clip, so frame 0 of the walk stands in.
+      // One extra atlas entry beats a special case in the renderer.
+      if (f === 0) pending.push({ ...frame, name: `${id}.idle.${dir}.0` })
+    }
+  })
 }
 
 // ------------------------------------------------------------------ singles
@@ -232,6 +292,7 @@ writeFileSync(
       width,
       height,
       rig: { directions: rig.directions, clips: rig.clips },
+      clipLengths,
       frames,
     },
     null,

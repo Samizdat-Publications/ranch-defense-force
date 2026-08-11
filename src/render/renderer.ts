@@ -266,7 +266,7 @@ export class Renderer {
     if (!this.atlas) return undefined
     const dir = this.atlas.directions[directionIndex(facing)] ?? 'down'
     if (!moving) return this.atlas.get(`${sheet}.idle.${dir}.0`)
-    const len = this.atlas.clipLength('walk')
+    const len = this.atlas.clipLength(sheet, 'walk')
     const f = Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len
     return this.atlas.get(`${sheet}.walk.${dir}.${f}`)
   }

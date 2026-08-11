@@ -21,6 +21,8 @@ interface AtlasData {
   width: number
   height: number
   rig: { directions: string[]; clips: Record<string, { framesPerDirection: number }> }
+  /** Frames per direction per sheet — species differ, so this cannot be one number. */
+  clipLengths: Record<string, Record<string, number>>
   frames: Record<string, AtlasFrame>
 }
 
@@ -30,6 +32,7 @@ export class Atlas {
   readonly frames: Record<string, AtlasFrame>
   readonly directions: string[]
   readonly clips: Record<string, { framesPerDirection: number }>
+  readonly clipLengths: Record<string, Record<string, number>>
 
   private constructor(image: HTMLImageElement, flash: HTMLCanvasElement, data: AtlasData) {
     this.image = image
@@ -37,6 +40,7 @@ export class Atlas {
     this.frames = data.frames
     this.directions = data.rig.directions
     this.clips = data.rig.clips
+    this.clipLengths = data.clipLengths ?? {}
   }
 
   static async load(base: string): Promise<Atlas> {
@@ -70,9 +74,9 @@ export class Atlas {
     return this.frames[name]
   }
 
-  /** Frames per direction for a clip, 1 if unknown. */
-  clipLength(clip: string): number {
-    return this.clips[clip]?.framesPerDirection ?? 1
+  /** Frames per direction for a sheet's clip, 1 if unknown. */
+  clipLength(sheet: string, clip: string): number {
+    return this.clipLengths[sheet]?.[clip] ?? this.clips[clip]?.framesPerDirection ?? 1
   }
 }
 

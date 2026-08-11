@@ -26,6 +26,33 @@
     "maskedHauler": "assets/generated/characters/gas-enemy-02.png"
   },
 
+  "animals": {
+    "_note": "Unlike the thirteen generator exports, the animal sheets do NOT share one rig — each species has its own row layout, derived with tools/inspect-sheet.ts. `rows` is 1 for a 32x32 sprite and 2 for a 32x64 one that spans a stacked pair; `walkRow` is the index of the clip's TOP row. Keys match the ids in enemies.json so the renderer needs no lookup table.",
+    "_base": "assets/modern-farm/32x32/Animals_32x32/",
+    "sheets": {
+      "rooster": {
+        "path": "Chickens_and_Roosters_32x32/Rooster_Brown_32x32.png",
+        "rows": 1, "walkRow": 3, "framesPerDirection": 6
+      },
+      "feralDog": {
+        "path": "Dogs_32x32/Dog_Basenji_Brown_32x32.png",
+        "rows": 2, "walkRow": 4, "framesPerDirection": 12
+      },
+      "duckFlight": {
+        "path": "Ducks_32x32/Duck_Brown_32x32.png",
+        "rows": 2, "walkRow": 2, "framesPerDirection": 12
+      },
+      "blownSheep": {
+        "path": "Sheeps_32x32/Sheep_2_White_32x32.png",
+        "rows": 2, "walkRow": 2, "framesPerDirection": 12
+      },
+      "sickHog": {
+        "path": "Pigs_32x32/Pig_Pink_32x32.png",
+        "rows": 2, "walkRow": 2, "framesPerDirection": 12
+      }
+    }
+  },
+
   "singles": {
     "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
     "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
