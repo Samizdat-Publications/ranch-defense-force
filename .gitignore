@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+package-lock.json.bak
+
+# Build output
+dist/
+build/
+.vite/
+.cache/
+
+# Installers / binaries (not usable by agents, license-restricted)
+*.exe
+*.msi
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# Env
+.env
+.env.local
+
+# Claude Code local machine settings
+.claude/settings.local.json
