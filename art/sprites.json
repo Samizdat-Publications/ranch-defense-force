@@ -82,6 +82,26 @@
     }
   },
 
+  "weapons": {
+    "_note": "One sprite per weapon, packed as weapon.<id> and keyed to the ids in src/content/weapons.json. These are what the player sees ringed around them and what the projectiles are drawn as. Nothing packed them before, so every weapon's `sprite` field pointed at a name the atlas had never heard of, every projectile fell through to the coloured-square fallback, and a melee arc drew as a ~100px white box.",
+    "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here — a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",
+    "_sizeNote": "Every entry must be ONE object at roughly one tile. Several files in this pack named *_Load_* or *_Stack_* are multi-tile piles — Bucket_Load is 58x64 of stacked buckets and rendered as an unreadable brown slab twice the player's size in the weapon ring. tools/build-atlas.ts asserts the packed size and fails the build naming the file.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/",
+    "files": {
+      "weapon.shovel":        "Props_and_Buildings_32x32/Wooden_Shovel_1_Stone_Oven_32x32.png",
+      "weapon.axe":           "Props_and_Buildings_32x32/Hacksaw_Woodwork_Crafting_Table_32x32.png",
+      "weapon.wateringCan":   "Props_and_Buildings_32x32/Milk_Can_1_32x32.png",
+      "weapon.fishingRod":    "Pickup_Items_32x32/Pickup_Fishing_Branch_32x32.png",
+      "weapon.seedSpitter":   "Pickup_Items_32x32/Pickup_Crop_Corn_32x32.png",
+      "weapon.melonLob":      "Pickup_Items_32x32/Pickup_Crop_Watermelon_32x32.png",
+      "weapon.chiliShot":     "Pickup_Items_32x32/Pickup_Crop_Chili_Pepper_32x32.png",
+      "weapon.eggToss":       "Props_and_Buildings_32x32/Egg_32x32.png",
+      "weapon.slopBucket":    "Props_and_Buildings_32x32/Bucket_1_Single_32x32.png",
+      "weapon.framingHammer": "Props_and_Buildings_32x32/Hammer_1_Woodwork_Crafting_Table_32x32.png",
+      "weapon.grainLure":     "Props_and_Buildings_32x32/Grain_1_32x32.png"
+    }
+  },
+
   "fx": {
     "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (§10 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre — an explosion is centred on a point, it does not stand on the ground.",
     "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",

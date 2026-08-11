@@ -25,6 +25,9 @@ export const ZOOM = 2
 /** Walk cycle advances one frame per this many pixels travelled, so sprites
  *  never appear to skate. */
 const PIXELS_PER_WALK_FRAME = 11
+/** Weapon art is 32px; a projectile made of it needs to be smaller than the
+ *  weapon that threw it. */
+const PROJECTILE_SCALE = 0.55
 
 interface DrawItem {
   x: number
@@ -71,6 +74,10 @@ export class Renderer {
   private decals: HTMLCanvasElement
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
+
+  /** Melee sweeps and auras, collected during the sprite pass and stroked as
+   *  arcs afterwards. Fixed length, reused; never reallocated per frame. */
+  private readonly arcs: { x: number; y: number; radius: number; angle: number; aura: boolean }[] = []
 
   private readonly items: DrawItem[] = []
   private itemCount = 0
@@ -230,7 +237,9 @@ export class Renderer {
     this.drawEffects(ctx, true)
 
     this.itemCount = 0
+    this.arcs.length = 0
     this.collectSprites(alpha)
+    this.drawArcs(ctx)
     this.sortAndDraw(ctx)
 
     this.drawEffects(ctx, false)
@@ -360,17 +369,39 @@ export class Renderer {
       const x = p.attached ? p.x : p.px + (p.x - p.px) * alpha
       const y = p.attached ? p.y : p.py + (p.y - p.py) * alpha
       if (x < left || x > right || y < top || y > bottom) continue
+
+      // A melee arc and an aura are volumes, not objects. Drawing them as a
+      // square meant a shovel swing rendered as a ~100px white box — the
+      // single loudest thing on screen, and the reason melee "worked" visibly
+      // while every ranged weapon looked identical. They get a swept arc now,
+      // and only the things that are really objects get a sprite.
+      const isArea = p.behaviour === 'arcSwing' || p.type === 'aura'
+      if (isArea) {
+        this.arcs.push({ x, y, radius: p.radius, angle: p.angle, aura: p.type === 'aura' })
+        continue
+      }
+
       const it = this.push()
       if (!it) break
-      const melee = p.type === 'melee' || p.type === 'orbit' || p.type === 'aura'
+      const frame = this.projectileFrame(p)
       it.x = x
       it.y = y
-      it.colour = melee ? PALETTE.melee : PALETTE.projectile
+      it.frame = frame ?? null
+      it.colour = p.type === 'melee' || p.type === 'orbit' ? PALETTE.melee : PALETTE.projectile
       it.w = p.radius * 2
       it.h = p.radius * 2
-      it.rotation = p.angle
-      it.alpha = melee ? 0.7 : 1
+      // Thrown things spin; fired things point where they are going. Either way
+      // a projectile that never rotates reads as a decal sliding across grass.
+      if (p.type === 'orbit') it.rotation = p.angle + w.elapsed * 6
+      else if (p.behaviour === 'arcLob' || p.behaviour === 'bounceSplit') {
+        it.rotation = w.elapsed * 7 + p.t1
+      } else if (p.vx !== 0 || p.vy !== 0) it.rotation = Math.atan2(p.vy, p.vx)
+      else it.rotation = p.angle
+      it.scaleX = frame ? PROJECTILE_SCALE : 1
+      it.scaleY = it.scaleX
     }
+
+    this.collectWeaponRing()
 
     const p = w.player
     const it = this.push()
@@ -532,6 +563,107 @@ export class Renderer {
    * Everything fades over its last half second, so a cloud thinning out is
    * distinguishable from one about to expand into you.
    */
+  /**
+   * Melee sweeps and aura fields.
+   *
+   * A swept wedge rather than a filled disc: the disc is what the sim collides
+   * with, but drawing it whole reads as a wall rather than a swing, and at a
+   * shovel's ~50px radius it covered everything the player needed to see.
+   */
+  private drawArcs(ctx: CanvasRenderingContext2D): void {
+    for (const a of this.arcs) {
+      ctx.save()
+      ctx.translate(a.x, a.y)
+      if (a.aura) {
+        // Auras are a persistent field: a soft ring, no direction.
+        ctx.strokeStyle = 'rgba(150, 205, 225, 0.5)'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        ctx.arc(0, 0, a.radius * 0.9, 0, Math.PI * 2)
+        ctx.stroke()
+      } else {
+        ctx.rotate(a.angle)
+        const half = 0.85 // radians either side — a swing, not a circle
+        ctx.fillStyle = 'rgba(242, 234, 210, 0.30)'
+        ctx.beginPath()
+        ctx.moveTo(0, 0)
+        ctx.arc(0, 0, a.radius, -half, half)
+        ctx.closePath()
+        ctx.fill()
+        ctx.strokeStyle = 'rgba(255, 250, 235, 0.75)'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(0, 0, a.radius, -half, half)
+        ctx.stroke()
+      }
+      ctx.restore()
+      this.drawCalls++
+    }
+  }
+
+  /**
+   * The sprite a projectile is drawn as.
+   *
+   * Falls back through the weapon's own icon, so a new weapon is visibly a new
+   * weapon the moment it is packed — which is the whole point. Returns
+   * undefined for anything with no art, and the caller draws its square.
+   */
+  private projectileFrame(p: { weaponId: string; behaviour: string; type: string }): AtlasFrame | undefined {
+    if (!this.atlas) return undefined
+    // The barn dog is a real animal, not an icon.
+    if (p.behaviour === 'minionHunt') {
+      return this.atlas.get('feralDog.idle.down.0') ?? this.atlas.get('feralDog.walk.down.0')
+    }
+    return this.atlas.get(`weapon.${p.weaponId}`)
+  }
+
+  /**
+   * The weapon ring: every weapon the player owns, spaced around them and
+   * pointed at what it is shooting.
+   *
+   * This is the readout the game was missing. Six weapons all firing invisible
+   * bullets is indistinguishable from one, and picking up a seventh weapon
+   * looked like nothing had happened at all. The ring makes ownership,
+   * aiming and rate of fire legible at a glance, Brotato-style.
+   *
+   * Angles come from the sim (`slot.ringAngle`, `slot.aimAngle`) — the renderer
+   * decides nothing about targeting, it only draws the answer.
+   */
+  private collectWeaponRing(): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const w = this.world
+    const p = w.player
+    const cfg = TUNING.fx
+
+    for (const slot of p.weapons) {
+      const frame = slot.id === 'barnDog'
+        ? atlas.get('feralDog.idle.down.0')
+        : atlas.get(`weapon.${slot.id}`)
+      if (!frame) continue
+      const it = this.push()
+      if (!it) return
+
+      // Recoil kicks the weapon back along its own aim as it fires.
+      const kick = slot.recoil > 0
+        ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
+        : 0
+      const r = cfg.weaponRingRadius
+      it.x = p.x + Math.cos(slot.ringAngle) * r - Math.cos(slot.aimAngle) * kick
+      it.y = p.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick - 14
+      it.frame = frame
+      it.colour = PALETTE.melee
+      it.w = 10
+      it.h = 10
+      // The art is drawn pointing right, so aim is the rotation directly. Left
+      // of the player it would read upside down, so it flips instead.
+      const facingLeft = Math.abs(slot.aimAngle) > Math.PI / 2
+      it.rotation = facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle
+      it.scaleX = cfg.weaponRingScale * (facingLeft ? -1 : 1)
+      it.scaleY = cfg.weaponRingScale
+    }
+  }
+
   private drawHazards(ctx: CanvasRenderingContext2D): void {
     const w = this.world
     for (let i = 0; i < w.hazards.live; i++) {

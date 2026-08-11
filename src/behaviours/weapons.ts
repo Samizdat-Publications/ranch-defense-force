@@ -46,12 +46,12 @@ const num = (def: WeaponDef, key: string, fallback: number): number => {
  *
  * T2 widens the arc, T3 makes it land a second time, T4 stuns.
  */
-const arcSwing: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const arcSwing: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const widen = tier >= 2 ? num(def, 't2ArcMultiplier', 1.3) : 1
   const range = num(def, 'range', 78) * (1 + world.player.stats.rangePct / 100) * widen
   const p = world.spawnProjectile()
   if (!p) return
-  p.weaponId = 'arcSwing'
+  p.weaponId = slot.id
   p.type = 'melee'
   p.behaviour = 'arcSwing'
   p.attached = true
@@ -122,7 +122,7 @@ const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) 
     if (!p) {
       p = world.spawnProjectile()
       if (!p) continue
-      p.weaponId = 'axe'
+      p.weaponId = slot.id
       p.type = 'orbit'
       p.behaviour = 'orbit'
       p.attached = true
@@ -168,7 +168,7 @@ const rotatingJet: WeaponBehaviour = ({ world, player, slot, def, damage, tier, 
   slot.t0 += 0.9
   const p = world.spawnProjectile()
   if (!p) return
-  p.weaponId = 'wateringCan'
+  p.weaponId = slot.id
   p.type = 'aura'
   p.behaviour = 'rotatingJet'
   p.attached = true
@@ -231,7 +231,7 @@ const hookFurthest: WeaponBehaviour = ({ world, player, def, damage, tier }) => 
  *
  * T2 tightens the spread, T3 adds projectiles, T4 pierces.
  */
-const stream: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const stream: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const target = world.findNearestEnemy(player.x, player.y, 900)
   const baseAngle = target >= 0
     ? Math.atan2(world.enemies.items[target].y - player.y, world.enemies.items[target].x - player.x)
@@ -247,7 +247,7 @@ const stream: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
     const p = world.spawnProjectile()
     if (!p) return
     const angle = baseAngle + world.rng.range(-spread, spread)
-    p.weaponId = 'seedSpitter'
+    p.weaponId = slot.id
     p.type = 'ranged'
     p.behaviour = 'stream'
     p.attached = false
@@ -271,7 +271,7 @@ const stream: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
  *
  * T2 splashes wider, T3 leaves a slippery rind, T4 splits into three melons.
  */
-const arcLob: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const arcLob: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const target = world.findNearestEnemy(player.x, player.y, 520)
   if (target < 0) return
   const e = world.enemies.items[target]
@@ -291,7 +291,7 @@ const arcLob: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
     const d = Math.hypot(dx, dy) || 1
     const flight = Math.min(0.9, d / 420)
 
-    p.weaponId = 'melonLob'
+    p.weaponId = slot.id
     p.type = 'ranged'
     p.behaviour = 'arcLob'
     p.attached = false
@@ -322,14 +322,14 @@ const arcLob: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
  * T2 burns longer, T3 spreads the burn when a burning enemy dies, T4 pierces
  * more.
  */
-const pierceShot: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const pierceShot: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const target = world.findNearestEnemy(player.x, player.y, 700)
   const angle = target >= 0
     ? Math.atan2(world.enemies.items[target].y - player.y, world.enemies.items[target].x - player.x)
     : player.facing
   const p = world.spawnProjectile()
   if (!p) return
-  p.weaponId = 'chiliShot'
+  p.weaponId = slot.id
   p.type = 'ranged'
   p.behaviour = 'pierceShot'
   p.attached = false
@@ -354,14 +354,14 @@ const pierceShot: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
  *
  * T2 adds a bounce, T3 splits into four, T4 lets the shards bounce too.
  */
-const bounceSplit: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const bounceSplit: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const target = world.findNearestEnemy(player.x, player.y, 600)
   const angle = target >= 0
     ? Math.atan2(world.enemies.items[target].y - player.y, world.enemies.items[target].x - player.x)
     : player.facing
   const p = world.spawnProjectile()
   if (!p) return
-  p.weaponId = 'eggToss'
+  p.weaponId = slot.id
   p.type = 'ranged'
   p.behaviour = 'bounceSplit'
   p.attached = false
@@ -463,14 +463,14 @@ const lure: WeaponBehaviour = ({ world, player, def, tier }) => {
  *
  * T2 makes it faster, T3 brings a second dog, T4 makes its bite bleed.
  */
-const minionHunt: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const wanted = tier >= 3 ? 2 : 1
   for (let i = 0; i < wanted; i++) {
     let p = world.findAttached('barnDog', i)
     if (!p) {
       p = world.spawnProjectile()
       if (!p) return
-      p.weaponId = 'barnDog'
+      p.weaponId = slot.id
       p.type = 'minion'
       p.behaviour = 'minionHunt'
       p.attached = false

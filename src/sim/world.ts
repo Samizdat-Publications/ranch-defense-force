@@ -403,6 +403,15 @@ export class World {
       world: this, player: p, slot: null as never, def: null as never,
       tier: 1, damage: 0, dt,
     }
+    // The ring aims at whatever the weapons would shoot. Resolved once per
+    // tick for the whole ring rather than per weapon: they all target the
+    // nearest enemy, and twelve separate nearest-enemy scans a tick would be
+    // twelve scans to reach the same answer.
+    const aimTarget = this.findNearestEnemy(p.x, p.y, 900)
+    const ringAim = aimTarget >= 0
+      ? Math.atan2(this.enemies.items[aimTarget].y - p.y, this.enemies.items[aimTarget].x - p.x)
+      : p.facing
+
     for (const slot of p.weapons) {
       const def = WEAPONS[slot.id]
       if (!def) continue
@@ -412,6 +421,10 @@ export class World {
       ctx.def = def
       ctx.tier = slot.tier
       ctx.damage = def.base * tierScale
+
+      if (slot.recoil > 0) slot.recoil -= dt
+      // Melee swings where you face; everything else points at the target.
+      slot.aimAngle = def.type === 'melee' ? p.facing : ringAim
 
       const sustain = SUSTAIN[def.behaviour]
       if (sustain && def.cooldown === 0) {
@@ -423,6 +436,7 @@ export class World {
       if (slot.cooldownLeft <= 0) {
         const fire = FIRE[def.behaviour]
         if (fire) fire(ctx)
+        slot.recoil = T.fx.weaponRecoilSeconds
         // One hook for every weapon, rather than the same two lines in eight
         // behaviours. A swing gets its arc; anything that throws something gets
         // a flash at the muzzle, rate-limited because six weapons at +200%

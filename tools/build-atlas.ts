@@ -59,6 +59,7 @@ interface Manifest {
   }
   singles: { _base: string; files: Record<string, string> }
   singlesExtra?: { _base: string; files: Record<string, string> }
+  weapons?: { _base: string; files: Record<string, string> }
   fx?: {
     _base: string
     cell: number
@@ -207,7 +208,21 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
 
 // ------------------------------------------------------------------ singles
 
-const singleGroups = [manifest.singles, manifest.singlesExtra].filter(Boolean) as {
+/**
+ * Weapon icons must be ONE object at roughly one tile.
+ *
+ * Asserted for the same reason the 1792x704 humanoid check exists: this pack
+ * contains files named *_Load_* and *_Stack_* that are multi-tile piles, and
+ * `Bucket_Load` (58x64 of stacked buckets) sailed into the weapon ring and
+ * rendered as an unreadable brown slab twice the size of the player. Nothing
+ * else about it looked wrong — it was just a bucket that was actually nine
+ * buckets. The shovel is 30x48 and legitimately tall, so height is the looser
+ * bound.
+ */
+const WEAPON_MAX_W = 36
+const WEAPON_MAX_H = 52
+
+const singleGroups = [manifest.singles, manifest.singlesExtra, manifest.weapons].filter(Boolean) as {
   _base: string
   files: Record<string, string>
 }[]
@@ -225,6 +240,14 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
   const b = contentBounds(img, 0, 0, img.width, img.height)
   if (b.empty) {
     errors.push(`${path}: entirely transparent`)
+    continue
+  }
+  if (name.startsWith('weapon.') && (b.w > WEAPON_MAX_W || b.h > WEAPON_MAX_H)) {
+    errors.push(
+      `${path}: weapon icon is ${b.w}x${b.h}, over the ${WEAPON_MAX_W}x${WEAPON_MAX_H} limit. ` +
+      `This is almost certainly a multi-tile "_Load_" or "_Stack_" pile rather than a single ` +
+      `object — pick the "_Single_" variant.`,
+    )
     continue
   }
   pending.push({

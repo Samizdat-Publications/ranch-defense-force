@@ -58,6 +58,62 @@ sprite as a coloured square. It builds the atlas now.
 
 ---
 
+# Session 3 — M4 finished, M5 content, balance, weapon visibility
+
+## Weapons you can actually see
+
+Playtest finding, and the correct diagnosis was the player's: *"when I get a new
+weapon I don't think I'm actually getting a new weapon."* He was right, and it
+was one root cause with three symptoms.
+
+**Not one of the twelve weapon sprites was ever packed.** Every entry in
+`weapons.json` carries a `sprite` field — `tool_shovel`, `crop_corn`,
+`prop_bucket` — and `art/sprites.json` had never heard of any of them. So:
+
+- Projectiles never got a frame and fell through to the coloured-square
+  fallback, which is why **every ranged weapon looked identical**: same pale
+  green square, sized by radius. Six weapons firing was indistinguishable from
+  one.
+- Melee arcs took the same path at `radius * 2`, so a shovel swing drew as a
+  **~100px white box** — the loudest thing on screen, and the reason melee felt
+  like the only weapon that "worked".
+
+Fixed in three parts:
+
+1. **Weapon sprites are packed** as `weapon.<id>`, keyed to the weapon ids.
+2. **Projectiles draw their weapon's sprite**, rotated — thrown things tumble,
+   fired things point where they are going, orbits spin. A projectile that never
+   rotates reads as a decal sliding over grass.
+3. **Melee arcs and auras stopped being objects.** They are volumes, so they
+   draw as a swept wedge and a soft ring instead of a sprite or a square.
+
+### The weapon ring
+
+Weapons now sit spaced around the player and turn to point at what they are
+shooting, Brotato-style, kicking back when they fire. The angles live on the
+weapon slot in the sim (`ringAngle`, `aimAngle`, `recoil`) and the renderer only
+draws them — targeting is a simulation decision and the render layer does not
+get to have an opinion about it. The ring is what makes ownership, aim and rate
+of fire legible at a glance, and it is the direct answer to "did I actually get
+a new weapon".
+
+### Two things worth keeping
+
+**The pack is an environment set, not an item-icon set.** There is no axe,
+watering can or fishing rod anywhere in it at 32x32. Stand-ins are used and
+named honestly in `art/sprites.json` — a hacksaw blade for the axe, a milk can
+for the watering can, a fishing branch for the rod. Swapping them later is a
+one-block change.
+
+**Several files named `*_Load_*` or `*_Stack_*` are multi-tile piles.**
+`Bucket_Load` is 58x64 of stacked buckets and went into the ring as an
+unreadable brown slab twice the player's size; nothing about it looked wrong in
+the manifest, it was just a bucket that was actually nine buckets. The atlas
+builder now asserts weapon icons fit one tile and fails naming the file, in the
+same spirit as the 1792x704 humanoid check.
+
+---
+
 # Session 3 — M4 finished, M5 content, first balance pass
 
 ## The balance pass, and `npm run balance`

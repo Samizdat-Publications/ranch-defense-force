@@ -18,11 +18,25 @@ export interface OwnedItem {
 
 export interface WeaponSlot {
   id: string
-  /** 1-4. Each tier is base damage x1.6 plus a rider (riders land in M5). */
+  /** 1-4. Each tier is base damage x1.6 plus its rider from weapons.json. */
   tier: number
   cooldownLeft: number
   /** Per-weapon scratch: orbit angle, minion index, and so on. */
   t0: number
+
+  // --- what the weapon ring around the player draws from -----------------
+  // The sim owns these because targeting is a simulation decision; the
+  // renderer reads them and never works out who a weapon is pointing at.
+
+  /** Where this weapon is pointing, radians. */
+  aimAngle: number
+  /** Seconds of firing kick left, counted down by the weapon pass. Drives the
+   *  visible recoil, which is most of what makes a full ring read as six
+   *  weapons working rather than one player with a lot of icons. */
+  recoil: number
+  /** Position in the ring, radians, assigned on pickup so weapons do not all
+   *  shuffle round when one is added. */
+  ringAngle: number
 }
 
 export const MAX_WEAPON_SLOTS = 6
@@ -84,7 +98,10 @@ export class Player {
     this.classId = classId
     this.def = CLASSES[classId]
     this.metaMods = metaMods
-    this.weapons = [{ id: this.def.startingWeapon, tier: 1, cooldownLeft: 0, t0: 0 }]
+    this.weapons = [{
+      id: this.def.startingWeapon, tier: 1, cooldownLeft: 0, t0: 0,
+      aimAngle: 0, recoil: 0, ringAngle: -Math.PI / 2,
+    }]
     this.items = []
     this.level = 1
     this.xp = 0
@@ -147,8 +164,28 @@ export class Player {
       return true
     }
     if (this.weapons.length >= MAX_WEAPON_SLOTS) return false
-    this.weapons.push({ id, tier: 1, cooldownLeft: 0, t0: 0 })
+    this.weapons.push({
+      id, tier: 1, cooldownLeft: 0, t0: 0,
+      aimAngle: 0, recoil: 0, ringAngle: 0,
+    })
+    this.layOutWeaponRing()
     return true
+  }
+
+  /**
+   * Space the weapons evenly around the full circle.
+   *
+   * Recomputed whenever the set changes rather than derived from the index at
+   * draw time, so the ring is stable state the renderer just reads — and so a
+   * sixth weapon spreads the other five apart instead of appearing on top of
+   * one of them.
+   */
+  private layOutWeaponRing(): void {
+    const n = this.weapons.length
+    for (let i = 0; i < n; i++) {
+      // Start at the top and go clockwise; -PI/2 is up in screen space.
+      this.weapons[i].ringAngle = -Math.PI / 2 + (i / n) * Math.PI * 2
+    }
   }
 
   hasWeapon(id: string): boolean {

@@ -15,6 +15,7 @@ import { decodePng, encodePng, blankImage, type Image } from './png.ts'
 import { World } from '../src/sim/world.ts'
 import { OfferPool, type Offer } from '../src/sim/offers.ts'
 import { Rng } from '../src/core/rng.ts'
+import { TUNING } from '../src/content/index.ts'
 
 const STEP = 1 / 60
 const ZOOM = 2
@@ -102,6 +103,39 @@ function drawFrame(f: Frame, worldX: number, worldY: number): void {
   }
 }
 
+/**
+ * Draw a frame with rotation and scale, by inverse-mapping each destination
+ * pixel back into the source. Nearest neighbour, because everything here is
+ * pixel art and any filtering would be a lie about what the game draws.
+ */
+function drawFrameT(f: Frame, worldX: number, worldY: number, rot: number, scale: number): void {
+  const cx = (worldX - camX) * ZOOM
+  const cy = (worldY - camY) * ZOOM
+  const cos = Math.cos(rot)
+  const sin = Math.sin(rot)
+  const half = (Math.max(f.w, f.h) * Math.abs(scale) * ZOOM) / 2 + 2
+  for (let dy = -half; dy <= half; dy++) {
+    for (let dx = -half; dx <= half; dx++) {
+      // Rotate the destination offset back into unrotated frame space.
+      const ux = (dx * cos + dy * sin) / (scale * ZOOM)
+      const uy = (-dx * sin + dy * cos) / (scale * ZOOM)
+      const fx = Math.floor(ux + f.w / 2)
+      const fy = Math.floor(uy + f.h / 2)
+      if (fx < 0 || fy < 0 || fx >= f.w || fy >= f.h) continue
+      const si = ((f.y + fy) * atlasImg.width + (f.x + fx)) * 4
+      if (atlasImg.data[si + 3] === 0) continue
+      const tx = Math.round(cx + dx)
+      const ty = Math.round(cy + dy)
+      if (tx < 0 || ty < 0 || tx >= canvas.width || ty >= canvas.height) continue
+      const di = (ty * canvas.width + tx) * 4
+      canvas.data[di] = atlasImg.data[si]
+      canvas.data[di + 1] = atlasImg.data[si + 1]
+      canvas.data[di + 2] = atlasImg.data[si + 2]
+      canvas.data[di + 3] = 255
+    }
+  }
+}
+
 const grass = atlas.frames['terrain.grass']
 const dirt = atlas.frames['terrain.dirt']
 const soil = atlas.frames['terrain.soil']
@@ -173,6 +207,63 @@ for (let i = 0; i < world.enemies.live; i++) {
 
 drawList.sort((a, b) => a.y - b.y)
 for (const d of drawList) drawFrame(d.f, d.x, d.y)
+
+/** Blend a colour over the canvas at a world point, for the sweep wedges. */
+function tint(worldX: number, worldY: number, rgb: number, a: number): void {
+  const tx = Math.round((worldX - camX) * ZOOM)
+  const ty = Math.round((worldY - camY) * ZOOM)
+  if (tx < 0 || ty < 0 || tx >= canvas.width || ty >= canvas.height) return
+  const di = (ty * canvas.width + tx) * 4
+  canvas.data[di] = Math.round(((rgb >> 16) & 0xff) * a + canvas.data[di] * (1 - a))
+  canvas.data[di + 1] = Math.round(((rgb >> 8) & 0xff) * a + canvas.data[di + 1] * (1 - a))
+  canvas.data[di + 2] = Math.round((rgb & 0xff) * a + canvas.data[di + 2] * (1 - a))
+}
+
+// Melee sweeps and auras: swept wedges, matching the renderer. These used to
+// draw as a filled square the size of the whole hitbox — a ~100px white block
+// that was the loudest thing on screen.
+for (let i = 0; i < world.projectiles.live; i++) {
+  const p = world.projectiles.items[i]
+  const aura = p.type === 'aura'
+  if (p.behaviour !== 'arcSwing' && !aura) continue
+  const half = 0.85
+  for (let r = 0; r <= p.radius; r += 0.5) {
+    const inner = aura ? p.radius * 0.86 : 0
+    if (r < inner) continue
+    const from = aura ? -Math.PI : p.angle - half
+    const to = aura ? Math.PI : p.angle + half
+    for (let a = from; a <= to; a += 0.02) {
+      tint(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, aura ? 0x96cde1 : 0xf2ead2, 0.3)
+    }
+  }
+}
+
+// Projectiles, drawn as their weapon's sprite the way the renderer does.
+for (let i = 0; i < world.projectiles.live; i++) {
+  const p = world.projectiles.items[i]
+  if (p.behaviour === 'arcSwing' || p.type === 'aura') continue // areas, not objects
+  const key = p.behaviour === 'minionHunt' ? 'feralDog.idle.down.0' : `weapon.${p.weaponId}`
+  const f = atlas.frames[key]
+  if (!f) continue
+  const rot = p.vx !== 0 || p.vy !== 0 ? Math.atan2(p.vy, p.vx) : p.angle
+  drawFrameT(f, p.x, p.y, rot, 0.55)
+}
+
+// The weapon ring. Angles come straight from the sim, as in the renderer.
+for (const slot of world.player.weapons) {
+  const key = slot.id === 'barnDog' ? 'feralDog.idle.down.0' : `weapon.${slot.id}`
+  const f = atlas.frames[key]
+  if (!f) continue
+  const cfg = TUNING.fx as unknown as Record<string, number>
+  const kick = slot.recoil > 0
+    ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
+    : 0
+  const r = cfg.weaponRingRadius
+  const x = world.player.x + Math.cos(slot.ringAngle) * r - Math.cos(slot.aimAngle) * kick
+  const y = world.player.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick - 14
+  const facingLeft = Math.abs(slot.aimAngle) > Math.PI / 2
+  drawFrameT(f, x, y, facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle, cfg.weaponRingScale)
+}
 
 // FX clips, over the sprite layer. Same frame selection as the renderer.
 for (let i = 0; i < world.effects.live; i++) {
