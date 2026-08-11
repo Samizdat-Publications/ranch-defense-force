@@ -34,6 +34,11 @@ export class Player {
   facing = 0
   radius = P.baseRadius
 
+  /** Animation phase and distance travelled — the renderer's only inputs for
+   *  choosing a walk frame and a bob offset. */
+  anim = 0
+  travelled = 0
+
   hp = 1
   invuln = 0
   /** Seconds since the player last moved — The Hand's Braced passive. */
@@ -172,7 +177,9 @@ export class Player {
       this.vy = moveY * speed
       this.x += this.vx * dt
       this.y += this.vy * dt
+      this.travelled += Math.hypot(this.vx, this.vy) * dt
     }
+    this.anim += dt
 
     const pad = TUNING.arena.edgePadding
     if (this.x < pad) this.x = pad

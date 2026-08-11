@@ -14,6 +14,7 @@ import { Rng, seedFromString } from './core/rng'
 import { World } from './sim/world'
 import { OfferPool, type Offer } from './sim/offers'
 import { Renderer } from './render/renderer'
+import { Atlas } from './core/atlas'
 import { Hud } from './ui/hud'
 import { LevelUpScreen } from './ui/levelup'
 import { ShopScreen } from './ui/shop'
@@ -32,6 +33,9 @@ input.attach()
 
 let world: World | null = null
 let renderer: Renderer | null = null
+/** Null until the atlas resolves, and stays null if it fails — the game then
+ *  renders the M0-M3 coloured squares rather than not rendering at all. */
+let atlas: Atlas | null = null
 let offers: OfferPool | null = null
 let hud: Hud | null = null
 let state: State = 'menu'
@@ -84,7 +88,7 @@ function startRun(classId: string, seedText: string): void {
   hud?.destroy()
   world = new World(seed, classId)
   offers = new OfferPool(world.rng)
-  renderer = new Renderer(canvas, world)
+  renderer = new Renderer(canvas, world, atlas)
   hud = new Hud(uiRoot)
   resize()
   renderer.camera.snapTo(world.player.x, world.player.y)
@@ -189,6 +193,24 @@ const loop = new Loop(
 resize()
 menu.open()
 loop.start()
+
+// The atlas loads in the background. The menu is up while it does, and a
+// failure is logged and survived rather than thrown — a missing atlas costs
+// you the art, not the game.
+Atlas.load(import.meta.env.BASE_URL)
+  .then((a) => {
+    atlas = a
+    if (world) {
+      // A run already started against no atlas: rebuild the renderer so it
+      // picks up the art rather than staying square for the rest of the run.
+      renderer = new Renderer(canvas, world, atlas)
+      resize()
+      renderer.camera.snapTo(world.player.x, world.player.y)
+    }
+  })
+  .catch((err) => {
+    console.warn('atlas unavailable, falling back to coloured squares:', err)
+  })
 
 // Expose for console poking during development. Not referenced by the game.
 // `openLevelUp`/`openShop` exist so the card screens can be inspected without

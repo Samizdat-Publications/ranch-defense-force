@@ -46,6 +46,12 @@ export interface Enemy {
   /** Set on death, counted down by the vfx pass before the slot is freed. */
   dying: number
   hpBuffPct: number
+  /** Seconds since spawn, for animation phase. Kept out of the t0/s0 scratch
+   *  because behaviours own those and would clobber it. */
+  anim: number
+  /** Distance travelled, which drives bob and step timing — a sprite that bobs
+   *  with distance rather than time stops looking like it is treadmilling. */
+  travelled: number
 }
 
 export function makeEnemy(): Enemy {
@@ -54,7 +60,7 @@ export function makeEnemy(): Enemy {
     kx: 0, ky: 0, hp: 1, maxHp: 1, speed: 0, damage: 0, radius: 10, xp: 1,
     behaviour: 'chase', elite: false, flash: 0, stun: 0, facing: 0,
     t0: 0, t1: 0, s0: 0, s1: 0, touchCd: 0, knockbackImmune: false,
-    dying: 0, hpBuffPct: 0,
+    dying: 0, hpBuffPct: 0, anim: 0, travelled: 0,
   }
 }
 

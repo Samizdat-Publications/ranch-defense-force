@@ -1,0 +1,39 @@
+{
+  "_note": "Source-of-truth asset manifest. The ONLY place a file path appears. tools/build-atlas.ts reads this and writes public/atlas.png + public/atlas.json; the game never reads assets/ at runtime.",
+
+  "cell": 32,
+
+  "humanoidRig": {
+    "_note": "All thirteen generator exports share one rig: 56 cols x 22 rows of 32px cells, and a character occupies TWO stacked rows (32 wide x 64 tall). Rows pair up: even row is the upper half, odd row the lower. Verified with tools/inspect-sheet.ts.",
+    "sheetWidth": 1792,
+    "sheetHeight": 704,
+    "frameWidth": 32,
+    "frameHeight": 64,
+    "directions": ["down", "up", "left", "right"],
+    "clips": {
+      "idle": { "rowPair": 0, "start": 0, "framesPerDirection": 1 },
+      "walk": { "rowPair": 1, "start": 0, "framesPerDirection": 6 }
+    }
+  },
+
+  "humanoids": {
+    "hand": "assets/generated/characters/farmer-01.png",
+    "kid": "assets/generated/characters/farmer-female-01.png",
+    "farmhand": "assets/generated/characters/zombie-01.png",
+    "acidZombie": "assets/generated/characters/zombie-acid-01.png",
+    "bloatedFarmhand": "assets/generated/characters/zombie-02.png",
+    "maskedSprayer": "assets/generated/characters/gas-enemy-01.png",
+    "maskedHauler": "assets/generated/characters/gas-enemy-02.png"
+  },
+
+  "terrainSource": {
+    "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
+    "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used — anything with a blob edge will not tile. Found with tools/_scan.ts.",
+    "tiles": {
+      "grass": [3, 2],
+      "dirt": [1, 1],
+      "soil": [1, 13],
+      "hay": [1, 5]
+    }
+  }
+}

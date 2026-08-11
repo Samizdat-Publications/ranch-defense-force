@@ -1,0 +1,17 @@
+{
+  "//": "Build tools run under vite-node in Node, not in the browser. They need node globals and explicit .ts import extensions, neither of which the game's tsconfig should allow.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["."]
+}

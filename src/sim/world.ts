@@ -263,8 +263,12 @@ export class World {
       }
       const scale = 1 - slow
 
-      e.x += e.vx * scale * dt + e.kx * dt
-      e.y += e.vy * scale * dt + e.ky * dt
+      const mx = e.vx * scale * dt + e.kx * dt
+      const my = e.vy * scale * dt + e.ky * dt
+      e.x += mx
+      e.y += my
+      e.anim += dt
+      e.travelled += Math.hypot(mx, my)
 
       // Knockback decays exponentially so a hit reads as a shove, not a launch.
       const decay = Math.max(0, 1 - C.knockbackDecay * dt)
@@ -723,6 +727,9 @@ export class World {
     e.knockbackImmune = def.knockbackImmune === true
     e.dying = 0
     e.hpBuffPct = 0
+    // Stagger the animation phase so a group of ten does not walk in lockstep.
+    e.anim = this.rng.range(0, 2)
+    e.travelled = this.rng.range(0, 40)
     return e
   }
 

@@ -1,49 +1,59 @@
 /**
- * M0-M3 renderer: coloured squares, drawn through the exact draw path the
- * atlas will use in M4 — camera transform, counting-sort y-order, one pass, no
- * per-sprite save/restore. Swapping in `drawImage` from the atlas is then a
- * change inside `drawSprite`, and nothing else moves.
+ * One atlas, one draw path, one pass.
  *
- * The blood decal canvas is the one piece already in its final form: landed
- * pixels stamp onto an offscreen canvas that costs nothing per frame no matter
- * how many have accumulated (§11).
+ * Sprites are collected into a flat reusable list, counting-sorted into 8px
+ * y-bands, and blitted. `save`/`restore` is used only for the few entities that
+ * actually need a transform — a dying enemy spinning, or a fallback square
+ * doing the bob-and-lean that stands in for an animation it does not have.
+ * Everything with a real walk cycle draws as a plain `drawImage`, because at
+ * 800 entities the difference between "one drawImage" and "save, translate,
+ * rotate, drawImage, restore" is the frame budget.
+ *
+ * Anything the atlas has no art for falls back to a coloured square, so a
+ * missing sheet degrades to the M0-M3 look for that one entity rather than
+ * crashing or drawing nothing.
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
 import { TUNING } from '../content'
+import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
+import { Rng } from '../core/rng'
 
-/** Sprites are bucketed by y into 8px bands and drawn band by band — a
- *  counting sort, because Array.sort on 800 entities every frame is not free. */
 const BUCKET = 8
+/** Integer zoom only — a 32px sprite at 2.5x is a blurry 32px sprite. */
+export const ZOOM = 2
+/** Walk cycle advances one frame per this many pixels travelled, so sprites
+ *  never appear to skate. */
+const PIXELS_PER_WALK_FRAME = 11
 
 interface DrawItem {
   x: number
   y: number
+  frame: AtlasFrame | null
+  /** Fallback square, used when the atlas has no art for this entity. */
+  colour: string
   w: number
   h: number
-  colour: string
-  flash: number
-  scale: number
+  flash: boolean
+  scaleX: number
+  scaleY: number
   rotation: number
   outline: string | null
+  alpha: number
 }
 
 const PALETTE = {
-  ground: '#6f7d4f',
-  groundAlt: '#67754a',
-  fence: '#8a6a43',
-  player: '#e8d6a8',
-  playerHurt: '#f5f0e0',
+  void: '#171a1d',
   enemy: '#7a6a86',
   enemyElite: '#d8b23c',
   projectile: '#cfe0a0',
-  melee: '#e7e2cf',
+  melee: '#f2ead2',
   xp: '#5fd0c6',
   feed: '#e0b040',
-  hazardSlow: 'rgba(120, 96, 60, 0.55)',
+  hazardSlow: 'rgba(94, 74, 46, 0.55)',
   hazardLure: 'rgba(214, 176, 84, 0.35)',
-  hazardGas: 'rgba(150, 190, 120, 0.30)',
-  hazardAcid: 'rgba(120, 200, 100, 0.35)',
+  hazardGas: 'rgba(150, 190, 120, 0.32)',
+  hazardAcid: 'rgba(120, 200, 100, 0.38)',
   telegraph: 'rgba(220, 90, 90, 0.28)',
   blood: '#a02c2c',
 }
@@ -55,13 +65,12 @@ export class Renderer {
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
 
-  /** Reused every frame; the draw list never reallocates. */
   private readonly items: DrawItem[] = []
   private itemCount = 0
   private readonly bucketCounts: Int32Array
   private readonly bucketStart: Int32Array
-  private readonly order: Int32Array
   private readonly bucketCursor: Int32Array
+  private readonly order: Int32Array
   private readonly bucketRows: number
 
   drawCalls = 0
@@ -69,11 +78,12 @@ export class Renderer {
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly world: World,
+    private readonly atlas: Atlas | null,
   ) {
     const ctx = canvas.getContext('2d', { alpha: false })
     if (!ctx) throw new Error('2D canvas context unavailable')
     this.ctx = ctx
-    this.camera = new Camera(canvas.width, canvas.height, world.arenaW, world.arenaH)
+    this.camera = new Camera(canvas.width / ZOOM, canvas.height / ZOOM, world.arenaW, world.arenaH)
 
     this.decals = document.createElement('canvas')
     this.decals.width = world.arenaW
@@ -85,8 +95,8 @@ export class Renderer {
     const cap = TUNING.pools.enemies + TUNING.pools.projectiles + 64
     for (let i = 0; i < cap; i++) {
       this.items.push({
-        x: 0, y: 0, w: 0, h: 0, colour: '', flash: 0,
-        scale: 1, rotation: 0, outline: null,
+        x: 0, y: 0, frame: null, colour: '', w: 0, h: 0, flash: false,
+        scaleX: 1, scaleY: 1, rotation: 0, outline: null, alpha: 1,
       })
     }
     this.bucketRows = Math.ceil(world.arenaH / BUCKET) + 2
@@ -101,16 +111,14 @@ export class Renderer {
   resize(w: number, h: number): void {
     this.canvas.width = w
     this.canvas.height = h
-    this.camera.resize(w, h)
-    // Nearest-neighbour: this is pixel art, and it will be actual pixel art in
-    // M4. Setting it here means the switch changes nothing about the look.
+    this.camera.resize(w / ZOOM, h / ZOOM)
     this.ctx.imageSmoothingEnabled = false
   }
 
   /**
-   * Terrain bakes once into an offscreen canvas and blits as a single image
-   * per frame — never per-tile draws (§13). In M4 this is where the real
-   * tileset lands; the per-frame cost is identical either way.
+   * Terrain bakes once into an offscreen canvas and blits as one image per
+   * frame — never per-tile draws (§13). Deterministic from the run seed, so a
+   * replayed run gets the same field.
    */
   private bakeTerrain(): void {
     const c = document.createElement('canvas')
@@ -118,17 +126,66 @@ export class Renderer {
     c.height = this.world.arenaH
     const g = c.getContext('2d')
     if (!g) return
+    g.imageSmoothingEnabled = false
+
     const tile = 32
-    for (let y = 0; y < c.height; y += tile) {
-      for (let x = 0; x < c.width; x += tile) {
-        const checker = ((x / tile) + (y / tile)) % 2 === 0
-        g.fillStyle = checker ? PALETTE.ground : PALETTE.groundAlt
-        g.fillRect(x, y, tile, tile)
+    const cols = Math.ceil(c.width / tile)
+    const rows = Math.ceil(c.height / tile)
+    const rng = new Rng(this.world.seed ^ 0x7e44a1)
+
+    const grass = this.atlas?.get('terrain.grass')
+    const dirt = this.atlas?.get('terrain.dirt')
+    const soil = this.atlas?.get('terrain.soil')
+
+    if (!this.atlas || !grass) {
+      // No atlas: the M0-M3 checkerboard, so the game still runs.
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          g.fillStyle = (x + y) % 2 === 0 ? '#6f7d4f' : '#67754a'
+          g.fillRect(x * tile, y * tile, tile, tile)
+        }
+      }
+      this.terrain = c
+      return
+    }
+
+    const img = this.atlas.image
+    const put = (f: AtlasFrame, x: number, y: number): void => {
+      g.drawImage(img, f.x, f.y, f.w, f.h, x, y, tile, tile)
+    }
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) put(grass, x * tile, y * tile)
+    }
+
+    // Worn dirt patches where a farm gets walked on.
+    if (dirt) {
+      for (let i = 0; i < 26; i++) {
+        const cx = rng.int(2, cols - 3)
+        const cy = rng.int(2, rows - 3)
+        const r = rng.int(1, 3)
+        for (let y = -r; y <= r; y++) {
+          for (let x = -r; x <= r; x++) {
+            if (x * x + y * y > r * r) continue
+            put(dirt, (cx + x) * tile, (cy + y) * tile)
+          }
+        }
       }
     }
-    g.strokeStyle = PALETTE.fence
+
+    // Tilled rows along two edges — the corn rows things come out of (§8).
+    if (soil) {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < 3; x++) put(soil, x * tile, y * tile)
+        for (let x = cols - 3; x < cols; x++) put(soil, x * tile, y * tile)
+      }
+    }
+
+    // Fence line, drawn flat until the fence tiles are in the atlas.
+    g.strokeStyle = '#6b5027'
     g.lineWidth = 6
     g.strokeRect(3, 3, c.width - 6, c.height - 6)
+
     this.terrain = c
   }
 
@@ -142,12 +199,13 @@ export class Renderer {
     const pyi = p.py + (p.y - p.py) * alpha
     this.camera.update(pxi, pyi, p.vx, p.vy, w.shake, rand)
 
-    const ox = Math.round(this.camera.offsetX)
-    const oy = Math.round(this.camera.offsetY)
+    const ox = Math.round(this.camera.offsetX * ZOOM) / ZOOM
+    const oy = Math.round(this.camera.offsetY * ZOOM) / ZOOM
 
-    ctx.setTransform(1, 0, 0, 1, 0, 0)
-    ctx.fillStyle = '#20242a'
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    ctx.setTransform(ZOOM, 0, 0, ZOOM, 0, 0)
+    ctx.imageSmoothingEnabled = false
+    ctx.fillStyle = PALETTE.void
+    ctx.fillRect(0, 0, this.canvas.width / ZOOM, this.canvas.height / ZOOM)
     ctx.translate(-ox, -oy)
 
     if (this.terrain) {
@@ -172,37 +230,45 @@ export class Renderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0)
   }
 
-  /** Drain the sim's landed-blood list onto the permanent decal canvas. */
   private flushStains(): void {
     const s = this.world.stains
     if (s.length === 0) return
     const g = this.decalCtx
+    g.globalAlpha = 0.5
+    g.fillStyle = PALETTE.blood
     for (let i = 0; i < s.length; i += 3) {
-      const x = s[i]
-      const y = s[i + 1]
-      g.fillStyle = PALETTE.blood
-      g.globalAlpha = 0.5
-      g.fillRect(Math.round(x), Math.round(y), 2, 2)
+      g.fillRect(Math.round(s[i]), Math.round(s[i + 1]), 2, 2)
     }
     g.globalAlpha = 1
     s.length = 0
   }
 
-  private push(
-    x: number, y: number, w: number, h: number, colour: string,
-    flash = 0, scale = 1, rotation = 0, outline: string | null = null,
-  ): void {
-    if (this.itemCount >= this.items.length) return
+  private push(): DrawItem | null {
+    if (this.itemCount >= this.items.length) return null
     const it = this.items[this.itemCount++]
-    it.x = x
-    it.y = y
-    it.w = w
-    it.h = h
-    it.colour = colour
-    it.flash = flash
-    it.scale = scale
-    it.rotation = rotation
-    it.outline = outline
+    it.frame = null
+    it.flash = false
+    it.scaleX = 1
+    it.scaleY = 1
+    it.rotation = 0
+    it.outline = null
+    it.alpha = 1
+    return it
+  }
+
+  /**
+   * Pick the humanoid frame for an entity: idle when still, otherwise a walk
+   * frame chosen by distance travelled.
+   */
+  private humanoidFrame(
+    sheet: string, facing: number, travelled: number, moving: boolean,
+  ): AtlasFrame | undefined {
+    if (!this.atlas) return undefined
+    const dir = this.atlas.directions[directionIndex(facing)] ?? 'down'
+    if (!moving) return this.atlas.get(`${sheet}.idle.${dir}.0`)
+    const len = this.atlas.clipLength('walk')
+    const f = Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len
+    return this.atlas.get(`${sheet}.walk.${dir}.${f}`)
   }
 
   private collectSprites(alpha: number): void {
@@ -210,7 +276,7 @@ export class Renderer {
     const cam = this.camera
     const left = cam.x - 64
     const right = cam.x + cam.viewW + 64
-    const top = cam.y - 64
+    const top = cam.y - 96
     const bottom = cam.y + cam.viewH + 64
 
     for (let i = 0; i < w.enemies.live; i++) {
@@ -219,20 +285,41 @@ export class Renderer {
       const y = e.py + (e.y - e.py) * alpha
       if (x < left || x > right || y < top || y > bottom) continue
 
-      let scale = e.elite ? 1.5 : 1
+      const it = this.push()
+      if (!it) break
+
+      const moving = e.stun <= 0 && e.dying <= 0 && (e.vx !== 0 || e.vy !== 0)
+      const frame = this.humanoidFrame(e.typeId, e.facing, e.travelled, moving)
+
+      it.x = x
+      it.y = y
+      it.frame = frame ?? null
+      it.flash = e.flash > 0
+      it.colour = e.elite ? PALETTE.enemyElite : PALETTE.enemy
+      it.w = e.radius * 2
+      it.h = e.radius * 2
+      it.outline = e.elite ? '#f0d060' : null
+
+      const eliteScale = e.elite ? 1.5 : 1
+      it.scaleX = eliteScale
+      it.scaleY = eliteScale
+
       if (e.dying > 0) {
-        // Spin and scale to zero over 200ms — no death frames needed (§10).
-        scale *= e.dying / TUNING.combat.deathSpinSeconds
+        // No death frames needed: spin and scale to zero over 200ms (§10).
+        const t = e.dying / TUNING.combat.deathSpinSeconds
+        it.scaleX = eliteScale * t
+        it.scaleY = eliteScale * t
+        it.rotation = (1 - t) * 6
+      } else if (!frame) {
+        // No art for this species yet — bob and lean stand in for the animation
+        // it does not have (§10 step 4).
+        const bob = Math.sin(e.travelled * 0.16) * 1.5
+        it.y += bob
+        it.rotation = Math.cos(e.travelled * 0.16) * 0.09 * (moving ? 1 : 0)
+        const squash = 1 + Math.sin(e.travelled * 0.16) * 0.06
+        it.scaleY = eliteScale * squash
+        it.scaleX = eliteScale * (2 - squash)
       }
-      const size = e.radius * 2
-      this.push(
-        x, y, size, size,
-        e.elite ? PALETTE.enemyElite : PALETTE.enemy,
-        e.flash > 0 ? 1 : 0,
-        scale,
-        e.dying > 0 ? (1 - e.dying / TUNING.combat.deathSpinSeconds) * 6 : 0,
-        e.elite ? '#f0d060' : null,
-      )
     }
 
     for (let i = 0; i < w.projectiles.live; i++) {
@@ -240,22 +327,36 @@ export class Renderer {
       const x = p.attached ? p.x : p.px + (p.x - p.px) * alpha
       const y = p.attached ? p.y : p.py + (p.y - p.py) * alpha
       if (x < left || x > right || y < top || y > bottom) continue
+      const it = this.push()
+      if (!it) break
       const melee = p.type === 'melee' || p.type === 'orbit' || p.type === 'aura'
-      const size = p.radius * 2
-      this.push(x, y, size, size, melee ? PALETTE.melee : PALETTE.projectile, 0, 1, p.angle)
+      it.x = x
+      it.y = y
+      it.colour = melee ? PALETTE.melee : PALETTE.projectile
+      it.w = p.radius * 2
+      it.h = p.radius * 2
+      it.rotation = p.angle
+      it.alpha = melee ? 0.7 : 1
     }
 
     const p = w.player
-    const pxi = p.px + (p.x - p.px) * alpha
-    const pyi = p.py + (p.y - p.py) * alpha
-    this.push(
-      pxi, pyi, p.radius * 2, p.radius * 2 + 6,
-      p.invuln > 0 ? PALETTE.playerHurt : PALETTE.player,
-      0, 1, 0, '#3a3226',
-    )
+    const it = this.push()
+    if (it) {
+      const moving = p.vx !== 0 || p.vy !== 0
+      const frame = this.humanoidFrame(p.classId, p.facing, p.travelled, moving)
+      it.x = p.px + (p.x - p.px) * alpha
+      it.y = p.py + (p.y - p.py) * alpha
+      it.frame = frame ?? null
+      it.colour = '#e8d6a8'
+      it.w = p.radius * 2
+      it.h = p.radius * 2 + 6
+      it.outline = frame ? null : '#3a3226'
+      // i-frames read as a flicker rather than a colour change, so it never
+      // gets confused with the enemy hit flash.
+      if (p.invuln > 0 && Math.floor(p.anim * 20) % 2 === 0) it.alpha = 0.45
+    }
   }
 
-  /** Counting sort into 8px y-bands, then draw band by band. */
   private sortAndDraw(ctx: CanvasRenderingContext2D): void {
     const n = this.itemCount
     if (n === 0) return
@@ -280,27 +381,49 @@ export class Renderer {
       this.order[this.bucketCursor[b]++] = i
     }
 
+    const atlasImg = this.atlas?.image
+    const flashImg = this.atlas?.flash
+
     for (let k = 0; k < n; k++) {
       const it = this.items[this.order[k]]
-      const w = it.w * it.scale
-      const h = it.h * it.scale
-      const x = it.x - w / 2
-      const y = it.y - h / 2
+      const f = it.frame
+      const plain = it.rotation === 0 && it.scaleX === 1 && it.scaleY === 1 && it.alpha === 1
 
-      if (it.rotation !== 0) {
-        ctx.save()
-        ctx.translate(it.x, it.y)
-        ctx.rotate(it.rotation)
-        ctx.fillStyle = it.flash > 0 ? '#ffffff' : it.colour
-        ctx.fillRect(-w / 2, -h / 2, w, h)
-        ctx.restore()
+      if (f && atlasImg) {
+        const src = it.flash && flashImg ? flashImg : atlasImg
+        if (plain) {
+          // The hot path: one drawImage, no state changes.
+          ctx.drawImage(src, f.x, f.y, f.w, f.h, it.x + f.ox, it.y + f.oy, f.w, f.h)
+        } else {
+          ctx.save()
+          ctx.translate(it.x, it.y)
+          if (it.rotation !== 0) ctx.rotate(it.rotation)
+          if (it.scaleX !== 1 || it.scaleY !== 1) ctx.scale(it.scaleX, it.scaleY)
+          if (it.alpha !== 1) ctx.globalAlpha = it.alpha
+          ctx.drawImage(src, f.x, f.y, f.w, f.h, f.ox, f.oy, f.w, f.h)
+          ctx.restore()
+        }
       } else {
-        ctx.fillStyle = it.flash > 0 ? '#ffffff' : it.colour
-        ctx.fillRect(x, y, w, h)
-        if (it.outline) {
-          ctx.strokeStyle = it.outline
-          ctx.lineWidth = 2
-          ctx.strokeRect(x, y, w, h)
+        const w = it.w * it.scaleX
+        const h = it.h * it.scaleY
+        if (it.rotation !== 0) {
+          ctx.save()
+          ctx.translate(it.x, it.y)
+          ctx.rotate(it.rotation)
+          ctx.globalAlpha = it.alpha
+          ctx.fillStyle = it.flash ? '#ffffff' : it.colour
+          ctx.fillRect(-w / 2, -h / 2, w, h)
+          ctx.restore()
+        } else {
+          if (it.alpha !== 1) ctx.globalAlpha = it.alpha
+          ctx.fillStyle = it.flash ? '#ffffff' : it.colour
+          ctx.fillRect(it.x - w / 2, it.y - h / 2, w, h)
+          if (it.outline) {
+            ctx.strokeStyle = it.outline
+            ctx.lineWidth = 1
+            ctx.strokeRect(it.x - w / 2, it.y - h / 2, w, h)
+          }
+          if (it.alpha !== 1) ctx.globalAlpha = 1
         }
       }
       this.drawCalls++
@@ -344,8 +467,8 @@ export class Renderer {
       const y = g.py + (g.y - g.py) * alpha
       const bob = g.magnetised ? 0 : Math.sin(g.bob * 4) * 1.5
       ctx.fillStyle = g.kind === 'xp' ? PALETTE.xp : PALETTE.feed
-      const s = g.kind === 'xp' ? 6 : 8
-      ctx.fillRect(x - s / 2, y - s / 2 + bob, s, s)
+      const s = g.kind === 'xp' ? 5 : 7
+      ctx.fillRect(Math.round(x - s / 2), Math.round(y - s / 2 + bob), s, s)
       this.drawCalls++
     }
   }
@@ -369,7 +492,7 @@ export class Renderer {
       const d = w.damageNumbers.items[i]
       const t = d.life / d.maxLife
       ctx.globalAlpha = Math.min(1, t * 1.6)
-      ctx.font = d.crit ? 'bold 18px monospace' : '13px monospace'
+      ctx.font = d.crit ? 'bold 11px monospace' : '8px monospace'
       ctx.fillStyle = d.crit ? '#ffd452' : '#f4efe2'
       ctx.fillText(String(Math.round(d.value)), d.x, d.y)
       this.drawCalls++
