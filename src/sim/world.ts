@@ -1050,7 +1050,7 @@ export class World {
         const radius = (a.pulseRadius as number) ?? 140
         const kb = (a.pulseKnockback as number) ?? 260
         // Scaled to the real pulse radius so what you see is what it hits.
-        this.playFx('shock', p.x, p.y, 0, radius / 60, 0, 0, true)
+        this.playFx('shockwave', p.x, p.y, 0, radius / 55, 0, 0, true)
         const n = this.grid.query(p.x, p.y, radius, this.queryOut)
         for (let k = 0; k < n; k++) {
           const j = this.queryOut[k]
@@ -1205,12 +1205,12 @@ export class World {
       // A crit always announces itself; ordinary hits spark at a fixed rate, so
       // a late wave reads as combat rather than as a wall of white.
       if (isCrit) {
-        this.playFx('critStar', e.x, e.y - e.radius * 0.4)
+        this.playFx('bigImpact', e.x, e.y - e.radius * 0.4)
       } else {
         this.sparkAcc += T.fx.hitSparkChance
         if (this.sparkAcc >= 1) {
           this.sparkAcc -= 1
-          this.playFx('hitSpark', e.x, e.y - e.radius * 0.4)
+          this.playFx('arrowImpact', e.x, e.y - e.radius * 0.4)
         }
       }
     }

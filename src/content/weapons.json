@@ -88,6 +88,7 @@
     "t2SpreadMultiplier": 0.8,
     "t3BonusProjectiles": 2,
     "t4Pierce": 1,
+    "projectileClip": "proj.spark",
     "tiers": {
       "2": "-20% spread",
       "3": "+2 projectiles",
@@ -108,6 +109,7 @@
     "t3RindSlowPct": 40,
     "t4Splits": 3,
     "t4SplitDamageMultiplier": 0.7,
+    "projectileClip": "proj.meteor",
     "tiers": {
       "2": "+30% splash",
       "3": "leaves a slippery rind",
@@ -128,6 +130,7 @@
     "t3SpreadRadius": 90,
     "t3SpreadDamageMultiplier": 0.6,
     "t4Pierce": 4,
+    "projectileClip": "proj.fireball",
     "tiers": {
       "2": "+2s burn",
       "3": "burn spreads on death",
@@ -146,6 +149,8 @@
     "t3Shards": 4,
     "t4ShardBounces": 1,
     "shardDamageMultiplier": 0.55,
+    "projectileClip": "proj.orb",
+    "shardClip": "proj.knife",
     "tiers": {
       "2": "+1 bounce",
       "3": "splits into four",

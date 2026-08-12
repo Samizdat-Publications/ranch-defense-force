@@ -89,9 +89,6 @@
     "_base": "assets/modern-farm/32x32/Single_Files_32x32/",
     "files": {
       "weapon.shovel":        "Props_and_Buildings_32x32/Wooden_Shovel_1_Stone_Oven_32x32.png",
-      "weapon.axe":           "Props_and_Buildings_32x32/Hacksaw_Woodwork_Crafting_Table_32x32.png",
-      "weapon.wateringCan":   "Props_and_Buildings_32x32/Milk_Can_1_32x32.png",
-      "weapon.fishingRod":    "Pickup_Items_32x32/Pickup_Fishing_Branch_32x32.png",
       "weapon.seedSpitter":   "Pickup_Items_32x32/Pickup_Crop_Corn_32x32.png",
       "weapon.melonLob":      "Pickup_Items_32x32/Pickup_Crop_Watermelon_32x32.png",
       "weapon.chiliShot":     "Pickup_Items_32x32/Pickup_Crop_Chili_Pepper_32x32.png",
@@ -99,6 +96,19 @@
       "weapon.slopBucket":    "Props_and_Buildings_32x32/Bucket_1_Single_32x32.png",
       "weapon.framingHammer": "Props_and_Buildings_32x32/Hammer_1_Woodwork_Crafting_Table_32x32.png",
       "weapon.grainLure":     "Props_and_Buildings_32x32/Grain_1_32x32.png"
+    }
+  },
+
+  "weaponsFarmTools": {
+    "_note": "Caz Pixel Fantasy Icons: Farm Tools. The pack is 94 icons but 81 of them are seed packets — there are exactly FOUR tools in it, and three of them are weapons this project had no art for at all. farm-tool1 is a scythe, 2 a watering can, 3 a three-tine rake, 4 a fishing rod. They replace the hacksaw-as-axe, milk-can-as-watering-can and branch-as-rod stand-ins.",
+    "_styleNote": "Different hand from LimeZu: cool blue-grey metal against LimeZu's warm muted farm palette. Conformed on the way in for exactly the reason §10 step 3 gives.",
+    "_base": "assets/icons-farm/MV Icons Farm Tools/Individual Icons/",
+    "conform": true,
+    "files": {
+      "weapon.axe":         "farm-tool1.png",
+      "weapon.wateringCan": "farm-tool2.png",
+      "weapon.rake":        "farm-tool3.png",
+      "weapon.fishingRod":  "farm-tool4.png"
     }
   },
 
@@ -116,6 +126,27 @@
       "gas":       { "path": "Part 12/566.png", "row": 3, "frames": 13 },
       "dust":      { "path": "Part 9/426.png",  "row": 4, "frames": 10 },
       "shock":     { "path": "Part 9/436.png",  "row": 5, "frames": 9 }
+    }
+  },
+
+  "projectiles": {
+    "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid — no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
+    "_choiceNote": "Every type ships in 6-8 colours and two sizes; only ONE colour of the SMALL size is packed per entry. The large sizes are 36-64px wide, which is bigger than the player, and packing every colour would be ~3000 frames for an atlas that currently holds 449. Pick the colour closest to the intent here and let the conform do the rest.",
+    "_base": "assets/projectiles/",
+    "clips": {
+      "proj.spark":    { "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_small_yellow" },
+      "proj.fireball": { "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_fireball_small_orange" },
+      "proj.meteor":   { "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_small_green" },
+      "proj.orb":      { "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_magic_orb_small_yellow" },
+      "proj.acid":     { "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_small_green" },
+      "proj.kunai":    { "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_small_gray" },
+      "proj.shuriken": { "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_shuriken_small_gray" },
+      "proj.knife":    { "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_knife_small_gray" },
+      "proj.iceSpike": { "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ice_spike_small_blue" },
+
+      "fx.shockwave":   { "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ground_shockwave_small_white" },
+      "fx.arrowImpact": { "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_orange" },
+      "fx.bigImpact":   { "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_red" }
     }
   },
 

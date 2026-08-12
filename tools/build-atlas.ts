@@ -60,6 +60,11 @@ interface Manifest {
   singles: { _base: string; files: Record<string, string> }
   singlesExtra?: { _base: string; files: Record<string, string> }
   weapons?: { _base: string; files: Record<string, string> }
+  weaponsFarmTools?: { _base: string; files: Record<string, string>; conform?: boolean }
+  projectiles?: {
+    _base: string
+    clips: Record<string, { path: string }>
+  }
   fx?: {
     _base: string
     cell: number
@@ -222,10 +227,9 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
 const WEAPON_MAX_W = 36
 const WEAPON_MAX_H = 52
 
-const singleGroups = [manifest.singles, manifest.singlesExtra, manifest.weapons].filter(Boolean) as {
-  _base: string
-  files: Record<string, string>
-}[]
+const singleGroups = [
+  manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
+].filter(Boolean) as { _base: string; files: Record<string, string>; conform?: boolean }[]
 
 for (const group of singleGroups) {
 for (const [name, file] of Object.entries(group.files ?? {})) {
@@ -236,6 +240,15 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
   } catch (e) {
     errors.push(`${path}: ${(e as Error).message}`)
     continue
+  }
+  // A group can ask to be conformed — used for the icon pack, which is a
+  // different artist's palette entirely.
+  if (group.conform) {
+    try {
+      makeQuantiser(loadPalette()).conform(img)
+    } catch (e) {
+      errors.push((e as Error).message)
+    }
   }
   const b = contentBounds(img, 0, 0, img.width, img.height)
   if (b.empty) {
@@ -330,6 +343,83 @@ if (fx && Object.keys(fx.clips ?? {}).length > 0) {
       continue
     }
     clipLengths[`fx.${name}`] = { play: packed }
+  }
+}
+
+// ---------------------------------------------------------- projectiles
+
+/**
+ * unTied Games projectile clips.
+ *
+ * Every variant ships a `spritesheet.txt` listing the exact rect of each frame,
+ * so this reads the artist's own metadata instead of inferring a grid. That is
+ * strictly better than measuring: these sheets are horizontal strips but the
+ * frame width differs per type (a kunai is 16x8, a shockwave 64x32), and a
+ * single assumed cell size would have been wrong for nine of the twelve.
+ *
+ * Conformed to the LimeZu palette on the way in, like the fx clips — the whole
+ * point of §10 step 3 is that a second artist's work should not read as a
+ * second artist's work.
+ */
+const projectiles = manifest.projectiles
+if (projectiles && Object.keys(projectiles.clips ?? {}).length > 0) {
+  let quantiser: ReturnType<typeof makeQuantiser> | null = null
+  try {
+    quantiser = makeQuantiser(loadPalette())
+  } catch (e) {
+    errors.push((e as Error).message)
+  }
+
+  for (const [name, clip] of Object.entries(projectiles.clips)) {
+    const dir = projectiles._base + clip.path
+    let sheet: Image
+    let meta: string
+    try {
+      sheet = decodePng(readFileSync(`${dir}/spritesheet.png`))
+      meta = readFileSync(`${dir}/spritesheet.txt`, 'utf8')
+    } catch (e) {
+      errors.push(`${dir}: ${(e as Error).message}`)
+      continue
+    }
+
+    // Lines look like: `pj2_kunai_small_gray/frame0000.png = 0 0 16 8`
+    const rects: { x: number; y: number; w: number; h: number }[] = []
+    for (const line of meta.split(/\r?\n/)) {
+      const m = line.match(/=\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/)
+      if (m) rects.push({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] })
+    }
+    if (rects.length === 0) {
+      errors.push(`${dir}/spritesheet.txt: no frame rects parsed`)
+      continue
+    }
+
+    const conformed: Image = {
+      width: sheet.width,
+      height: sheet.height,
+      data: new Uint8Array(sheet.data),
+    }
+    quantiser?.conform(conformed)
+
+    let packed = 0
+    for (let f = 0; f < rects.length; f++) {
+      const r = rects[f]
+      const b = contentBounds(conformed, r.x, r.y, r.w, r.h)
+      if (b.empty) continue // a lead-in or trailing blank frame is normal
+      pending.push({
+        name: `${name}.${packed}`,
+        img: conformed,
+        sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        // Centre pivot: a bullet is centred on its position.
+        ox: b.x - (r.x + r.w / 2),
+        oy: b.y - (r.y + r.h / 2),
+      })
+      packed++
+    }
+    if (packed === 0) {
+      errors.push(`${dir}: every frame is transparent`)
+      continue
+    }
+    clipLengths[name] = { play: packed }
   }
 }
 

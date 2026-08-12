@@ -15,7 +15,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { TUNING } from '../content'
+import { TUNING, WEAPONS } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 
@@ -28,6 +28,8 @@ const PIXELS_PER_WALK_FRAME = 11
 /** Weapon art is 32px; a projectile made of it needs to be smaller than the
  *  weapon that threw it. */
 const PROJECTILE_SCALE = 0.55
+/** unTied's projectile clips are authored at 15fps. */
+const PROJECTILE_FPS = 15
 
 interface DrawItem {
   x: number
@@ -608,13 +610,35 @@ export class Renderer {
    * weapon the moment it is packed — which is the whole point. Returns
    * undefined for anything with no art, and the caller draws its square.
    */
-  private projectileFrame(p: { weaponId: string; behaviour: string; type: string }): AtlasFrame | undefined {
-    if (!this.atlas) return undefined
+  private projectileFrame(
+    p: { weaponId: string; behaviour: string; type: string; x: number },
+  ): AtlasFrame | undefined {
+    const atlas = this.atlas
+    if (!atlas) return undefined
     // The barn dog is a real animal, not an icon.
     if (p.behaviour === 'minionHunt') {
-      return this.atlas.get('feralDog.idle.down.0') ?? this.atlas.get('feralDog.walk.down.0')
+      return atlas.get('feralDog.idle.down.0') ?? atlas.get('feralDog.walk.down.0')
     }
-    return this.atlas.get(`weapon.${p.weaponId}`)
+
+    // An animated clip if the weapon declares one, otherwise its icon. The
+    // icon is a decent bullet for thrown produce and a poor one for anything
+    // else — a spinning hacksaw was never going to read as a projectile.
+    const def = WEAPONS[p.weaponId] as { projectileClip?: string; shardClip?: string } | undefined
+    const clipName = p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'eggToss'
+      ? def.shardClip
+      : def?.projectileClip
+    if (clipName) {
+      const len = atlas.clipLength(clipName, 'play')
+      if (len > 0) {
+        // Phase off the projectile's own x so a volley does not flicker in
+        // lockstep, without needing per-projectile animation state.
+        const phase = (p.x * 0.35) | 0
+        const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + phase) % len
+        const frame = atlas.get(`${clipName}.${f}`)
+        if (frame) return frame
+      }
+    }
+    return atlas.get(`weapon.${p.weaponId}`)
   }
 
   /**

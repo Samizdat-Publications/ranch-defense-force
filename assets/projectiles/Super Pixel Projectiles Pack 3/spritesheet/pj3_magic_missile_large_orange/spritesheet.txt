@@ -1,0 +1,4 @@
+pj3_magic_missile_large_orange/frame0000.png = 0 0 128 48
+pj3_magic_missile_large_orange/frame0001.png = 128 0 128 48
+pj3_magic_missile_large_orange/frame0002.png = 256 0 128 48
+pj3_magic_missile_large_orange/frame0003.png = 384 0 128 48

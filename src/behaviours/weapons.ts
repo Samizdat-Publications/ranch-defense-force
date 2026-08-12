@@ -418,7 +418,7 @@ const slam: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
   const stun = num(def, 'stunDuration', 0.6) * (tier >= 2 ? num(def, 't2StunMultiplier', 1.5) : 1)
   world.areaDamage(player.x, player.y, radius, damage, 'melee', 120, stun)
   world.addShake(0.18)
-  world.playFx('shock', player.x, player.y, 0, radius / 60, 0, 0, true)
+  world.playFx('shockwave', player.x, player.y, 0, radius / 55, 0, 0, true)
   if (tier >= 3) {
     // Shockwave ring: a second, wider, weaker pulse.
     const ringRadius = radius * num(def, 't3RingRadiusMultiplier', 2)
@@ -428,7 +428,7 @@ const slam: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
       damage * num(def, 't3RingDamageMultiplier', 0.4),
       'melee', ringKnockback,
     )
-    world.playFx('shock', player.x, player.y, 0, ringRadius / 60, 0, 0, true)
+    world.playFx('shockwave', player.x, player.y, 0, ringRadius / 55, 0, 0, true)
   }
 }
 

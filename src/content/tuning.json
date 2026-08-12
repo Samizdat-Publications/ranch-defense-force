@@ -88,7 +88,20 @@
     "weaponRingRadius": 30,
     "weaponRingScale": 0.45,
     "weaponRecoilSeconds": 0.12,
-    "weaponRecoilPixels": 6
+    "weaponRecoilPixels": 6,
+    "_newClips": "Clips from the unTied projectile packs. shockwave replaces the conformed FX-pack ring for ground pulses; arrowImpact and bigImpact are the dedicated impact animations those packs ship, which the FX pack had no equivalent of.",
+    "shockwave": {
+      "life": 0.3,
+      "scale": 1.0
+    },
+    "arrowImpact": {
+      "life": 0.28,
+      "scale": 0.7
+    },
+    "bigImpact": {
+      "life": 0.34,
+      "scale": 0.8
+    }
   },
   "crops": {
     "_note": "Harvestable vegetation scattered across the field. Broken by any weapon; pays feed. Regrows a little each wave so the field is never permanently stripped.",

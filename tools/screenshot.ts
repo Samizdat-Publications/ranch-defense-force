@@ -15,7 +15,7 @@ import { decodePng, encodePng, blankImage, type Image } from './png.ts'
 import { World } from '../src/sim/world.ts'
 import { OfferPool, type Offer } from '../src/sim/offers.ts'
 import { Rng } from '../src/core/rng.ts'
-import { TUNING } from '../src/content/index.ts'
+import { TUNING, WEAPONS } from '../src/content/index.ts'
 
 const STEP = 1 / 60
 const ZOOM = 2
@@ -242,8 +242,19 @@ for (let i = 0; i < world.projectiles.live; i++) {
 for (let i = 0; i < world.projectiles.live; i++) {
   const p = world.projectiles.items[i]
   if (p.behaviour === 'arcSwing' || p.type === 'aura') continue // areas, not objects
-  const key = p.behaviour === 'minionHunt' ? 'feralDog.idle.down.0' : `weapon.${p.weaponId}`
-  const f = atlas.frames[key]
+  // Animated clip if the weapon declares one, else its icon — same order as the
+  // renderer, so what this shows is what the game draws.
+  const wdef = (WEAPONS as Record<string, Record<string, unknown>>)[p.weaponId]
+  const clip = typeof wdef?.projectileClip === 'string' ? wdef.projectileClip : null
+  let f: Frame | undefined
+  if (clip) {
+    const len = atlas.clipLengths[clip]?.play ?? 0
+    if (len > 0) {
+      const phase = (p.x * 0.35) | 0
+      f = atlas.frames[`${clip}.${(((world.elapsed * 15) | 0) + phase) % len}`]
+    }
+  }
+  if (!f) f = atlas.frames[p.behaviour === 'minionHunt' ? 'feralDog.idle.down.0' : `weapon.${p.weaponId}`]
   if (!f) continue
   const rot = p.vx !== 0 || p.vy !== 0 ? Math.atan2(p.vy, p.vx) : p.angle
   drawFrameT(f, p.x, p.y, rot, 0.55)
