@@ -82,6 +82,31 @@
     }
   },
 
+  "nodes": {
+    "_note": "Harvestable resource nodes. Rocks are mined with the pickaxe, trees felled with the axe — see src/content/nodes.json for their HP and payouts. The pack ships rocks with ore already embedded (bronze, silver, gold, blue and red stone), which is exactly the 'minerals inside the rock' read Deep Rock Galactic: Survivor is built on, so the ore tier is visible before you swing at it.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Props_and_Buildings_32x32/",
+    "files": {
+      "node.rockSmall":  "Rock_Small_32x32.png",
+      "node.rockMedium": "Rock_Medium_32x32.png",
+      "node.rockBig":    "Rock_Big_32x32.png",
+      "node.oreBronze":  "Rock_Small_Bronze_Stone_32x32.png",
+      "node.oreSilver":  "Rock_Medium_Silver_Stone_32x32.png",
+      "node.oreGold":    "Rock_Medium_Gold_Stone_32x32.png",
+      "node.oreBlue":    "Rock_Big_Blue_Stone_32x32.png",
+      "node.oreRed":     "Rock_Big_REd_Stone_32x32.png"
+    }
+  },
+
+  "nodeTrees": {
+    "_note": "Single-tile trees only. The Trees directory is mostly *_Modular_Left/Middle/Right pieces meant to be tiled into a treeline; those are multi-tile and would fail the one-tile assertion. The standalone Tree_* files are what a fellable tree needs.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Trees_32x32/",
+    "files": {
+      "node.treeSmall":  "Tree_Birch_Green_Small_32x32.png",
+      "node.treeMedium": "Tree_Oak_Brown_Medium_32x32.png",
+      "node.treeBig":    "Tree_Oak_Blue_Green_Big_32x32.png"
+    }
+  },
+
   "weapons": {
     "_note": "One sprite per weapon, packed as weapon.<id> and keyed to the ids in src/content/weapons.json. These are what the player sees ringed around them and what the projectiles are drawn as. Nothing packed them before, so every weapon's `sprite` field pointed at a name the atlas had never heard of, every projectile fell through to the coloured-square fallback, and a melee arc drew as a ~100px white box.",
     "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here — a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",

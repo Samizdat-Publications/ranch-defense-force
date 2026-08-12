@@ -61,6 +61,8 @@ interface Manifest {
   singlesExtra?: { _base: string; files: Record<string, string> }
   weapons?: { _base: string; files: Record<string, string> }
   weaponsFarmTools?: { _base: string; files: Record<string, string>; conform?: boolean }
+  nodes?: { _base: string; files: Record<string, string> }
+  nodeTrees?: { _base: string; files: Record<string, string> }
   projectiles?: {
     _base: string
     clips: Record<string, { path: string }>
@@ -229,6 +231,7 @@ const WEAPON_MAX_H = 52
 
 const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
+  manifest.nodes, manifest.nodeTrees,
 ].filter(Boolean) as { _base: string; files: Record<string, string>; conform?: boolean }[]
 
 for (const group of singleGroups) {

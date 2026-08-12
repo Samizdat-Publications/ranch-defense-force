@@ -320,6 +320,13 @@ export class Renderer {
         it.scaleX = t
         it.scaleY = t
         it.rotation = (1 - t) * 3
+      } else if (c.working > 0) {
+        // Being worked. The tools fire on their own, so without this there is
+        // no signal at all that standing here is doing anything — the node just
+        // silently vanishes some seconds later.
+        const shake = Math.sin(this.world.elapsed * 42 + c.x) * 1.2
+        it.x += shake
+        it.scaleY = 1 + Math.sin(this.world.elapsed * 30 + c.y) * 0.05
       }
     }
 

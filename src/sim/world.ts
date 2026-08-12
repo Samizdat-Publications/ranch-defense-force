@@ -18,7 +18,7 @@ import {
 import { Player } from './player'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar } from './formulas'
-import { ENEMIES, ITEMS, TUNING, WAVES, WEAPONS, type StatMods } from '../content'
+import { ENEMIES, ITEMS, NODES, TUNING, WAVES, WEAPONS, type StatMods } from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
 import { ENEMY_BEHAVIOURS, type SteerContext } from '../behaviours/enemies'
 
@@ -134,38 +134,72 @@ export class World {
     this.player.px = this.player.x
     this.player.py = this.player.y
     this.refreshSpecialItems()
-    this.scatterCrops(T.crops.initialCount)
+    this.scatterField()
   }
 
   /**
    * Scatter harvestable crops across the field, away from the player's feet so
    * the opening seconds are not spent standing inside one.
    */
-  private scatterCrops(count: number): void {
-    const c = T.crops
+  /**
+   * Scatter one kind of harvestable node across the field.
+   *
+   * Variants are drawn by weight, so a run's field is mostly plain rock with
+   * the occasional gold seam rather than an even spread — the point of ore is
+   * that spotting it is worth something.
+   */
+  private scatterNodes(kind: string, count: number): void {
+    const def = NODES.kinds[kind]
+    if (!def) return
+    const field = NODES.field
+    const cap = field.max[kind] ?? 0
     const pad = 80
+
+    let live = 0
+    for (let i = 0; i < this.props.live; i++) if (this.props.items[i].kind === kind) live++
+
+    let totalWeight = 0
+    for (const v of def.variants) totalWeight += v.weight
+
     for (let i = 0; i < count; i++) {
-      if (this.props.live >= c.maxCount) return
+      if (live >= cap) return
       let x = 0
       let y = 0
       // A handful of attempts, then give up on this one rather than loop.
       for (let attempt = 0; attempt < 8; attempt++) {
         x = this.rng.range(pad, this.arenaW - pad)
         y = this.rng.range(pad, this.arenaH - pad)
-        if (Math.hypot(x - this.player.x, y - this.player.y) >= c.minDistanceFromPlayer) break
+        if (Math.hypot(x - this.player.x, y - this.player.y) >= field.minDistanceFromPlayer) break
       }
+
+      let roll = this.rng.next() * totalWeight
+      let variant = def.variants[def.variants.length - 1]
+      for (const v of def.variants) {
+        roll -= v.weight
+        if (roll <= 0) { variant = v; break }
+      }
+
       const p = this.props.acquire()
       if (!p) return
-      p.sprite = this.rng.pick(c.sprites)
+      p.kind = kind
+      p.sprite = variant.sprite
       p.x = x
       p.y = y
-      p.maxHp = c.hp + c.hpPerWave * (this.spawner?.wave ?? 1)
+      p.maxHp = variant.hp + def.hpPerWave * (this.spawner?.wave ?? 1)
       p.hp = p.maxHp
-      p.radius = c.radius
-      p.feed = c.feedValue
+      p.radius = def.radius
+      p.feed = variant.feed
+      p.xp = variant.xp
       p.flash = 0
       p.dying = 0
+      p.working = 0
+      live++
     }
+  }
+
+  /** Lay out the whole field at the start of a run. */
+  private scatterField(): void {
+    for (const [kind, n] of Object.entries(NODES.field.initial)) this.scatterNodes(kind, n)
   }
 
   // ---------------------------------------------------------------- tick
@@ -207,7 +241,8 @@ export class World {
 
     // 8-9. collisions, damage, deaths, drops
     this.collideProjectiles()
-    this.collideProjectilesWithCrops(dt)
+    this.updateProps(dt)
+    this.harvestNearby(dt)
     this.collideEnemiesWithPlayer(dt)
     this.updateHazards(dt)
     this.updateStatuses(dt)
@@ -278,7 +313,7 @@ export class World {
       s.beginWave(next)
       // The field grows back a little each wave, so a player who cleared it
       // early is not permanently out of crops to harvest.
-      this.scatterCrops(T.crops.regrowPerWave)
+      for (const [kind, n] of Object.entries(NODES.field.regrowPerWave)) this.scatterNodes(kind, n)
       this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
       if (bossId) this.events.onBossWave?.(bossId)
@@ -717,55 +752,121 @@ export class World {
    * (tens, against hundreds of enemies), so a direct scan is cheaper than
    * maintaining a second grid for them.
    */
-  private collideProjectilesWithCrops(dt: number): void {
+  /**
+   * Proximity harvesting — the pickaxe and the axe working on their own.
+   *
+   * This is the Deep Rock Galactic: Survivor model rather than the old one.
+   * Before, a crop only broke when a stray bullet happened to clip it, which
+   * made harvesting invisible chip damage you never chose. Now standing near a
+   * node works it continuously, so where you plant yourself is the decision and
+   * the tools never compete with a weapon slot for it.
+   *
+   * Every node in range is worked at once, which is what makes a cluster worth
+   * walking into and gives a stationary player something to be doing.
+   */
+  private harvestNearby(dt: number): void {
+    const pl = this.player
+    if (!pl.alive) return
+    const reach = T.harvest.radius * (1 + pl.stats.harvestPct / 100)
+
     for (let i = this.props.live - 1; i >= 0; i--) {
-      const c = this.props.items[i]
-      if (c.flash > 0) c.flash -= dt
-      if (c.dying > 0) {
-        c.dying -= dt
-        if (c.dying <= 0) this.props.free(i)
-        continue
-      }
+      const n = this.props.items[i]
+      if (n.dying > 0) continue
+      const dx = n.x - pl.x
+      const dy = n.y - pl.y
+      const want = reach + n.radius
+      if (dx * dx + dy * dy > want * want) continue
 
-      for (let j = this.projectiles.live - 1; j >= 0; j--) {
-        const p = this.projectiles.items[j]
-        if (p.pierce === -1) continue
-        const dx = c.x - p.x
-        const dy = c.y - p.y
-        const want = c.radius + p.radius
-        if (dx * dx + dy * dy > want * want) continue
-
-        c.hp -= p.damage
-        c.flash = C.hitFlashSeconds
-        this.burstParticles(c.x, c.y, 3, 0x9ec96b)
-        if (!p.attached) {
-          if (p.pierce > 0) p.pierce--
-          else this.projectiles.free(j)
-        }
-        if (c.hp <= 0) {
-          this.harvest(c)
-          break
-        }
+      const dps = this.toolDpsFor(n.kind)
+      if (dps <= 0) continue
+      n.hp -= dps * dt
+      n.working = T.harvest.workingSeconds
+      if (n.hp <= 0) {
+        this.harvest(n)
+        // `harvest` marks it dying; the prop pass frees the slot.
       }
     }
   }
 
-  /** A broken crop pays out feed on the ground and a spray of leaves. */
+  /**
+   * How fast the player works a node of this kind, given the tool that suits it
+   * and that tool's current tier.
+   */
+  private toolDpsFor(kind: string): number {
+    const pl = this.player
+    for (const [toolId, tool] of Object.entries(NODES.tools)) {
+      if (tool.worksKind !== kind && tool.alsoWorks !== kind) continue
+      const tierIndex = toolId === 'pickaxe' ? pl.pickaxeTier : pl.axeTier
+      const tier = tool.tiers[Math.min(tierIndex, tool.tiers.length - 1)]
+      return tier ? tier.dps : 0
+    }
+    return 0
+  }
+
+  /**
+   * Node timers only — flash, the working shake, and the break animation.
+   *
+   * Weapons deliberately do NOT damage nodes any more. They used to, and it
+   * quietly defeated the whole harvesting design: a shovel swing carries more
+   * damage than a wooden pickaxe does in five seconds, so every node was broken
+   * incidentally by whatever was shooting past it and the pickaxe ladder bought
+   * nothing. Measured at 0.28s to break a rock on every tool tier, wood through
+   * diamond, because the tool was never the thing breaking it.
+   *
+   * Harvesting is the tools' job and only the tools' job. That is what makes
+   * where you stand a decision and what gives the upgrades something to buy.
+   */
+  private updateProps(dt: number): void {
+    for (let i = this.props.live - 1; i >= 0; i--) {
+      const c = this.props.items[i]
+      if (c.flash > 0) c.flash -= dt
+      if (c.working > 0) c.working -= dt
+      if (c.dying > 0) {
+        c.dying -= dt
+        if (c.dying <= 0) this.props.free(i)
+      }
+    }
+  }
+
   private harvest(c: Prop): void {
     this.cropsHarvested++
-    const f = this.pickups.acquire()
-    if (f) {
-      f.kind = 'feed'
-      f.x = c.x
-      f.y = c.y
-      f.px = f.x
-      f.py = f.y
-      f.value = c.feed
-      f.magnetised = false
-      f.speed = 0
-      f.bob = 0
+
+    if (c.feed > 0) {
+      const f = this.pickups.acquire()
+      if (f) {
+        f.kind = 'feed'
+        f.x = c.x
+        f.y = c.y
+        f.px = f.x
+        f.py = f.y
+        f.value = c.feed
+        f.magnetised = false
+        f.speed = 0
+        f.bob = 0
+      }
     }
-    this.burstParticles(c.x, c.y, 10, 0x9ec96b)
+
+    // XP comes out as several small gems rather than one big one: a scatter
+    // reads as a payout, and the magnet sweeps them up anyway.
+    const gems = Math.min(8, Math.max(0, Math.round(c.xp / 3)))
+    const per = gems > 0 ? c.xp / gems : 0
+    for (let i = 0; i < gems; i++) {
+      const g = this.pickups.acquire()
+      if (!g) break
+      g.kind = 'xp'
+      g.x = c.x + this.rng.range(-10, 10)
+      g.y = c.y + this.rng.range(-10, 10)
+      g.px = g.x
+      g.py = g.y
+      g.value = per
+      g.magnetised = false
+      g.speed = 0
+      g.bob = this.rng.range(0, 6)
+    }
+
+    // Rock shatters pale and cold, wood and crop break green.
+    this.burstParticles(c.x, c.y, 10, c.kind === 'rock' ? 0xbfbacb : 0x9ec96b)
+    if (c.kind === 'rock') this.playFx('arrowImpact', c.x, c.y, 0, 0.8)
     c.dying = C.deathSpinSeconds
   }
 
@@ -1309,6 +1410,23 @@ export class World {
       g.speed = 0
       g.bob = this.rng.range(0, 6)
     }
+    // Seed packs: a small steady feed trickle that is not tied to standing
+    // still, so a player kited round the field all wave still earns something.
+    if (this.rng.chance(NODES.mobDrops.seedPackChance)) {
+      const sp = this.pickups.acquire()
+      if (sp) {
+        sp.kind = 'feed'
+        sp.x = e.x + this.rng.range(-6, 6)
+        sp.y = e.y + this.rng.range(-6, 6)
+        sp.px = sp.x
+        sp.py = sp.y
+        sp.value = NODES.mobDrops.seedPackFeed
+        sp.magnetised = false
+        sp.speed = 0
+        sp.bob = 0
+      }
+    }
+
     if (e.elite || this.rng.chance(0.04)) {
       const f = this.pickups.acquire()
       if (f) {

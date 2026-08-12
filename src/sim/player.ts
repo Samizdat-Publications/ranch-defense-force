@@ -4,7 +4,7 @@
  * Stats are resolved once whenever the build changes (level-up, shop purchase),
  * never per tick — `resolve()` is the only place `resolveStats` is called.
  */
-import { CLASSES, TUNING, type ClassDef, type StatMods } from '../content'
+import { CLASSES, NODES, TUNING, type ClassDef, type StatMods } from '../content'
 import { emptyDerived, resolveStats, type DerivedStats } from './stats'
 import { xpToNext } from './formulas'
 
@@ -40,6 +40,12 @@ export interface WeaponSlot {
 }
 
 export const MAX_WEAPON_SLOTS = 6
+
+/** Highest index into a tool's tier list in nodes.json. */
+const TOOL_TIER_CAP = Math.max(
+  0,
+  Math.min(...Object.values(NODES.tools).map((t) => t.tiers.length)) - 1,
+)
 
 export class Player {
   classId = 'hand'
@@ -94,6 +100,16 @@ export class Player {
   /** Damage reduction from the active class passive, 0..1. */
   passiveDamageReduction = 0
 
+  /**
+   * Harvest tool tiers, indexed into `nodes.json` -> tools -> tiers.
+   *
+   * Deliberately NOT weapon slots. Everyone digs and everyone chops; the tools
+   * upgrade on their own ladder so mining never costs you a weapon, which is
+   * the whole reason harvesting can be a real activity rather than a tax.
+   */
+  pickaxeTier = 0
+  axeTier = 0
+
   init(classId: string, metaMods: StatMods = {}): void {
     this.classId = classId
     this.def = CLASSES[classId]
@@ -145,6 +161,20 @@ export class Player {
 
   addItem(id: string, boosted = false): void {
     this.items.push({ id, boosted })
+
+    // Tool upgrades are a tier step, not a stat. They live in items.json so
+    // they flow through the same offer pool and shop as everything else, but a
+    // tier cannot be expressed as a percentage in the stat block, so it is
+    // applied here. Boosted offers step twice, matching the double-magnitude
+    // rule the level-up screen uses for everything else.
+    const def = ITEMS[id] as { toolUpgrade?: string } | undefined
+    if (def?.toolUpgrade) {
+      const steps = boosted ? 2 : 1
+      const cap = TOOL_TIER_CAP
+      if (def.toolUpgrade === 'pickaxe') this.pickaxeTier = Math.min(cap, this.pickaxeTier + steps)
+      else if (def.toolUpgrade === 'axe') this.axeTier = Math.min(cap, this.axeTier + steps)
+    }
+
     this.resolve()
   }
 

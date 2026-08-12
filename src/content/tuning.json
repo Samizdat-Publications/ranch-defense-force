@@ -103,30 +103,12 @@
       "scale": 0.8
     }
   },
-  "crops": {
-    "_note": "Harvestable vegetation scattered across the field. Broken by any weapon; pays feed. Regrows a little each wave so the field is never permanently stripped.",
-    "initialCount": 46,
-    "regrowPerWave": 5,
-    "maxCount": 70,
-    "hp": 18,
-    "hpPerWave": 4,
-    "feedValue": 2,
-    "radius": 11,
-    "minDistanceFromPlayer": 140,
-    "sprites": [
-      "crop.corn",
-      "crop.pumpkin",
-      "crop.watermelon",
-      "crop.cabbage",
-      "crop.tomato",
-      "crop.grain",
-      "crop.chili",
-      "crop.strawberry",
-      "crop.cauliflower",
-      "crop.zucchini"
-    ]
-  },
   "arena": {
     "edgePadding": 24
+  },
+  "harvest": {
+    "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
+    "radius": 46,
+    "workingSeconds": 0.18
   }
 }

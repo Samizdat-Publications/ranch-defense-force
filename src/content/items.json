@@ -147,5 +147,32 @@
     "mods": {},
     "special": "gasGrace",
     "graceSeconds": 2
+  },
+  "pickaxeHead": {
+    "name": "Better Pickaxe Head",
+    "icon": "pickaxeHead",
+    "cost": 26,
+    "rarity": "uncommon",
+    "_note": "Steps the pickaxe up the wood -> stone -> iron -> steel -> diamond ladder in nodes.json. Handled in Player.addItem rather than as a stat, because it is a tier not a percentage.",
+    "toolUpgrade": "pickaxe",
+    "mods": {}
+  },
+  "axeHead": {
+    "name": "Better Axe Head",
+    "icon": "axeHead",
+    "cost": 26,
+    "rarity": "uncommon",
+    "toolUpgrade": "axe",
+    "mods": {}
+  },
+  "prospectorsEye": {
+    "name": "Prospector's Eye",
+    "icon": "prospectorsEye",
+    "cost": 22,
+    "rarity": "common",
+    "_note": "Widens the proximity harvest reach and the value of what comes out.",
+    "mods": {
+      "harvestPct": 25
+    }
   }
 }

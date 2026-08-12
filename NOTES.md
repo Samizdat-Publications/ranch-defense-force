@@ -58,6 +58,67 @@ sprite as a coloured square. It builds the atlas now.
 
 ---
 
+# Session 4 — mining, and the assets to draw it
+
+## Harvesting rebuilt on the Deep Rock Galactic: Survivor model
+
+The old model was crops that broke when a stray bullet clipped them. That is
+invisible chip damage the player never chooses, and it made the field scenery
+rather than a place. The new one is DRG:S's: **nodes you stand next to, worked
+continuously by tools that are not weapons.**
+
+- **Three node kinds** in `src/content/nodes.json` — rock, tree, crop — with
+  per-variant HP, feed and XP. The LimeZu pack ships rocks with ore already in
+  them (bronze, silver, gold, blue, red), so the payout tier is legible before
+  you commit to standing there, which is exactly DRG's "minerals embedded in
+  the rock".
+- **Proximity harvesting.** Stand in range and the tool works on its own,
+  every node in reach at once. No weapon slot, no button, no stopping shooting.
+- **Two tool ladders**, wood → stone → iron → steel → diamond, bought with
+  `pickaxeHead` / `axeHead` upgrades through the normal offer pool.
+- **Nodes pay XP as gems**, not just feed. In DRG:S mining is the primary
+  early-game XP source and this is what makes that true here rather than
+  decorative — ten seconds standing on one bronze seam took a level-1 player to
+  level 2.
+- **Mobs drop seed packs** (5%), a feed trickle that is not tied to standing
+  still, so a player kited all wave still earns.
+
+### Weapons no longer damage nodes, and that was the whole ballgame
+
+The first build kept the old "projectiles break crops" path alongside the new
+tools. It silently defeated the entire design: a shovel swing carries more
+damage than a wooden pickaxe does in five seconds, so every node was broken
+incidentally by whatever was shooting past it.
+
+Measured: **0.28s to break a rock on every tool tier, wood through diamond** —
+identical, because the tool was never the thing breaking it, and the upgrades
+bought nothing at all. With weapons removed from nodes it reads properly:
+
+| Pickaxe | Time to break a bronze seam |
+|---|---|
+| Wooden | 5.63s |
+| Iron | 1.93s |
+| Diamond | 0.90s |
+
+Worth keeping as a shape: a new system layered beside an old one that does the
+same job will lose to it silently, and the symptom is "the upgrade does
+nothing" rather than an error.
+
+### What the harness says, and why to read it carefully
+
+Clear rates held (Hand 94% holding ground, Kid 100%) and median level rose from
+26 to 30, so mining is contributing XP. But **the bots barely mine** — median 0
+to 8 nodes in a seventeen-minute run — because they kite constantly and never
+choose to stand anywhere. The brawler pilot mines four times what the kiter
+does, which is the design working: standing still now pays, and that is The
+Hand's identity.
+
+Do not tune harvest rates against these numbers. They measure a bot with no
+mining behaviour at all; a human who deliberately parks on a gold seam is a
+different economy entirely. This needs a human playtest before any balancing.
+
+---
+
 # Session 3 — M4 finished, M5 content, balance, weapon visibility
 
 ## Weapons you can actually see

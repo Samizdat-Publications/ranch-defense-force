@@ -9,6 +9,7 @@ import enemiesRaw from './enemies.json'
 import wavesRaw from './waves.json'
 import metaRaw from './meta.json'
 import tuningRaw from './tuning.json'
+import nodesRaw from './nodes.json'
 
 /** Every stat the resolver knows about. Keys ending `Pct` are percentages
  *  summed additively; everything else is a flat addend. */
@@ -137,6 +138,33 @@ export const BOSSES = (_bosses ?? {}) as Record<string, Record<string, unknown>>
 export const WAVES = wavesRaw
 export const META = metaRaw
 export const TUNING = tuningRaw
+
+/** Harvestable nodes and the pickaxe/axe ladder. */
+export interface NodeVariant {
+  sprite: string
+  hp: number
+  feed: number
+  xp: number
+  weight: number
+}
+export interface NodeKind {
+  tool: string
+  radius: number
+  hpPerWave: number
+  variants: NodeVariant[]
+}
+export interface ToolTier { id: string; name: string; dps: number }
+export const NODES = nodesRaw as unknown as {
+  tools: Record<string, { worksKind: string; alsoWorks?: string; tiers: ToolTier[] }>
+  kinds: Record<string, NodeKind>
+  field: {
+    initial: Record<string, number>
+    regrowPerWave: Record<string, number>
+    max: Record<string, number>
+    minDistanceFromPlayer: number
+  }
+  mobDrops: { seedPackChance: number; seedPackFeed: number }
+}
 
 export const CLASS_IDS = Object.keys(CLASSES)
 export const WEAPON_IDS = Object.keys(WEAPONS)

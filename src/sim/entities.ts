@@ -171,23 +171,32 @@ export function makeProjectile(): Projectile {
  */
 export interface Prop {
   active: boolean
-  /** Atlas frame key, e.g. `crop.pumpkin`. */
+  /** Atlas frame key, e.g. `crop.pumpkin` or `node.oreGold`. */
   sprite: string
+  /** Which harvest kind this is — `rock`, `tree` or `crop`. Decides which tool
+   *  works it and therefore how fast it comes apart. */
+  kind: string
   x: number
   y: number
   hp: number
   maxHp: number
   radius: number
   feed: number
+  /** XP granted on break, paid out as gems so the player collects it. */
+  xp: number
   flash: number
   /** Counts down after the killing blow, for the pop. */
   dying: number
+  /** Seconds left on the "being worked" shake. Purely cosmetic, but it is the
+   *  only feedback that a node you are standing next to is actually coming
+   *  apart, which matters when the tool fires on its own. */
+  working: number
 }
 
 export function makeProp(): Prop {
   return {
-    active: false, sprite: 'crop.corn', x: 0, y: 0, hp: 1, maxHp: 1,
-    radius: 11, feed: 1, flash: 0, dying: 0,
+    active: false, sprite: 'crop.corn', kind: 'crop', x: 0, y: 0, hp: 1, maxHp: 1,
+    radius: 11, feed: 1, xp: 0, flash: 0, dying: 0, working: 0,
   }
 }
 
