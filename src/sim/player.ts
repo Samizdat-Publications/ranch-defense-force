@@ -41,10 +41,22 @@ export interface WeaponSlot {
 
 export const MAX_WEAPON_SLOTS = 6
 
-/** Highest index into a tool's tier list in nodes.json. */
+/**
+ * Highest index into a tool's tier list in nodes.json.
+ *
+ * The `_`-prefixed filter is not cosmetic. This project documents inside its
+ * JSON, so a `_note` sitting beside the real entries is normal and expected —
+ * and a bare string has no `.tiers`, which crashed this at module load and took
+ * three test files down with it. Anything walking a content map has to skip
+ * them.
+ */
 const TOOL_TIER_CAP = Math.max(
   0,
-  Math.min(...Object.values(NODES.tools).map((t) => t.tiers.length)) - 1,
+  Math.min(
+    ...Object.entries(NODES.tools)
+      .filter(([k, v]) => !k.startsWith('_') && Array.isArray(v?.tiers))
+      .map(([, t]) => t.tiers.length),
+  ) - 1,
 )
 
 export class Player {

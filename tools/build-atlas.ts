@@ -62,6 +62,16 @@ interface Manifest {
   weapons?: { _base: string; files: Record<string, string> }
   weaponsFarmTools?: { _base: string; files: Record<string, string>; conform?: boolean }
   nodes?: { _base: string; files: Record<string, string> }
+  tools?: { _base: string; files: Record<string, string>; conform?: boolean }
+  gunSheet?: {
+    path: string
+    conform?: boolean
+    cellWidth: number
+    cellHeight: number
+    categories: string[]
+    colLefts: number[]
+    rowTops: number[]
+  }
   nodeTrees?: { _base: string; files: Record<string, string> }
   projectiles?: {
     _base: string
@@ -231,7 +241,7 @@ const WEAPON_MAX_H = 52
 
 const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
-  manifest.nodes, manifest.nodeTrees,
+  manifest.nodes, manifest.nodeTrees, manifest.tools,
 ].filter(Boolean) as { _base: string; files: Record<string, string>; conform?: boolean }[]
 
 for (const group of singleGroups) {
@@ -346,6 +356,50 @@ if (fx && Object.keys(fx.clips ?? {}).length > 0) {
       continue
     }
     clipLengths[`fx.${name}`] = { play: packed }
+  }
+}
+
+// -------------------------------------------------------------- firearms
+
+/**
+ * The gun sheet: six category columns of 22, sliced on measured bands.
+ *
+ * Not a uniform grid — the columns sit 85.2px apart and the guns inside them
+ * vary from 14 to 25px wide. Cells are cut generously from the measured band
+ * origins and trimmed to content, which is why only the origins need listing.
+ */
+const gunSheet = manifest.gunSheet
+if (gunSheet) {
+  let sheet: Image | null = null
+  try {
+    sheet = decodePng(readFileSync(gunSheet.path))
+  } catch (e) {
+    errors.push(`${gunSheet.path}: ${(e as Error).message}`)
+  }
+  if (sheet) {
+    if (gunSheet.conform) {
+      try {
+        makeQuantiser(loadPalette()).conform(sheet)
+      } catch (e) {
+        errors.push((e as Error).message)
+      }
+    }
+    gunSheet.categories.forEach((cat, c) => {
+      const left = gunSheet.colLefts[c]
+      if (left === undefined) return
+      gunSheet.rowTops.forEach((top, r) => {
+        const b = contentBounds(sheet, left, top, gunSheet.cellWidth, gunSheet.cellHeight)
+        if (b.empty) return
+        pending.push({
+          name: `gun.${cat}.${r}`,
+          img: sheet,
+          sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+          // Centre pivot, like the other held art.
+          ox: b.x - (left + b.w / 2),
+          oy: b.y - (top + gunSheet.cellHeight / 2),
+        })
+      })
+    })
   }
 }
 

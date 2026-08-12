@@ -137,6 +137,39 @@
     }
   },
 
+  "tools": {
+    "_note": "Pixcuit Medieval Tool Icons. The pickaxe and axe ladders the player actually carries — six tiers each, keyed to the tiers in src/content/nodes.json so the sprite is looked up straight from the tool's current tier. The pack's six materials are why nodes.json has six tiers rather than the five it started with: matching the art beat inventing a mapping from steel to titanium.",
+    "_spellingNote": "The pack spells shovel 'Showel'. Not used here, but it will bite whoever adds it.",
+    "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
+    "conform": true,
+    "files": {
+      "tool.pickaxe.wood": "Wooden_Pickaxe.png",
+      "tool.pickaxe.stone": "Stone_Pickaxe.png",
+      "tool.pickaxe.iron": "Iron_Pickaxe.png",
+      "tool.pickaxe.golden": "Golden_Pickaxe.png",
+      "tool.pickaxe.titanium": "Titanium_Pickaxe.png",
+      "tool.pickaxe.ruby": "Ruby_Pickaxe.png",
+      "tool.axe.wood": "Wooden_Axe.png",
+      "tool.axe.stone": "Stone_Axe.png",
+      "tool.axe.iron": "Iron_Axe.png",
+      "tool.axe.golden": "Golden_Axe.png",
+      "tool.axe.titanium": "Titanium_Axe.png",
+      "tool.axe.ruby": "Ruby_Axe.png"
+    }
+  },
+
+  "gunSheet": {
+    "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed — rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
+    "_layoutNote": "rowTops and colLefts are the measured content bands. Cells are sliced generously and trimmed to content by the builder, so the varying gun widths inside a column do not need listing.",
+    "path": "assets/icons-guns/pixel guns transparent background no text.png",
+    "conform": true,
+    "cellWidth": 28,
+    "cellHeight": 9,
+    "categories": ["pistol", "smg", "carbine", "rifle", "shotgun", "lmg"],
+    "colLefts": [45, 130, 216, 302, 388, 471],
+    "rowTops": [36, 45, 54, 63, 72, 81, 90, 99, 108, 118, 126, 135, 144, 153, 162, 171, 180, 189, 198, 207, 217, 225]
+  },
+
   "fx": {
     "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (§10 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre — an explosion is centred on a point, it does not stand on the ground.",
     "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",

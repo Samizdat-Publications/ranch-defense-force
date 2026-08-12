@@ -795,6 +795,8 @@ export class World {
   private toolDpsFor(kind: string): number {
     const pl = this.player
     for (const [toolId, tool] of Object.entries(NODES.tools)) {
+      // Skip documentation keys — see TOOL_TIER_CAP in player.ts.
+      if (toolId.startsWith('_') || !Array.isArray(tool?.tiers)) continue
       if (tool.worksKind !== kind && tool.alsoWorks !== kind) continue
       const tierIndex = toolId === 'pickaxe' ? pl.pickaxeTier : pl.axeTier
       const tier = tool.tiers[Math.min(tierIndex, tool.tiers.length - 1)]

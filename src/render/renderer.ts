@@ -15,7 +15,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { TUNING, WEAPONS } from '../content'
+import { NODES, TUNING, WEAPONS } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 
@@ -411,6 +411,7 @@ export class Renderer {
     }
 
     this.collectWeaponRing()
+    this.collectHarvestTools()
 
     const p = w.player
     const it = this.push()
@@ -692,6 +693,55 @@ export class Renderer {
       it.rotation = facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle
       it.scaleX = cfg.weaponRingScale * (facingLeft ? -1 : 1)
       it.scaleY = cfg.weaponRingScale
+    }
+  }
+
+  /**
+   * The pickaxe and axe, carried at the player's hips.
+   *
+   * Kept out of the weapon ring on purpose. They are not weapons, they never
+   * aim at anything, and folding them into the ring would both eat two of its
+   * slots and imply they fire. Hanging them low and angled at the ground reads
+   * as equipment, and it is the only place a tier upgrade is ever visible —
+   * buying a Titanium Pickaxe is otherwise a number nobody sees.
+   */
+  private collectHarvestTools(): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const w = this.world
+    const p = w.player
+
+    // Do the tools have something to chew on right now?
+    let working = false
+    for (let i = 0; i < w.props.live; i++) {
+      if (w.props.items[i].working > 0) { working = true; break }
+    }
+
+    const carry: [string, number, number][] = [
+      ['pickaxe', p.pickaxeTier, -1],
+      ['axe', p.axeTier, 1],
+    ]
+    for (const [toolId, tierIndex, side] of carry) {
+      const tiers = NODES.tools[toolId]?.tiers
+      if (!Array.isArray(tiers) || tiers.length === 0) continue
+      const tier = tiers[Math.min(tierIndex, tiers.length - 1)]
+      const frame = atlas.get(`tool.${toolId}.${tier.id}`)
+      if (!frame) continue
+      const it = this.push()
+      if (!it) return
+
+      // A small swing while they are cutting, so the automatic tools do not
+      // look idle while they work.
+      const swing = working ? Math.sin(w.elapsed * 24 + side) * 0.5 : 0
+      it.x = p.x + side * 15
+      it.y = p.y - 4
+      it.frame = frame
+      it.colour = PALETTE.melee
+      it.w = 8
+      it.h = 8
+      it.rotation = side * (0.7 + swing)
+      it.scaleX = TUNING.fx.weaponRingScale * 0.85 * side
+      it.scaleY = TUNING.fx.weaponRingScale * 0.85
     }
   }
 

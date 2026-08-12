@@ -1,50 +1,145 @@
 {
-  "_note": "Harvestable resource nodes and the tools that work them, modelled on Deep Rock Galactic: Survivor. Mining there is the primary XP source in the early game — you climb the first few levels off the rock, not the kills — and that is the job this table does. Everything is content: HP, payouts, spawn weights and tool speeds all live here.",
-
+  "_note": "Harvestable resource nodes and the tools that work them, modelled on Deep Rock Galactic: Survivor. Mining there is the primary XP source in the early game \u2014 you climb the first few levels off the rock, not the kills \u2014 and that is the job this table does. Everything is content: HP, payouts, spawn weights and tool speeds all live here.",
   "_harvestNote": "Harvesting is PROXIMITY-BASED and continuous, not a weapon hit. Stand near a node and the tool works on its own, so mining never competes with a weapon slot and never asks the player to stop shooting. That is also why the tools are not in weapons.json: everyone starts with both, and they upgrade on their own ladder.",
-
+  "_tierNote": "Six tiers, named for the Pixcuit icon pack's materials so every tier has real art. The ladder was five (wood/stone/iron/steel/diamond) before the art arrived; matching the pack beat inventing a steel-to-titanium mapping.",
   "tools": {
     "pickaxe": {
       "_note": "Works rock. Tier is bought with upgrades during a run; dps is how fast the head bites.",
       "worksKind": "rock",
       "tiers": [
-        { "id": "wood", "name": "Wooden Pickaxe", "dps": 14 },
-        { "id": "stone", "name": "Stone Pickaxe", "dps": 26 },
-        { "id": "iron", "name": "Iron Pickaxe", "dps": 44 },
-        { "id": "steel", "name": "Steel Pickaxe", "dps": 70 },
-        { "id": "diamond", "name": "Diamond Pickaxe", "dps": 110 }
+        {
+          "id": "wood",
+          "name": "Wooden Pickaxe",
+          "dps": 14
+        },
+        {
+          "id": "stone",
+          "name": "Stone Pickaxe",
+          "dps": 24
+        },
+        {
+          "id": "iron",
+          "name": "Iron Pickaxe",
+          "dps": 40
+        },
+        {
+          "id": "golden",
+          "name": "Golden Pickaxe",
+          "dps": 62
+        },
+        {
+          "id": "titanium",
+          "name": "Titanium Pickaxe",
+          "dps": 92
+        },
+        {
+          "id": "ruby",
+          "name": "Ruby Pickaxe",
+          "dps": 130
+        }
       ]
     },
     "axe": {
-      "_note": "Works wood, and crops — a crop is soft enough that the axe is overkill, which is the point: crops are the early trickle and trees are the real wood.",
+      "_note": "Works wood, and crops \u2014 a crop is soft enough that the axe is overkill, which is the point: crops are the early trickle and trees are the real wood.",
       "worksKind": "tree",
       "alsoWorks": "crop",
       "tiers": [
-        { "id": "wood", "name": "Wooden Axe", "dps": 16 },
-        { "id": "stone", "name": "Stone Axe", "dps": 30 },
-        { "id": "iron", "name": "Iron Axe", "dps": 50 },
-        { "id": "steel", "name": "Steel Axe", "dps": 78 },
-        { "id": "diamond", "name": "Diamond Axe", "dps": 120 }
+        {
+          "id": "wood",
+          "name": "Wooden Axe",
+          "dps": 16
+        },
+        {
+          "id": "stone",
+          "name": "Stone Axe",
+          "dps": 27
+        },
+        {
+          "id": "iron",
+          "name": "Iron Axe",
+          "dps": 45
+        },
+        {
+          "id": "golden",
+          "name": "Golden Axe",
+          "dps": 68
+        },
+        {
+          "id": "titanium",
+          "name": "Titanium Axe",
+          "dps": 100
+        },
+        {
+          "id": "ruby",
+          "name": "Ruby Axe",
+          "dps": 140
+        }
       ]
     }
   },
-
-  "_kindNote": "weight is the relative spawn chance within a kind. hp scales with the wave via hpPerWave so a late-wave rock is still worth standing next to. xp is granted as gems, feed as feed pickups — both drop on break rather than being credited silently, so the payout is something you see and collect.",
-
+  "_kindNote": "weight is the relative spawn chance within a kind. hp scales with the wave via hpPerWave so a late-wave rock is still worth standing next to. xp is granted as gems, feed as feed pickups \u2014 both drop on break rather than being credited silently, so the payout is something you see and collect.",
   "kinds": {
     "rock": {
       "tool": "pickaxe",
       "radius": 13,
       "hpPerWave": 6,
       "variants": [
-        { "sprite": "node.rockSmall",  "hp": 34,  "feed": 1,  "xp": 2,  "weight": 30 },
-        { "sprite": "node.rockMedium", "hp": 58,  "feed": 2,  "xp": 4,  "weight": 20 },
-        { "sprite": "node.rockBig",    "hp": 90,  "feed": 3,  "xp": 6,  "weight": 12 },
-        { "sprite": "node.oreBronze",  "hp": 70,  "feed": 5,  "xp": 8,  "weight": 12 },
-        { "sprite": "node.oreSilver",  "hp": 105, "feed": 9,  "xp": 13, "weight": 8 },
-        { "sprite": "node.oreGold",    "hp": 150, "feed": 15, "xp": 20, "weight": 5 },
-        { "sprite": "node.oreBlue",    "hp": 210, "feed": 22, "xp": 30, "weight": 3 },
-        { "sprite": "node.oreRed",     "hp": 260, "feed": 30, "xp": 40, "weight": 2 }
+        {
+          "sprite": "node.rockSmall",
+          "hp": 34,
+          "feed": 1,
+          "xp": 2,
+          "weight": 30
+        },
+        {
+          "sprite": "node.rockMedium",
+          "hp": 58,
+          "feed": 2,
+          "xp": 4,
+          "weight": 20
+        },
+        {
+          "sprite": "node.rockBig",
+          "hp": 90,
+          "feed": 3,
+          "xp": 6,
+          "weight": 12
+        },
+        {
+          "sprite": "node.oreBronze",
+          "hp": 70,
+          "feed": 5,
+          "xp": 8,
+          "weight": 12
+        },
+        {
+          "sprite": "node.oreSilver",
+          "hp": 105,
+          "feed": 9,
+          "xp": 13,
+          "weight": 8
+        },
+        {
+          "sprite": "node.oreGold",
+          "hp": 150,
+          "feed": 15,
+          "xp": 20,
+          "weight": 5
+        },
+        {
+          "sprite": "node.oreBlue",
+          "hp": 210,
+          "feed": 22,
+          "xp": 30,
+          "weight": 3
+        },
+        {
+          "sprite": "node.oreRed",
+          "hp": 260,
+          "feed": 30,
+          "xp": 40,
+          "weight": 2
+        }
       ]
     },
     "tree": {
@@ -52,9 +147,27 @@
       "radius": 14,
       "hpPerWave": 5,
       "variants": [
-        { "sprite": "node.treeSmall",  "hp": 40, "feed": 2, "xp": 3, "weight": 30 },
-        { "sprite": "node.treeMedium", "hp": 72, "feed": 4, "xp": 6, "weight": 18 },
-        { "sprite": "node.treeBig",    "hp": 115, "feed": 7, "xp": 10, "weight": 10 }
+        {
+          "sprite": "node.treeSmall",
+          "hp": 40,
+          "feed": 2,
+          "xp": 3,
+          "weight": 30
+        },
+        {
+          "sprite": "node.treeMedium",
+          "hp": 72,
+          "feed": 4,
+          "xp": 6,
+          "weight": 18
+        },
+        {
+          "sprite": "node.treeBig",
+          "hp": 115,
+          "feed": 7,
+          "xp": 10,
+          "weight": 10
+        }
       ]
     },
     "crop": {
@@ -63,28 +176,98 @@
       "radius": 11,
       "hpPerWave": 4,
       "variants": [
-        { "sprite": "crop.corn",        "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.pumpkin",     "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.watermelon",  "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.cabbage",     "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.tomato",      "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.grain",       "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.chili",       "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.strawberry",  "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.cauliflower", "hp": 18, "feed": 2, "xp": 1, "weight": 10 },
-        { "sprite": "crop.zucchini",    "hp": 18, "feed": 2, "xp": 1, "weight": 10 }
+        {
+          "sprite": "crop.corn",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.pumpkin",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.watermelon",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.cabbage",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.tomato",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.grain",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.chili",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.strawberry",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.cauliflower",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        },
+        {
+          "sprite": "crop.zucchini",
+          "hp": 18,
+          "feed": 2,
+          "xp": 1,
+          "weight": 10
+        }
       ]
     }
   },
-
   "field": {
-    "_note": "How much of each kind is standing at the start of a run, and how much grows back per wave. Rocks do not regrow as fast as crops — a stripped quarry should stay stripped for a while, so where you fight changes over a run.",
-    "initial": { "rock": 26, "tree": 18, "crop": 30 },
-    "regrowPerWave": { "rock": 2, "tree": 2, "crop": 4 },
-    "max": { "rock": 40, "tree": 28, "crop": 46 },
+    "_note": "How much of each kind is standing at the start of a run, and how much grows back per wave. Rocks do not regrow as fast as crops \u2014 a stripped quarry should stay stripped for a while, so where you fight changes over a run.",
+    "initial": {
+      "rock": 26,
+      "tree": 18,
+      "crop": 30
+    },
+    "regrowPerWave": {
+      "rock": 2,
+      "tree": 2,
+      "crop": 4
+    },
+    "max": {
+      "rock": 40,
+      "tree": 28,
+      "crop": 46
+    },
     "minDistanceFromPlayer": 140
   },
-
   "mobDrops": {
     "_note": "Seed packs off kills. A small, steady trickle of feed that is not tied to standing still, so a player who is being chased the whole wave still earns something.",
     "seedPackChance": 0.05,
