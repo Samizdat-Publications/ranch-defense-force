@@ -109,6 +109,10 @@
   "harvest": {
     "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
     "radius": 46,
-    "workingSeconds": 0.18
+    "workingSeconds": 0.18,
+    "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running \u2014 sweeping twenty nodes at base rate beats working one \u2014 which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
+    "dwellSeconds": 2.0,
+    "dwellMultiplier": 3.0,
+    "dwellDecayRate": 2.5
   }
 }

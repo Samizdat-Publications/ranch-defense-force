@@ -15,7 +15,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { NODES, TUNING, WEAPONS } from '../content'
+import { ELEMENTS, NODES, TUNING, WEAPONS } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 
@@ -632,9 +632,15 @@ export class Renderer {
     // icon is a decent bullet for thrown produce and a poor one for anything
     // else — a spinning hacksaw was never going to read as a projectile.
     const def = WEAPONS[p.weaponId] as { projectileClip?: string; shardClip?: string } | undefined
-    const clipName = p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'eggToss'
-      ? def.shardClip
-      : def?.projectileClip
+    // The element wins over the weapon's own bullet: a fire build fires
+    // fireballs whatever the weapon normally throws, which is the point of it
+    // being a build choice you can see from across the field.
+    const el = ELEMENTS[this.world.player.element]
+    const elementClip = def?.projectileClip && el?.clip ? el.clip : undefined
+    const clipName = elementClip
+      ?? (p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'eggToss'
+        ? def.shardClip
+        : def?.projectileClip)
     if (clipName) {
       const len = atlas.clipLength(clipName, 'play')
       if (len > 0) {

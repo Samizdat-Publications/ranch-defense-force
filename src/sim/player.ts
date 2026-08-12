@@ -122,6 +122,15 @@ export class Player {
   pickaxeTier = 0
   axeTier = 0
 
+  /**
+   * The elemental modifier on every ranged weapon, or 'none'.
+   *
+   * One element at a time on purpose. Letting them stack would turn a build
+   * choice into a checklist, and the whole point is that picking fire means
+   * not picking frost.
+   */
+  element = 'none'
+
   init(classId: string, metaMods: StatMods = {}): void {
     this.classId = classId
     this.def = CLASSES[classId]
@@ -131,6 +140,9 @@ export class Player {
       aimAngle: 0, recoil: 0, ringAngle: -Math.PI / 2,
     }]
     this.items = []
+    this.pickaxeTier = 0
+    this.axeTier = 0
+    this.element = 'none'
     this.level = 1
     this.xp = 0
     this.xpNeeded = xpToNext(1)
@@ -179,7 +191,11 @@ export class Player {
     // tier cannot be expressed as a percentage in the stat block, so it is
     // applied here. Boosted offers step twice, matching the double-magnitude
     // rule the level-up screen uses for everything else.
-    const def = ITEMS[id] as { toolUpgrade?: string } | undefined
+    const def = ITEMS[id] as { toolUpgrade?: string; element?: string } | undefined
+
+    // An element replaces whatever was on the weapons before.
+    if (def?.element) this.element = def.element
+
     if (def?.toolUpgrade) {
       const steps = boosted ? 2 : 1
       const cap = TOOL_TIER_CAP

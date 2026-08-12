@@ -18,7 +18,7 @@ import {
 import { Player } from './player'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar } from './formulas'
-import { ENEMIES, ITEMS, NODES, TUNING, WAVES, WEAPONS, type StatMods } from '../content'
+import { ELEMENTS, ENEMIES, ITEMS, NODES, TUNING, WAVES, WEAPONS, type StatMods } from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
 import { ENEMY_BEHAVIOURS, type SteerContext } from '../behaviours/enemies'
 
@@ -193,6 +193,7 @@ export class World {
       p.flash = 0
       p.dying = 0
       p.working = 0
+      p.dwell = 0
       live++
     }
   }
@@ -470,8 +471,15 @@ export class World {
       slot.cooldownLeft -= dt * p.stats.attackSpeedMultiplier
       if (slot.cooldownLeft <= 0) {
         const fire = FIRE[def.behaviour]
+        const before = this.projectiles.live
         if (fire) fire(ctx)
         slot.recoil = T.fx.weaponRecoilSeconds
+
+        // Stamp the element onto whatever that shot just produced. Done here,
+        // once, rather than in each of the twelve behaviours: a behaviour
+        // should not have to know elements exist, and any weapon added later
+        // gets them for free.
+        if (def.type === 'ranged') this.applyElementTo(before)
         // One hook for every weapon, rather than the same two lines in eight
         // behaviours. A swing gets its arc; anything that throws something gets
         // a flash at the muzzle, rate-limited because six weapons at +200%
@@ -736,6 +744,7 @@ export class World {
     }
 
     this.damageEnemy(enemyIndex, p.damage, type, isCrit)
+    if (p.burnDps > 0) this.igniteSlicksNear(p.x, p.y)
 
     if (!e.active || e.dying > 0) return
     if (p.knockback > 0 && !e.knockbackImmune) {
@@ -769,18 +778,28 @@ export class World {
     if (!pl.alive) return
     const reach = T.harvest.radius * (1 + pl.stats.harvestPct / 100)
 
+    const h = T.harvest
     for (let i = this.props.live - 1; i >= 0; i--) {
       const n = this.props.items[i]
       if (n.dying > 0) continue
       const dx = n.x - pl.x
       const dy = n.y - pl.y
       const want = reach + n.radius
-      if (dx * dx + dy * dy > want * want) continue
+      if (dx * dx + dy * dy > want * want) {
+        // Walk away and the ramp bleeds off, faster than it built.
+        if (n.dwell > 0) n.dwell = Math.max(0, n.dwell - dt * h.dwellDecayRate)
+        continue
+      }
 
       const dps = this.toolDpsFor(n.kind)
       if (dps <= 0) continue
-      n.hp -= dps * dt
-      n.working = T.harvest.workingSeconds
+
+      // Committing to a seam beats sweeping past it. Base rate on arrival,
+      // ramping to dwellMultiplier over dwellSeconds of standing there.
+      n.dwell = Math.min(h.dwellSeconds, n.dwell + dt)
+      const ramp = 1 + (n.dwell / h.dwellSeconds) * (h.dwellMultiplier - 1)
+      n.hp -= dps * ramp * dt
+      n.working = h.workingSeconds
       if (n.hp <= 0) {
         this.harvest(n)
         // `harvest` marks it dying; the prop pass frees the slot.
@@ -895,6 +914,25 @@ export class World {
       }
     }
     void dt
+  }
+
+  /**
+   * Fire turns a slop slick into a fire that kills.
+   *
+   * The best kind of build interaction: two things the player already chose,
+   * doing something neither does alone. A Chem Sprayer puddle is a slow; light
+   * it and the same puddle is a killing field for the rest of its life.
+   */
+  private igniteSlicksNear(x: number, y: number): void {
+    const el = ELEMENTS[this.player.element]
+    if (!el?.ignitesSlicks) return
+    for (let i = 0; i < this.hazards.live; i++) {
+      const h = this.hazards.items[i]
+      if (h.kind !== 'slow' || h.dps > 0) continue
+      if (Math.hypot(h.x - x, h.y - y) > h.radius) continue
+      h.dps = el.slickDps ?? 12
+      this.playFx('explosion', h.x, h.y, 0, h.radius / 60)
+    }
   }
 
   private updateHazards(dt: number): void {
@@ -1251,6 +1289,25 @@ export class World {
     return p
   }
 
+  /**
+   * Put the player's element on every projectile spawned since `fromIndex`.
+   *
+   * The element swaps the whole bullet rather than tinting one — a fire build
+   * fires actual fireballs, an acid build fires acid — and carries the lasting
+   * damage on the payload fields the tier riders already use, so it needed no
+   * new damage plumbing.
+   */
+  private applyElementTo(fromIndex: number): void {
+    const el = ELEMENTS[this.player.element]
+    if (!el || this.player.element === 'none') return
+    for (let i = fromIndex; i < this.projectiles.live; i++) {
+      const p = this.projectiles.items[i]
+      if (el.burnDps) { p.burnDps = Math.max(p.burnDps, el.burnDps); p.burnSeconds = Math.max(p.burnSeconds, el.burnSeconds ?? 0) }
+      if (el.bleedDps) { p.bleedDps = Math.max(p.bleedDps, el.bleedDps); p.bleedSeconds = Math.max(p.bleedSeconds, el.bleedSeconds ?? 0) }
+      if (el.slowOnHit) { p.slowOnHit = Math.max(p.slowOnHit, el.slowOnHit); p.slowSeconds = Math.max(p.slowSeconds, el.slowSeconds ?? 0) }
+    }
+  }
+
   /** Pooled like projectiles, so the rider fields are cleared on the way out. */
   spawnHazard(): Hazard | null {
     const h = this.hazards.acquire()
@@ -1313,7 +1370,10 @@ export class World {
         this.sparkAcc += T.fx.hitSparkChance
         if (this.sparkAcc >= 1) {
           this.sparkAcc -= 1
-          this.playFx('arrowImpact', e.x, e.y - e.radius * 0.4)
+          // The impact reads as the element too, not just the bullet.
+          const impact = (ELEMENTS[this.player.element]?.impact ?? 'arrowImpact') as
+            keyof typeof T.fx & string
+          this.playFx(impact, e.x, e.y - e.radius * 0.4)
         }
       }
     }

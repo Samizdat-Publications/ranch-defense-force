@@ -191,12 +191,22 @@ export interface Prop {
    *  only feedback that a node you are standing next to is actually coming
    *  apart, which matters when the tool fires on its own. */
   working: number
+  /**
+   * Seconds the player has been stood on this node, ramping its harvest rate.
+   *
+   * Without it, proximity harvesting quietly rewards running: sweeping past
+   * twenty nodes at base rate beats working one, so the mechanic meant to give
+   * a stationary player something to do paid the kiter more. The ramp makes
+   * committing to a seam the efficient play, which is both the Deep Rock read
+   * and what The Hand's whole identity needs.
+   */
+  dwell: number
 }
 
 export function makeProp(): Prop {
   return {
     active: false, sprite: 'crop.corn', kind: 'crop', x: 0, y: 0, hp: 1, maxHp: 1,
-    radius: 11, feed: 1, xp: 0, flash: 0, dying: 0, working: 0,
+    radius: 11, feed: 1, xp: 0, flash: 0, dying: 0, working: 0, dwell: 0,
   }
 }
 

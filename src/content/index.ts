@@ -10,6 +10,7 @@ import wavesRaw from './waves.json'
 import metaRaw from './meta.json'
 import tuningRaw from './tuning.json'
 import nodesRaw from './nodes.json'
+import elementsRaw from './elements.json'
 
 /** Every stat the resolver knows about. Keys ending `Pct` are percentages
  *  summed additively; everything else is a flat addend. */
@@ -154,6 +155,22 @@ export interface NodeKind {
   variants: NodeVariant[]
 }
 export interface ToolTier { id: string; name: string; dps: number }
+/** An elemental modifier applied to every ranged weapon the player owns. */
+export interface ElementDef {
+  name: string
+  clip?: string
+  impact: string
+  burnDps?: number
+  burnSeconds?: number
+  bleedDps?: number
+  bleedSeconds?: number
+  slowOnHit?: number
+  slowSeconds?: number
+  ignitesSlicks?: boolean
+  slickDps?: number
+}
+export const ELEMENTS = (elementsRaw as unknown as { elements: Record<string, ElementDef> }).elements
+
 export const NODES = nodesRaw as unknown as {
   tools: Record<string, { worksKind: string; alsoWorks?: string; tiers: ToolTier[] }>
   kinds: Record<string, NodeKind>

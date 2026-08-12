@@ -174,5 +174,32 @@
     "mods": {
       "harvestPct": 25
     }
+  },
+  "fireRounds": {
+    "name": "Tracer Rounds",
+    "icon": "fireRounds",
+    "cost": 34,
+    "rarity": "rare",
+    "_note": "Every ranged weapon fires fire and leaves a burn. Sets slop slicks alight.",
+    "element": "fire",
+    "mods": {}
+  },
+  "acidRounds": {
+    "name": "Etched Rounds",
+    "icon": "acidRounds",
+    "cost": 34,
+    "rarity": "rare",
+    "_note": "Every ranged weapon fires acid and leaves a corrosion.",
+    "element": "acid",
+    "mods": {}
+  },
+  "frostRounds": {
+    "name": "Cold Rounds",
+    "icon": "frostRounds",
+    "cost": 34,
+    "rarity": "rare",
+    "_note": "Every ranged weapon fires ice and slows what it hits. Buys space rather than damage.",
+    "element": "frost",
+    "mods": {}
   }
 }
