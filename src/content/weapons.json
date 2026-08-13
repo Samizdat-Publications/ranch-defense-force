@@ -1,85 +1,8 @@
 {
-  "shovel": {
-    "name": "Shovel",
-    "type": "melee",
-    "sprite": "tool_shovel",
-    "base": 18,
-    "cooldown": 0.7,
-    "behaviour": "arcSwing",
-    "arcDegrees": 110,
-    "range": 78,
-    "knockback": 190,
-    "t2ArcMultiplier": 1.3,
-    "t3SecondHitDelay": 0.13,
-    "t4StunSeconds": 0.4,
-    "tiers": {
-      "2": "+30% arc width",
-      "3": "hits twice",
-      "4": "knockback stuns 0.4s"
-    }
-  },
-  "axe": {
-    "name": "Axe",
-    "type": "orbit",
-    "sprite": "tool_axe",
-    "base": 13,
-    "cooldown": 0,
-    "behaviour": "orbit",
-    "orbitRadius": 74,
-    "orbitSpeed": 3,
-    "scalesWithMoveSpeed": true,
-    "hitInterval": 0.35,
-    "t2RadiusMultiplier": 1.25,
-    "t4IntervalMultiplier": 0.5,
-    "orbitRadiusMin": 42,
-    "tiers": {
-      "2": "+25% radius",
-      "3": "second blade",
-      "4": "blades pierce"
-    }
-  },
-  "wateringCan": {
-    "name": "Watering Can",
-    "type": "aura",
-    "sprite": "tool_watering_can",
-    "base": 4,
-    "cooldown": 0.35,
-    "behaviour": "rotatingJet",
-    "radius": 130,
-    "slowPct": 30,
-    "slowSeconds": 1.2,
-    "t2SlowMultiplier": 1.5,
-    "t3GasWashPerSecond": 70,
-    "t4RadiusMultiplier": 1.4,
-    "tiers": {
-      "2": "+50% slow",
-      "3": "washes gas clouds away",
-      "4": "+40% radius"
-    }
-  },
-  "fishingRod": {
-    "name": "Fishing Rod",
-    "type": "utility",
-    "sprite": "tool_fishing_rod",
-    "base": 26,
-    "cooldown": 1.8,
-    "behaviour": "hookFurthest",
-    "range": 420,
-    "dragSpeed": 340,
-    "t2LandingDamageMultiplier": 0.8,
-    "t3Targets": 3,
-    "t4MarkPct": 25,
-    "t4MarkSeconds": 4,
-    "tiers": {
-      "2": "+damage on landing",
-      "3": "drags three",
-      "4": "dragged enemies take +25%"
-    }
-  },
-  "seedSpitter": {
-    "name": "Seed Spitter",
+  "scattergun": {
+    "name": "Scattergun",
     "type": "ranged",
-    "sprite": "crop_corn",
+    "sprite": "gun.shotgun.0",
     "base": 6,
     "cooldown": 0.22,
     "behaviour": "stream",
@@ -89,16 +12,49 @@
     "t3BonusProjectiles": 2,
     "t4Pierce": 1,
     "projectileClip": "proj.spark",
+    "tierSprites": [
+      "gun.shotgun.0",
+      "gun.shotgun.6",
+      "gun.shotgun.13",
+      "gun.shotgun.20"
+    ],
     "tiers": {
-      "2": "-20% spread",
-      "3": "+2 projectiles",
-      "4": "pierces 1"
+      "2": "tighter choke",
+      "3": "+2 pellets",
+      "4": "pellets punch through"
     }
   },
-  "melonLob": {
-    "name": "Melon Lob",
+  "varmintRifle": {
+    "name": "Varmint Rifle",
     "type": "ranged",
-    "sprite": "crop_watermelon",
+    "sprite": "gun.rifle.0",
+    "base": 8,
+    "cooldown": 0.5,
+    "behaviour": "pierceShot",
+    "pierce": 2,
+    "burnDps": 4,
+    "burnDuration": 3,
+    "t2BurnBonusSeconds": 2,
+    "t3SpreadRadius": 90,
+    "t3SpreadDamageMultiplier": 0.6,
+    "t4Pierce": 4,
+    "projectileClip": "proj.iceSpike",
+    "tierSprites": [
+      "gun.rifle.0",
+      "gun.rifle.6",
+      "gun.rifle.13",
+      "gun.rifle.20"
+    ],
+    "tiers": {
+      "2": "+2s burn",
+      "3": "burn jumps on death",
+      "4": "pierces four"
+    }
+  },
+  "grenadeLauncher": {
+    "name": "Grenade Launcher",
+    "type": "ranged",
+    "sprite": "gun.carbine.0",
     "base": 15,
     "cooldown": 1.1,
     "behaviour": "arcLob",
@@ -110,37 +66,22 @@
     "t4Splits": 3,
     "t4SplitDamageMultiplier": 0.7,
     "projectileClip": "proj.meteor",
+    "tierSprites": [
+      "gun.carbine.0",
+      "gun.carbine.6",
+      "gun.carbine.13",
+      "gun.carbine.20"
+    ],
     "tiers": {
-      "2": "+30% splash",
-      "3": "leaves a slippery rind",
-      "4": "splits into three"
+      "2": "+30% blast",
+      "3": "leaves burning ground",
+      "4": "fires a three-round salvo"
     }
   },
-  "chiliShot": {
-    "name": "Chili Shot",
+  "drumGun": {
+    "name": "Drum Gun",
     "type": "ranged",
-    "sprite": "crop_chili",
-    "base": 8,
-    "cooldown": 0.5,
-    "behaviour": "pierceShot",
-    "pierce": 2,
-    "burnDps": 4,
-    "burnDuration": 3,
-    "t2BurnBonusSeconds": 2,
-    "t3SpreadRadius": 90,
-    "t3SpreadDamageMultiplier": 0.6,
-    "t4Pierce": 4,
-    "projectileClip": "proj.fireball",
-    "tiers": {
-      "2": "+2s burn",
-      "3": "burn spreads on death",
-      "4": "pierce 4"
-    }
-  },
-  "eggToss": {
-    "name": "Egg Toss",
-    "type": "ranged",
-    "sprite": "food_egg",
+    "sprite": "gun.lmg.0",
     "base": 11,
     "cooldown": 0.9,
     "behaviour": "bounceSplit",
@@ -151,16 +92,22 @@
     "shardDamageMultiplier": 0.55,
     "projectileClip": "proj.orb",
     "shardClip": "proj.knife",
+    "tierSprites": [
+      "gun.lmg.0",
+      "gun.lmg.6",
+      "gun.lmg.13",
+      "gun.lmg.20"
+    ],
     "tiers": {
-      "2": "+1 bounce",
-      "3": "splits into four",
-      "4": "shards also bounce"
+      "2": "+1 ricochet",
+      "3": "bursts into four",
+      "4": "fragments ricochet too"
     }
   },
-  "slopBucket": {
-    "name": "Slop Bucket",
+  "tarBomb": {
+    "name": "Tar Bomb",
     "type": "ranged",
-    "sprite": "prop_bucket",
+    "sprite": "gun.smg.0",
     "base": 20,
     "cooldown": 2,
     "behaviour": "throwPuddle",
@@ -170,35 +117,74 @@
     "t2BonusSeconds": 2,
     "t3DamageMultiplier": 0.25,
     "t4RadiusMultiplier": 1.6,
+    "tierSprites": [
+      "gun.smg.0",
+      "gun.smg.6",
+      "gun.smg.13",
+      "gun.smg.20"
+    ],
+    "projectileClip": "proj.acid",
     "tiers": {
-      "2": "+2s puddle",
-      "3": "the slick damages",
-      "4": "+60% radius"
+      "2": "+2s slick",
+      "3": "the tar burns",
+      "4": "+60% spread"
     }
   },
-  "framingHammer": {
-    "name": "Framing Hammer",
-    "type": "melee",
-    "sprite": "prop_hammer",
-    "base": 34,
-    "cooldown": 1.6,
-    "behaviour": "slam",
-    "radius": 68,
-    "stunDuration": 0.6,
-    "t2StunMultiplier": 1.5,
-    "t3RingRadiusMultiplier": 2,
-    "t3RingDamageMultiplier": 0.4,
-    "t4RingKnockback": 220,
+  "harpoon": {
+    "name": "Harpoon Gun",
+    "type": "ranged",
+    "sprite": "gun.pistol.0",
+    "base": 26,
+    "cooldown": 1.8,
+    "behaviour": "hookFurthest",
+    "range": 420,
+    "dragSpeed": 340,
+    "t2LandingDamageMultiplier": 0.8,
+    "t3Targets": 3,
+    "t4MarkPct": 25,
+    "t4MarkSeconds": 4,
+    "tierSprites": [
+      "gun.pistol.0",
+      "gun.pistol.6",
+      "gun.pistol.13",
+      "gun.pistol.20"
+    ],
+    "projectileClip": "proj.kunai",
     "tiers": {
-      "2": "+stun",
-      "3": "shockwave ring",
-      "4": "ring knocks back"
+      "2": "+damage on landing",
+      "3": "three lines",
+      "4": "hauled targets take +25%"
     }
   },
-  "grainLure": {
-    "name": "Grain Lure",
+  "chemSprayer": {
+    "name": "Chem Sprayer",
+    "type": "ranged",
+    "sprite": "weapon.wateringCan",
+    "base": 4,
+    "cooldown": 0.35,
+    "behaviour": "rotatingJet",
+    "radius": 130,
+    "slowPct": 30,
+    "slowSeconds": 1.2,
+    "t2SlowMultiplier": 1.5,
+    "t3GasWashPerSecond": 70,
+    "t4RadiusMultiplier": 1.4,
+    "tierSprites": [
+      "weapon.wateringCan",
+      "weapon.wateringCan",
+      "weapon.wateringCan",
+      "weapon.wateringCan"
+    ],
+    "tiers": {
+      "2": "+50% choke",
+      "3": "strips gas from the air",
+      "4": "+40% reach"
+    }
+  },
+  "baitDrum": {
+    "name": "Bait Drum",
     "type": "utility",
-    "sprite": "food_grain_bag",
+    "sprite": "weapon.grainLure",
     "base": 0,
     "cooldown": 6,
     "behaviour": "lure",
@@ -209,16 +195,98 @@
     "t3DetonationDamage": 60,
     "t3DetonationRadiusMultiplier": 1,
     "t4RadiusMultiplier": 1.8,
+    "tierSprites": [
+      "weapon.grainLure",
+      "weapon.grainLure",
+      "weapon.grainLure",
+      "weapon.grainLure"
+    ],
     "tiers": {
       "2": "+2s",
       "3": "detonates for 60",
-      "4": "+80% radius"
+      "4": "+80% pull"
+    }
+  },
+  "pitchfork": {
+    "name": "Pitchfork",
+    "type": "melee",
+    "sprite": "weapon.pitchfork.t1",
+    "base": 18,
+    "cooldown": 0.7,
+    "behaviour": "arcSwing",
+    "arcDegrees": 110,
+    "range": 78,
+    "knockback": 190,
+    "t2ArcMultiplier": 1.3,
+    "t3SecondHitDelay": 0.13,
+    "t4StunSeconds": 0.4,
+    "tierSprites": [
+      "weapon.pitchfork.t1",
+      "weapon.pitchfork.t2",
+      "weapon.pitchfork.t3",
+      "weapon.pitchfork.t4"
+    ],
+    "tiers": {
+      "2": "+30% arc",
+      "3": "hits twice",
+      "4": "the shove stuns"
+    }
+  },
+  "scythe": {
+    "name": "Scythe",
+    "type": "melee",
+    "sprite": "weapon.scythe.t1",
+    "base": 13,
+    "cooldown": 0,
+    "behaviour": "orbit",
+    "orbitRadius": 74,
+    "orbitSpeed": 3,
+    "scalesWithMoveSpeed": true,
+    "hitInterval": 0.35,
+    "t2RadiusMultiplier": 1.25,
+    "t4IntervalMultiplier": 0.5,
+    "orbitRadiusMin": 42,
+    "tierSprites": [
+      "weapon.scythe.t1",
+      "weapon.scythe.t2",
+      "weapon.scythe.t3",
+      "weapon.scythe.t4"
+    ],
+    "tiers": {
+      "2": "+25% sweep",
+      "3": "second blade",
+      "4": "blades cut through"
+    }
+  },
+  "sledge": {
+    "name": "Sledge",
+    "type": "melee",
+    "sprite": "weapon.sledge.t1",
+    "base": 34,
+    "cooldown": 1.6,
+    "behaviour": "slam",
+    "radius": 68,
+    "stunDuration": 0.6,
+    "t2StunMultiplier": 1.5,
+    "t3RingRadiusMultiplier": 2,
+    "t3RingDamageMultiplier": 0.4,
+    "t4RingKnockback": 220,
+    "tierSprites": [
+      "weapon.sledge.t1",
+      "weapon.sledge.t2",
+      "weapon.sledge.t3",
+      "weapon.sledge.t4"
+    ],
+    "tiers": {
+      "2": "+stun",
+      "3": "shockwave ring",
+      "4": "the ring throws them"
     }
   },
   "barnDog": {
     "name": "Barn Dog",
     "type": "minion",
-    "sprite": "dog",
+    "sprite": "feralDog.idle.down.0",
     "base": 10,
     "cooldown": 1,
     "behaviour": "minionHunt",
@@ -229,10 +297,16 @@
     "t4BleedDps": 6,
     "t4BleedSeconds": 3,
     "biteInterval": 0.45,
+    "tierSprites": [
+      "feralDog.idle.down.0",
+      "feralDog.idle.down.0",
+      "feralDog.idle.down.0",
+      "feralDog.idle.down.0"
+    ],
     "tiers": {
-      "2": "+50% dog speed",
+      "2": "+50% speed",
       "3": "two dogs",
-      "4": "dogs cause bleed"
+      "4": "bites bleed"
     }
   }
 }

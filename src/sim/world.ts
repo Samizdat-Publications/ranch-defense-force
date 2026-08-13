@@ -509,7 +509,7 @@ export class World {
           this.burstParticles(p.x, p.y, 6, 0x6ab04c)
           this.playFx('explosion', p.x, p.y, 0, p.t0 / 60)
           // T3 "leaves a slippery rind": t1 carries the radius, 0 when untiered.
-          if (p.t1 > 0) this.leaveRind(p.x, p.y, p.t1)
+          if (p.t1 > 0) this.leaveRind(p.x, p.y, p.t1, p.weaponId)
         }
         this.projectiles.free(i)
         continue
@@ -558,9 +558,8 @@ export class World {
         // wins by reaching more enemies instead of losing by dwelling less.
         p.rearm -= dt
         if (p.rearm <= 0) {
-          p.rearm = typeof WEAPONS.barnDog?.biteInterval === 'number'
-            ? WEAPONS.barnDog.biteInterval
-            : 0.5
+          const dogDef = WEAPONS[p.weaponId]
+          p.rearm = typeof dogDef?.biteInterval === 'number' ? dogDef.biteInterval : 0.5
           p.hitStamp = this.tick
           p.hitsLeft = 999
         }
@@ -584,8 +583,8 @@ export class World {
         if (bounced) {
           p.t0--
           if (p.t0 <= 0) {
-            const w = WEAPONS.eggToss
-            const slot = this.player.weapons.find((s2) => s2.id === 'eggToss')
+            const w = WEAPONS[p.weaponId]
+            const slot = this.player.weapons.find((s2) => s2.id === p.weaponId)
             const shardBounces = (slot?.tier ?? 1) >= 4
               ? (typeof w?.t4ShardBounces === 'number' ? w.t4ShardBounces : 1)
               : 0
@@ -610,8 +609,9 @@ export class World {
    * the rider cannot recurse into an unbounded shower.
    */
   private splitShards(p: Projectile, count: number, bounces = 0): void {
-    const mul = typeof WEAPONS.eggToss?.shardDamageMultiplier === 'number'
-      ? WEAPONS.eggToss.shardDamageMultiplier
+    const shardDef = WEAPONS[p.weaponId]
+    const mul = typeof shardDef?.shardDamageMultiplier === 'number'
+      ? shardDef.shardDamageMultiplier
       : 0.55
     for (let i = 0; i < count; i++) {
       const s = this.spawnProjectile()
@@ -644,8 +644,8 @@ export class World {
    * Separate from `throwPuddle` because it is a rider on a different weapon and
    * a shared helper would have to take every puddle parameter to serve both.
    */
-  private leaveRind(x: number, y: number, radius: number): void {
-    const w = WEAPONS.melonLob
+  private leaveRind(x: number, y: number, radius: number, weaponId: string): void {
+    const w = WEAPONS[weaponId]
     const h = this.spawnHazard()
     if (!h) return
     h.kind = 'slow'
@@ -1401,9 +1401,11 @@ export class World {
     // or one lit enemy in a dense wave would set the whole field alight in a
     // few frames and the rider would be a screen clear rather than a rider.
     if (e.burnLife > 0 && e.burnGen === 0) {
-      const chili = this.player.weapons.find((s2) => s2.id === 'chiliShot')
+      const chili = this.player.weapons.find(
+        (s2) => typeof WEAPONS[s2.id]?.t3SpreadRadius === 'number',
+      )
       if (chili && chili.tier >= 3) {
-        const w = WEAPONS.chiliShot
+        const w = WEAPONS[chili.id]
         const radius = typeof w?.t3SpreadRadius === 'number' ? w.t3SpreadRadius : 90
         const mul = typeof w?.t3SpreadDamageMultiplier === 'number' ? w.t3SpreadDamageMultiplier : 0.6
         const n = this.grid.query(e.x, e.y, radius, this.queryOut)

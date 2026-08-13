@@ -30,7 +30,7 @@
       "pulseKnockback": 260,
       "animRow": "dig"
     },
-    "startingWeapon": "shovel"
+    "startingWeapon": "pitchfork"
   },
   "kid": {
     "name": "The Kid",
@@ -61,6 +61,6 @@
       "blindDuration": 2,
       "animRow": "run"
     },
-    "startingWeapon": "seedSpitter"
+    "startingWeapon": "scattergun"
   }
 }

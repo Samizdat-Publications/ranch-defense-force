@@ -118,7 +118,7 @@ const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) 
 
   for (let b = 0; b < blades; b++) {
     const angle = slot.t0 + (b * Math.PI * 2) / blades
-    let p = world.findAttached('axe', b)
+    let p = world.findAttached(slot.id, b)
     if (!p) {
       p = world.spawnProjectile()
       if (!p) continue
@@ -466,7 +466,7 @@ const lure: WeaponBehaviour = ({ world, player, def, tier }) => {
 const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const wanted = tier >= 3 ? 2 : 1
   for (let i = 0; i < wanted; i++) {
-    let p = world.findAttached('barnDog', i)
+    let p = world.findAttached(slot.id, i)
     if (!p) {
       p = world.spawnProjectile()
       if (!p) return

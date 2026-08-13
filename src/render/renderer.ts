@@ -675,9 +675,14 @@ export class Renderer {
     const cfg = TUNING.fx
 
     for (const slot of p.weapons) {
-      const frame = slot.id === 'barnDog'
-        ? atlas.get('feralDog.idle.down.0')
-        : atlas.get(`weapon.${slot.id}`)
+      // Tier art: merging a weapon changes the weapon. A gun steps up its
+      // category, a melee tool steps up its material. Falls back to the base
+      // sprite so a weapon without a tier list still draws.
+      const def = WEAPONS[slot.id] as { tierSprites?: string[]; sprite?: string } | undefined
+      const tierKey = def?.tierSprites?.[Math.min(slot.tier, 4) - 1]
+      const frame = (tierKey ? atlas.get(tierKey) : undefined)
+        ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
+        ?? atlas.get(`weapon.${slot.id}`)
       if (!frame) continue
       const it = this.push()
       if (!it) return
@@ -697,8 +702,13 @@ export class Renderer {
       // of the player it would read upside down, so it flips instead.
       const facingLeft = Math.abs(slot.aimAngle) > Math.PI / 2
       it.rotation = facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle
-      it.scaleX = cfg.weaponRingScale * (facingLeft ? -1 : 1)
-      it.scaleY = cfg.weaponRingScale
+      // Normalise to a target width rather than applying one flat scale. The
+      // sources are not the same size: a tool icon fills a 32px cell while a
+      // gun is drawn ~20px wide to be HELD by a 32px character. One shared
+      // multiplier shrank the guns twice and left them unreadable.
+      const fit = Math.min(1.15, cfg.weaponRingTargetWidth / Math.max(8, frame.w))
+      it.scaleX = fit * (facingLeft ? -1 : 1)
+      it.scaleY = fit
     }
   }
 

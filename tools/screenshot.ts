@@ -262,7 +262,10 @@ for (let i = 0; i < world.projectiles.live; i++) {
 
 // The weapon ring. Angles come straight from the sim, as in the renderer.
 for (const slot of world.player.weapons) {
-  const key = slot.id === 'barnDog' ? 'feralDog.idle.down.0' : `weapon.${slot.id}`
+  const wd = (WEAPONS as Record<string, Record<string, unknown>>)[slot.id]
+  const tiers = Array.isArray(wd?.tierSprites) ? (wd.tierSprites as string[]) : null
+  const key = tiers?.[Math.min(slot.tier, 4) - 1]
+    ?? (typeof wd?.sprite === 'string' ? wd.sprite : `weapon.${slot.id}`)
   const f = atlas.frames[key]
   if (!f) continue
   const cfg = TUNING.fx as unknown as Record<string, number>
@@ -273,7 +276,7 @@ for (const slot of world.player.weapons) {
   const x = world.player.x + Math.cos(slot.ringAngle) * r - Math.cos(slot.aimAngle) * kick
   const y = world.player.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick - 14
   const facingLeft = Math.abs(slot.aimAngle) > Math.PI / 2
-  drawFrameT(f, x, y, facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle, cfg.weaponRingScale)
+  drawFrameT(f, x, y, facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle, Math.min(1.15, cfg.weaponRingTargetWidth / Math.max(8, f.w)))
 }
 
 // FX clips, over the sprite layer. Same frame selection as the renderer.

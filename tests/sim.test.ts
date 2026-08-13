@@ -138,7 +138,7 @@ describe('Player build', () => {
     const p = new Player()
     p.init('hand')
     expect(p.weapons).toHaveLength(1)
-    p.addWeapon('shovel')
+    p.addWeapon('pitchfork')
     expect(p.weapons).toHaveLength(1)
     expect(p.weapons[0].tier).toBe(2)
   })
@@ -146,19 +146,19 @@ describe('Player build', () => {
   it('caps merging at tier 4', () => {
     const p = new Player()
     p.init('hand')
-    for (let i = 0; i < 10; i++) p.addWeapon('shovel')
+    for (let i = 0; i < 10; i++) p.addWeapon('pitchfork')
     expect(p.weapons[0].tier).toBe(4)
-    expect(p.weaponAtMaxTier('shovel')).toBe(true)
+    expect(p.weaponAtMaxTier('pitchfork')).toBe(true)
   })
 
   it('refuses a seventh distinct weapon', () => {
     const p = new Player()
     p.init('hand')
-    const ids = ['axe', 'wateringCan', 'fishingRod', 'seedSpitter', 'melonLob']
+    const ids = ['scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher']
     for (const id of ids) expect(p.addWeapon(id)).toBe(true)
     expect(p.weapons).toHaveLength(6)
     expect(p.slotsFull).toBe(true)
-    expect(p.addWeapon('chiliShot')).toBe(false)
+    expect(p.addWeapon('varmintRifle')).toBe(false)
   })
 
   it('heals by the amount a max-HP item added', () => {

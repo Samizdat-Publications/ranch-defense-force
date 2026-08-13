@@ -101,7 +101,9 @@
     "bigImpact": {
       "life": 0.34,
       "scale": 0.8
-    }
+    },
+    "_ringScaleNote": "Ring icons are normalised to weaponRingTargetWidth rather than scaled by a flat factor, because the sources differ: a 32px tool icon and a ~20px gun drawn to be held need different multipliers to end up the same size on screen.",
+    "weaponRingTargetWidth": 15
   },
   "arena": {
     "edgePadding": 24

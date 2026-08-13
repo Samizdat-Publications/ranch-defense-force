@@ -158,6 +158,27 @@
     }
   },
 
+  "weaponTiers": {
+    "_note": "Melee weapon art per TIER, so merging a weapon is visible on the weapon. Weapons tier 1-4 and the Pixcuit pack ships six materials, so four are picked that read as an obvious escalation rather than adjacent shades nobody would notice.",
+    "_gapNote": "The pack is NOT complete per tool, which is why the four materials differ by weapon rather than being one shared list: there is no Iron Pitchfork and no Golden Sickle. Checked against the directory, not assumed.",
+    "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
+    "conform": true,
+    "files": {
+      "weapon.pitchfork.t1": "Wooden_Pitchfork.png",
+      "weapon.pitchfork.t2": "Stone_Pitchfork.png",
+      "weapon.pitchfork.t3": "Titanium_Pitchfork.png",
+      "weapon.pitchfork.t4": "Ruby_Pitchfork.png",
+      "weapon.scythe.t1": "Wooden_Sickle.png",
+      "weapon.scythe.t2": "Iron_Sickle.png",
+      "weapon.scythe.t3": "Titanium_Sickle.png",
+      "weapon.scythe.t4": "Ruby_Sickle.png",
+      "weapon.sledge.t1": "Wooden_Hammer.png",
+      "weapon.sledge.t2": "Iron_Hammer.png",
+      "weapon.sledge.t3": "Titanium_Hammer.png",
+      "weapon.sledge.t4": "Ruby_Hammer.png"
+    }
+  },
+
   "gunSheet": {
     "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed — rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
     "_layoutNote": "rowTops and colLefts are the measured content bands. Cells are sliced generously and trimmed to content by the builder, so the varying gun widths inside a column do not need listing.",

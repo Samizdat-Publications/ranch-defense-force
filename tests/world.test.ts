@@ -94,7 +94,7 @@ describe('World invariants', () => {
     const w = new World(77, 'hand')
     expect(w.props.live).toBeGreaterThan(20)
 
-    // Stand the player on top of a crop and let the shovel do the work.
+    // Stand the player on a node and let the tools do the work.
     const target = w.props.items[0]
     w.player.x = target.x
     w.player.y = target.y
@@ -200,8 +200,8 @@ describe('World invariants', () => {
     // Grain Lure has no base damage at all: it is a pull, and its T2 is
     // duration. It earns its place at T3, where it detonates.
     const DAMAGE_WEAPONS = [
-      'shovel', 'axe', 'wateringCan', 'fishingRod', 'seedSpitter', 'melonLob',
-      'chiliShot', 'eggToss', 'slopBucket', 'framingHammer', 'barnDog',
+      'pitchfork', 'scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher',
+      'varmintRifle', 'drumGun', 'tarBomb', 'sledge', 'barnDog',
     ]
 
     for (const id of DAMAGE_WEAPONS) {
@@ -216,9 +216,9 @@ describe('World invariants', () => {
     }
 
     it('grainLure only deals damage once it detonates at T3', () => {
-      expect(mean('grainLure', 2, false)).toBe(0)
-      expect(mean('grainLure', 3, false)).toBeGreaterThan(0)
-      expect(mean('grainLure', 4, false)).toBeGreaterThan(mean('grainLure', 3, false))
+      expect(mean('baitDrum', 2, false)).toBe(0)
+      expect(mean('baitDrum', 3, false)).toBeGreaterThan(0)
+      expect(mean('baitDrum', 4, false)).toBeGreaterThan(mean('baitDrum', 3, false))
     })
 
     it('the axe deals damage at all, standing or moving', () => {
@@ -228,8 +228,8 @@ describe('World invariants', () => {
       // dealt zero damage in every run ever played. And once it did hit, a
       // fixed 74px orbit swept clear over enemies pressed to ~25px, so it only
       // worked at a sprint.
-      expect(output('axe', 1, 3, false), 'standing').toBeGreaterThan(0)
-      expect(output('axe', 1, 3, true), 'moving').toBeGreaterThan(0)
+      expect(output('scythe', 1, 3, false), 'standing').toBeGreaterThan(0)
+      expect(output('scythe', 1, 3, true), 'moving').toBeGreaterThan(0)
     })
   })
 
