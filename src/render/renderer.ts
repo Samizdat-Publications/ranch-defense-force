@@ -232,6 +232,7 @@ export class Renderer {
     ctx.drawImage(this.decals, 0, 0)
     this.drawCalls++
 
+    this.drawArenaBurn(ctx)
     this.drawHazards(ctx)
     this.drawTelegraphs(ctx)
     // Ground effects (dash dust, the Dig In pulse) go under the sprite layer,
@@ -766,6 +767,34 @@ export class Renderer {
       it.scaleX = TUNING.fx.weaponRingScale * 0.85 * side
       it.scaleY = TUNING.fx.weaponRingScale * 0.85
     }
+  }
+
+  /**
+   * The Duster's fire closing in from the edges.
+   *
+   * Drawn as four filled bands with a bright inner lip, under the hazards, so
+   * the edge you must not cross is the brightest thing at the border. The band
+   * itself pulses like the other harmful hazards — same visual grammar, so it
+   * needs no separate explanation.
+   */
+  private drawArenaBurn(ctx: CanvasRenderingContext2D): void {
+    const w = this.world
+    const i = w.arenaBurnInset
+    if (i <= 0) return
+    const pulse = 0.72 + Math.sin(w.elapsed * 2.6) * 0.16
+
+    ctx.globalAlpha = pulse
+    ctx.fillStyle = 'rgba(150, 46, 28, 0.55)'
+    ctx.fillRect(0, 0, w.arenaW, i)
+    ctx.fillRect(0, w.arenaH - i, w.arenaW, i)
+    ctx.fillRect(0, i, i, w.arenaH - i * 2)
+    ctx.fillRect(w.arenaW - i, i, i, w.arenaH - i * 2)
+
+    ctx.strokeStyle = 'rgba(255, 176, 84, 0.95)'
+    ctx.lineWidth = 3
+    ctx.strokeRect(i, i, w.arenaW - i * 2, w.arenaH - i * 2)
+    ctx.globalAlpha = 1
+    this.drawCalls++
   }
 
   private drawHazards(ctx: CanvasRenderingContext2D): void {

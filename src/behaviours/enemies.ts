@@ -9,6 +9,7 @@
  * enemy earns the lesson §8 says it teaches.
  */
 import type { Enemy } from '../sim/entities'
+import { ENEMIES } from '../content'
 import type { World } from '../sim/world'
 
 export interface SteerContext {
@@ -196,7 +197,88 @@ const charge: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
   void world
 }
 
+/**
+ * The Duster (§9).
+ *
+ * Phase 1 is the whole idea: it drives a fixed agricultural back-and-forth and
+ * **never chases**. The danger is entirely of your own making — the arena fills
+ * with lanes you cannot be in, and it is up to you not to be in them. A boss
+ * that ignores you is a harder design problem than one that hunts you, and it
+ * is the reason this fight is not just the Bull with more health.
+ *
+ * Phase 2 breaks the pattern: it turns, finds you, and comes on slowly, still
+ * dragging its strip. Meanwhile the rows burn inward and the arena closes.
+ *
+ * Scratch: s0 phase, s1 lane direction, t0 gas timer, t1 summon timer.
+ */
+const duster: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
+  const def = ENEMIES[e.typeId]
+  const sp = (def?.special ?? {}) as Record<string, number | string>
+  const num = (k: string, d: number): number =>
+    typeof sp[k] === 'number' ? (sp[k] as number) : d
+
+  // --- phase -------------------------------------------------------------
+  if (e.s0 === 0 && e.hp <= e.maxHp * (num('phase2BelowPct', 50) / 100)) {
+    e.s0 = 1
+    world.addShake(0.9)
+    world.beginArenaBurn(num('shrinkSeconds', 90), num('shrinkToFraction', 0.34))
+  }
+
+  if (e.s0 === 0) {
+    // The Pattern. Drive to the far side, drop a lane, come back. It does not
+    // know the player exists.
+    if (e.s1 === 0) e.s1 = 1
+    const speed = num('patrolSpeed', 54)
+    const margin = 90
+    const targetX = e.s1 > 0 ? world.arenaW - margin : margin
+    const dx = targetX - e.x
+    if (Math.abs(dx) < speed * dt * 2) {
+      // End of the run: step down a lane and turn around.
+      e.s1 = -e.s1
+      e.y += num('laneStep', 150)
+      if (e.y > world.arenaH - margin) e.y = margin
+      e.vx = 0
+      e.vy = 0
+    } else {
+      e.vx = Math.sign(dx) * speed
+      e.vy = 0
+    }
+  } else {
+    // Off the Rails. Comes for you, slowly, still dragging the strip.
+    const dx = playerX - e.x
+    const dy = playerY - e.y
+    const d = Math.hypot(dx, dy) || 1
+    const speed = num('chaseSpeed', 38)
+    e.vx = (dx / d) * speed
+    e.vy = (dy / d) * speed
+
+    // Farmhands pour from the corn for the rest of the fight.
+    e.t1 -= dt
+    if (e.t1 <= 0) {
+      e.t1 = num('summonEvery', 3.5)
+      world.summonFor(e, String(sp.summons ?? 'farmhand'), num('summonCount', 2))
+    }
+  }
+
+  if (e.vx !== 0 || e.vy !== 0) e.facing = Math.atan2(e.vy, e.vx)
+
+  // --- the strip ---------------------------------------------------------
+  // Laid in both phases. This is the thing that actually kills you.
+  e.t0 -= dt
+  if (e.t0 <= 0) {
+    e.t0 = num('gasEvery', 0.5)
+    world.dropGasStrip(
+      e.x - Math.cos(e.facing) * 40,
+      e.y - Math.sin(e.facing) * 40,
+      num('gasRadius', 44),
+      num('gasSeconds', 7),
+      num('gasDps', 9),
+    )
+  }
+}
+
 export const ENEMY_BEHAVIOURS: Record<string, EnemyBehaviour> = {
+  duster,
   chase,
   erratic,
   flank,

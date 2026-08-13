@@ -61,6 +61,20 @@
     }
   },
 
+  "vehicles": {
+    "_note": "The Duster (§9 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch — bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
+    "_directionNote": "Order is left, up, right, down — NOT the animals' right, up, left, down. Verified by eye against the sheet. Three sheet families in this project now use three different direction orders, which is why every one of them is measured rather than assumed.",
+    "_scaleNote": "§9 says tractor at x3. That was written assuming a 32px source; this tractor is drawn ~130px wide already, so x3 would be nearly 400px against a 520px camera. It is packed at native size and drawn at x1 — which is still about four times the player, and the heavy read comes from the slowed frame rate instead.",
+    "_base": "assets/modern-farm/32x32/Vehicles_32x32/",
+    "frameWidth": 192,
+    "frameHeight": 192,
+    "framesPerDirection": 6,
+    "directionOrder": ["left", "up", "right", "down"],
+    "sheets": {
+      "duster": { "path": "Tractor_32x32.png", "firstBand": 1 }
+    }
+  },
+
   "singles": {
     "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
     "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",

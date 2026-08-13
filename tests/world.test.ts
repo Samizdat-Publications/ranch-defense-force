@@ -304,6 +304,51 @@ describe('World invariants', () => {
       expect(boss!.maxHp).toBeGreaterThan(500)
     })
 
+    it('the Duster patrols without ever chasing, and lays gas', () => {
+      // §9's whole idea for phase 1: it does not know you exist. If this ever
+      // starts homing, the fight has become the Bull with more health.
+      const w = new World(11, 'hand')
+      w.spawnBoss('duster')
+      const b = w.findBoss()
+      expect(b).not.toBeNull()
+      // Park the player far off its lane; it must not close on them.
+      w.player.x = 200
+      w.player.y = 1400
+      const startGap = Math.hypot(b!.x - w.player.x, b!.y - w.player.y)
+      let travelled = 0
+      for (let i = 0; i < 60 * 10; i++) {
+        const px = b!.x
+        w.step(STEP, 0, 0, false)
+        travelled += Math.abs(b!.x - px)
+      }
+      expect(travelled, 'it must actually drive').toBeGreaterThan(200)
+      expect(w.hazards.live, 'it must lay a gas strip').toBeGreaterThan(0)
+      const endGap = Math.hypot(b!.x - w.player.x, b!.y - w.player.y)
+      expect(endGap, 'it must not close on the player in phase 1')
+        .toBeGreaterThan(startGap * 0.6)
+    })
+
+    it('burns the arena inward to about a third, and only in phase 2', () => {
+      const w = new World(12, 'hand')
+      w.spawnBoss('duster')
+      const b = w.findBoss()!
+      expect(w.arenaBurnInset, 'no burn before phase 2').toBe(0)
+      expect(w.insideArena(4, 4)).toBe(true)
+
+      b.hp = b.maxHp * 0.4
+      for (let i = 0; i < 60 * 95; i++) {
+        w.player.hp = w.player.stats.maxHp // measuring the burn, not survival
+        w.step(STEP, 0, 0, false)
+      }
+      const shorter = Math.min(w.arenaW, w.arenaH)
+      const remaining = shorter - w.arenaBurnInset * 2
+      expect(remaining / shorter, 'roughly a third of the field left')
+        .toBeGreaterThan(0.28)
+      expect(remaining / shorter).toBeLessThan(0.42)
+      expect(w.insideArena(4, 4), 'the corners must have burned').toBe(false)
+      expect(w.insideArena(w.arenaW / 2, w.arenaH / 2), 'the middle must not').toBe(true)
+    })
+
     it('makes wave 25 reachable at all', () => {
       // Section 9 puts the Duster on wave 25 while waveCount was 24, so the run
       // finished the instant wave 24 completed and wave 25 never began — the

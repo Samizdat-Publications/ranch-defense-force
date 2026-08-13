@@ -289,5 +289,40 @@
       "stampedeCount": 4
     },
     "teaches": "a straight line you can step out of"
+  },
+  "duster": {
+    "name": "The Duster",
+    "sheet": "duster",
+    "_note": "Wave 25 boss (\u00a79). Nobody is driving it. Phase 1 is a fixed agricultural back-and-forth that NEVER chases \u2014 the whole fight is where you stand relative to a machine that will not deviate. Phase 2 breaks the pattern and comes for you while the rows burn inward.",
+    "hp": 2400,
+    "speed": 54,
+    "damage": 34,
+    "radius": 52,
+    "xp": 200,
+    "threatCost": 0,
+    "groupSize": 1,
+    "behaviour": "duster",
+    "knockbackImmune": true,
+    "boss": true,
+    "drawScale": 1,
+    "animFrameScale": 0.45,
+    "special": {
+      "_note": "Phase 2 starts below phase2BelowPct. gasEvery is how often it drops a strip; the strip is a real gas hazard and hurts you exactly like a Bloated Farmhand cloud.",
+      "phase2BelowPct": 50,
+      "gasEvery": 0.5,
+      "gasRadius": 44,
+      "gasSeconds": 7,
+      "gasDps": 9,
+      "laneStep": 150,
+      "patrolSpeed": 54,
+      "chaseSpeed": 38,
+      "shrinkSeconds": 90,
+      "shrinkToFraction": 0.34,
+      "shrinkDps": 18,
+      "summonEvery": 3.5,
+      "summons": "farmhand",
+      "summonCount": 2
+    },
+    "teaches": "a machine that will not deviate"
   }
 }

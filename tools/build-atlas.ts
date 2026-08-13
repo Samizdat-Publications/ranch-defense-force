@@ -57,6 +57,14 @@ interface Manifest {
       framesPerDirection: number
     }>
   }
+  vehicles?: {
+    _base: string
+    frameWidth: number
+    frameHeight: number
+    framesPerDirection: number
+    directionOrder: string[]
+    sheets: Record<string, { path: string; firstBand: number }>
+  }
   singles: { _base: string; files: Record<string, string> }
   singlesExtra?: { _base: string; files: Record<string, string> }
   weapons?: { _base: string; files: Record<string, string> }
@@ -220,6 +228,63 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
       // Animals have no separate idle clip, so frame 0 of the walk stands in.
       // One extra atlas entry beats a special case in the renderer.
       if (f === 0) pending.push({ ...frame, name: `${id}.idle.${dir}.0` })
+    }
+  }
+}
+
+// ----------------------------------------------------------------- vehicles
+
+/**
+ * Vehicles: one row BAND per direction, not four clips in one band.
+ *
+ * A third layout in the same project. The humanoids are 32x64 on stacked row
+ * pairs, the animals are four direction clips side by side in one band at a
+ * 64 or 96px pitch, and this is 192x192 frames stacked by direction. Every one
+ * of them was measured; none of them could have been assumed from the others.
+ */
+const vehicles = manifest.vehicles
+if (vehicles) {
+  for (const [id, cfg] of Object.entries(vehicles.sheets ?? {})) {
+    const path = vehicles._base + cfg.path
+    let sheet: Image
+    try {
+      sheet = decodePng(readFileSync(path))
+    } catch (e) {
+      errors.push(`${path}: ${(e as Error).message}`)
+      continue
+    }
+    const fw = vehicles.frameWidth
+    const fh = vehicles.frameHeight
+    clipLengths[id] = { walk: vehicles.framesPerDirection, idle: 1 }
+
+    for (const dir of rig.directions) {
+      const bandIndex = vehicles.directionOrder.indexOf(dir)
+      if (bandIndex < 0) {
+        errors.push(`${path}: directionOrder has no entry for "${dir}"`)
+        continue
+      }
+      const bandY = (cfg.firstBand + bandIndex) * fh
+      if (bandY + fh > sheet.height) {
+        errors.push(`${path}: band for "${dir}" runs past the bottom of the sheet`)
+        continue
+      }
+      for (let f = 0; f < vehicles.framesPerDirection; f++) {
+        const sx = f * fw
+        const b = contentBounds(sheet, sx, bandY, fw, fh)
+        if (b.empty) {
+          errors.push(`${path}: walk ${dir} frame ${f} is empty`)
+          continue
+        }
+        const frame = {
+          name: `${id}.walk.${dir}.${f}`,
+          img: sheet,
+          sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+          ox: b.x - (sx + fw / 2),
+          oy: b.y - (bandY + fh),
+        }
+        pending.push(frame)
+        if (f === 0) pending.push({ ...frame, name: `${id}.idle.${dir}.0` })
+      }
     }
   }
 }

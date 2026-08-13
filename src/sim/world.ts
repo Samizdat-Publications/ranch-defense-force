@@ -104,6 +104,19 @@ export class World {
   /** Set when a boss spawns; purely informational for the UI. */
   bossIndexHint: string | null = null
 
+  /**
+   * The Duster's closing arena (§9). `arenaBurnInset` is how far the fire has
+   * eaten in from every edge; standing outside the remaining rectangle burns.
+   *
+   * The only undodgeable pressure in the fight, and slow enough to plan around
+   * — ninety seconds to take the field down to a third.
+   */
+  arenaBurnInset = 0
+  private arenaBurnTarget = 0
+  private arenaBurnSeconds = 0
+  private arenaBurnDps = 0
+  private arenaBurnAcc = 0
+
   private sparkAcc = 0
   private muzzleAcc = 0
 
@@ -250,6 +263,7 @@ export class World {
     this.collideEnemiesWithPlayer(dt)
     this.updateHazards(dt)
     this.updateStatuses(dt)
+    this.updateArenaBurn(dt)
 
     // 10. pickups
     this.updatePickups(dt)
@@ -1226,6 +1240,80 @@ export class World {
    * pressure ceiling and there is exactly one, so routing them through the wave
    * budget would only give the budget a chance to refuse them.
    */
+  /**
+   * Start the rows burning inward. Idempotent — a second call does not restart
+   * a burn already under way.
+   */
+  beginArenaBurn(seconds: number, toFraction: number): void {
+    if (this.arenaBurnSeconds > 0) return
+    this.arenaBurnSeconds = seconds
+    // Shrink the SHORTER axis to the requested fraction; insetting both edges
+    // by that much keeps the remaining field the right shape rather than a slot.
+    const shorter = Math.min(this.arenaW, this.arenaH)
+    this.arenaBurnTarget = (shorter * (1 - toFraction)) / 2
+    const bossDef = ENEMIES.duster?.special as Record<string, number> | undefined
+    this.arenaBurnDps = bossDef?.shrinkDps ?? 18
+  }
+
+  /** Whether a point is inside the part of the field that has not burned. */
+  insideArena(x: number, y: number): boolean {
+    const i = this.arenaBurnInset
+    return x >= i && y >= i && x <= this.arenaW - i && y <= this.arenaH - i
+  }
+
+  private updateArenaBurn(dt: number): void {
+    if (this.arenaBurnSeconds <= 0 || this.arenaBurnInset >= this.arenaBurnTarget) {
+      if (this.arenaBurnInset <= 0) return
+    } else {
+      this.arenaBurnInset = Math.min(
+        this.arenaBurnTarget,
+        this.arenaBurnInset + (this.arenaBurnTarget / this.arenaBurnSeconds) * dt,
+      )
+    }
+    if (!this.player.alive) return
+    if (this.insideArena(this.player.x, this.player.y)) {
+      this.arenaBurnAcc = 0
+      return
+    }
+    // Standing in the fire. Environmental, so it neither grants nor is blocked
+    // by mercy invulnerability.
+    this.arenaBurnAcc += this.arenaBurnDps * dt
+    if (this.arenaBurnAcc >= 1) {
+      const dmg = Math.floor(this.arenaBurnAcc)
+      this.arenaBurnAcc -= dmg
+      this.damagePlayer(dmg, 'hazard')
+    }
+  }
+
+  /** A length of the Duster's gas strip. */
+  dropGasStrip(x: number, y: number, radius: number, seconds: number, dps: number): void {
+    const h = this.spawnHazard()
+    if (!h) return
+    h.kind = 'gas'
+    h.x = x
+    h.y = y
+    h.radius = radius
+    h.growth = 0
+    h.maxLife = seconds
+    h.life = seconds
+    h.dps = 0
+    h.playerDps = dps
+  }
+
+  /** Pour enemies out around a boss, respecting the pressure ceiling. */
+  summonFor(e: Enemy, typeId: string, count: number): void {
+    for (let i = 0; i < count; i++) {
+      if (this.enemies.live >= WAVES.pressureCeiling) return
+      const a = this.rng.range(0, Math.PI * 2)
+      this.spawnEnemy(
+        typeId,
+        Math.max(20, Math.min(this.arenaW - 20, e.x + Math.cos(a) * 260)),
+        Math.max(20, Math.min(this.arenaH - 20, e.y + Math.sin(a) * 260)),
+        false,
+      )
+    }
+  }
+
   spawnBoss(bossId: string): Enemy | null {
     const def = ENEMIES[bossId]
     if (!def) return null
