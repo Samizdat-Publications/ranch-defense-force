@@ -52,6 +52,11 @@
       "sickHog": {
         "path": "Pigs_32x32/Pig_Pink_32x32.png",
         "rows": 2, "frameWidth": 64, "walkRow": 2, "framesPerDirection": 6
+      },
+      "prizeBull": {
+        "_note": "The wave 12 boss. The cow sheet is NOT shaped like the other animals — 72x12 cells against their 48x8 — and its walk band sits at row 6 on a 96px pitch, not 64. Derived with npm run pitch; rows 2 and 4 look plausible and are not it. Cow_Big_Black is used because §9 wants the Bull palette-shifted to near-black and this variant already is, so the shift costs nothing.",
+        "path": "Cows_32x32/Cow_Big_Black_32x32.png",
+        "rows": 2, "frameWidth": 96, "walkRow": 6, "framesPerDirection": 6
       }
     }
   },

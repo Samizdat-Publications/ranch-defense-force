@@ -152,7 +152,7 @@ function simulate(
 const SEEDS = [20260810, 4242, 555, 31337, 7, 99]
 
 describe('a full run', () => {
-  it('completes all 24 waves on most seeds, in about 17 minutes', () => {
+  it('completes all 25 waves on most seeds, in about 17 minutes', () => {
     // Surveyed rather than pinned to one seed: a single seed passing proves
     // that seed, and balance work would silently start optimising for it.
     const results = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'kite'))
@@ -160,9 +160,10 @@ describe('a full run', () => {
     expect(cleared.length).toBeGreaterThanOrEqual(Math.ceil(SEEDS.length / 2))
 
     for (const r of cleared) {
-      // 24 waves x 40s = 960s.
-      expect(r.seconds).toBeGreaterThan(900)
-      expect(r.seconds).toBeLessThan(1000)
+      // 25 waves x 40s = 1000s. The count went from 24 to 25 so wave 25 —
+      // the Duster's wave in §9 — can actually be reached; it never was.
+      expect(r.seconds).toBeGreaterThan(940)
+      expect(r.seconds).toBeLessThan(1060)
       expect(r.kills).toBeGreaterThan(1000)
       expect(r.maxTier).toBe(4)
     }

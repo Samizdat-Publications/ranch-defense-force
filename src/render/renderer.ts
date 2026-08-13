@@ -15,7 +15,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { ELEMENTS, NODES, TUNING, WEAPONS } from '../content'
+import { ELEMENTS, ENEMIES, NODES, TUNING, WEAPONS } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 
@@ -289,7 +289,10 @@ export class Renderer {
     const dir = this.atlas.directions[directionIndex(facing)] ?? 'down'
     if (!moving) return this.atlas.get(`${sheet}.idle.${dir}.0`)
     const len = this.atlas.clipLength(sheet, 'walk')
-    const f = Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len
+    // Heavy things read as heavy by moving at a lower frame rate, not by
+    // gaining frames (§9): more pixels travelled per frame of walk cycle.
+    const scale = (ENEMIES[sheet] as { animFrameScale?: number } | undefined)?.animFrameScale ?? 1
+    const f = Math.floor(travelled / (PIXELS_PER_WALK_FRAME / scale)) % len
     return this.atlas.get(`${sheet}.walk.${dir}.${f}`)
   }
 
@@ -351,7 +354,11 @@ export class Renderer {
       it.h = e.radius * 2
       it.outline = e.elite ? '#f0d060' : null
 
-      const eliteScale = e.elite ? 1.5 : 1
+      // §9: bosses are existing sprites at INTEGER scale. Never 2.5 — a 32px
+      // cow at 2.2 is a blurry cow, and the whole screen stops being pixel art.
+      const bossDef = ENEMIES[e.typeId] as { drawScale?: number } | undefined
+      const bossScale = Math.round(bossDef?.drawScale ?? 1)
+      const eliteScale = (e.elite ? 1.5 : 1) * bossScale
       it.scaleX = eliteScale
       it.scaleY = eliteScale
 

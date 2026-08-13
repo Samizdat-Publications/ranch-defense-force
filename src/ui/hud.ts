@@ -6,7 +6,7 @@
  * Updated from the world every frame, but only writes to the DOM when a value
  * actually changes — layout thrash in a 60fps loop is not free.
  */
-import { WEAPONS } from '../content'
+import { ENEMIES, WEAPONS } from '../content'
 import type { World } from '../sim/world'
 import { clear, el } from './dom'
 
@@ -22,12 +22,16 @@ export class Hud {
   private readonly levelText: HTMLElement
   private readonly weapons: HTMLElement
   private readonly ability: HTMLElement
+  private readonly bossBar: HTMLElement
+  private readonly bossFill: HTMLElement
+  private readonly bossName: HTMLElement
 
   private lastHp = -1
   private lastWave = -1
   private lastFeed = -1
   private lastLevel = -1
   private lastSlotSig = ''
+  private lastBossName = ''
 
   constructor(parent: HTMLElement) {
     this.hpChase = el('div', { class: 'hud-hp-chase' })
@@ -40,6 +44,13 @@ export class Hud {
     this.levelText = el('div', { class: 'hud-level' })
     this.weapons = el('div', { class: 'hud-weapons' })
     this.ability = el('div', { class: 'hud-ability' })
+    // §9: pinned to the top of the screen, not floating over the sprite. A bar
+    // over a boss that crosses the whole arena would spend the fight behind
+    // him, which is exactly when you need to read it.
+    this.bossFill = el('div', { class: 'hud-boss-fill' })
+    this.bossName = el('div', { class: 'hud-boss-name' })
+    this.bossBar = el('div', { class: 'hud-boss' }, [this.bossFill, this.bossName])
+    this.bossBar.style.display = 'none'
 
     this.root = el('div', { class: 'hud' }, [
       el('div', { class: 'hud-hp' }, [this.hpChase, this.hpFill, this.hpText]),
@@ -49,11 +60,27 @@ export class Hud {
       this.ability,
       this.levelText,
       el('div', { class: 'hud-xp' }, [this.xpFill]),
+      this.bossBar,
     ])
     parent.appendChild(this.root)
   }
 
   update(world: World): void {
+    const boss = world.findBoss()
+    if (boss) {
+      const pct = Math.max(0, Math.min(1, boss.hp / boss.maxHp))
+      this.bossBar.style.display = ''
+      this.bossFill.style.width = `${(pct * 100).toFixed(1)}%`
+      const name = ENEMIES[boss.typeId]?.name ?? 'BOSS'
+      if (this.lastBossName !== name) {
+        this.bossName.textContent = name
+        this.lastBossName = name
+      }
+    } else if (this.lastBossName !== '') {
+      this.bossBar.style.display = 'none'
+      this.lastBossName = ''
+    }
+
     const p = world.player
 
     const hpPct = Math.max(0, (p.hp / p.stats.maxHp) * 100)

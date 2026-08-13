@@ -58,6 +58,83 @@ sprite as a coloured square. It builds the atlas now.
 
 ---
 
+# Session 5 — roster, elements, and the first boss
+
+## Start-here delta
+
+M6 is **half done**: the Prize Bull fights, the Duster does not exist. See
+"What M6 still owes" below before picking it up.
+
+## The roster
+
+Twelve weapons rebuilt around the bought art, ranged-heavy. The twelve
+behaviours are untouched — they work, they are tested, they are distinct — so
+this was a reskin and a retheme, not a rewrite. Three melee were kept on
+purpose: they are the only weapons that reward standing still, which is The
+Hand's identity and now also how you mine, and an all-ranged roster would have
+quietly deleted a class.
+
+Tier art: merging changes the weapon. Guns step up their category, melee steps
+up its material. The Pixcuit pack is **not complete per tool** — no Iron
+Pitchfork, no Golden Sickle — so the four materials differ by weapon.
+
+Renaming the weapon ids meant first removing the hardcoded id literals
+(`findAttached('axe')`, `WEAPONS.eggToss`). Those resolve from the projectile's
+own `weaponId` or the owning slot now, which is more correct anyway: renaming a
+weapon in JSON can no longer silently break code.
+
+## Elements
+
+Fire, acid or frost, one at a time, converting every ranged weapon. The element
+**swaps the whole bullet** rather than tinting one, which cost no new art
+because the packs already ship a fireball, an acid glob and an ice spike as
+separate animations. Fire ignites slop slicks — two things the player already
+chose doing something neither does alone.
+
+It needed no new damage plumbing at all: the lasting damage rides on the
+`burnDps`/`bleedDps`/`slowOnHit` payload fields the tier riders already used.
+
+## Harvesting was rewarding the wrong playstyle
+
+Flat-rate proximity harvesting **paid the kiter more than the stander**.
+Sweeping past twenty nodes at base rate beat working one, so the mechanic built
+to give a stationary player something to do inverted its own intent, and The
+Hand's advantage had narrowed from 13 points to 4 before the harness caught it.
+Nodes now ramp to 3x over two seconds of dwell and bleed off faster than they
+build.
+
+## The boss that spawned itself
+
+`ENEMY_IDS` was `Object.keys(ENEMIES)`, so adding the Prize Bull put it in the
+wave director's roster. A boss carries `threatCost: 0` precisely so the budget
+cannot refuse it — which meant the director could pick it for free, without
+limit. **Every bot run died on wave one.** Bosses are excluded from the roster
+now and placed explicitly by `spawnBoss`; there is a test.
+
+Related and long-standing: `bossWaves` put the Duster on wave 25 while
+`waveCount` was 24, so the run called `finishRun` the instant wave 24 completed
+and wave 25 never began. **The final boss was unreachable in every build that
+has ever existed.** waveCount is 25.
+
+## What M6 still owes
+
+1. **The Duster.** Nothing exists — no art, no behaviour. §9 wants two phases:
+   a fixed agricultural back-and-forth laying gas that never chases, then below
+   50% it comes for you directly while the rows burn inward and shrink the
+   arena to a third. The tractor sheet is at
+   `assets/modern-farm/32x32/Vehicles_32x32/Tractor_32x32.png` (1152x960) and
+   its grid has NOT been measured — run `npm run pitch` on it first; the cow
+   sheet turned out to be 96px pitch at row 6 while every other animal is 64 at
+   row 2-4.
+2. **The Bull's charge is the generic `charge` behaviour.** It winds up and
+   staggers, and Stampede fires below 50%, but it does not yet damage its own
+   trash in the lane or slam the fence.
+3. **Audio.** Still nothing, and still no source material in `assets/` — this
+   is the one milestone item blocked on something outside the repo.
+4. **Pause screen.** No Escape handling anywhere.
+
+---
+
 # Session 4 — mining, and the assets to draw it
 
 ## Harvesting rebuilt on the Deep Rock Galactic: Survivor model

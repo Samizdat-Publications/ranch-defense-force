@@ -186,4 +186,15 @@ export const NODES = nodesRaw as unknown as {
 export const CLASS_IDS = Object.keys(CLASSES)
 export const WEAPON_IDS = Object.keys(WEAPONS)
 export const ITEM_IDS = Object.keys(ITEMS)
-export const ENEMY_IDS = Object.keys(ENEMIES)
+/**
+ * The spawner's roster — every enemy EXCEPT bosses.
+ *
+ * Bosses are placed explicitly by `World.spawnBoss` on their wave. Leaving them
+ * in here let the wave director pick the Prize Bull like any other enemy, and
+ * because a boss carries `threatCost: 0` so the budget cannot refuse it, it
+ * cost nothing and spawned without limit. Every bot run died on wave one.
+ */
+export const ENEMY_IDS = Object.keys(ENEMIES).filter((id) => ENEMIES[id]?.boss !== true)
+
+/** Every enemy id including bosses, for lookups rather than spawning. */
+export const ALL_ENEMY_IDS = Object.keys(ENEMIES)

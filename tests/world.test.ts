@@ -4,6 +4,7 @@
  * in CLAUDE.md and this file is what keeps it honest.
  */
 import { describe, expect, it } from 'vitest'
+import { ENEMIES, WAVES } from '../src/content'
 import { World } from '../src/sim/world'
 import { STEP } from '../src/core/loop'
 
@@ -278,6 +279,39 @@ describe('World invariants', () => {
       for (let i = 0; i < 120; i++) w.step(STEP, 0, 0, false)
       expect(w.player.hp, `${kind} must hurt`).toBeLessThan(before)
     }
+  })
+
+  describe('bosses', () => {
+    it('never lets the wave director spawn one', () => {
+      // Bosses carry threatCost 0 so the budget cannot refuse them, which means
+      // leaving them in the spawner roster let the director pick the Prize Bull
+      // like any other enemy — free, and without limit. Every bot run died on
+      // wave one.
+      const w = new World(5, 'hand')
+      for (let i = 0; i < 3600; i++) w.step(STEP, 1, 0, false)
+      for (let i = 0; i < w.enemies.live; i++) {
+        expect(ENEMIES[w.enemies.items[i].typeId]?.boss ?? false).toBe(false)
+      }
+    })
+
+    it('spawns the Prize Bull on its wave, and only one', () => {
+      const w = new World(6, 'hand')
+      expect(w.findBoss()).toBeNull()
+      w.spawnBoss('prizeBull')
+      const boss = w.findBoss()
+      expect(boss, 'a boss must be on the field').not.toBeNull()
+      expect(boss?.typeId).toBe('prizeBull')
+      expect(boss!.maxHp).toBeGreaterThan(500)
+    })
+
+    it('makes wave 25 reachable at all', () => {
+      // Section 9 puts the Duster on wave 25 while waveCount was 24, so the run
+      // finished the instant wave 24 completed and wave 25 never began — the
+      // final boss could not be fought.
+      expect(WAVES.waveCount).toBeGreaterThanOrEqual(
+        Math.max(...Object.keys(WAVES.bossWaves as Record<string, string>).map(Number)),
+      )
+    })
   })
 
   it('plays fx during combat, and expires them', () => {

@@ -101,6 +101,9 @@ export class World {
    * guarantee would be hostage to the art. Accumulating the rate gives the exact
    * same frequency, spread evenly across hits rather than clumped by tick.
    */
+  /** Set when a boss spawns; purely informational for the UI. */
+  bossIndexHint: string | null = null
+
   private sparkAcc = 0
   private muzzleAcc = 0
 
@@ -317,7 +320,10 @@ export class World {
       for (const [kind, n] of Object.entries(NODES.field.regrowPerWave)) this.scatterNodes(kind, n)
       this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
-      if (bossId) this.events.onBossWave?.(bossId)
+      if (bossId) {
+        this.spawnBoss(bossId)
+        this.events.onBossWave?.(bossId)
+      }
     }
   }
 
@@ -1212,6 +1218,68 @@ export class World {
   }
 
   // ---------------------------------------------------------------- api
+
+  /**
+   * Put a boss on the field at the edge of the arena.
+   *
+   * Bosses do not come out of the spawner: they cost no threat, ignore the
+   * pressure ceiling and there is exactly one, so routing them through the wave
+   * budget would only give the budget a chance to refuse them.
+   */
+  spawnBoss(bossId: string): Enemy | null {
+    const def = ENEMIES[bossId]
+    if (!def) return null
+    // Come in from the far side, so the fight opens with him crossing to you.
+    const a = this.rng.range(0, Math.PI * 2)
+    const e = this.spawnEnemy(
+      bossId,
+      Math.max(60, Math.min(this.arenaW - 60, this.player.x + Math.cos(a) * 420)),
+      Math.max(60, Math.min(this.arenaH - 60, this.player.y + Math.sin(a) * 420)),
+      false,
+    )
+    if (e) {
+      this.bossIndexHint = bossId
+      this.addShake(0.8)
+    }
+    return e
+  }
+
+  /** The live boss, or null. Read by the HUD for its health bar. */
+  findBoss(): Enemy | null {
+    for (let i = 0; i < this.enemies.live; i++) {
+      const e = this.enemies.items[i]
+      if (e.active && e.dying <= 0 && ENEMIES[e.typeId]?.boss === true) return e
+    }
+    return null
+  }
+
+  /**
+   * §9's Stampede: below half health every charge brings hogs with it, in the
+   * same lane. Fired from the boss's own charge, not on a timer, so it reads as
+   * his doing rather than as ambient spawning.
+   */
+  tryStampedePublic(e: Enemy): void {
+    this.tryStampede(e)
+  }
+
+  private tryStampede(e: Enemy): void {
+    const def = ENEMIES[e.typeId]
+    const sp = def?.special as Record<string, unknown> | undefined
+    if (!sp?.stampedeBelowPct) return
+    if (e.hp > e.maxHp * ((sp.stampedeBelowPct as number) / 100)) return
+    if (this.enemies.live >= WAVES.pressureCeiling) return
+    const count = (sp.stampedeCount as number) ?? 4
+    const typeId = (sp.stampedeSummons as string) ?? 'sickHog'
+    for (let i = 0; i < count; i++) {
+      const spread = (i - (count - 1) / 2) * 34
+      this.spawnEnemy(
+        typeId,
+        e.x - Math.cos(e.facing) * 60 + Math.cos(e.facing + Math.PI / 2) * spread,
+        e.y - Math.sin(e.facing) * 60 + Math.sin(e.facing + Math.PI / 2) * spread,
+        false,
+      )
+    }
+  }
 
   spawnEnemy(typeId: string, x: number, y: number, elite: boolean): Enemy | null {
     const def = ENEMIES[typeId]

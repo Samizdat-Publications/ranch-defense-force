@@ -171,6 +171,8 @@ const charge: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
     e.t0 -= dt
     if (e.t0 <= 0) {
       e.s0 = 2
+    // Boss only: the charge brings the herd once he is hurt (§9).
+    world.tryStampedePublic(e)
       // Lock the lane at wind-up end — turning mid-charge would remove the
       // whole point of the tell.
       e.s1 = e.facing

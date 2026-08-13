@@ -266,5 +266,28 @@
         }
       ]
     }
+  },
+  "prizeBull": {
+    "name": "The Prize Bull",
+    "sheet": "prizeBull",
+    "_note": "Wave 12 boss (\u00a79). Nine hundred pounds of blue ribbon. Charges in a straight line and hits his own trash on the way through, so a bad build survives long enough to learn what is wrong with it.",
+    "hp": 900,
+    "speed": 72,
+    "damage": 26,
+    "radius": 26,
+    "xp": 60,
+    "threatCost": 0,
+    "groupSize": 1,
+    "behaviour": "charge",
+    "knockbackImmune": true,
+    "boss": true,
+    "drawScale": 2,
+    "animFrameScale": 0.5,
+    "special": {
+      "stampedeBelowPct": 50,
+      "stampedeSummons": "sickHog",
+      "stampedeCount": 4
+    },
+    "teaches": "a straight line you can step out of"
   }
 }
