@@ -627,6 +627,29 @@ for (const p of placed) {
   frames[p.name] = { x: p.px, y: p.py, w: p.sw, h: p.sh, ox: p.ox, oy: p.oy }
 }
 
+// ------------------------------------------------------------------- ui
+//
+// The UI is DOM, not canvas, so its art cannot live in the atlas — CSS needs
+// real files. LimeZu's Modern UI pack is the same hand as the farm tiles, so
+// the screens can match the game exactly with no conforming at all.
+//
+// Emitted rather than committed for the same reason as the atlas: generated
+// art stays out of the repo, and `npm run atlas` is still the one build step.
+mkdirSync('public/ui', { recursive: true })
+try {
+  const uiSheet = decodePng(readFileSync('assets/modern-ui/32x32/Modern_UI_Style_1_32x32.png'))
+  // The ornate wood frame, measured not guessed. Used as a CSS border-image,
+  // which is exactly the 9-slice this art was drawn for.
+  const panel = blankImage(64, 62)
+  blit(uiSheet, 16, 16, 64, 62, panel, 0, 0)
+  writeFileSync('public/ui/panel.png', encodePng(panel))
+  console.log('ui: public/ui/panel.png 64x62')
+} catch (e) {
+  // A missing UI pack costs the chrome, not the game — the CSS has colour
+  // fallbacks for every border-image.
+  console.warn('ui pack unavailable, screens fall back to flat panels:', (e as Error).message)
+}
+
 mkdirSync('public', { recursive: true })
 writeFileSync('public/atlas.png', encodePng(atlas))
 writeFileSync(

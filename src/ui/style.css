@@ -214,3 +214,132 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
   text-shadow: 0 1px 0 #000;
   pointer-events: none;
 }
+
+/* ===================================================================
+   THE PANEL LANGUAGE
+   ===================================================================
+   One vocabulary shared by every screen — pause, level-up, shop,
+   results. Before this each screen invented its own box, so the game
+   read as four UIs that happened to ship together.
+
+   Three rules:
+     1. Every floating surface is `.panel`: LimeZu's carved wood frame
+        as a real CSS border-image, which is the 9-slice that art was
+        drawn for. `image-rendering: pixelated` keeps it on the grid at
+        any size, so one 64x62 source dresses a shop card and a pause
+        menu alike.
+     2. Wood is chrome, never content. The frame is the border and the
+        inside stays the dark field, so text always sits on the same
+        background whatever surface it is on.
+     3. Colour means the same thing everywhere: gold is a choice you
+        can make, grey is one you cannot afford, red is danger.
+
+   If the UI pack is missing the border-image simply does not apply and
+   the colour underneath carries it — chrome degrades, the game does not.
+   =================================================================== */
+
+:root {
+  --wood-dark: #3a2a1c;
+  --wood-mid: #6b4a28;
+  --wood-lit: #c98a3c;
+  --field: rgba(18, 16, 20, 0.94);
+  --ink: #f0e4d2;
+  --ink-dim: #a99b88;
+  --gold: #e0b040;
+  --danger: #d7574a;
+}
+
+.panel {
+  background: var(--field);
+  border: 10px solid var(--wood-mid);
+  border-image: url('/ui/panel.png') 12 fill repeat;
+  image-rendering: pixelated;
+  color: var(--ink);
+}
+
+/* Buttons echo the frame's bevel without needing a second asset: a lit
+   top edge, a dark bottom, and a real 1px drop that vanishes on press. */
+.btn {
+  font: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: linear-gradient(180deg, #7d5730 0%, #5c3f22 100%);
+  border: 2px solid var(--wood-dark);
+  border-top-color: var(--wood-lit);
+  box-shadow: 0 3px 0 var(--wood-dark);
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: transform 60ms linear, box-shadow 60ms linear, filter 60ms linear;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--wood-dark); }
+.btn-primary { background: linear-gradient(180deg, #d79a3f 0%, #a66d22 100%); color: #2b1d0e; }
+.btn-danger { background: linear-gradient(180deg, #c9564a 0%, #8e3229 100%); }
+
+/* ---- pause ---- */
+.pause-wrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 8, 12, 0.55);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+.pause-card { min-width: 320px; padding: 26px 30px; text-align: center; }
+.pause-title {
+  font-size: 20px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 4px;
+}
+.pause-sub { color: var(--ink-dim); font-size: 11px; margin: 0 0 18px; }
+.pause-stats {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 4px 18px;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin: 0 0 20px;
+}
+.pause-stats b { color: var(--ink); font-weight: normal; }
+.pause-actions { display: grid; gap: 10px; }
+
+/* ---- cards and screens adopt the panel language ----------------------
+   The cards had their own 3px flat border and the screens their own
+   backdrop, which is how the game ended up looking like four separate
+   UIs. They take the carved frame now, and rarity moves from the border
+   (which the frame occupies) to a colour bar along the top edge — which
+   reads better anyway, because it survives the frame's own colour. */
+
+.card {
+  border: 10px solid var(--wood-mid);
+  border-image: url('/ui/panel.png') 12 fill repeat;
+  image-rendering: pixelated;
+  position: relative;
+  padding: 14px;
+}
+/* Rarity as a top bar rather than a border colour. */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 2px;
+  height: 3px;
+  background: var(--ink-dim);
+}
+.card.rarity-uncommon::before { background: var(--green); }
+.card.rarity-rare::before { background: var(--gold); }
+.card:hover { filter: brightness(1.12); }
+.card.locked { outline: 2px dashed var(--gold); outline-offset: 3px; }
+
+.screen-inner { padding: 4px; }
+.screen h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 0.2em; }
+
+/* Text inside a panel must not sit on the wood. */
+.card-name { color: var(--ink); }
+.card-detail { color: var(--ink-dim); }

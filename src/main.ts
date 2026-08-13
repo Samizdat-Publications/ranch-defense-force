@@ -20,10 +20,11 @@ import { LevelUpScreen } from './ui/levelup'
 import { ShopScreen } from './ui/shop'
 import { ResultsScreen } from './ui/results'
 import { MenuScreen } from './ui/menu'
+import { PauseScreen } from './ui/pause'
 import { DevOverlay } from './ui/dev'
 import { WAVES } from './content'
 
-type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results'
+type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused'
 
 const canvas = document.getElementById('game') as HTMLCanvasElement
 const uiRoot = document.getElementById('ui') as HTMLElement
@@ -51,6 +52,7 @@ const levelUp = new LevelUpScreen(uiRoot)
 const shop = new ShopScreen(uiRoot)
 const results = new ResultsScreen(uiRoot)
 const menu = new MenuScreen(uiRoot, (classId, seed) => startRun(classId, seed))
+const pause = new PauseScreen(uiRoot)
 
 const dev = new DevOverlay(uiRoot, {
   skipWave: () => {
@@ -106,6 +108,7 @@ function startRun(classId: string, seedText: string): void {
 
   menu.close()
   results.close()
+  pause.close()
   state = 'playing'
 }
 
@@ -172,6 +175,28 @@ const loop = new Loop(
   (dt) => {
     input.sample()
 
+    // Pause is only reachable from play, and only leaves back to play. A
+    // level-up or shop is already a pause with a decision attached, and
+    // stacking a second freeze on top of one of those is how you get a screen
+    // nobody can dismiss.
+    if (input.pausePressed && world) {
+      if (state === 'playing') {
+        state = 'paused'
+        world.paused = true
+        pause.open(
+          world,
+          () => {
+            if (!world) return
+            world.paused = false
+            state = 'playing'
+          },
+          () => finishRun(false),
+        )
+      } else if (state === 'paused') {
+        pause.close()
+      }
+    }
+
     if (state === 'levelup' && input.digitPressed > 0) {
       levelUp.handleDigit(input.digitPressed)
     }
@@ -227,5 +252,15 @@ Object.assign(window as unknown as Record<string, unknown>, {
       openLevelUpIfPending()
     },
     openShop: () => queueShop(),
+    openPause: () => {
+      if (!world || state !== 'playing') return
+      state = 'paused'
+      world.paused = true
+      pause.open(
+        world,
+        () => { if (world) { world.paused = false; state = 'playing' } },
+        () => finishRun(false),
+      )
+    },
   },
 })

@@ -14,6 +14,7 @@ export class Input {
   private abilityWasDown = false
   private padIndex: number | null = null
   private digitLatch: number | null = null
+  private pauseLatch = false
 
   /** Normalised movement, -1..1 each axis. */
   moveX = 0
@@ -22,6 +23,9 @@ export class Input {
   abilityPressed = false
   /** 1-5 if a number key was pressed this tick (card picks), else 0. */
   digitPressed = 0
+  /** True for one tick on the frame Escape went down. Edge-triggered like the
+   *  ability, so holding it does not toggle pause sixty times a second. */
+  pausePressed = false
   padConnected = false
 
   attach(target: Window = window): void {
@@ -46,6 +50,10 @@ export class Input {
     this.held.add(e.code)
     if (e.code === 'Space') {
       this.abilityLatch = true
+      e.preventDefault()
+    }
+    if (e.code === 'Escape' || e.code === 'KeyP') {
+      this.pauseLatch = true
       e.preventDefault()
     }
     if (e.code.startsWith('Digit')) {
@@ -116,6 +124,9 @@ export class Input {
 
     this.digitPressed = this.digitLatch ?? 0
     this.digitLatch = null
+
+    this.pausePressed = this.pauseLatch
+    this.pauseLatch = false
   }
 
   private pollPad(): Gamepad | null {
