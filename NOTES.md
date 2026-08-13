@@ -58,6 +58,62 @@ sprite as a coloured square. It builds the atlas now.
 
 ---
 
+# Session 7 — audio
+
+## Gemini has no sound-effects model, and that changed the design
+
+Checked against the API docs rather than assumed: Gemini offers **Lyria 3 for
+music** and **TTS for speech**, and nothing for sound effects. Prompting a music
+model for a 90ms shotgun report gets you a short piece of music about a shotgun.
+
+So the sixteen effects are **synthesised in the browser** — oscillators, a
+shared noise buffer and exponential envelopes through Web Audio — and only the
+three music layers come from Lyria.
+
+That split is not a compromise. Synthesis is the better answer here: it matches
+the architecture already in place (a hand-written PNG codec rather than pulling
+in `sharp`), it adds no dependency and no download, every sound is five numbers
+in `audio.json` you can tune without a round trip, and retro synthesis is
+stylistically right for pixel art in a way a recorded sample is not.
+
+## The pipeline
+
+`npm run music` (in `tools/fetch-music.ts`) posts each layer's prompt to
+`v1beta/interactions` with `lyria-3-clip-preview` and writes base64 audio to
+`public/audio/`. Offline like the atlas — a network round trip inside a game
+loop is a stutter, not a soundtrack. Needs `GEMINI_API_KEY`; exits with
+instructions if it is missing, and says so explicitly if the model 404s, since
+Lyria is preview-gated separately from ordinary Gemini.
+
+**The prompts in `src/content/audio.json` are the source of truth for the
+score.** Tune the prose and re-run; never hand-edit the audio.
+
+`public/audio/` is gitignored like the atlas. **Missing music is never an
+error** — the loader remembers the failure so it does not retry every wave, and
+the game is simply quiet.
+
+## Boundaries kept
+
+The sim raises sound *intents* through `WorldEvents.onSound` and never touches
+Web Audio, exactly like every other presentation concern. That is what keeps it
+headless, and it is why all 90 tests still run with no audio stack at all.
+
+Effects are rate-limited per name in `audio.json`. Two hundred enemies dying in
+one frame is a normal Tuesday here, and without a limit that is two hundred
+oscillators summing into clipping rather than a sound.
+
+## Verified
+
+Rendered `shootHeavy` through an `OfflineAudioContext` with the shipped spec:
+peak 0.124, tail 0.00002 — audible, and it decays cleanly rather than clicking.
+Sound intents confirmed firing in a live run (68 shots, 8 deaths, 5 hits, a crit
+and a pickup over 15 seconds).
+
+Volume and mute live on the pause screen rather than a settings screen of their
+own, and persist to `localStorage`.
+
+---
+
 # Session 6 — the Duster, and one UI language
 
 ## The Duster

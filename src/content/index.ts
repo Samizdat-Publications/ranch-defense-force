@@ -11,6 +11,7 @@ import metaRaw from './meta.json'
 import tuningRaw from './tuning.json'
 import nodesRaw from './nodes.json'
 import elementsRaw from './elements.json'
+import audioRaw from './audio.json'
 
 /** Every stat the resolver knows about. Keys ending `Pct` are percentages
  *  summed additively; everything else is a flat addend. */
@@ -138,6 +139,8 @@ export const BOSSES = (_bosses ?? {}) as Record<string, Record<string, unknown>>
 
 export const WAVES = wavesRaw
 export const META = metaRaw
+export const AUDIO = audioRaw
+
 export const TUNING = tuningRaw
 
 /** Harvestable nodes and the pickaxe/axe ladder. */

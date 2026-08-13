@@ -10,6 +10,7 @@
 import './ui/style.css'
 import { Loop } from './core/loop'
 import { Input } from './core/input'
+import { Audio, type SfxName, type MusicLayer } from './core/audio'
 import { Rng, seedFromString } from './core/rng'
 import { World } from './sim/world'
 import { OfferPool, type Offer } from './sim/offers'
@@ -28,6 +29,13 @@ type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused'
 
 const canvas = document.getElementById('game') as HTMLCanvasElement
 const uiRoot = document.getElementById('ui') as HTMLElement
+
+const audio = new Audio()
+// Browsers refuse to start an AudioContext before a gesture, so unlock on the
+// first one of any kind rather than asking the player to press something.
+for (const ev of ['pointerdown', 'keydown']) {
+  window.addEventListener(ev, () => audio.unlock(), { once: false })
+}
 
 const input = new Input()
 input.attach()
@@ -96,19 +104,26 @@ function startRun(classId: string, seedText: string): void {
   renderer.camera.snapTo(world.player.x, world.player.y)
 
   world.events = {
+    onSound: (name) => audio.play(name as SfxName),
     onLevelUp: (levels) => {
+      audio.play('levelUp')
       pendingLevelUps += levels
     },
     onWaveComplete: (wave) => {
       if ((WAVES.shopAfterWaves as number[]).includes(wave)) queueShop()
       if (wave >= WAVES.waveCount) finishRun(true)
+      // Layers follow the run's shape rather than a timer.
+      void audio.setLayer((wave >= 11 ? 'combat' : 'field') as MusicLayer)
     },
+    onBossWave: () => { void audio.setLayer('boss' as MusicLayer) },
     onPlayerDeath: () => finishRun(false),
   }
 
   menu.close()
   results.close()
   pause.close()
+  audio.unlock()
+  void audio.setLayer('field' as MusicLayer)
   state = 'playing'
 }
 
@@ -185,6 +200,7 @@ const loop = new Loop(
         world.paused = true
         pause.open(
           world,
+          audio,
           () => {
             if (!world) return
             world.paused = false
@@ -258,6 +274,7 @@ Object.assign(window as unknown as Record<string, unknown>, {
       world.paused = true
       pause.open(
         world,
+        audio,
         () => { if (world) { world.paused = false; state = 'playing' } },
         () => finishRun(false),
       )

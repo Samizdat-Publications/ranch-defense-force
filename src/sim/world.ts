@@ -39,6 +39,9 @@ export interface Telegraph {
 }
 
 export interface WorldEvents {
+  /** A sound the presentation layer may play. The sim never touches audio
+   *  itself — same boundary that keeps it headless and testable. */
+  onSound?: (name: string) => void
   onLevelUp?: (levels: number) => void
   onWaveComplete?: (wave: number, income: number) => void
   onPlayerDeath?: () => void
@@ -91,6 +94,11 @@ export class World {
   cropsHarvested = 0
 
   events: WorldEvents = {}
+
+  /** Raise a sound intent. Cheap enough to call from anywhere in the tick. */
+  private sound(name: string): void {
+    this.events.onSound?.(name)
+  }
 
   /**
    * Fractional accumulators for the rate-limited cosmetic effects.
@@ -328,6 +336,7 @@ export class World {
       // Advance before raising the event: a shop opened from the handler reads
       // the wave number, and it should see the wave it is standing between,
       // not the one that just ended.
+      this.sound('waveStart')
       s.beginWave(next)
       // The field grows back a little each wave, so a player who cleared it
       // early is not permanently out of crops to harvest.
@@ -504,6 +513,8 @@ export class World {
         // behaviours. A swing gets its arc; anything that throws something gets
         // a flash at the muzzle, rate-limited because six weapons at +200%
         // attack speed is a lot of flashes.
+        this.sound(def.type === 'melee' ? 'swing'
+          : def.cooldown >= 0.8 ? 'shootHeavy' : 'shootLight')
         if (def.behaviour === 'arcSwing') {
           this.playFx('slash', p.x + Math.cos(p.facing) * 30, p.y + Math.sin(p.facing) * 30, p.facing)
         } else if (def.type === 'ranged') {
@@ -820,6 +831,7 @@ export class World {
       const ramp = 1 + (n.dwell / h.dwellSeconds) * (h.dwellMultiplier - 1)
       n.hp -= dps * ramp * dt
       n.working = h.workingSeconds
+      this.sound('mine')
       if (n.hp <= 0) {
         this.harvest(n)
         // `harvest` marks it dying; the prop pass frees the slot.
@@ -871,6 +883,7 @@ export class World {
 
   private harvest(c: Prop): void {
     this.cropsHarvested++
+    this.sound('nodeBreak')
 
     if (c.feed > 0) {
       const f = this.pickups.acquire()
@@ -1128,6 +1141,7 @@ export class World {
       const levels = this.player.gainXp(gained)
       if (levels > 0) this.events.onLevelUp?.(levels)
     } else if (g.kind === 'feed') {
+      this.sound('pickupFeed')
       this.player.feed += Math.round(g.value * (1 + this.player.stats.harvestPct / 100))
     } else {
       this.player.hp = Math.min(this.player.stats.maxHp, this.player.hp + g.value)
@@ -1327,6 +1341,7 @@ export class World {
     )
     if (e) {
       this.bossIndexHint = bossId
+      this.sound('bossTell')
       this.addShake(0.8)
     }
     return e
@@ -1522,6 +1537,7 @@ export class World {
       // a late wave reads as combat rather than as a wall of white.
       if (isCrit) {
         this.playFx('bigImpact', e.x, e.y - e.radius * 0.4)
+      this.sound('crit')
       } else {
         this.sparkAcc += T.fx.hitSparkChance
         if (this.sparkAcc >= 1) {
@@ -1530,6 +1546,7 @@ export class World {
           const impact = (ELEMENTS[this.player.element]?.impact ?? 'arrowImpact') as
             keyof typeof T.fx & string
           this.playFx(impact, e.x, e.y - e.radius * 0.4)
+        this.sound('hit')
         }
       }
     }
@@ -1662,6 +1679,7 @@ export class World {
       }
     }
 
+    this.sound('enemyDeath')
     this.bleed(e.x, e.y, e.typeId === 'rooster' ? 2 : 10)
     // No death frames needed — spin and scale to zero (§10 step 4).
     e.dying = C.deathSpinSeconds
@@ -1707,6 +1725,7 @@ export class World {
 
     const taken = Math.max(environmental ? 0 : 1, dmg)
     p.hp -= taken
+    if (!environmental) this.sound('playerHurt')
     if (environmental) this.damageTakenFromHazards += taken
     else {
       this.damageTakenFromContact += taken

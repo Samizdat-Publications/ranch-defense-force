@@ -343,3 +343,34 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 /* Text inside a panel must not sit on the wood. */
 .card-name { color: var(--ink); }
 .card-detail { color: var(--ink-dim); }
+
+.pause-audio { display: grid; gap: 8px; margin: 0 0 18px; }
+.pause-row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+.pause-slider {
+  appearance: none;
+  height: 8px;
+  background: #2a2119;
+  border: 2px solid var(--wood-dark);
+  cursor: pointer;
+}
+.pause-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 16px;
+  background: var(--wood-lit);
+  border: 2px solid var(--wood-dark);
+  cursor: pointer;
+}
+.pause-slider::-moz-range-thumb {
+  width: 12px; height: 16px;
+  background: var(--wood-lit);
+  border: 2px solid var(--wood-dark);
+  cursor: pointer;
+}

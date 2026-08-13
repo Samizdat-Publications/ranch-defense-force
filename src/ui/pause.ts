@@ -11,6 +11,7 @@
  * Freezes the sim by setting `world.paused`, the same lever the level-up and
  * shop screens pull, so the renderer keeps drawing the frozen field behind it.
  */
+import type { Audio } from '../core/audio'
 import type { World } from '../sim/world'
 import { clear, el } from './dom'
 
@@ -28,7 +29,7 @@ export class PauseScreen {
     return this.root.style.display !== 'none'
   }
 
-  open(world: World, onResume: () => void, onQuit: () => void): void {
+  open(world: World, audio: Audio, onResume: () => void, onQuit: () => void): void {
     this.onResume = onResume
     clear(this.root)
 
@@ -48,6 +49,28 @@ export class PauseScreen {
       onQuit()
     })
 
+    // Audio lives here rather than in a settings screen of its own. Pause is
+    // where you already are when you want the sound turned down, and one more
+    // screen to build and dismiss would be worse than two rows of controls.
+    const mute = el('button', {
+      class: 'btn',
+      text: audio.muted ? 'Sound: off' : 'Sound: on',
+    })
+    mute.addEventListener('click', () => {
+      audio.setMuted(!audio.muted)
+      mute.textContent = audio.muted ? 'Sound: off' : 'Sound: on'
+    })
+
+    const slider = (label: string, value: number, onInput: (v: number) => void): HTMLElement => {
+      const input = el('input', { class: 'pause-slider' }) as HTMLInputElement
+      input.type = 'range'
+      input.min = '0'
+      input.max = '100'
+      input.value = String(Math.round(value * 100))
+      input.addEventListener('input', () => onInput(Number(input.value) / 100))
+      return el('label', { class: 'pause-row' }, [el('span', { text: label }), input])
+    }
+
     this.root.appendChild(
       el('div', { class: 'panel pause-card' }, [
         el('h2', { class: 'pause-title', text: 'Paused' }),
@@ -60,7 +83,11 @@ export class PauseScreen {
           ...stat('Feed', String(world.player.feed)),
           ...stat('Time', `${mins}:${String(secs).padStart(2, '0')}`),
         ]),
-        el('div', { class: 'pause-actions' }, [resume, quit]),
+        el('div', { class: 'pause-audio' }, [
+          slider('Effects', audio.sfxVolume, (v) => audio.setVolumes(v, audio.musicVolume)),
+          slider('Music', audio.musicVolume, (v) => audio.setVolumes(audio.sfxVolume, v)),
+        ]),
+        el('div', { class: 'pause-actions' }, [mute, resume, quit]),
       ]),
     )
     this.root.style.display = ''

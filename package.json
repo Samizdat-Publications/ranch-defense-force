@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "atlas": "vite-node tools/build-atlas.ts",
     "conform": "vite-node tools/conform-fx.ts -- --write",
+    "music": "vite-node tools/fetch-music.ts --",
     "balance": "vite-node tools/balance.ts --",
     "inspect": "vite-node tools/inspect-sheet.ts --",
     "pitch": "vite-node tools/sprite-pitch.ts --",
