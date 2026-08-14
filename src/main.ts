@@ -123,6 +123,7 @@ function startRun(classId: string, seedText: string): void {
   results.close()
   pause.close()
   audio.unlock()
+  audio.preload()
   void audio.setLayer('field' as MusicLayer)
   state = 'playing'
 }

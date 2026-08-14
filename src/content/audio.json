@@ -1,92 +1,196 @@
 {
-  "_note": "Every sound in the game (§6 of MILESTONES: sixteen sounds, three music layers). Sound EFFECTS are synthesised in the browser from the specs below; MUSIC is generated offline by Lyria and shipped as files. See _whyNote.",
-
-  "_whyNote": "Gemini has Lyria 3 for music and TTS for speech, and NO dedicated sound-effects model — checked against the API docs, not assumed. Prompting a music model for a 90ms shotgun report gets you a short piece of music about a shotgun. So effects are synthesised: oscillators, noise and envelopes through Web Audio. That is also the better answer for this game. It matches the architecture already here (a hand-written PNG codec rather than sharp, an atlas built from a manifest), it adds no dependency and no download, every sound is a few numbers you can tune in this file, and retro synthesis is stylistically right for pixel art in a way a recorded sample is not.",
-
-  "_specNote": "wave: sine|square|saw|triangle|noise. freq/freqTo sweep over the sound's life. decay is seconds. Sounds are polyphonic and rate-limited per key so sixty hits in a frame do not stack into a wall — see limitPerSecond.",
-
+  "_note": "Every sound in the game (\u00a76 of MILESTONES: sixteen sounds, three music layers). Sound EFFECTS are synthesised in the browser from the specs below; MUSIC is generated offline by Lyria and shipped as files. See _whyNote.",
+  "_whyNote": "Gemini has Lyria 3 for music and TTS for speech, and NO dedicated sound-effects model \u2014 checked against the API docs, not assumed. Prompting a music model for a 90ms shotgun report gets you a short piece of music about a shotgun. So effects are synthesised: oscillators, noise and envelopes through Web Audio. That is also the better answer for this game. It matches the architecture already here (a hand-written PNG codec rather than sharp, an atlas built from a manifest), it adds no dependency and no download, every sound is a few numbers you can tune in this file, and retro synthesis is stylistically right for pixel art in a way a recorded sample is not.",
+  "_specNote": "wave: sine|square|saw|triangle|noise. freq/freqTo sweep over the sound's life. decay is seconds. Sounds are polyphonic and rate-limited per key so sixty hits in a frame do not stack into a wall \u2014 see limitPerSecond.",
   "master": {
     "sfxVolume": 0.45,
     "musicVolume": 0.32,
-    "_muteNote": "Both persist to localStorage under rdf.audio so a muted player stays muted."
+    "_muteNote": "Both persist to localStorage under rdf.audio so a muted player stays muted.",
+    "_sampleGainNote": "Generated samples arrive normalised to roughly full scale, while the synth path peaks far lower for the same `gain` value \u2014 measured 1.0 against about 0.12. Reusing one gain for both would make every sampled effect about twice as loud as its synthesised neighbour and clip when several overlap. Sample playback is scaled by this instead of retuning sixteen hand-set gains.",
+    "sampleGainScale": 0.5
   },
-
   "sfx": {
     "shootLight": {
       "_note": "Scattergun, Sidearm, Nail Gun. Short and dry; it fires constantly, so anything with a tail becomes a drone.",
-      "wave": "noise", "freq": 1800, "freqTo": 600, "decay": 0.07,
-      "gain": 0.35, "limitPerSecond": 12
+      "wave": "noise",
+      "freq": 1800,
+      "freqTo": 600,
+      "decay": 0.07,
+      "gain": 0.35,
+      "limitPerSecond": 12,
+      "source": "elevenlabs",
+      "file": "sfx-shootLight.mp3",
+      "durationSeconds": 0.5,
+      "prompt": "A short, dry shotgun report. Close-miked, punchy, no reverb tail, no music. Single shot."
     },
     "shootHeavy": {
       "_note": "Varmint Rifle, Grenade Launcher, Drum Gun.",
-      "wave": "noise", "freq": 900, "freqTo": 180, "decay": 0.16,
-      "gain": 0.5, "limitPerSecond": 8
+      "wave": "noise",
+      "freq": 900,
+      "freqTo": 180,
+      "decay": 0.16,
+      "gain": 0.5,
+      "limitPerSecond": 8,
+      "source": "elevenlabs",
+      "file": "sfx-shootHeavy.mp3",
+      "durationSeconds": 0.6,
+      "prompt": "A heavy hunting rifle firing once. Deep crack with a short low thump, dry, no echo, no music."
     },
     "swing": {
-      "_note": "Pitchfork and Sledge. A whoosh, not an impact — the impact is a separate sound and they must not merge.",
-      "wave": "noise", "freq": 2600, "freqTo": 900, "decay": 0.12,
-      "gain": 0.22, "limitPerSecond": 8
+      "_note": "Pitchfork and Sledge. A whoosh, not an impact \u2014 the impact is a separate sound and they must not merge.",
+      "wave": "noise",
+      "freq": 2600,
+      "freqTo": 900,
+      "decay": 0.12,
+      "gain": 0.22,
+      "limitPerSecond": 8,
+      "source": "elevenlabs",
+      "file": "sfx-swing.mp3",
+      "durationSeconds": 0.5,
+      "prompt": "A heavy iron tool swung fast through air. Low whoosh, no impact, no music."
     },
     "hit": {
-      "wave": "square", "freq": 320, "freqTo": 140, "decay": 0.06,
-      "gain": 0.18, "limitPerSecond": 14
+      "wave": "square",
+      "freq": 320,
+      "freqTo": 140,
+      "decay": 0.06,
+      "gain": 0.18,
+      "limitPerSecond": 14,
+      "source": "synth"
     },
     "crit": {
       "_note": "Deliberately brighter and a fifth up from `hit`, so a crit is audible in a crowd without being louder.",
-      "wave": "square", "freq": 720, "freqTo": 260, "decay": 0.12,
-      "gain": 0.3, "limitPerSecond": 8
+      "wave": "square",
+      "freq": 720,
+      "freqTo": 260,
+      "decay": 0.12,
+      "gain": 0.3,
+      "limitPerSecond": 8,
+      "source": "synth"
     },
     "enemyDeath": {
-      "wave": "saw", "freq": 260, "freqTo": 70, "decay": 0.14,
-      "gain": 0.2, "limitPerSecond": 10
+      "wave": "saw",
+      "freq": 260,
+      "freqTo": 70,
+      "decay": 0.14,
+      "gain": 0.2,
+      "limitPerSecond": 10,
+      "source": "elevenlabs",
+      "file": "sfx-enemyDeath.mp3",
+      "durationSeconds": 0.6,
+      "prompt": "A wet, muffled thud of a body dropping onto dry soil. Short, dull, no music."
     },
     "playerHurt": {
       "_note": "Never rate-limited below the i-frame cadence: missing the sound that tells you you are dying is the one unacceptable drop.",
-      "wave": "saw", "freq": 180, "freqTo": 60, "decay": 0.3,
-      "gain": 0.6, "limitPerSecond": 4
+      "wave": "saw",
+      "freq": 180,
+      "freqTo": 60,
+      "decay": 0.3,
+      "gain": 0.6,
+      "limitPerSecond": 4,
+      "source": "elevenlabs",
+      "file": "sfx-playerHurt.mp3",
+      "durationSeconds": 0.6,
+      "prompt": "A blunt heavy impact on a person, muffled and painful. Short, dry, no voice, no music."
     },
     "pickupXp": {
-      "wave": "triangle", "freq": 880, "freqTo": 1320, "decay": 0.07,
-      "gain": 0.12, "limitPerSecond": 16
+      "wave": "triangle",
+      "freq": 880,
+      "freqTo": 1320,
+      "decay": 0.07,
+      "gain": 0.12,
+      "limitPerSecond": 16,
+      "source": "synth"
     },
     "pickupFeed": {
-      "wave": "triangle", "freq": 620, "freqTo": 1040, "decay": 0.11,
-      "gain": 0.2, "limitPerSecond": 10
+      "wave": "triangle",
+      "freq": 620,
+      "freqTo": 1040,
+      "decay": 0.11,
+      "gain": 0.2,
+      "limitPerSecond": 10,
+      "source": "synth"
     },
     "levelUp": {
-      "wave": "triangle", "freq": 520, "freqTo": 1560, "decay": 0.42,
-      "gain": 0.45, "limitPerSecond": 3
+      "wave": "triangle",
+      "freq": 520,
+      "freqTo": 1560,
+      "decay": 0.42,
+      "gain": 0.45,
+      "limitPerSecond": 3,
+      "source": "synth"
     },
     "mine": {
-      "_note": "The pickaxe tick. Quiet and frequent — it is a texture that tells you the tool is working, not an event.",
-      "wave": "noise", "freq": 1400, "freqTo": 500, "decay": 0.05,
-      "gain": 0.1, "limitPerSecond": 9
+      "_note": "The pickaxe tick. Quiet and frequent \u2014 it is a texture that tells you the tool is working, not an event.",
+      "wave": "noise",
+      "freq": 1400,
+      "freqTo": 500,
+      "decay": 0.05,
+      "gain": 0.1,
+      "limitPerSecond": 9,
+      "source": "elevenlabs",
+      "file": "sfx-mine.mp3",
+      "durationSeconds": 0.5,
+      "prompt": "A single pickaxe strike chipping stone. Sharp click with a little grit, very short, no echo, no music."
     },
     "nodeBreak": {
-      "wave": "noise", "freq": 700, "freqTo": 160, "decay": 0.22,
-      "gain": 0.32, "limitPerSecond": 8
+      "wave": "noise",
+      "freq": 700,
+      "freqTo": 160,
+      "decay": 0.22,
+      "gain": 0.32,
+      "limitPerSecond": 8,
+      "source": "elevenlabs",
+      "file": "sfx-nodeBreak.mp3",
+      "durationSeconds": 0.8,
+      "prompt": "A rock splitting and crumbling into rubble. Sharp crack then falling debris, dry, no music."
     },
     "explosion": {
-      "wave": "noise", "freq": 420, "freqTo": 50, "decay": 0.45,
-      "gain": 0.6, "limitPerSecond": 6
+      "wave": "noise",
+      "freq": 420,
+      "freqTo": 50,
+      "decay": 0.45,
+      "gain": 0.6,
+      "limitPerSecond": 6,
+      "source": "elevenlabs",
+      "file": "sfx-explosion.mp3",
+      "durationSeconds": 1.0,
+      "prompt": "A compact explosion in an open field. Sharp blast with a short low rumble, no long tail, no music."
     },
     "bossTell": {
-      "_note": "The Bull pawing the ground. Low, rising, and long enough to react to — §9 wants every attack telegraphed.",
-      "wave": "saw", "freq": 90, "freqTo": 200, "decay": 0.9,
-      "gain": 0.5, "limitPerSecond": 2
+      "_note": "The Bull pawing the ground. Low, rising, and long enough to react to \u2014 \u00a79 wants every attack telegraphed.",
+      "wave": "saw",
+      "freq": 90,
+      "freqTo": 200,
+      "decay": 0.9,
+      "gain": 0.5,
+      "limitPerSecond": 2,
+      "source": "elevenlabs",
+      "file": "sfx-bossTell.mp3",
+      "durationSeconds": 1.2,
+      "prompt": "A huge animal snorting and scraping a heavy hoof through dry dirt. Menacing, low, no music."
     },
     "waveStart": {
-      "wave": "square", "freq": 300, "freqTo": 450, "decay": 0.3,
-      "gain": 0.3, "limitPerSecond": 2
+      "wave": "square",
+      "freq": 300,
+      "freqTo": 450,
+      "decay": 0.3,
+      "gain": 0.3,
+      "limitPerSecond": 2,
+      "source": "synth"
     },
     "uiPick": {
-      "wave": "square", "freq": 660, "freqTo": 990, "decay": 0.09,
-      "gain": 0.25, "limitPerSecond": 8
+      "wave": "square",
+      "freq": 660,
+      "freqTo": 990,
+      "decay": 0.09,
+      "gain": 0.25,
+      "limitPerSecond": 8,
+      "source": "synth"
     }
   },
-
   "music": {
-    "_note": "Three layers (§6). Generated offline by `npm run music` with Lyria 3 and committed to public/audio as mp3 — a music model is the right tool for music, and generating it at runtime would be a network call in a game loop. Layers cross-fade rather than cut.",
+    "_note": "Three layers (\u00a76). Generated offline by `npm run music` with Lyria 3 and committed to public/audio as mp3 \u2014 a music model is the right tool for music, and generating it at runtime would be a network call in a game loop. Layers cross-fade rather than cut.",
     "_promptNote": "These prompts are the source of truth for the soundtrack. Re-running the tool regenerates from them; tune the prose, not the audio.",
     "crossfadeSeconds": 2.5,
     "layers": {
@@ -106,5 +210,8 @@
         "prompt": "Heavy, slow, dread-filled instrumental. Detuned baritone guitar, groaning cello, sparse thunderous drum hits with lots of space between them. The sound of something very large and very patient. No vocals. Loopable, around 70 BPM, oppressive."
       }
     }
-  }
+  },
+  "_sourceNote": "Each effect declares its source. ElevenLabs has a purpose-built text-to-sound-effects API and Gemini does not, so PHYSICAL sounds \u2014 gunfire, impacts, stone, a bull scraping dirt \u2014 are generated there, where a real generator beats an oscillator outright. ARCADE feedback stays synthesised on purpose: an XP pickup, a level-up flourish and a UI blip are not real-world sounds, and a realistic recording of one would fight the pixel art rather than serve it. Vampire Survivors and Brotato both use synthetic blips for exactly this reason.",
+  "_fallbackNote": "EVERY sound keeps its synth spec, including the ElevenLabs ones. The engine prefers a loaded sample and falls back to synthesis when the file is absent, so the game is fully audible with no API key at all and degrades one sound at a time rather than going silent.",
+  "_durationNote": "ElevenLabs enforces a 0.5s minimum, and several of these want to be 70ms. The generated file therefore carries trailing silence; that is harmless because playback is one-shot and the decay is in the audio."
 }

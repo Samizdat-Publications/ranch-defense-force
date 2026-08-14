@@ -58,6 +58,55 @@ sprite as a coloured square. It builds the atlas now.
 
 ---
 
+# Session 7 — audio, from two providers
+
+## Two providers, each doing the thing it is for
+
+Checked against both APIs rather than assumed:
+
+- **Gemini** has Lyria 3 for music and TTS for speech, and **no sound-effects
+  model**. Prompting a music model for a 90ms shotgun report gets you a short
+  piece of music about a shotgun.
+- **ElevenLabs** has a purpose-built text-to-sound-effects endpoint
+  (`/v1/sound-generation`), which is exactly the gap.
+
+So: **ElevenLabs for effects, Lyria for music.** `npm run audio` runs both.
+
+## Not everything should be a recording
+
+Nine effects are generated and seven are still synthesised, chosen per sound in
+`audio.json`. **Physical** sounds — gunfire, impacts, stone, a bull scraping
+dirt — are unambiguously better from a real generator. **Arcade feedback** — an
+XP pickup, a level-up flourish, a UI blip — is not a real-world sound at all,
+and a realistic recording of one fights the pixel art rather than serving it.
+Vampire Survivors and Brotato both use synthetic blips for the same reason.
+
+**Every effect keeps its synth spec, including the sampled ones.** The engine
+prefers a decoded sample and drops to the oscillator when a file is absent, so
+the game is fully audible with no API keys at all and degrades one sound at a
+time rather than going silent.
+
+## Levels, caught on measurement
+
+Generated samples come back normalised to roughly **full scale (peak 1.0)**,
+while the synth path peaks around **0.12** for the same `gain` value. Reusing
+one gain for both made every sampled effect about twice as loud as its
+synthesised neighbour and would clip when several overlapped. Sample playback
+is scaled by `master.sampleGainScale` rather than retuning sixteen hand-set
+gains.
+
+ElevenLabs enforces a **0.5s minimum** and several of these want to be 70ms, so
+the files carry trailing silence. Harmless — playback is one-shot.
+
+## Verified
+
+All nine decode at 44.1kHz and are audible (peaks 0.52-1.0). Sound intents
+confirmed firing in a live run. Loads are claimed synchronously before the
+fetch, because `play()` runs many times a second and would otherwise start a
+dozen parallel fetches for the same file.
+
+---
+
 # Session 7 — audio
 
 ## Gemini has no sound-effects model, and that changed the design

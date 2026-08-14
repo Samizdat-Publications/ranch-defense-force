@@ -13,6 +13,8 @@
     "atlas": "vite-node tools/build-atlas.ts",
     "conform": "vite-node tools/conform-fx.ts -- --write",
     "music": "vite-node tools/fetch-music.ts --",
+    "sfx": "vite-node tools/fetch-sfx.ts --",
+    "audio": "npm run sfx && npm run music",
     "balance": "vite-node tools/balance.ts --",
     "inspect": "vite-node tools/inspect-sheet.ts --",
     "pitch": "vite-node tools/sprite-pitch.ts --",
