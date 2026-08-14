@@ -1,0 +1,311 @@
+/* ===================================================================
+   THE CARD
+   ===================================================================
+   One silhouette for every card in the game — level-up, shop,
+   Homestead, class select. A kraft seed packet with a punched hang
+   tab. Anatomy and every literal value from docs/DESIGN_LANGUAGE.md.
+
+   The rarity plate is the one piece of chrome in the design and the
+   only place a tier is expressed. It reads three ways at once: the
+   colour, the tier NAME spelled out, and 1-5 diamond pips. The word
+   and the pip count both survive greyscale, so colour is never the
+   only channel. Only Legendary animates, which is why the foil sweep
+   means one thing.
+   =================================================================== */
+
+.pcard {
+  position: relative;
+  width: 210px;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  background-image: radial-gradient(#5a4630 1px, transparent 1px);
+  background-size: 4px 4px;
+  border: 3px solid var(--paper-edge);
+  color: var(--ink);
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pcard::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(64, 49, 31, 0.32);
+  pointer-events: none;
+}
+
+.pcard.is-selected,
+.pcard.is-affordable {
+  background: var(--paper-bright);
+  border-color: var(--paper-edge-gold);
+}
+
+/* Unaffordable and locked read as UNPRINTED STOCK, not as disabled UI —
+   greyed-out chrome says "broken", dead paper says "not for you yet". */
+.pcard.is-dead {
+  background: var(--paper-dead);
+  cursor: not-allowed;
+}
+
+/* --- the punched hang tab --- */
+.pcard-tab {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  margin-left: -54px;
+  width: 108px;
+  height: 26px;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+  border-bottom: none;
+  clip-path: polygon(9% 0, 91% 0, 100% 100%, 0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pcard-punch {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #1b1610;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* --- kind band --- */
+.pcard-kind {
+  font-family: var(--label);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-band);
+  border-bottom: 2px solid var(--paper-edge);
+  padding: 7px 10px;
+}
+
+/* --- art window --- */
+.pcard-window {
+  position: relative;
+  height: 132px;
+  border: 3px solid var(--paper-edge);
+  border-left: none;
+  border-right: none;
+  background: var(--window);
+  box-shadow: var(--window-in);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* -9px clears the plate, which overlaps the window's bottom edge. */
+.pcard-window .card-sprite {
+  position: relative;
+  top: -9px;
+  animation: sprite-breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes sprite-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* --- the rarity plate --- */
+.pcard-plate {
+  position: relative;
+  margin: -17px 7px 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: linear-gradient(180deg, var(--tier-colour), var(--tier-dark));
+  border: 2px solid #2b241a;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 2;
+}
+
+.pcard-plate.is-legendary { border-color: #5d3a08; }
+
+.pcard-plate-name {
+  font-family: var(--label);
+  font-size: 11px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--tier-ink);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* The diamond is the ONLY glyph in the game. It is armour's unit in the
+   HUD and rank's unit in the Homestead. It means "one step" everywhere. */
+.pcard-pips { display: flex; gap: 3px; }
+
+.pcard-pip {
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  background: var(--tier-ink);
+}
+
+.pcard-rivet {
+  position: absolute;
+  top: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.pcard-rivet.left { left: 5px; }
+.pcard-rivet.right { right: 5px; }
+
+/* Legendary only. One animated thing on the card, so it reads as an event. */
+.pcard-plate.is-legendary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(104deg, transparent 36%, rgba(255, 245, 205, 0.85) 49%, transparent 62%);
+  background-size: 240% 100%;
+  animation: foil 2.6s linear infinite;
+}
+
+@keyframes foil {
+  from { background-position: 200% 0; }
+  to { background-position: -60% 0; }
+}
+
+/* Unprinted stock: keep the colour, drop the emboss. */
+.pcard.is-dead .pcard-plate {
+  box-shadow: none;
+  filter: saturate(0.55);
+}
+.pcard.is-dead .pcard-plate.is-legendary::before { animation: none; opacity: 0.25; }
+
+/* --- body --- */
+.pcard-name {
+  font-family: var(--display);
+  font-size: 20px;
+  line-height: 1.15;
+  min-height: 44px;
+  color: var(--ink);
+  padding: 12px 12px 0;
+}
+
+.pcard-blurb {
+  font-family: var(--body);
+  font-size: 11.5px;
+  line-height: 1.5;
+  min-height: 52px;
+  color: var(--ink-body);
+  padding: 6px 12px 10px;
+}
+
+.pcard-perf {
+  border-top: var(--perf);
+  margin: 0 8px;
+}
+
+.pcard-stats {
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pcard-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  /* Staggered in by the deal animation; see cardDeal(). */
+  opacity: 0;
+  animation: stat-in 310ms ease-out forwards;
+}
+
+@keyframes stat-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.pcard-stat-label {
+  font-family: var(--label);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+
+.pcard-stat-value { font-family: var(--body); font-size: 12px; font-weight: 500; }
+.pcard-stat-value.gain { color: var(--gain); }
+.pcard-stat-value.cost { color: var(--cost); }
+
+.pcard-foot {
+  margin-top: auto;
+  border-top: 2px solid var(--paper-edge);
+  background: rgba(64, 49, 31, 0.09);
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--label);
+  font-size: 7.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+
+/* --- the deal --- */
+/*
+   Two beats on purpose: the card arrives, and THEN the plate stamps.
+   The tier is the last thing you read, which is what makes a legendary
+   land instead of merely being present.
+*/
+.pcard.is-dealing {
+  opacity: 0;
+  animation: card-deal var(--deal-ms) var(--ease-out) forwards;
+  animation-delay: var(--deal-delay, 0ms);
+}
+
+@keyframes card-deal {
+  from { opacity: 0; transform: translateY(26px) rotate(-1.5deg) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.pcard.is-dealing .pcard-plate {
+  opacity: 0;
+  animation: plate-stamp var(--stamp-ms) var(--ease-stamp) forwards;
+  animation-delay: calc(var(--deal-delay, 0ms) + var(--stamp-delay));
+}
+
+@keyframes plate-stamp {
+  from { opacity: 0; transform: scale(1.55) rotate(-4deg); }
+  to { opacity: 1; transform: scale(1) rotate(-0.8deg); }
+}
+
+/* --- shop variant: a price plate in the footer, a clip when held --- */
+.pcard-price {
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cost);
+}
+.pcard.is-affordable .pcard-price { color: var(--gain); }
+
+.pcard-clip {
+  position: absolute;
+  top: -14px;
+  right: 14px;
+  width: 26px;
+  height: 34px;
+  background: linear-gradient(180deg, #cfd3d6, #8b9196);
+  border: 2px solid #3a3f43;
+  border-radius: 3px 3px 6px 6px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  z-index: 3;
+}

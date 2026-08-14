@@ -29,14 +29,18 @@ export function setSpriteAtlas(a: Atlas | null, url: string): void {
  * Scaled by whole pixels wherever it fits, because a 20px-tall gun at 1.7x is
  * a blurry gun and the whole project is on the pixel grid.
  */
-export function spriteEl(name: string | undefined, box = 40): HTMLElement | null {
+export function spriteEl(
+  name: string | undefined, box = 40, forceZoom?: number,
+): HTMLElement | null {
   if (!name || !atlas) return null
   const f = atlas.get(name)
   if (!f) return null
 
   const raw = Math.min(box / f.w, box / f.h)
-  // Integer zoom above 1; below it, fit rather than vanish.
-  const scale = raw >= 1 ? Math.max(1, Math.floor(raw)) : raw
+  // Integer zoom above 1; below it, fit rather than vanish. `forceZoom` lets a
+  // card pick the zoom that fills its window, which the design chooses per
+  // sprite because the generated art is not one size.
+  const scale = forceZoom ?? (raw >= 1 ? Math.max(1, Math.floor(raw)) : raw)
 
   const el = document.createElement('div')
   el.className = 'card-sprite'
@@ -57,19 +61,11 @@ export function spriteEl(name: string | undefined, box = 40): HTMLElement | null
  * stylesheet can use `var(--rarity-epic)` and the two can never disagree —
  * which they would the moment someone tuned a colour in one place only.
  */
-export function installRarityTheme(tiers: Record<string, { colour: string; glow: string }>): void {
+export function installRarityTheme(tiers: Record<string, { colour: string; dark: string }>): void {
   const root = document.documentElement
   for (const [id, tier] of Object.entries(tiers)) {
     root.style.setProperty(`--rarity-${id}`, tier.colour)
-    root.style.setProperty(`--rarity-${id}-glow`, tier.glow)
+    root.style.setProperty(`--rarity-${id}-dark`, tier.dark)
   }
 }
 
-/** The badge glyph for a tier, as a span the cards can drop in. */
-export function rarityBadge(rarity: string, badge: string, label: string): HTMLElement {
-  const el = document.createElement('span')
-  el.className = `rarity-badge rarity-badge-${rarity}`
-  el.textContent = badge
-  el.title = label
-  return el
-}

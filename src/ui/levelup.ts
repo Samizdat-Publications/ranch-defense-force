@@ -12,8 +12,8 @@ import type { OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta } from '../sim/stats'
 import { LEVEL_REROLL_COST } from '../sim/formulas'
+import { card, deal, lotOf } from './card'
 import { clear, el, fmtStat } from './dom'
-import { spriteEl } from './sprite'
 
 export class LevelUpScreen {
   private readonly root: HTMLElement
@@ -90,27 +90,32 @@ export class LevelUpScreen {
     if (!world) return
     clear(this.cardsEl)
 
-    this.offers.forEach((offer, i) => {
-      const card = el('div', {
-        class: `card rarity-${offer.rarity}${offer.boosted ? ' boosted' : ''}`,
-        style: { animationDelay: `${i * 60}ms` },
+    const built = this.offers.map((offer, i) => {
+      const c = card({
+        kind: `[${i + 1}]  ${offer.kind}${offer.boosted ? ' · 2x' : ''}`,
+        name: offer.name,
+        blurb: offer.detail,
+        sprite: offer.sprite,
+        rarity: offer.rarity,
+        stats: this.deltaLines(offer).map((d) => {
+          // "Attack speed 12% -> 24%" splits on the last space run before the
+          // arrow; the label is everything up to the first digit or sign.
+          const m = /^(.*?)\s+([-+\d].*)$/.exec(d)
+          const raw = m ? m[2] : d
+          return {
+            label: m ? m[1] : d,
+            value: raw,
+            tone: raw.includes('-') && !raw.includes('->') ? 'cost' as const : 'gain' as const,
+          }
+        }),
+        lot: lotOf(offer.id),
+        source: offer.kind === 'weapon' ? 'WEAPON' : 'ITEM',
         onClick: () => this.pick(offer),
-      }, [
-        el('div', { class: 'card-key', text: `[${i + 1}]  ${offer.kind}` }),
-        el('div', { class: 'card-head' }, [
-          spriteEl(offer.sprite, 40),
-          el('div', { class: 'card-name', text: offer.name }),
-        ]),
-        offer.boosted ? el('div', { class: 'card-boost', text: '2× DOUBLE' }) : null,
-        el('div', { class: 'card-detail', text: offer.detail }),
-      ])
-
-      const deltas = this.deltaLines(offer)
-      if (deltas.length > 0) {
-        card.appendChild(el('div', { class: 'card-delta' }, deltas.map((d) => el('div', { text: d }))))
-      }
-      this.cardsEl.appendChild(card)
+      })
+      this.cardsEl.appendChild(c)
+      return c
     })
+    deal(built)
 
     this.rerollBtn.disabled = world.player.feed < LEVEL_REROLL_COST
     this.rerollBtn.textContent = `Reroll (${LEVEL_REROLL_COST} feed · have ${world.player.feed})`

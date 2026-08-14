@@ -138,6 +138,10 @@ function startRun(classId: string, seedText: string): void {
       get offers() { return offers },
       get profile() { return profile },
       openHomestead,
+      // The screens themselves, so a UI change can be driven without waiting
+      // for a rAF-driven game loop that a headless pane may never run.
+      screens: { levelUp, shop, results, menu, pause, homestead },
+      openLevelUp: () => openLevelUpIfPending(),
     }
   }
 

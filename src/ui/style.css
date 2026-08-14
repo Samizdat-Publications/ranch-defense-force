@@ -1,3 +1,6 @@
+@import './tokens.css';
+@import './card.css';
+
 /* M0-M3 UI. Deliberately plain: the LimeZu panel frames land in M4/M6 as
    border-image on these same elements, so the structure here is the structure
    then. Everything hugs the edges — the centre 70% stays clear (§12). */
@@ -510,49 +513,3 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 }
 
 .buy-card.silhouette .buy-name { color: var(--ink-dim); }
-
-/* ===================================================================
-   RARITY
-   ===================================================================
-   Five tiers. The colours are NOT written here — `installRarityTheme`
-   publishes them from `src/content/rarity.json` as `--rarity-<tier>`
-   at boot, so a tier's colour is defined once and a designer can
-   retune it without touching CSS.
-
-   A tier reads three ways at once, because one channel is never
-   enough: the border colour, a glow that only the top tiers have, and
-   a badge glyph. Colour alone fails for anyone who cannot separate
-   green from blue; the badge is the redundant channel.
-   =================================================================== */
-
-.card.rarity-common { border-color: var(--rarity-common); }
-.card.rarity-uncommon { border-color: var(--rarity-uncommon); }
-.card.rarity-rare { border-color: var(--rarity-rare); }
-.card.rarity-epic { border-color: var(--rarity-epic); }
-.card.rarity-legendary { border-color: var(--rarity-legendary); }
-
-.card.rarity-common::before { background: var(--rarity-common); }
-.card.rarity-uncommon::before { background: var(--rarity-uncommon); }
-.card.rarity-rare::before { background: var(--rarity-rare); }
-.card.rarity-epic::before { background: var(--rarity-epic); }
-.card.rarity-legendary::before { background: var(--rarity-legendary); }
-
-/* Only the tiers worth noticing glow. If everything glows, nothing does. */
-.card.rarity-rare { box-shadow: 0 0 12px var(--rarity-rare-glow); }
-.card.rarity-epic { box-shadow: 0 0 18px var(--rarity-epic-glow); }
-.card.rarity-legendary { box-shadow: 0 0 26px var(--rarity-legendary-glow); }
-
-.rarity-badge {
-  font-size: 11px;
-  letter-spacing: 1px;
-  line-height: 1;
-  padding: 2px 5px;
-  border-radius: 2px;
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.rarity-badge-common { color: var(--rarity-common); }
-.rarity-badge-uncommon { color: var(--rarity-uncommon); }
-.rarity-badge-rare { color: var(--rarity-rare); }
-.rarity-badge-epic { color: var(--rarity-epic); }
-.rarity-badge-legendary { color: var(--rarity-legendary); }

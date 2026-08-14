@@ -166,11 +166,18 @@ export const META = metaRaw
 
 export interface RarityTier {
   name: string
+  /** Relative draw weight before luck. */
   weight: number
+  /** How hard a point of luck pushes toward this tier. */
   luckScaling: number
+  /** Diamond pips on the plate, 1-5. The pip count survives greyscale. */
+  rank: number
+  /** Plate gradient: top stop, bottom stop, and the text on it. */
   colour: string
-  glow: string
-  badge: string
+  dark: string
+  ink: string
+  /** Legendary only — the foil sweep, so the animation means one thing. */
+  foil: boolean
 }
 
 /** The five tiers, commonest first. See rarity.json. */

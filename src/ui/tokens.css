@@ -1,0 +1,149 @@
+/* ===================================================================
+   PAPER & PIN — the design tokens
+   ===================================================================
+   From docs/DESIGN_LANGUAGE.md. Every screen is built from one idea:
+   the UI is PRINTED MATTER ON A FARM. Kraft seed packets, stamped tin
+   plates, wood type, dotted paper, a bulldog clip when something is
+   held. Nothing is a glass panel and nothing glows for decoration.
+
+   This replaces THE PANEL LANGUAGE wholesale — the carved-wood
+   border-image 9-slice, wood-as-chrome, dark-field-for-text and
+   gold-means-affordable. The handoff says explicitly: do not preserve
+   it. The `fill`-keyword bug goes with it, because there is no
+   9-slice in this design at all; borders are plain solid ink.
+
+   Three things earned their place and are kept:
+     1. The HP chaser — the delayed white band draining behind the red.
+     2. The scaleY cooldown wipe on weapon slots.
+     3. Affordable gets a warm outline on every purchase surface.
+
+   Rarity colours are NOT here. They live in src/content/rarity.json
+   and are published as --rarity-* by installRarityTheme() at boot, so
+   a designer retunes a tier in content and every surface follows.
+   =================================================================== */
+
+/* Self-hosted: a webfont link is a network dependency on a game that
+   should run offline. Latin subset only — the game ships English and
+   latin-ext would double the payload for glyphs nothing renders. */
+@font-face {
+  font-family: 'Rye';
+  src: url('/fonts/rye-400.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Silkscreen';
+  src: url('/fonts/silkscreen-400.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Silkscreen';
+  src: url('/fonts/silkscreen-700.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-400.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-500.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-600.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+
+:root {
+  /* --- Paper: the surface everything sits on --- */
+  --paper: linear-gradient(178deg, #d9c7a2 0%, #cdb994 58%, #c4ae86 100%);
+  --paper-bright: linear-gradient(178deg, #eadcb8 0%, #ddca9f 56%, #d2bc8c 100%);
+  --paper-dead: linear-gradient(178deg, #c8bfa8 0%, #b6ad96 58%, #a89f88 100%);
+  --paper-edge: #40311f;
+  --paper-edge-gold: #6b4a12;
+
+  /* --- Ink: text on paper --- */
+  --ink: #33261a;
+  --ink-body: #5c4a33;
+  --ink-label: #6b5840;
+  --ink-band: #4b3a24;
+  --perf: 2px dashed rgba(64, 49, 31, 0.45);
+
+  /* --- Dark surfaces: screens, art windows, overlays --- */
+  --field: #0b0a09;
+  --panel-dark: rgba(14, 12, 10, 0.74);
+  --rule: #3a3226;
+  --rule-warm: #4a3c28;
+  --window: radial-gradient(70% 70% at 50% 40%, #3d3220 0%, #241d13 100%);
+  --window-in: inset 0 3px 10px rgba(0, 0, 0, 0.7);
+  --cream: #f6e6c2;
+  --cream-2: #f2e2c8;
+  --muted: #9a8e76;
+  --muted-2: #8a7c62;
+  --muted-3: #6f6350;
+
+  /* --- Accent: gold is the one accent colour --- */
+  --gold: #e0a02e;
+  --gold-btn: linear-gradient(180deg, #e0b455, #b7862c);
+  --gold-brand: linear-gradient(180deg, #f0c561, #c2892a);
+  --gold-edge: #33271a;
+  --danger: linear-gradient(180deg, #8e3229, #6b2119);
+  --gain: #3f6827;
+  --cost: #8e3229;
+
+  /* --- Type --- */
+  --display: 'Rye', Georgia, serif;
+  --label: 'Silkscreen', ui-monospace, monospace;
+  --body: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* --- Motion. All on transform/opacity/width; nothing per-frame. --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-stamp: cubic-bezier(0.2, 1.5, 0.4, 1);
+  --deal-ms: 560ms;
+  --deal-stagger: 110ms;
+  --stamp-ms: 380ms;
+  --stamp-delay: 340ms;
+  --panel-ms: 460ms;
+
+  /* Legacy aliases. The old sheet's names are still referenced by
+     screens not yet converted; pointing them at Paper & Pin means those
+     screens shift toward the new language instead of staying grey. */
+  --straw: var(--cream);
+  --panel: var(--panel-dark);
+  --edge: var(--rule-warm);
+  --green: var(--gain);
+  --red: var(--cost);
+  --xp: #5fd0c6;
+  --wood-dark: #3a2a1c;
+  --wood-mid: var(--paper-edge);
+  --wood-lit: var(--gold);
+  --ink-dim: var(--muted);
+}
+
+/* The dotted stock. Applied via a class rather than to every paper
+   element, because it is a background-image and paper elements already
+   own their background gradient. */
+.stock {
+  background-image: radial-gradient(#5a4630 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+/* The inner hairline every paper element carries, 4px inset. Pseudo so
+   it costs no extra node. */
+.paper-inner::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(64, 49, 31, 0.32);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
