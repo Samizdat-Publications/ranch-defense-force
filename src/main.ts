@@ -27,7 +27,7 @@ import { DevOverlay } from './ui/dev'
 import { setSpriteAtlas } from './ui/sprite'
 import { WAVES } from './content'
 import { load as loadSave, save as writeSave, type Save } from './sim/save'
-import { metaStats, unlockedWeapons, unlockedItems, bankRun } from './sim/meta'
+import { metaStats, unlockedWeapons, unlockedItems, bankRun, unlockedClasses } from './sim/meta'
 
 type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused' | 'homestead'
 
@@ -185,6 +185,8 @@ function openHomestead(): void {
     () => {
       homestead.close()
       state = 'menu'
+      // A class bought in the Bunkhouse must be pickable the moment you leave it.
+      menu.setUnlocked(unlockedClasses(profile))
       menu.open()
     },
   )
@@ -243,6 +245,7 @@ function finishRun(cleared: boolean): void {
     () => startRun(currentClassId, ''),
     () => {
       state = 'menu'
+      menu.setUnlocked(unlockedClasses(profile))
       menu.open()
     },
     () => openHomestead(),
@@ -311,6 +314,9 @@ const loop = new Loop(
 )
 
 resize()
+// The boot menu must reflect the save too, or the very first screen of a
+// session hands out every paid class for free.
+menu.setUnlocked(unlockedClasses(profile))
 menu.open()
 loop.start()
 

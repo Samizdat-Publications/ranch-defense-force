@@ -10,7 +10,7 @@ import { emptySave, type Save } from '../src/sim/save'
 import {
   metaStats, unlockedWeapons, unlockedItems, catalogOffers, bunkhouseOffers,
   isClassUnlocked, maxTier, tierHpMultiplier, tierAcreMultiplier, bankRun, spend,
-  feedStoreCost, FEED_TRACKS,
+  feedStoreCost, FEED_TRACKS, unlockedClasses as unlockedClassList,
 } from '../src/sim/meta'
 import { META, WEAPONS, ITEMS } from '../src/content'
 
@@ -96,14 +96,14 @@ describe('the Seed Catalog', () => {
 })
 
 describe('the Bunkhouse', () => {
-  it('gives the free classes away and charges for nothing else yet', () => {
+  it('gives the free classes away and sells the rest', () => {
     const s = emptySave()
     for (const id of META.bunkhouse.freeClasses as unknown as string[]) {
       expect(isClassUnlocked(s, id)).toBe(true)
     }
-    // Every class currently shipped is free, so there is nothing to sell. The
-    // test asserts the shape holds rather than that the list is non-empty.
-    expect(bunkhouseOffers(s).every((o) => o.cost > 0)).toBe(true)
+    const forSale = bunkhouseOffers(s)
+    expect(forSale.length).toBeGreaterThan(0)
+    expect(forSale.every((o) => o.cost > 0)).toBe(true)
   })
 })
 
@@ -178,5 +178,34 @@ describe('spending', () => {
     expect(s.acres).toBe(10)
     expect(spend(s, 10)).toBe(true)
     expect(s.acres).toBe(0)
+  })
+})
+
+describe('locked classes', () => {
+  /**
+   * The class picker built its cards once, in the constructor, from the full
+   * roster with no unlock check. That was harmless while every class was free
+   * and became "all four paid classes are free" the moment the Bunkhouse had
+   * something to sell — a bug worth exactly the price of the ladder.
+   */
+  it('offers only the free classes on a fresh save', () => {
+    const s = emptySave()
+    const free = META.bunkhouse.freeClasses as unknown as string[]
+    expect(new Set(unlockedClassList(s))).toEqual(new Set(free))
+  })
+
+  it('offers a class as soon as it is bought, and stops selling it', () => {
+    const s = emptySave()
+    const first = bunkhouseOffers(s)[0]
+    expect(first).toBeDefined()
+    expect(unlockedClassList(s)).not.toContain(first.id)
+    s.unlockedClasses.push(first.id)
+    expect(unlockedClassList(s)).toContain(first.id)
+    expect(bunkhouseOffers(s).map((o) => o.id)).not.toContain(first.id)
+  })
+
+  it('prices the ladder the way the design does', () => {
+    expect(bunkhouseOffers(emptySave()).map((o) => o.cost))
+      .toEqual(META.bunkhouse.costs as unknown as number[])
   })
 })

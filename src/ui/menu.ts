@@ -6,12 +6,15 @@
  * The LimeZu credit is here because the UI pack's licence asks for it.
  */
 import { CLASSES, CLASS_IDS } from '../content'
-import { el } from './dom'
+import { clear, el } from './dom'
 
 export class MenuScreen {
   private readonly root: HTMLElement
   private readonly seedInput: HTMLInputElement
   private selected = CLASS_IDS[0]
+  private cardsEl!: HTMLElement
+  /** Which classes the save has paid for. Set by main before every open(). */
+  private unlocked = new Set<string>(CLASS_IDS.filter((id) => CLASSES[id]?.unlocked === true))
 
   constructor(parent: HTMLElement, private readonly onStart: (classId: string, seed: string) => void) {
     this.seedInput = el('input', { class: 'seed' }) as HTMLInputElement
@@ -23,23 +26,7 @@ export class MenuScreen {
     this.seedInput.style.border = '2px solid #6b5a3e'
 
     const cards = el('div', { class: 'cards' })
-    for (const id of CLASS_IDS) {
-      const def = CLASSES[id]
-      const card = el('div', {
-        class: 'card',
-        data: { id },
-        onClick: () => this.select(id, cards),
-      }, [
-        el('div', { class: 'card-name', text: def.name }),
-        el('div', { class: 'card-detail', text: def.blurb }),
-        el('div', { class: 'card-delta' }, [
-          el('div', { text: `${def.passive.desc}` }),
-          el('div', { text: `${def.ability.name}: ${def.ability.desc}` }),
-        ]),
-        el('div', { class: 'card-cost', text: `Starts with ${def.startingWeapon}` }),
-      ])
-      cards.appendChild(card)
-    }
+    this.cardsEl = cards
 
     this.root = el('div', { class: 'screen' }, [
       el('div', { class: 'screen-inner' }, [
@@ -70,6 +57,43 @@ export class MenuScreen {
     ])
     this.root.style.display = 'none'
     parent.appendChild(this.root)
+    this.root.style.display = 'none'
+    parent.appendChild(this.root)
+    this.renderCards()
+  }
+
+  /**
+   * Build the class cards for whoever is currently unlocked.
+   *
+   * Rebuilt on every `open()` rather than once in the constructor: the
+   * constructor runs before the Homestead has ever been visited, so a list
+   * built there can only ever show the starting two — or, if it ignores the
+   * save, silently hand out every paid class for free. It did the latter the
+   * moment four buyable classes existed.
+   */
+  private renderCards(): void {
+    const cards = this.cardsEl
+    clear(cards)
+    for (const id of CLASS_IDS) {
+      if (!this.unlocked.has(id)) continue
+      const def = CLASSES[id]
+      const card = el('div', {
+        class: 'card',
+        data: { id },
+        onClick: () => this.select(id, cards),
+      }, [
+        el('div', { class: 'card-name', text: def.name }),
+        el('div', { class: 'card-detail', text: def.blurb }),
+        el('div', { class: 'card-delta' }, [
+          el('div', { text: `${def.passive.desc}` }),
+          el('div', { text: `${def.ability.name}: ${def.ability.desc}` }),
+        ]),
+        el('div', { class: 'card-cost', text: `Starts with ${def.startingWeapon}` }),
+      ])
+      cards.appendChild(card)
+    }
+    // Selection may have pointed at a class that is no longer offered.
+    if (!this.unlocked.has(this.selected)) this.selected = CLASS_IDS[0]
     this.select(this.selected, cards)
   }
 
@@ -79,6 +103,12 @@ export class MenuScreen {
       const isSel = (child as HTMLElement).dataset.id === id
       child.classList.toggle('rarity-rare', isSel)
     }
+  }
+
+  /** Called by main from the save, before opening. */
+  setUnlocked(ids: readonly string[]): void {
+    this.unlocked = new Set(ids)
+    this.renderCards()
   }
 
   open(): void {
