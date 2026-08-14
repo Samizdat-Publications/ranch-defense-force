@@ -379,3 +379,9 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
   border: 2px solid var(--wood-dark);
   cursor: pointer;
 }
+
+/* Weapon and element art on cards. A card that only says "0 damage" tells you
+   nothing; a picture of the thing tells you most of it. */
+.card-head { display: flex; align-items: center; gap: 10px; min-height: 42px; }
+.card-sprite { flex: none; image-rendering: pixelated; }
+.card-detail { white-space: pre-line; }

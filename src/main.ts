@@ -23,6 +23,7 @@ import { ResultsScreen } from './ui/results'
 import { MenuScreen } from './ui/menu'
 import { PauseScreen } from './ui/pause'
 import { DevOverlay } from './ui/dev'
+import { setSpriteAtlas } from './ui/sprite'
 import { WAVES } from './content'
 
 type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused'
@@ -246,6 +247,8 @@ loop.start()
 Atlas.load(import.meta.env.BASE_URL)
   .then((a) => {
     atlas = a
+    // The card screens draw from the same atlas via CSS.
+    setSpriteAtlas(a, `${import.meta.env.BASE_URL}atlas.png`)
     if (world) {
       // A run already started against no atlas: rebuild the renderer so it
       // picks up the art rather than staying square for the rest of the run.

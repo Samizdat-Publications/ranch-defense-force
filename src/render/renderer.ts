@@ -695,13 +695,20 @@ export class Renderer {
       const it = this.push()
       if (!it) return
 
+      // A newly taken or merged weapon announces itself: it sits further out,
+      // rides above the ring and pulses. Two and a half seconds is long enough
+      // to find it and short enough not to become the normal look.
+      const fresh = p.weaponFlash.get(slot.id) ?? 0
+      const lift = fresh > 0 ? Math.sin(fresh * 12) * 3 : 0
+      const push = fresh > 0 ? 10 * Math.min(1, fresh) : 0
+
       // Recoil kicks the weapon back along its own aim as it fires.
       const kick = slot.recoil > 0
         ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
         : 0
-      const r = cfg.weaponRingRadius
+      const r = cfg.weaponRingRadius + push
       it.x = p.x + Math.cos(slot.ringAngle) * r - Math.cos(slot.aimAngle) * kick
-      it.y = p.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick - 14
+      it.y = p.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick - 14 + lift
       it.frame = frame
       it.colour = PALETTE.melee
       it.w = 10
@@ -715,6 +722,7 @@ export class Renderer {
       // gun is drawn ~20px wide to be HELD by a 32px character. One shared
       // multiplier shrank the guns twice and left them unreadable.
       const fit = Math.min(1.15, cfg.weaponRingTargetWidth / Math.max(8, frame.w))
+        * (fresh > 0 ? 1.35 : 1)
       it.scaleX = fit * (facingLeft ? -1 : 1)
       it.scaleY = fit
     }

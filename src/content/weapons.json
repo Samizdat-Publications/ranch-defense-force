@@ -19,6 +19,7 @@
       "gun.shotgun.20"
     ],
     "sound": "shootLight",
+    "blurb": "Wide spray at the nearest thing. Close range, constant.",
     "tiers": {
       "2": "tighter choke",
       "3": "+2 pellets",
@@ -47,6 +48,7 @@
       "gun.rifle.20"
     ],
     "sound": "shootHeavy",
+    "blurb": "Punches through a line of them and leaves a burn.",
     "tiers": {
       "2": "+2s burn",
       "3": "burn jumps on death",
@@ -75,6 +77,7 @@
       "gun.carbine.20"
     ],
     "sound": "shootLauncher",
+    "blurb": "Arcs onto the crowd and blows a hole in it.",
     "tiers": {
       "2": "+30% blast",
       "3": "leaves burning ground",
@@ -102,6 +105,7 @@
       "gun.lmg.20"
     ],
     "sound": "shootBurst",
+    "blurb": "Ricochets off the fences, then bursts into shards.",
     "tiers": {
       "2": "+1 ricochet",
       "3": "bursts into four",
@@ -129,6 +133,7 @@
     ],
     "projectileClip": "proj.acid",
     "sound": "shootNail",
+    "blurb": "Throws a slick that halves their speed. Fire lights it.",
     "tiers": {
       "2": "+2s slick",
       "3": "the tar burns",
@@ -156,6 +161,7 @@
     ],
     "projectileClip": "proj.kunai",
     "sound": "shootHarpoon",
+    "blurb": "Hauls the furthest one to you. Opens up the back line.",
     "tiers": {
       "2": "+damage on landing",
       "3": "three lines",
@@ -182,6 +188,7 @@
       "weapon.wateringCan"
     ],
     "sound": "spray",
+    "blurb": "A sweeping cone that chokes whatever it touches.",
     "tiers": {
       "2": "+50% choke",
       "3": "strips gas from the air",
@@ -209,6 +216,7 @@
       "weapon.grainLure"
     ],
     "sound": "baitDrop",
+    "blurb": "No damage. Drags the whole crowd into one pile so everything else lands.",
     "tiers": {
       "2": "+2s",
       "3": "detonates for 60",
@@ -235,6 +243,7 @@
       "weapon.pitchfork.t4"
     ],
     "sound": "swing",
+    "blurb": "Swings where you face. Shoves them off you.",
     "tiers": {
       "2": "+30% arc",
       "3": "hits twice",
@@ -262,6 +271,7 @@
       "weapon.scythe.t4"
     ],
     "sound": "scytheSpin",
+    "blurb": "Circles you. Tightens when you stand still, widens when you run.",
     "tiers": {
       "2": "+25% sweep",
       "3": "second blade",
@@ -288,6 +298,7 @@
       "weapon.sledge.t4"
     ],
     "sound": "sledgeHit",
+    "blurb": "Slams the ground. Stuns everything close.",
     "tiers": {
       "2": "+stun",
       "3": "shockwave ring",
@@ -315,6 +326,7 @@
       "feralDog.idle.down.0"
     ],
     "sound": "dogBark",
+    "blurb": "Hunts on its own. Never stops.",
     "tiers": {
       "2": "+50% speed",
       "3": "two dogs",

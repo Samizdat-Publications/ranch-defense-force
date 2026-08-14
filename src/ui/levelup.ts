@@ -13,6 +13,7 @@ import type { World } from '../sim/world'
 import { emptyDerived, previewDelta } from '../sim/stats'
 import { LEVEL_REROLL_COST } from '../sim/formulas'
 import { clear, el, fmtStat } from './dom'
+import { spriteEl } from './sprite'
 
 export class LevelUpScreen {
   private readonly root: HTMLElement
@@ -96,7 +97,10 @@ export class LevelUpScreen {
         onClick: () => this.pick(offer),
       }, [
         el('div', { class: 'card-key', text: `[${i + 1}]  ${offer.kind}` }),
-        el('div', { class: 'card-name', text: offer.name }),
+        el('div', { class: 'card-head' }, [
+          spriteEl(offer.sprite, 40),
+          el('div', { class: 'card-name', text: offer.name }),
+        ]),
         offer.boosted ? el('div', { class: 'card-boost', text: '2× DOUBLE' }) : null,
         el('div', { class: 'card-detail', text: offer.detail }),
       ])

@@ -21,6 +21,8 @@ export interface Offer {
   name: string
   /** What the card says it does. */
   detail: string
+  /** Atlas frame key to show on the card, if this offer has art. */
+  sprite?: string
   cost: number
   rarity: Rarity
   /** Stat changes, for the delta line. Empty for behavioural weapons. */
@@ -199,17 +201,27 @@ export class OfferPool {
   private weaponOffer(id: string, def: WeaponDef, player: Player): Offer {
     const slot = player.weapons.find((w) => w.id === id)
     const nextTier = slot ? slot.tier + 1 : null
+    // A new weapon leads with what it DOES; the numbers are the second line.
+    // Leading with numbers produced "utility · 0 damage / 6s" for the Bait
+    // Drum, which is a card nobody would ever pick and says nothing about the
+    // fact that it gathers the crowd for everything else you own.
+    const stats = `${def.type} · ${def.base > 0 ? `${def.base} damage` : 'no damage'}` +
+      `${def.cooldown > 0 ? ` / ${def.cooldown}s` : ''}`
     const detail = nextTier
       ? `Tier ${nextTier}: ${def.tiers[String(nextTier)] ?? 'stronger'} (+60% damage)`
-      : `${def.type} · ${def.base} damage${def.cooldown > 0 ? ` / ${def.cooldown}s` : ''}`
+      : typeof def.blurb === 'string' ? `${def.blurb}
+${stats}` : stats
     // A weapon's rarity is its tier: merging is the offensive game, and a
     // merge into tier 4 is the rarest thing the pool can hand you.
     const rarity: Rarity = nextTier === null ? 'common' : nextTier >= 4 ? 'rare' : 'uncommon'
+    const tierSprites = Array.isArray(def.tierSprites) ? (def.tierSprites as string[]) : null
     return {
       kind: 'weapon',
       id,
       name: def.name,
       detail,
+      sprite: tierSprites?.[Math.min(nextTier ?? 1, 4) - 1]
+        ?? (typeof def.sprite === 'string' ? def.sprite : undefined),
       cost: nextTier ? 14 + nextTier * 8 : 20,
       rarity,
       mods: {},
@@ -231,6 +243,9 @@ export class OfferPool {
       id,
       name: def.name,
       detail: describeItem(def),
+      // Elements and tool upgrades have real art; ordinary stat items do not,
+      // and a card without a sprite simply shows no sprite.
+      sprite: typeof def.cardSprite === 'string' ? def.cardSprite : undefined,
       cost: def.cost,
       rarity,
       mods,
@@ -281,6 +296,10 @@ export function describeMods(mods: StatMods): string {
 
 export function describeItem(def: ItemDef): string {
   const parts: string[] = []
+  // An item whose whole effect is behavioural — an element, a tool tier — has
+  // no stat mods to describe, and was rendering a completely blank card. The
+  // blurb IS the description for those.
+  if (typeof def.blurb === 'string') parts.push(def.blurb)
   const base = describeMods(def.mods ?? {})
   if (base) parts.push(base)
   if (def.special === 'reflect') parts.push(`reflects ${def.reflectDamage} to attackers`)

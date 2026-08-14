@@ -219,6 +219,8 @@ export class Player {
     const existing = this.weapons.find((w) => w.id === id)
     if (existing) {
       existing.tier = Math.min(4, existing.tier + tierJump)
+      // A merge changes the art too, so it gets the same announcement.
+      this.weaponFlash.set(id, 2.5)
       return true
     }
     if (this.weapons.length >= MAX_WEAPON_SLOTS) return false
@@ -227,6 +229,9 @@ export class Player {
       aimAngle: 0, recoil: 0, ringAngle: 0,
     })
     this.layOutWeaponRing()
+    // The ring is a readout, and a seventh icon appearing in a ring of six is
+    // easy to miss entirely — which is exactly what happened in play.
+    this.weaponFlash.set(id, 2.5)
     return true
   }
 
@@ -238,6 +243,9 @@ export class Player {
    * sixth weapon spreads the other five apart instead of appearing on top of
    * one of them.
    */
+  /** Seconds of "this one is new" highlight left on each ring slot. */
+  weaponFlash = new Map<string, number>()
+
   private layOutWeaponRing(): void {
     const n = this.weapons.length
     for (let i = 0; i < n; i++) {

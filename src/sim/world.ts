@@ -1176,6 +1176,11 @@ export class World {
         this.particles.free(i)
       }
     }
+    for (const [id, t] of this.player.weaponFlash) {
+      const left = t - dt
+      if (left <= 0) this.player.weaponFlash.delete(id)
+      else this.player.weaponFlash.set(id, left)
+    }
     for (let i = this.effects.live - 1; i >= 0; i--) {
       const e = this.effects.items[i]
       e.life -= dt

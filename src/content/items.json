@@ -155,6 +155,8 @@
     "rarity": "uncommon",
     "_note": "Steps the pickaxe up the wood -> stone -> iron -> steel -> diamond ladder in nodes.json. Handled in Player.addItem rather than as a stat, because it is a tier not a percentage.",
     "toolUpgrade": "pickaxe",
+    "cardSprite": "tool.pickaxe.iron",
+    "blurb": "Next pickaxe tier. Mine rock noticeably faster.",
     "mods": {}
   },
   "axeHead": {
@@ -163,6 +165,8 @@
     "cost": 26,
     "rarity": "uncommon",
     "toolUpgrade": "axe",
+    "cardSprite": "tool.axe.iron",
+    "blurb": "Next axe tier. Fell trees and clear crops faster.",
     "mods": {}
   },
   "prospectorsEye": {
@@ -171,6 +175,7 @@
     "cost": 22,
     "rarity": "common",
     "_note": "Widens the proximity harvest reach and the value of what comes out.",
+    "blurb": "Reach further when harvesting, and get more out of every node.",
     "mods": {
       "harvestPct": 25
     }
@@ -182,6 +187,8 @@
     "rarity": "rare",
     "_note": "Every ranged weapon fires fire and leaves a burn. Sets slop slicks alight.",
     "element": "fire",
+    "cardSprite": "proj.fireball.0",
+    "blurb": "Every gun you own fires fire. Burns on hit, and sets tar slicks alight.",
     "mods": {}
   },
   "acidRounds": {
@@ -191,6 +198,8 @@
     "rarity": "rare",
     "_note": "Every ranged weapon fires acid and leaves a corrosion.",
     "element": "acid",
+    "cardSprite": "proj.acid.0",
+    "blurb": "Every gun you own fires acid. Corrodes for longer than fire burns.",
     "mods": {}
   },
   "frostRounds": {
@@ -200,6 +209,8 @@
     "rarity": "rare",
     "_note": "Every ranged weapon fires ice and slows what it hits. Buys space rather than damage.",
     "element": "frost",
+    "cardSprite": "proj.iceSpike.0",
+    "blurb": "Every gun you own fires ice. Slows hard instead of damaging.",
     "mods": {}
   }
 }

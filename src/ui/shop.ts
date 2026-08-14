@@ -14,6 +14,7 @@ import { ITEMS, STAT_KEYS, STAT_LABELS, WEAPONS } from '../content'
 import type { Offer, OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta, type DerivedStats } from '../sim/stats'
+import { spriteEl } from './sprite'
 import { interestOn, shopRerollCost } from '../sim/formulas'
 import { clear, el, fmtStat } from './dom'
 
@@ -171,7 +172,10 @@ export class ShopScreen {
         onClick: () => this.buy(i),
       }, [
         el('div', { class: 'card-key', text: offer.kind }),
-        el('div', { class: 'card-name', text: offer.name }),
+        el('div', { class: 'card-head' }, [
+          spriteEl(offer.sprite, 40),
+          el('div', { class: 'card-name', text: offer.name }),
+        ]),
         el('div', { class: 'card-detail', text: offer.detail }),
       ])
 
