@@ -30,10 +30,10 @@
     "traumaBossCharge": 0.7,
     "traumaDecayPerSecond": 1.2,
     "maxShakePixels": 18,
-    "targetWorldHeight": 340,
+    "targetWorldHeight": 560,
     "minZoom": 2,
     "maxZoom": 16,
-    "_zoomNote": "Zoom is derived, not fixed: round(canvasHeight / targetWorldHeight), integer only, clamped. A fixed zoom made a bigger or higher-DPI screen show MORE WORLD rather than a sharper picture - at 1920x1080 and dpr 1.5 the view was 1440x810 world px of a 2400x1600 arena, so the farmer was 2% of screen width and every bullet was a speck. That is why six distinct rounds still read as one. 340 is the height the art was composed against."
+    "_zoomNote": "Zoom is derived, not fixed: round(canvasHeight / targetWorldHeight), integer only, clamped. A fixed zoom made screen size and DPI control HOW MUCH WORLD you see - at 1920x1080 dpr 1.5 the view was 810 world px tall, so the farmer was 2% of screen width and every round a speck. 560 lands on ~540 world px on every screen from 1080p to 4K, which is the SAME view a 1080p dpr-1 screen always had: the framing that was already right, now independent of monitor and DPI. It is deliberately NOT tighter - the rounds were made legible by packing bigger art, not by cropping the field, and cropping costs you the warning time to see a horde coming. Small screens bottom out at minZoom and show less; that is the integer-zoom floor, not a target."
   },
   "pickups": {
     "magnetAcceleration": 1400,

@@ -254,7 +254,8 @@
       "2": "+30% arc",
       "3": "hits twice",
       "4": "the shove stuns"
-    }
+    },
+    "swingClip": "proj.claw"
   },
   "scythe": {
     "name": "Scythe",
@@ -282,7 +283,9 @@
       "2": "+25% sweep",
       "3": "second blade",
       "4": "blades cut through"
-    }
+    },
+    "projectileClip": "proj.crescent",
+    "projectileScale": 1.0
   },
   "sledge": {
     "name": "Sledge",
@@ -309,7 +312,8 @@
       "2": "+stun",
       "3": "shockwave ring",
       "4": "the ring throws them"
-    }
+    },
+    "swingClip": "fx.shockwave"
   },
   "barnDog": {
     "name": "Barn Dog",
@@ -339,5 +343,6 @@
       "4": "bites bleed"
     }
   },
-  "_projectileNote": "projectileClip is the weapon's signature round and projectileScale multiplies the renderer's base projectile scale. Every ranged weapon draws a DIFFERENT silhouette on purpose - burst, dart, shell, missile, glob, spear - because colour alone does not survive being 10px wide on grass, which is exactly how six distinct weapons came to look like one bullet."
+  "_projectileNote": "projectileClip is the weapon's signature round and projectileScale multiplies the renderer's base projectile scale. Every ranged weapon draws a DIFFERENT silhouette on purpose - burst, dart, shell, missile, glob, spear - because colour alone does not survive being 10px wide on grass, which is exactly how six distinct weapons came to look like one bullet.",
+  "_meleeNote": "Melee weapons draw real art too. `projectileClip` covers the orbiting kind (the scythe's blade); `swingClip` covers the swept kind, drawn stretched to the swing radius instead of the flat tinted wedge that used to stand in for it. The wedge rendered as a large pale rectangle - the 'white square' a player reported as an exposed hitbox, which is exactly what it looked like."
 }

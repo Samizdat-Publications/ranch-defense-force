@@ -437,6 +437,12 @@
    },
    "fx.bigImpact.frost": {
     "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_blue"
+   },
+   "proj.crescent": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_death_wave_large_black"
+   },
+   "proj.claw": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_loop_large_orange"
    }
   },
   "_elementNote": "Each bullet clip is packed in three extra colours, one per element. An element RECOLOURS the weapon's own round rather than replacing it: a fire Scattergun still throws sparks, orange ones. Replacing the clip outright made every weapon fire an identical bullet the moment you took an element, which erased the weapon identity the ring and the bullets exist to communicate."

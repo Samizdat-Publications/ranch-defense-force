@@ -97,8 +97,12 @@ describe('camera zoom', () => {
     // canvas heights for 1366/1080/1440/2160 at plausible pixel ratios
     for (const h of [768, 1080, 1350, 1620, 1440, 2160, 2880, 4320]) {
       const view = h / zoomFor(h)
-      expect(view, `canvas ${h}px -> ${view.toFixed(0)} world px`).toBeGreaterThan(target * 0.7)
-      expect(view, `canvas ${h}px -> ${view.toFixed(0)} world px`).toBeLessThan(target * 1.35)
+      // Integer zoom quantises this, and small screens bottom out at minZoom
+      // and simply show less, so the band is generous. What it is really
+      // guarding is that DPI cannot make the view balloon the way it used to:
+      // 1620px canvas showed 810 world px before and 540 now.
+      expect(view, `canvas ${h}px -> ${view.toFixed(0)} world px`).toBeGreaterThan(target * 0.6)
+      expect(view, `canvas ${h}px -> ${view.toFixed(0)} world px`).toBeLessThan(target * 1.25)
     }
   })
 

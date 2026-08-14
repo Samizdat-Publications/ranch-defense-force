@@ -1039,3 +1039,48 @@ are now packed in all three element colours and picked via `World.elementalFx`.
 Renderer and headless painter both fall back to the base clip if a variant is
 missing, because drawing nothing is a worse failure than drawing the wrong
 colour.
+
+## Zoom, corrected: 560, not 340
+
+The 340 target was too tight in play — "the zoom is way too much, it was
+fine/ideal before". Rendering the same moment at both candidates with
+`npm run zoom` made the call easy: at zoom 2 the pellet burst and the dart still
+read clearly, because what fixed legibility was **packing bigger art, not
+cropping the field**, and zoom 2 keeps the warning time to see a horde coming.
+
+`targetWorldHeight` is now **560**, which lands on ~540 world pixels tall on
+every screen from 1080p to 4K. That is the same view a 1080p dpr-1 screen always
+had — the framing that was already right, now independent of monitor and DPI. On
+a 1620px canvas it is 540 where it used to be 810.
+
+`npm run zoom -- [canvasHeight] [targets]` renders one moment at several targets
+at real pixel density. Zoom is the one setting that cannot be judged from a
+number.
+
+## The white square was the Scythe
+
+Reported as "the melee hitbox being this white square". It was not a hitbox and
+not a debug overlay: `projectileFrame` fell back to `atlas.get('weapon.<id>')`,
+which does not exist for any weapon whose art is per-tier. The Scythe's orbiting
+blade therefore missed, fell through to the coloured-square fallback, and drew a
+large cream rectangle rotating on the spot for the whole of M5-M7. The pitchfork
+had a related problem: a swept arc with no art drew as a flat tinted wedge,
+which is also a large pale shape.
+
+Melee now gets real art, per weapon, the way ranged does:
+
+| weapon | draws |
+|---|---|
+| Scythe (orbit) | a dark crescent blade, spinning |
+| Pitchfork (swing) | a raking claw, stretched to the swing radius |
+| Sledge (slam) | the shockwave it already had |
+
+`swingClip` is the new field for the swept kind — scaled to `radius * 2` rather
+than by a per-weapon multiplier, so the picture IS the hit area and +range
+visibly widens the sweep. And the projectile fallback now asks for the weapon's
+declared `sprite` before giving up, so no weapon can render as a bare rectangle
+again.
+
+Note for whoever picks this up: `proj.claw` was red first and the LimeZu palette
+conform fringed it magenta. Orange survives. Saturated effect colours are the
+ones that lose in the conform — the helix beam did the same thing.

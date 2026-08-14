@@ -422,14 +422,18 @@ export class Renderer {
       // while every ranged weapon looked identical. They get a swept arc now,
       // and only the things that are really objects get a sprite.
       const isArea = p.behaviour === 'arcSwing' || p.type === 'aura'
-      if (isArea) {
+      // A swept melee arc draws its weapon's own art, stretched to the swing.
+      // Without a clip it falls back to the tinted wedge, which is a large pale
+      // shape a player reasonably read as an exposed hitbox.
+      const swing = isArea && p.type !== 'aura' ? this.swingFrame(p) : null
+      if (isArea && !swing) {
         this.arcs.push({ x, y, radius: p.radius, angle: p.angle, aura: p.type === 'aura' })
         continue
       }
 
       const it = this.push()
       if (!it) break
-      const frame = this.projectileFrame(p)
+      const frame = swing ?? this.projectileFrame(p)
       it.x = x
       it.y = y
       it.frame = frame ?? null
@@ -443,8 +447,15 @@ export class Renderer {
         it.rotation = w.elapsed * 7 + p.t1
       } else if (p.vx !== 0 || p.vy !== 0) it.rotation = Math.atan2(p.vy, p.vx)
       else it.rotation = p.angle
-      it.scaleX = frame ? PROJECTILE_SCALE * projectileScaleFor(p.weaponId) : 1
-      it.scaleY = it.scaleX
+      if (swing) {
+        // Fill the swing: the art spans the arc's diameter, so a bigger radius
+        // from +range visibly means a bigger sweep.
+        it.scaleX = (p.radius * 2) / Math.max(8, swing.w)
+        it.scaleY = it.scaleX
+      } else {
+        it.scaleX = frame ? PROJECTILE_SCALE * projectileScaleFor(p.weaponId) : 1
+        it.scaleY = it.scaleX
+      }
     }
 
     this.collectWeaponRing()
@@ -664,6 +675,27 @@ export class Renderer {
    * weapon the moment it is packed — which is the whole point. Returns
    * undefined for anything with no art, and the caller draws its square.
    */
+  /**
+   * The art for a swept melee arc, if its weapon declares one.
+   *
+   * Separate from `projectileFrame` because a swing is sized by its radius
+   * rather than by a per-weapon scale — the hit area IS the picture, so the art
+   * has to stretch with the stat.
+   */
+  private swingFrame(
+    p: { weaponId: string; angle: number },
+  ): AtlasFrame | undefined {
+    const atlas = this.atlas
+    if (!atlas) return undefined
+    const clip = (WEAPONS[p.weaponId] as { swingClip?: string } | undefined)?.swingClip
+    if (!clip) return undefined
+    const len = atlas.clipLength(clip, 'play')
+    if (len <= 0) return undefined
+    // Advance through the clip over the arc's short life so the swing moves.
+    const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + ((p.angle * 4) | 0)) % len
+    return atlas.get(`${clip}.${f}`) ?? atlas.get(`${clip}.0`)
+  }
+
   private projectileFrame(
     p: { weaponId: string; behaviour: string; type: string; x: number },
   ): AtlasFrame | undefined {
@@ -699,7 +731,12 @@ export class Renderer {
         if (frame) return frame
       }
     }
-    return atlas.get(`weapon.${p.weaponId}`)
+    // `weapon.<id>` does not exist for weapons whose art is per-tier, and the
+    // miss fell through to a coloured rectangle — the Scythe's orbiting blade
+    // rendered as a large cream square for the whole of M5-M7. Ask for the
+    // weapon's declared sprite, which is always packed.
+    const def2 = WEAPONS[p.weaponId] as { sprite?: string } | undefined
+    return atlas.get(`weapon.${p.weaponId}`) ?? (def2?.sprite ? atlas.get(def2.sprite) : undefined)
   }
 
   /**

@@ -69,10 +69,13 @@ export function fillRect(img: Image, x: number, y: number, w: number, h: number,
  */
 export function projectileSprite(
   world: World,
-  p: { weaponId: string; behaviour: string; type?: string; x: number },
+  p: { weaponId: string; behaviour: string; type?: string; x: number; angle?: number },
 ): { key: string; frame: Frame | undefined } {
-  if (p.behaviour === 'arcSwing') return { key: '(melee arc)', frame: undefined }
   if (p.type === 'aura') return { key: '(aura)', frame: undefined }
+  if (p.behaviour === 'arcSwing') {
+    const sw = swingSprite(world, p as { weaponId: string; angle: number })
+    return sw ?? { key: '(melee arc)', frame: undefined }
+  }
   // The barn dog is a real animal, not an icon.
   if (p.behaviour === 'minionHunt') {
     return { key: 'feralDog', frame: frames['feralDog.idle.down.0'] }
@@ -95,7 +98,24 @@ export function projectileSprite(
     }
   }
   const key = `weapon.${p.weaponId}`
-  return { key, frame: frames[key] }
+  if (frames[key]) return { key, frame: frames[key] }
+  // Weapons with per-tier art have no `weapon.<id>`; the miss used to fall
+  // through to a coloured rectangle.
+  const sprite = typeof def?.sprite === 'string' ? def.sprite : null
+  return { key: sprite ?? key, frame: sprite ? frames[sprite] : undefined }
+}
+
+/** The art for a swept melee arc, if its weapon declares one. */
+export function swingSprite(
+  world: World, p: { weaponId: string; angle: number },
+): { key: string; frame: Frame } | null {
+  const clip = (WEAPONS[p.weaponId] as unknown as { swingClip?: string } | undefined)?.swingClip
+  if (!clip) return null
+  const len = clipLengths[clip]?.play ?? 0
+  if (len <= 0) return null
+  const f = (((world.elapsed * CLIP_FPS) | 0) + ((p.angle * 4) | 0)) % len
+  const frame = frames[`${clip}.${f}`] ?? frames[`${clip}.0`]
+  return frame ? { key: clip, frame } : null
 }
 
 /**
@@ -327,6 +347,8 @@ export class WorldPainter {
       const p = world.projectiles.items[i]
       const aura = p.type === 'aura'
       if (p.behaviour !== 'arcSwing' && !aura) continue
+      // A swing with its own art is drawn as a sprite below, not as a wedge.
+      if (!aura && swingSprite(world, p)) continue
       const half = 0.85
       for (let r = 0; r <= p.radius; r += 0.5) {
         const inner = aura ? p.radius * 0.86 : 0
@@ -341,11 +363,15 @@ export class WorldPainter {
 
     for (let i = 0; i < world.projectiles.live; i++) {
       const p = world.projectiles.items[i]
-      if (p.behaviour === 'arcSwing' || p.type === 'aura') continue // areas, not objects
-      const f = this.projectileFrame(world, p)
+      const swing = p.type !== 'aura' ? swingSprite(world, p) : null
+      if ((p.behaviour === 'arcSwing' || p.type === 'aura') && !swing) continue
+      const f = swing?.frame ?? this.projectileFrame(world, p)
       if (!f) continue
       const rot = p.vx !== 0 || p.vy !== 0 ? Math.atan2(p.vy, p.vx) : p.angle
-      this.drawFrameT(f, p.x, p.y, rot, PROJECTILE_SCALE * projectileScaleFor(p.weaponId))
+      const scale = swing
+        ? (p.radius * 2) / Math.max(8, swing.frame.w)
+        : PROJECTILE_SCALE * projectileScaleFor(p.weaponId)
+      this.drawFrameT(f, p.x, p.y, rot, scale)
     }
 
     this.weaponRing(world)
