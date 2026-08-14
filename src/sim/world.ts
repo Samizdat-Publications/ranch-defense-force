@@ -16,6 +16,7 @@ import {
   type Prop,
 } from './entities'
 import { Player } from './player'
+import { tierHpMultiplier } from './meta'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar } from './formulas'
 import { ELEMENTS, ENEMIES, ITEMS, NODES, TUNING, WAVES, WEAPONS, type StatMods } from '../content'
@@ -91,6 +92,8 @@ export class World {
   damageTakenFromContact = 0
   damageTakenFromHazards = 0
   wavesCleared = 0
+  /** Bosses killed this run. Worth 25 acres each at the Homestead. */
+  bossKills = 0
   cropsHarvested = 0
 
   events: WorldEvents = {}
@@ -133,7 +136,12 @@ export class World {
   private barkCooldown = 0
   private specialItems = { reflect: 0, auraRadius: 0, auraReduction: 0 }
 
-  constructor(seed: number, classId: string, metaMods: StatMods = {}) {
+  /**
+   * @param tier County Fair difficulty tier, 1-based. Scales enemy HP and the
+   *             acre payout; see `meta.ts`. Defaults to 1 so every existing
+   *             caller — tests, tools, the headless painter — is unaffected.
+   */
+  constructor(seed: number, classId: string, metaMods: StatMods = {}, readonly tier = 1) {
     this.seed = seed
     this.rng = new Rng(seed)
     this.spawner = new Spawner(this.rng)
@@ -1412,7 +1420,9 @@ export class World {
     e.vy = 0
     e.kx = 0
     e.ky = 0
-    e.maxHp = def.hp * scalar * (elite ? WAVES.elite.hpMultiplier : 1)
+    // Tier is a flat multiplier on top of the wave curve, never compounded
+    // into it: Tier 3 is "everything has 50% more HP", not a different curve.
+    e.maxHp = def.hp * scalar * (elite ? WAVES.elite.hpMultiplier : 1) * tierHpMultiplier(this.tier)
     e.hp = e.maxHp
     e.speed = def.speed
     e.damage = def.damage
@@ -1691,7 +1701,9 @@ export class World {
       }
     }
 
-    this.sound(ENEMIES[e.typeId]?.boss === true ? 'bossDeath' : 'enemyDeath')
+    const isBoss = ENEMIES[e.typeId]?.boss === true
+    if (isBoss) this.bossKills++
+    this.sound(isBoss ? 'bossDeath' : 'enemyDeath')
     this.bleed(e.x, e.y, e.typeId === 'rooster' ? 2 : 10)
     // No death frames needed — spin and scale to zero (§10 step 4).
     e.dying = C.deathSpinSeconds

@@ -7,7 +7,6 @@
  */
 import { WEAPONS } from '../content'
 import type { World } from '../sim/world'
-import { acresEarned } from '../sim/formulas'
 import { el } from './dom'
 
 export class ResultsScreen {
@@ -25,9 +24,16 @@ export class ResultsScreen {
     return this.root.style.display !== 'none'
   }
 
-  open(world: World, cleared: boolean, onRunItBack: () => void, onMenu: () => void): void {
+  /**
+   * @param acres what was actually banked, passed in rather than recomputed —
+   *              two independent calculations of the same number drift, and the
+   *              one the player reads must be the one they were paid.
+   */
+  open(
+    world: World, cleared: boolean, acres: number,
+    onRunItBack: () => void, onMenu: () => void, onHomestead?: () => void,
+  ): void {
     const p = world.player
-    const acres = acresEarned(world.wavesCleared, 0, false, 1)
     const mins = Math.floor(world.elapsed / 60)
     const secs = Math.floor(world.elapsed % 60)
 
@@ -67,6 +73,11 @@ export class ResultsScreen {
       ]),
       el('div', { class: 'actions' }, [
         el('button', { class: 'btn primary', text: 'Run it back', onClick: () => { this.close(); onRunItBack() } }),
+        // Only offered when there is something to spend — §12 says never make
+        // the player walk through a menu, and an empty Homestead is a menu.
+        acres > 0 && onHomestead
+          ? el('button', { class: 'btn', text: 'Homestead', onClick: () => { this.close(); onHomestead() } })
+          : null,
         el('button', { class: 'btn', text: 'Menu', onClick: () => { this.close(); onMenu() } }),
       ]),
     )

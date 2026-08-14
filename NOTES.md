@@ -1084,3 +1084,63 @@ again.
 Note for whoever picks this up: `proj.claw` was red first and the LimeZu palette
 conform fringed it magenta. Orange survives. Saturated effect colours are the
 ones that lose in the conform — the helix beam did the same thing.
+
+## M7 — The Homestead
+
+Meta progression, per §4. A run pays acres; four buildings spend them.
+
+`src/sim/save.ts` is a versioned localStorage blob that stores **purchases,
+never derived values**. What a rank of grain is worth is a number in
+`meta.json` that will change; what the player bought will not. `load()`
+migrates, validates and clamps, and a corrupt blob yields a fresh save rather
+than an exception — losing progress is bad, but a save that throws on boot
+means the game will not start at all, which is worse and unrecoverable without
+devtools. Migration is a chain of single-version steps so a v1 and a v4 save
+take the same path and there is only ever one place to add the next one.
+
+`src/sim/meta.ts` turns purchases into run modifiers at run start and nowhere
+else. Three tracks make the game wider, one makes it easier and is capped:
+
+| Track | State |
+|---|---|
+| **Seed Catalog** | Done. Runs start with 8 of 12 weapons and 12 of 20 items; the rest unlock permanently into `OfferPool.setUnlocked`. |
+| **Feed Store** | Done. Five tracks, five ranks, flat per rank, total percentage effect capped near +25% and tested against it. |
+| **County Fair** | Done. Tiers scale enemy HP by a flat multiplier on top of the wave curve — Tier 3 is "everything has 50% more HP", not a different curve — and multiply the payout so climbing beats farming. |
+| **Bunkhouse** | Structure done, **content blocked**. See below. |
+
+### Two things that are deliberately not finished
+
+**The Bunkhouse has nothing to sell.** Only The Hand and The Kid exist, and both
+are free. The spec wants four more as dark silhouettes from day one, but a class
+is "one Farmer Generator export plus a stat block and one ability" — the export
+is the blocker. Adding four stub classes to `classes.json` would render the
+silhouettes the spec asks for and then hand the player a broken run when they
+bought one, so the ladder is built and priced and simply has no rungs yet. Drop
+four sheets into `assets/generated/characters/` and this becomes a content edit.
+
+**Seventeen of twenty-two items have no card art.** `items.json` carries an
+`icon` field holding plain words — `clover`, `coffee`, `hat` — which are not
+atlas keys and never were. Only five items have a real `cardSprite`. This is not
+a Homestead bug; the shop and level-up cards have been showing text-only cards
+for those items the whole time. Closing it means either finding real icons in
+the packs or accepting deliberate stand-ins, and it wants doing with the pack
+open rather than guessed at.
+
+### Acres
+
+`bankRun` pays `2*waves + 25*bosses`, plus a first-clear bonus, times the tier
+multiplier. `tiersPaid` exists because deriving "first time" from `tierCleared`
+re-paid the bonus on every later clear of that tier — free acres forever, silent,
+and banked into the save. There is a test for exactly that.
+
+The results screen is handed the acres that were *banked* rather than
+recomputing them. Two independent calculations of the same number drift, and the
+one the player reads has to be the one they were paid.
+
+`window.rdf` (dev builds only) now exposes `profile` and `openHomestead` as
+getters. Getters, not values: a plain object captures whatever the module locals
+held at construction, and every later `startRun` leaves the console holding a
+dead world, which reads as "the game is broken" rather than "the handle is
+stale". That cost twenty minutes the first time.
+
+115 tests pass.

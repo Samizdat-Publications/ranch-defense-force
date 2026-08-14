@@ -22,11 +22,14 @@ import { ShopScreen } from './ui/shop'
 import { ResultsScreen } from './ui/results'
 import { MenuScreen } from './ui/menu'
 import { PauseScreen } from './ui/pause'
+import { HomesteadScreen } from './ui/homestead'
 import { DevOverlay } from './ui/dev'
 import { setSpriteAtlas } from './ui/sprite'
 import { WAVES } from './content'
+import { load as loadSave, save as writeSave, type Save } from './sim/save'
+import { metaStats, unlockedWeapons, unlockedItems, bankRun } from './sim/meta'
 
-type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused'
+type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused' | 'homestead'
 
 const canvas = document.getElementById('game') as HTMLCanvasElement
 const uiRoot = document.getElementById('ui') as HTMLElement
@@ -52,6 +55,10 @@ let state: State = 'menu'
 /** Level-ups can arrive several at once from one gem; queue them. */
 let pendingLevelUps = 0
 let currentClassId = 'hand'
+/** The Homestead save, held in memory and written back on every change. */
+let profile: Save = loadSave()
+/** County Fair tier for the next run. */
+let currentTier = 1
 /** Shake RNG, separate from the sim's so camera jitter never perturbs a
  *  seeded run — the whole point of the seed is that the sim replays exactly. */
 const shakeRng = new Rng(0xc0ffee)
@@ -62,6 +69,7 @@ const shop = new ShopScreen(uiRoot)
 const results = new ResultsScreen(uiRoot)
 const menu = new MenuScreen(uiRoot, (classId, seed) => startRun(classId, seed))
 const pause = new PauseScreen(uiRoot)
+const homestead = new HomesteadScreen(uiRoot)
 
 const dev = new DevOverlay(uiRoot, {
   skipWave: () => {
@@ -97,8 +105,18 @@ function startRun(classId: string, seedText: string): void {
   const seed = seedText ? seedFromString(seedText) : (Math.floor(Date.now() * 0.001) ^ 0x9e3779b9) >>> 0
 
   hud?.destroy()
-  world = new World(seed, classId)
+  // Purchases become run modifiers here and nowhere else, so the save never
+  // holds a derived number that balance changes could invalidate.
+  const m = metaStats(profile)
+  world = new World(seed, classId, {
+    maxHp: m.maxHp,
+    moveSpeedPct: m.moveSpeedPct,
+    armor: m.armor,
+    harvestPct: m.harvestPct,
+    luck: m.luck,
+  }, currentTier)
   offers = new OfferPool(world.rng)
+  offers.setUnlocked([...unlockedWeapons(profile), ...unlockedItems(profile)])
   renderer = new Renderer(canvas, world, atlas)
   hud = new Hud(uiRoot)
   resize()
@@ -118,6 +136,8 @@ function startRun(classId: string, seedText: string): void {
       get renderer() { return renderer },
       get atlas() { return atlas },
       get offers() { return offers },
+      get profile() { return profile },
+      openHomestead,
     }
   }
 
@@ -140,10 +160,34 @@ function startRun(classId: string, seedText: string): void {
   menu.close()
   results.close()
   pause.close()
+  homestead.close()
   audio.unlock()
   audio.preload()
   void audio.setLayer('field' as MusicLayer)
   state = 'playing'
+}
+
+/**
+ * The Homestead, reachable from the results screen and the menu.
+ *
+ * Closes every other screen first: this is a scene switch, not an overlay, and
+ * a results panel left visible behind it reads as the game having hung.
+ */
+function openHomestead(): void {
+  results.close()
+  menu.close()
+  pause.close()
+  state = 'homestead'
+  homestead.open(
+    profile,
+    currentTier,
+    (t) => { currentTier = t },
+    () => {
+      homestead.close()
+      state = 'menu'
+      menu.open()
+    },
+  )
 }
 
 function queueShop(): void {
@@ -182,14 +226,26 @@ function finishRun(cleared: boolean): void {
   void audio.setLayer(null)
   state = 'results'
   world.paused = true
+  // Bank before opening, so the screen shows the acres that were actually
+  // credited rather than a second, separately-computed number.
+  const earned = bankRun(
+    profile,
+    { wavesCleared: world.wavesCleared, bossKills: world.bossKills, tier: currentTier, cleared },
+    world.seed,
+    currentClassId,
+  )
+  writeSave(profile)
+
   results.open(
     world,
     cleared,
+    earned,
     () => startRun(currentClassId, ''),
     () => {
       state = 'menu'
       menu.open()
     },
+    () => openHomestead(),
   )
 }
 

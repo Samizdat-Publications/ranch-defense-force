@@ -385,3 +385,128 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 .card-head { display: flex; align-items: center; gap: 10px; min-height: 42px; }
 .card-sprite { flex: none; image-rendering: pixelated; }
 .card-detail { white-space: pre-line; }
+
+/* ===================================================================
+   THE HOMESTEAD
+   ===================================================================
+   Four buildings you click into, then a grid of purchase cards. Uses
+   the panel language above unchanged — `.panel` for every surface,
+   wood as chrome only, the dark field behind all text.
+
+   The one addition is `.affordable`: a warm outline on anything you
+   can buy right now. It is doing real work, not decoration — §12 asks
+   this screen to answer "what can I buy" without reading a word, and
+   a gold edge is the only thing on it that scans at a glance.
+   =================================================================== */
+
+.homestead {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  overflow: auto;
+}
+
+.homestead-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+
+.homestead-title { margin: 0; }
+
+.homestead-acres {
+  color: var(--gold);
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.homestead-body { flex: 1 1 auto; }
+
+.homestead-note {
+  color: var(--ink-dim);
+  margin-bottom: 14px;
+  max-width: 68ch;
+}
+
+.homestead-empty {
+  color: var(--ink-dim);
+  padding: 32px 0;
+}
+
+.homestead-foot {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+/* The yard: four buildings, big enough to be places rather than buttons. */
+.homestead-yard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.building {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  cursor: pointer;
+  text-align: center;
+  font: inherit;
+  color: inherit;
+}
+
+/* The frame is a border-image, so there is no colour to hover. Lift the
+   card instead — same trick the buttons use for their press. */
+.building:hover { transform: translateY(-2px); }
+.building:active { transform: translateY(0); }
+.building-name { font-size: 17px; color: var(--ink); }
+.building-blurb { color: var(--ink-dim); font-size: 13px; }
+
+.buy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.buy-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px;
+}
+
+.buy-name { color: var(--ink); font-size: 15px; }
+.buy-blurb { color: var(--ink-dim); font-size: 13px; flex: 1 1 auto; }
+.buy-owned { color: var(--gold); font-size: 12px; }
+.buy-cost { align-self: stretch; margin-top: 6px; }
+
+.buy-done {
+  color: var(--ink-dim);
+  text-align: center;
+  padding: 6px 0;
+}
+
+/* Rule 3, applied: gold means you can act on this. */
+.buy-card.affordable {
+  outline: 2px solid var(--gold);
+  outline-offset: -6px;
+}
+
+/*
+   A locked class is a dark silhouette with a price, never an empty slot —
+   you should be able to see what is up there from your first run. The
+   sprite is knocked to black rather than hidden, so the shape still reads.
+*/
+.buy-card.silhouette .card-sprite {
+  filter: brightness(0) opacity(0.55);
+}
+
+.buy-card.silhouette .buy-name { color: var(--ink-dim); }
