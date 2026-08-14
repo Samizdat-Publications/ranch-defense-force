@@ -16,7 +16,7 @@
 import { CLASSES, CLASS_IDS } from '../content'
 import { clear, el } from './dom'
 import { card, deal } from './card'
-import { spriteEl } from './sprite'
+import { spriteEl, spriteTileUrl } from './sprite'
 
 /** Scenery, drawn once. Kept small — this is dressing, not a level. */
 const TREELINE = [
@@ -88,14 +88,16 @@ export class MenuScreen {
     }
 
     // The ground band tiles one terrain frame rather than spawning a node per
-    // tile — a hundred divs to draw dirt is a hundred divs.
+    // tile — a hundred divs to draw dirt is a hundred divs. It must be a
+    // standalone tile texture, NOT an atlas window: repeating an atlas window
+    // repeats the whole atlas, and the first version of this drew a wall of
+    // every sprite in the game across the bottom of the home screen.
     const ground = el('div', { class: 'home-ground' })
-    const dirt = spriteEl('terrain.dirt', 32, 1)
+    const dirt = spriteTileUrl('terrain.dirt')
     if (dirt) {
-      ground.style.backgroundImage = dirt.style.backgroundImage
-      ground.style.backgroundPosition = dirt.style.backgroundPosition
-      ground.style.backgroundSize = dirt.style.backgroundSize
+      ground.style.backgroundImage = `url('${dirt}')`
       ground.style.backgroundRepeat = 'repeat'
+      ground.style.backgroundSize = '64px 64px'
     }
 
     const actors = el('div', { class: 'home-actors' })

@@ -69,3 +69,39 @@ export function installRarityTheme(tiers: Record<string, { colour: string; dark:
   }
 }
 
+
+/**
+ * One atlas frame as a standalone data URL, for tiling.
+ *
+ * `spriteEl` positions a window onto the whole atlas, which is right for a
+ * single sprite and catastrophically wrong with `background-repeat` — the
+ * repeat tiles the ENTIRE ATLAS, so the home screen's ground band came out as a
+ * wall of every sprite in the game. A tiled background needs a texture that
+ * contains only the tile.
+ *
+ * Cached: this is a canvas allocation and a base64 encode, and the callers are
+ * screens that rebuild whenever the atlas or the save changes.
+ */
+const tileCache = new Map<string, string>()
+
+export function spriteTileUrl(name: string): string | null {
+  if (!atlas) return null
+  const hit = tileCache.get(name)
+  if (hit !== undefined) return hit || null
+
+  const f = atlas.get(name)
+  if (!f) {
+    tileCache.set(name, '')
+    return null
+  }
+  const c = document.createElement('canvas')
+  c.width = f.w
+  c.height = f.h
+  const ctx = c.getContext('2d')
+  if (!ctx) return null
+  ctx.imageSmoothingEnabled = false
+  ctx.drawImage(atlas.image, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h)
+  const url = c.toDataURL()
+  tileCache.set(name, url)
+  return url
+}

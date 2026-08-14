@@ -523,5 +523,34 @@
   "cellW": 32,
   "cellH": 64,
   "name": "item.gasMask"
+ },
+ "pixellabCharacters": {
+  "_note": "Characters generated with the PixelLab character builder. The export is <State>/animations/<Anim>/<compass>/frame_NNN.png plus <State>/rotations/<compass>.png, at the character size set in the tool (40 here) with EIGHT compass directions. That is a different rig from humanoidRig entirely -- LimeZu's is one 1792x704 sheet of 32x64 cells in stacked row pairs with four bands. Measured from a real export, not guessed from the docs.",
+  "_directionNote": "The game has four directions and PixelLab has eight. south->down, north->up, west->left, east->right; the four diagonals are dropped rather than averaged, because the renderer only ever asks for four and a diagonal frame would never be requested.",
+  "_pivotNote": "Frames are square and the figure stands on the bottom edge, so the pivot is bottom-centre of the cell -- same convention as every other sheet, which is why the renderer needs no special case for these.",
+  "_base": "assets/pixellab/characters/",
+  "compassToDirection": {
+   "south": "down",
+   "north": "up",
+   "west": "left",
+   "east": "right"
+  },
+  "sheets": {
+   "zombieFarmhand": {
+    "state": "Idle",
+    "frameSize": 40,
+    "clips": {
+     "idle": {
+      "from": "rotations",
+      "frames": 1
+     },
+     "walk": {
+      "from": "animations",
+      "animation": "Scary_Walk",
+      "frames": 8
+     }
+    }
+   }
+  }
  }
 }
