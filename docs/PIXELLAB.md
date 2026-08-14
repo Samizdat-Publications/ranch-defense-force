@@ -202,3 +202,65 @@ own rig, for free, and PixelLab cannot match that rig.
   do the same for new ones or they will sit off-centre in the card window.
 - **The API key is not in this repo.** If you wire up the MCP server or the REST
   API, read it from the environment.
+
+---
+
+## The character builder — what it changes
+
+Added after the first pass. This is the biggest capability in the subscription
+and it was not being used.
+
+The flow is **generate once, animate many**:
+
+| Step | Endpoint | What you get |
+|---|---|---|
+| Make a character | `POST /create-character-with-4-directions` (or `-8-directions`, `-pro`, `-v3`) | A character in our reference style, plus a **character id** |
+| Reuse it | `POST /create-character-state` | Another pose or variation of **the same character**, not a new one |
+| Animate it | `POST /animate-with-text` (v2/v3 are Pro) | Any animation described in words — walks, swings, backflips, casts |
+| Animate precisely | `POST /animate-with-skeleton` + `POST /estimate-skeleton` | Keyframe control when text is not exact enough |
+
+**The part that matters is the character id.** Every animation is a state of one
+character, so a walk, an attack and a death all come back as the same figure
+rather than three drawings that happen to resemble each other. That is exactly
+what an enemy sheet needs and exactly what generated art usually fails at.
+
+### What this unlocks that we could not do before
+
+1. **Infected livestock, properly.** Priority 2 in the queue. Right now the HUD
+   recolours ordinary chickens with a CSS filter and it looks like it. One
+   infected hen, generated once, then walk + attack + death as states.
+2. **Enemies with real attack animations.** Every enemy currently walks and
+   contact-damages. An animation per behaviour is now cheap.
+3. **Class abilities that look like something.** `digIn` and `bolt` are stat
+   effects with an FX clip over the top. "Plant your feet and brace" and "dash
+   with i-frames" are both animatable in words.
+4. **Weapon-specific player poses.** A farmer holding a scythe and a farmer
+   holding a scattergun are currently the same sprite with a gun drawn beside it.
+5. **Bosses.** The Duster and the Prize Bull deserve more than a walk cycle.
+
+### The constraint to solve first
+
+`art/sprites.json` has ONE humanoid rig: a 1792x704 sheet, 32x64 frames in
+stacked row pairs, four direction bands in the order `right, up, left, down`,
+with clips at fixed row pairs. Every humanoid in the game — player classes and
+zombie enemies alike — is sliced by that rig, and the atlas builder asserts the
+sheet dimensions and the band order before it will pack anything.
+
+**PixelLab output will not match that rig.** It has its own frame count, its own
+direction count and its own layout. So generated characters need a *second* rig
+definition in the builder — a `pixellabRig` block naming the sheet geometry the
+API actually returns — rather than being forced into the LimeZu one.
+
+That is a contained piece of work, but it is real, and it should be done against
+a genuine generated sheet rather than guessed from the docs. **Generate one
+character first, look at what comes back, then write the rig.** Do not write the
+importer speculatively; the last time this project assumed a sheet's geometry
+from a spec instead of measuring it, `down` drew the right-facing pose for seven
+milestones.
+
+### Do not use it for
+
+Player class *character sheets*. `npm run characters` composites those from the
+licensed generator pieces in the game's own rig, for free, and PixelLab cannot
+match that rig. Portraits are a different question and are still worth doing —
+`Portrait <-> Character (Pro)` is the recommended path there.
