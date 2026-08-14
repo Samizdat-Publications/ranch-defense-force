@@ -1,5 +1,5 @@
 {
-  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code \u2014 CLAUDE.md forbids balance constants living in source.",
+  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
   "player": {
     "baseMoveSpeed": 160,
     "basePickupRadius": 70,
@@ -29,7 +29,11 @@
     "traumaPlayerHit": 0.4,
     "traumaBossCharge": 0.7,
     "traumaDecayPerSecond": 1.2,
-    "maxShakePixels": 18
+    "maxShakePixels": 18,
+    "targetWorldHeight": 340,
+    "minZoom": 2,
+    "maxZoom": 16,
+    "_zoomNote": "Zoom is derived, not fixed: round(canvasHeight / targetWorldHeight), integer only, clamped. A fixed zoom made a bigger or higher-DPI screen show MORE WORLD rather than a sharper picture - at 1920x1080 and dpr 1.5 the view was 1440x810 world px of a 2400x1600 arena, so the farmer was 2% of screen width and every bullet was a speck. That is why six distinct rounds still read as one. 340 is the height the art was composed against."
   },
   "pickups": {
     "magnetAcceleration": 1400,
@@ -48,7 +52,7 @@
     "effects": 256
   },
   "fx": {
-    "_note": "Conformed FX clips (art/sprites.json -> fx). `life` is how long the whole clip plays, in seconds \u2014 the renderer divides it by the clip's packed frame count, so retiming an effect is this number and nothing else. Effects are decoration: when the pool is full the sim drops them silently rather than perturbing a seeded run.",
+    "_note": "Conformed FX clips (art/sprites.json -> fx). `life` is how long the whole clip plays, in seconds — the renderer divides it by the clip's packed frame count, so retiming an effect is this number and nothing else. Effects are decoration: when the pool is full the sim drops them silently rather than perturbing a seeded run.",
     "hitSpark": {
       "life": 0.2,
       "scale": 0.55
@@ -112,7 +116,7 @@
     "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
     "radius": 46,
     "workingSeconds": 0.18,
-    "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running \u2014 sweeping twenty nodes at base rate beats working one \u2014 which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
+    "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running — sweeping twenty nodes at base rate beats working one — which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
     "dwellSeconds": 2.0,
     "dwellMultiplier": 3.0,
     "dwellDecayRate": 2.5

@@ -961,3 +961,70 @@ cheap: when a tool reports something surprising, check the tool before the game.
 launching weapons may share a round, every one must have a round, every round
 must be scaled above the smudge threshold, and every weapon and item must have a
 one-sentence blurb. 96 tests pass.
+
+## The real reason the bullets looked the same: the game was zoomed out
+
+The previous entry made six distinct rounds and proved it with a contact sheet.
+The player looked at the game and said they still could not tell them apart, and
+that fire and acid changed nothing. Both true. The art was fine; the camera was
+not.
+
+**`ZOOM` was a fixed `2`, and the canvas is sized `innerWidth * devicePixelRatio`.**
+So screen size and DPI controlled *how much world you see*. At 1920x1080 with
+dpr 1.5 the canvas is 2880x1620 and the view was **1440x810 world pixels** of a
+2400x1600 arena — well over half the field at once. The farmer was about 2% of
+screen width. A 24-pixel round at that scale is three or four screen pixels. No
+amount of silhouette work survives that, and an element recolouring a four-pixel
+smudge is genuinely invisible.
+
+A denser display was making the game *zoom out*, which is backwards: DPI should
+buy sharpness at the same world scale. Zoom is now derived —
+`round(canvasHeight / targetWorldHeight)`, integer, clamped — against a
+`targetWorldHeight` of 340 in `tuning.json`. The visible world is now ~324-384
+pixels tall on every screen tested, from a 1366x768 laptop to 4K at dpr 2. On
+the reporter's likely setup that is **2.2x tighter than before**.
+
+`tests/content.test.ts` asserts the visible world height stays within ±30% of
+target across eight plausible canvas heights, and that zoom is always an integer.
+
+### Walking right drew the front-facing sprite
+
+Reported in the same message, and it had been wrong since M0.
+
+`humanoidRig.directions` is `[down, up, left, right]`, and the builder used the
+*index into that list* as the index of the band on the sheet. The sheet does not
+use that order. Proved rather than guessed:
+
+- band 0 is a **pixel-exact horizontal mirror** of band 2 (100% match), so those
+  two are the side views;
+- the skin centroid sits **+2px** in band 0 and **-2px** in band 2, and a face is
+  at the front of a profile, so band 0 faces right and band 2 faces left;
+- band 1 has **no skin pixels at all** (back of the head) and band 3 has the most
+  (front, two eyes).
+
+The true order is `[right, up, left, down]` — which is exactly the
+`directionOrder` the *animal* sheets were already corrected to. The humanoid rig
+never was. So `up` and `left` were right by luck, `down` drew the right-facing
+pose, and `right` drew the front-facing one. Fixed by giving the humanoid rig a
+`directionOrder` and having the builder map canonical direction → source band
+through it, the way the animal path already did.
+
+**The build now refuses a wrong order.** A bad band order has no symptom a build
+can otherwise see: every frame is present, every frame is non-empty, and the
+game renders a confident, wrong sprite. The new assertion is geometric — left
+flipped must match right (>45%), and up must *not* match down. A correct order
+measures 61-100% across the seven sheets; a wrong one measures 10-12%. The gap
+is so wide the threshold barely matters.
+
+### The range tile was lying about size, in both directions
+
+First the tile was 260x180 world pixels at zoom 2 — a much tighter crop than the
+game's view, so every round looked bigger than a player ever sees it. Then it was
+604x340 at zoom 1, which understated by 3x. What actually decides whether two
+bullets are tellable apart is **screen pixels per world pixel**, not how much
+world is in frame. The tile now uses the game's own zoom (3, a 1080p screen) and
+crops the view to fit twelve to a page. `WorldPainter` takes a zoom argument for
+exactly this reason.
+
+That is now seven times the instrument was wrong before the game was. It is the
+single most reliable failure mode in this project.

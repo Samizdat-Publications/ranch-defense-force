@@ -20,7 +20,7 @@
 import { writeFileSync } from 'node:fs'
 import {
   WorldPainter, projectileSprite, drawSpriteScaled, roundScale,
-  frames, clipLengths, fillRect, encodePng, ZOOM,
+  frames, clipLengths, fillRect, encodePng,
 } from './draw-world.ts'
 import { blankImage, type Image } from './png.ts'
 import { drawText } from './tinyfont.ts'
@@ -28,8 +28,19 @@ import { World } from '../src/sim/world.ts'
 import { WEAPONS, ELEMENTS } from '../src/content/index.ts'
 
 const STEP = 1 / 60
-const VIEW_W = 260
-const VIEW_H = 180
+/**
+ * A centre crop of the real view, at the real pixel density.
+ *
+ * What decides whether two bullets are tellable apart is SCREEN pixels per
+ * world pixel, not how much world is in frame. On a 1080p screen `zoomFor`
+ * picks 3, so the tile uses 3 — anything less understates the round and
+ * anything more flatters it. The view is then cropped to 300x170 world pixels
+ * purely to keep twelve tiles to a page; it is the middle of a 604x340 view,
+ * not a zoom-in.
+ */
+const VIEW_W = 300
+const VIEW_H = 170
+const TILE_ZOOM = 3
 const LABEL_H = 30
 const PAD = 4
 const BG = 0x14181c
@@ -156,7 +167,7 @@ function shoot(ids: { id: string; tier: number }[], element: string, label: stri
     world.step(STEP, Math.cos(t * 0.4) * 0.6, Math.sin(t * 0.4) * 0.6, false)
   }
 
-  const painter = new WorldPainter(VIEW_W, VIEW_H)
+  const painter = new WorldPainter(VIEW_W, VIEW_H, TILE_ZOOM)
   painter.paint(world)
 
   const drew = new Set<string>()
@@ -192,7 +203,7 @@ if (mode === 'solo') {
     console.log(`  ${n} weapons  live ${String(c.live).padStart(3)}  drew ${[...c.drew].join(', ')}`)
   }
 } else if (mode === 'element') {
-  const els = ['none', ...Object.keys(ELEMENTS).filter((k) => !k.startsWith('_'))]
+  const els = Object.keys(ELEMENTS).filter((k) => !k.startsWith('_'))
   for (const el of els) {
     // Six ranged weapons at once, so the sheet shows whether an element keeps
     // them distinguishable — the exact thing that was broken before.
@@ -218,7 +229,7 @@ if (mode === 'solo') {
  * you tell these apart".
  */
 function roundsSheet(): void {
-  const ELS = ['none', 'fire', 'acid', 'frost']
+  const ELS = Object.keys(ELEMENTS).filter((k) => !k.startsWith('_'))
   const rows: { id: string; label: string; clips: string[] }[] = []
   for (const id of WEAPON_IDS) {
     const def = WEAPONS[id] as unknown as { name?: string; projectileClip?: string }
@@ -253,7 +264,7 @@ function roundsSheet(): void {
         if (!f) continue
         const cx = LABEL + ci * (STEPS * CELL + 12) + s * CELL + CELL / 2
         const cy = y + CELL / 2
-        drawSpriteScaled(img, f, cx, cy, roundScale(row.id))
+        drawSpriteScaled(img, f, cx, cy, roundScale(row.id, TILE_ZOOM))
       }
     })
   })
@@ -266,8 +277,8 @@ tools/range-rounds.png  ${w}x${h}  ${rows.length} rounds x ${ELS.length} element
 
 // --------------------------------------------------------------- composite
 
-const tileW = VIEW_W * ZOOM
-const tileH = VIEW_H * ZOOM
+const tileW = VIEW_W * TILE_ZOOM
+const tileH = VIEW_H * TILE_ZOOM
 const cols = Math.min(4, cells.length)
 const rows = Math.ceil(cells.length / cols)
 const sheet = blankImage(

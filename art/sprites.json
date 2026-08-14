@@ -24,7 +24,14 @@
     "start": 0,
     "framesPerDirection": 6
    }
-  }
+  },
+  "directionOrder": [
+   "right",
+   "up",
+   "left",
+   "down"
+  ],
+  "_directionNote": "SOURCE band order, which is NOT the canonical order in `directions`. The bands run right, up, left, down. Proved, not guessed: band 0 is a pixel-exact horizontal mirror of band 2, and the skin centroid sits +2px in band 0 and -2px in band 2 (a face is at the FRONT of a profile), while band 1 has no skin at all (back of the head) and band 3 has the most (front, two eyes). Assuming the bands matched `directions` meant `down` drew the right-facing sprite and `right` drew the front-facing one - which is exactly what a player reported: walking right showed the down sprite."
  },
  "humanoids": {
   "hand": "assets/generated/characters/farmer-01.png",

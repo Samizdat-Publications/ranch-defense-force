@@ -20,8 +20,27 @@ import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 
 const BUCKET = 8
-/** Integer zoom only — a 32px sprite at 2.5x is a blurry 32px sprite. */
-export const ZOOM = 2
+
+/**
+ * Pick the zoom for a canvas height.
+ *
+ * Integer only — a 32px sprite at 2.5x is a blurry 32px sprite.
+ *
+ * Derived rather than fixed, because a fixed zoom makes screen size and device
+ * pixel ratio control HOW MUCH WORLD you see. At 1920x1080 with dpr 1.5 the
+ * canvas is 1620 tall, and a zoom of 2 showed 810 world pixels of a 1600-tall
+ * arena: the farmer was 2% of screen width and a 24px bullet was a speck. Six
+ * carefully distinguished rounds cannot survive that, which is why they still
+ * read as one bullet after the art was fixed. Now a denser screen buys a
+ * sharper picture at the same world scale, which is what it should always have
+ * bought.
+ */
+export function zoomFor(canvasHeight: number): number {
+  const cam = TUNING.camera as unknown as Record<string, number>
+  const target = cam.targetWorldHeight ?? 340
+  const raw = Math.round(canvasHeight / target)
+  return Math.max(cam.minZoom ?? 2, Math.min(cam.maxZoom ?? 8, raw))
+}
 /** Walk cycle advances one frame per this many pixels travelled, so sprites
  *  never appear to skate. */
 const PIXELS_PER_WALK_FRAME = 11
@@ -78,6 +97,8 @@ const PALETTE = {
 
 export class Renderer {
   readonly camera: Camera
+  /** Integer world-to-screen scale, recomputed on every resize. */
+  private zoom: number
   private ctx: CanvasRenderingContext2D
   private decals: HTMLCanvasElement
   private decalCtx: CanvasRenderingContext2D
@@ -105,7 +126,8 @@ export class Renderer {
     const ctx = canvas.getContext('2d', { alpha: false })
     if (!ctx) throw new Error('2D canvas context unavailable')
     this.ctx = ctx
-    this.camera = new Camera(canvas.width / ZOOM, canvas.height / ZOOM, world.arenaW, world.arenaH)
+    this.zoom = zoomFor(canvas.height)
+    this.camera = new Camera(canvas.width / this.zoom, canvas.height / this.zoom, world.arenaW, world.arenaH)
 
     this.decals = document.createElement('canvas')
     this.decals.width = world.arenaW
@@ -133,7 +155,8 @@ export class Renderer {
   resize(w: number, h: number): void {
     this.canvas.width = w
     this.canvas.height = h
-    this.camera.resize(w / ZOOM, h / ZOOM)
+    this.zoom = zoomFor(h)
+    this.camera.resize(w / this.zoom, h / this.zoom)
     this.ctx.imageSmoothingEnabled = false
   }
 
@@ -221,13 +244,13 @@ export class Renderer {
     const pyi = p.py + (p.y - p.py) * alpha
     this.camera.update(pxi, pyi, p.vx, p.vy, w.shake, rand)
 
-    const ox = Math.round(this.camera.offsetX * ZOOM) / ZOOM
-    const oy = Math.round(this.camera.offsetY * ZOOM) / ZOOM
+    const ox = Math.round(this.camera.offsetX * this.zoom) / this.zoom
+    const oy = Math.round(this.camera.offsetY * this.zoom) / this.zoom
 
-    ctx.setTransform(ZOOM, 0, 0, ZOOM, 0, 0)
+    ctx.setTransform(this.zoom, 0, 0, this.zoom, 0, 0)
     ctx.imageSmoothingEnabled = false
     ctx.fillStyle = PALETTE.void
-    ctx.fillRect(0, 0, this.canvas.width / ZOOM, this.canvas.height / ZOOM)
+    ctx.fillRect(0, 0, this.canvas.width / this.zoom, this.canvas.height / this.zoom)
     ctx.translate(-ox, -oy)
 
     if (this.terrain) {

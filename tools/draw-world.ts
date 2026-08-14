@@ -17,6 +17,7 @@ import { Rng } from '../src/core/rng.ts'
 import { TUNING, WEAPONS, projectileScaleFor } from '../src/content/index.ts'
 import type { World } from '../src/sim/world.ts'
 
+/** Default zoom. The game derives its own; see `zoomFor` in the renderer. */
 export const ZOOM = 2
 const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROJECTILE_SCALE` in the renderer; per-weapon multiplier on top. */
@@ -130,9 +131,9 @@ export function drawSpriteScaled(
   }
 }
 
-/** The on-screen scale a weapon's round is drawn at, zoom included. */
-export function roundScale(weaponId: string): number {
-  return PROJECTILE_SCALE * projectileScaleFor(weaponId) * ZOOM
+/** The on-screen scale a weapon's round is drawn at, for a given zoom. */
+export function roundScale(weaponId: string, zoom = ZOOM): number {
+  return PROJECTILE_SCALE * projectileScaleFor(weaponId) * zoom
 }
 
 /**
@@ -146,23 +147,32 @@ export class WorldPainter {
   private camX = 0
   private camY = 0
 
-  constructor(readonly viewW: number, readonly viewH: number) {
-    this.canvas = blankImage(viewW * ZOOM, viewH * ZOOM)
+  /**
+   * @param viewW world pixels visible across
+   * @param viewH world pixels visible down
+   * @param zoom  world-to-image scale; pass the game's own so a contact sheet
+   *              shows a bullet at the size a player actually sees it. Tiles
+   *              tighter than the real view make every round look bigger than
+   *              it is, which is how six of them got signed off as legible
+   *              while still reading as one speck in play.
+   */
+  constructor(readonly viewW: number, readonly viewH: number, readonly zoom = ZOOM) {
+    this.canvas = blankImage(viewW * zoom, viewH * zoom)
   }
 
   /** Draw an atlas frame at a world position, honouring the zoom. */
   private drawFrame(f: Frame, worldX: number, worldY: number): void {
-    const dx = Math.round((worldX - this.camX) * ZOOM + f.ox * ZOOM)
-    const dy = Math.round((worldY - this.camY) * ZOOM + f.oy * ZOOM)
+    const dx = Math.round((worldX - this.camX) * this.zoom + f.ox * this.zoom)
+    const dy = Math.round((worldY - this.camY) * this.zoom + f.oy * this.zoom)
     const { canvas } = this
     for (let y = 0; y < f.h; y++) {
       for (let x = 0; x < f.w; x++) {
         const si = ((f.y + y) * atlasImg.width + (f.x + x)) * 4
         if (atlasImg.data[si + 3] === 0) continue
-        for (let py = 0; py < ZOOM; py++) {
-          for (let px = 0; px < ZOOM; px++) {
-            const tx = dx + x * ZOOM + px
-            const ty = dy + y * ZOOM + py
+        for (let py = 0; py < this.zoom; py++) {
+          for (let px = 0; px < this.zoom; px++) {
+            const tx = dx + x * this.zoom + px
+            const ty = dy + y * this.zoom + py
             if (tx < 0 || ty < 0 || tx >= canvas.width || ty >= canvas.height) continue
             const di = (ty * canvas.width + tx) * 4
             canvas.data[di] = atlasImg.data[si]
@@ -182,16 +192,16 @@ export class WorldPainter {
    */
   private drawFrameT(f: Frame, worldX: number, worldY: number, rot: number, scale: number): void {
     const { canvas } = this
-    const cx = (worldX - this.camX) * ZOOM
-    const cy = (worldY - this.camY) * ZOOM
+    const cx = (worldX - this.camX) * this.zoom
+    const cy = (worldY - this.camY) * this.zoom
     const cos = Math.cos(rot)
     const sin = Math.sin(rot)
-    const half = (Math.max(f.w, f.h) * Math.abs(scale) * ZOOM) / 2 + 2
+    const half = (Math.max(f.w, f.h) * Math.abs(scale) * this.zoom) / 2 + 2
     for (let dy = -half; dy <= half; dy++) {
       for (let dx = -half; dx <= half; dx++) {
         // Rotate the destination offset back into unrotated frame space.
-        const ux = (dx * cos + dy * sin) / (scale * ZOOM)
-        const uy = (-dx * sin + dy * cos) / (scale * ZOOM)
+        const ux = (dx * cos + dy * sin) / (scale * this.zoom)
+        const uy = (-dx * sin + dy * cos) / (scale * this.zoom)
         const fx = Math.floor(ux + f.w / 2)
         const fy = Math.floor(uy + f.h / 2)
         if (fx < 0 || fy < 0 || fx >= f.w || fy >= f.h) continue
@@ -218,12 +228,12 @@ export class WorldPainter {
    */
   private tint(worldX: number, worldY: number, rgb: number, a: number): void {
     const { canvas } = this
-    const bx = Math.round((worldX - this.camX) * ZOOM)
-    const by = Math.round((worldY - this.camY) * ZOOM)
-    for (let py = 0; py < ZOOM; py++) {
+    const bx = Math.round((worldX - this.camX) * this.zoom)
+    const by = Math.round((worldY - this.camY) * this.zoom)
+    for (let py = 0; py < this.zoom; py++) {
       const ty = by + py
       if (ty < 0 || ty >= canvas.height) continue
-      for (let px = 0; px < ZOOM; px++) {
+      for (let px = 0; px < this.zoom; px++) {
         const tx = bx + px
         if (tx < 0 || tx >= canvas.width) continue
         const di = (ty * canvas.width + tx) * 4
@@ -386,9 +396,9 @@ export class WorldPainter {
         const s = g.kind === 'xp' ? 5 : 7
         fillRect(
           this.canvas,
-          Math.round((g.x - this.camX) * ZOOM - (s * ZOOM) / 2),
-          Math.round((g.y - this.camY) * ZOOM - (s * ZOOM) / 2),
-          s * ZOOM, s * ZOOM,
+          Math.round((g.x - this.camX) * this.zoom - (s * this.zoom) / 2),
+          Math.round((g.y - this.camY) * this.zoom - (s * this.zoom) / 2),
+          s * this.zoom, s * this.zoom,
           g.kind === 'xp' ? 0x5fd0c6 : 0xe0b040,
         )
       }

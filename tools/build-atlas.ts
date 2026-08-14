@@ -41,6 +41,9 @@ interface Manifest {
     frameWidth: number
     frameHeight: number
     directions: string[]
+    /** Order the direction bands appear in on the SHEET, which is not
+     *  necessarily the order `directions` names them in. */
+    directionOrder: string[]
     clips: Record<string, { rowPair: number; start: number; framesPerDirection: number }>
   }
   humanoids: Record<string, string>
@@ -114,6 +117,18 @@ const pending: Pending[] = []
 const errors: string[] = []
 /** Frames per direction, per sheet — a rooster walks in 6 and a pig in 12, so
  *  the renderer cannot assume one number. */
+/**
+ * How mirror-identical the left and right bands must be.
+ *
+ * A correct order measures 61-99% across the thirteen sheets: the farmer is
+ * near-perfect, the zombies less so because torn clothing is not symmetric. A
+ * WRONG order measures 10-12%, because it is comparing a side view against a
+ * front or back one. The gap is enormous, so the threshold only has to sit
+ * inside it — 45% is well clear of both edges and does not need retuning every
+ * time a new sheet lands.
+ */
+const SIDE_MIRROR_MIN = 0.45
+
 const clipLengths: Record<string, Record<string, number>> = {}
 
 // ---------------------------------------------------------------- humanoids
@@ -139,14 +154,81 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
 
   const fw = rig.frameWidth
   const fh = rig.frameHeight
+
+  // THE SECOND ASSERTION: the direction bands really are where directionOrder
+  // says they are.
+  //
+  // A wrong band order has no symptom the build can otherwise see — every
+  // frame is present, every frame is non-empty, and the game renders a
+  // confident, wrong sprite. It shipped from M0 to M7 with `down` drawing the
+  // right-facing pose and `right` drawing the front-facing one, and was found
+  // by a player, not by a test.
+  //
+  // The invariant is geometric and cheap: left and right are the same drawing
+  // mirrored, so band(left) flipped must match band(right) almost exactly,
+  // while up and down must NOT match each other. Any permutation that swaps a
+  // side view with a front or back view breaks one of the two.
+  {
+    const walk = rig.clips.walk
+    const rowY = walk.rowPair * 2 * manifest.cell
+    const bandX = (dir: string): number =>
+      (walk.start + rig.directionOrder.indexOf(dir) * walk.framesPerDirection) * fw
+    const match = (ax: number, bx: number, mirror: boolean): number => {
+      let same = 0
+      let total = 0
+      for (let y = 0; y < fh; y++) {
+        for (let x = 0; x < fw; x++) {
+          const ai = ((rowY + y) * sheet.width + ax + x) * 4
+          const bi = ((rowY + y) * sheet.width + bx + (mirror ? fw - 1 - x : x)) * 4
+          if (sheet.data[ai + 3] === 0 && sheet.data[bi + 3] === 0) continue
+          total++
+          if (
+            sheet.data[ai + 3] === sheet.data[bi + 3] &&
+            Math.abs(sheet.data[ai] - sheet.data[bi]) < 8 &&
+            Math.abs(sheet.data[ai + 1] - sheet.data[bi + 1]) < 8 &&
+            Math.abs(sheet.data[ai + 2] - sheet.data[bi + 2]) < 8
+          ) same++
+        }
+      }
+      return total ? same / total : 0
+    }
+
+    const sides = match(bandX('left'), bandX('right'), true)
+    const frontBack = match(bandX('up'), bandX('down'), false)
+    if (sides < SIDE_MIRROR_MIN) {
+      errors.push(
+        `${path}: directionOrder looks wrong — the "left" and "right" bands are only ` +
+        `${(sides * 100).toFixed(0)}% mirror-identical (expected >${SIDE_MIRROR_MIN * 100}%). The bands are ` +
+        `probably not [${rig.directionOrder.join(', ')}].`,
+      )
+    }
+    if (frontBack > 0.9) {
+      errors.push(
+        `${path}: directionOrder looks wrong — the "up" and "down" bands are ` +
+        `${(frontBack * 100).toFixed(0)}% identical, so at least one of them is not a ` +
+        `front or back view.`,
+      )
+    }
+  }
+
   clipLengths[id] = {}
 
   for (const [clipName, clip] of Object.entries(rig.clips)) {
     clipLengths[id][clipName] = clip.framesPerDirection
     const rowY = clip.rowPair * 2 * manifest.cell
-    rig.directions.forEach((dir, dirIndex) => {
+    rig.directions.forEach((dir) => {
+      // Canonical direction -> SOURCE band, via directionOrder. Using the index
+      // of `directions` directly assumes the sheet is laid out in the order the
+      // game names its directions, and this sheet is not: it runs right, up,
+      // left, down. That assumption shipped `down` drawing the right-facing
+      // sprite and `right` drawing the front one for every humanoid in the game.
+      const bandIndex = rig.directionOrder.indexOf(dir)
+      if (bandIndex < 0) {
+        errors.push(`${path}: directionOrder has no entry for "${dir}"`)
+        return
+      }
       for (let f = 0; f < clip.framesPerDirection; f++) {
-        const col = clip.start + dirIndex * clip.framesPerDirection + f
+        const col = clip.start + bandIndex * clip.framesPerDirection + f
         const sx = col * fw
         const b = contentBounds(sheet, sx, rowY, fw, fh)
         if (b.empty) {

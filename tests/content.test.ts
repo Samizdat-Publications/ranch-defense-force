@@ -6,7 +6,7 @@
  * run" — it ran fine, it just looked wrong.
  */
 import { describe, it, expect } from 'vitest'
-import { WEAPONS, ELEMENTS, ITEMS, projectileScaleFor } from '../src/content/index'
+import { WEAPONS, ELEMENTS, ITEMS, TUNING, projectileScaleFor } from '../src/content/index'
 
 /**
  * Behaviours that put a travelling object on screen.
@@ -78,6 +78,34 @@ describe('offers', () => {
         expect(k.startsWith('_'), `${k} leaked into a roster`).toBe(false)
         expect(typeof v, `${k} should be an object`).toBe('object')
       }
+    }
+  })
+})
+
+describe('camera zoom', () => {
+  /**
+   * A fixed zoom made screen size and DPI control how much world you see, so a
+   * bigger or denser monitor zoomed OUT. At 1920x1080 dpr 1.5 that was 810
+   * world pixels of vertical view, the farmer 2% of screen width, and every
+   * round a speck — which is why six distinct bullets still read as one after
+   * the art was fixed. Zoom must hold the world scale roughly constant instead.
+   */
+  it('keeps the visible world about the same height on any screen', async () => {
+    const { zoomFor } = await import('../src/render/renderer')
+    const cam = TUNING.camera as unknown as Record<string, number>
+    const target = cam.targetWorldHeight
+    // canvas heights for 1366/1080/1440/2160 at plausible pixel ratios
+    for (const h of [768, 1080, 1350, 1620, 1440, 2160, 2880, 4320]) {
+      const view = h / zoomFor(h)
+      expect(view, `canvas ${h}px -> ${view.toFixed(0)} world px`).toBeGreaterThan(target * 0.7)
+      expect(view, `canvas ${h}px -> ${view.toFixed(0)} world px`).toBeLessThan(target * 1.35)
+    }
+  })
+
+  it('only ever picks an integer zoom', async () => {
+    const { zoomFor } = await import('../src/render/renderer')
+    for (const h of [400, 768, 1080, 1620, 2160, 4320]) {
+      expect(Number.isInteger(zoomFor(h)), `zoomFor(${h})`).toBe(true)
     }
   })
 })

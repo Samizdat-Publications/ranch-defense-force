@@ -104,6 +104,23 @@ function startRun(classId: string, seedText: string): void {
   resize()
   renderer.camera.snapTo(world.player.x, world.player.y)
 
+  // A handle on the live run, dev builds only, so what is actually on screen can
+  // be inspected from the console. Headless tools can be made to agree with
+  // themselves and still disagree with the browser; this is how that gets
+  // caught instead of argued about.
+  if (import.meta.env.DEV) {
+    // Getters, not values. A plain object captures whatever the module locals
+    // held at construction, and every later `startRun` leaves the console
+    // holding a dead world — which reads as "the game is broken" rather than
+    // "the handle is stale".
+    ;(window as unknown as Record<string, unknown>).rdf = {
+      get world() { return world },
+      get renderer() { return renderer },
+      get atlas() { return atlas },
+      get offers() { return offers },
+    }
+  }
+
   world.events = {
     onSound: (name) => audio.play(name as SfxName),
     onLevelUp: (levels) => {
