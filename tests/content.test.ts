@@ -113,3 +113,30 @@ describe('camera zoom', () => {
     }
   })
 })
+
+describe('card art', () => {
+  /**
+   * `items.json` used to carry an `icon` field holding plain words — `clover`,
+   * `coffee`, `hat` — which were never atlas keys, so 17 of 22 items rendered
+   * as text-only cards in the shop, the level-up and the Homestead alike. It
+   * was invisible because a missing sprite degrades to nothing rather than
+   * erroring, which is exactly why it survived to M7.
+   *
+   * Reads the built atlas rather than mocking it, so this fails when the art
+   * and the content disagree, not merely when a string is absent.
+   */
+  it('gives every item and weapon a card sprite that is actually packed', async () => {
+    const { readFileSync } = await import('node:fs')
+    const frames = JSON.parse(readFileSync('public/atlas.json', 'utf8')).frames as Record<string, unknown>
+    const bad: string[] = []
+    for (const [id, def] of Object.entries(ITEMS)) {
+      const key = def.cardSprite as string | undefined
+      if (!key || !(key in frames)) bad.push(`item ${id} -> ${key ?? 'none'}`)
+    }
+    for (const [id, def] of Object.entries(WEAPONS)) {
+      const key = def.sprite
+      if (!key || !(key in frames)) bad.push(`weapon ${id} -> ${key ?? 'none'}`)
+    }
+    expect(bad).toEqual([])
+  })
+})

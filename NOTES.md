@@ -1118,13 +1118,7 @@ silhouettes the spec asks for and then hand the player a broken run when they
 bought one, so the ladder is built and priced and simply has no rungs yet. Drop
 four sheets into `assets/generated/characters/` and this becomes a content edit.
 
-**Seventeen of twenty-two items have no card art.** `items.json` carries an
-`icon` field holding plain words — `clover`, `coffee`, `hat` — which are not
-atlas keys and never were. Only five items have a real `cardSprite`. This is not
-a Homestead bug; the shop and level-up cards have been showing text-only cards
-for those items the whole time. Closing it means either finding real icons in
-the packs or accepting deliberate stand-ins, and it wants doing with the pack
-open rather than guessed at.
+**Seventeen of twenty-two items had no card art** — now fixed, see below.
 
 ### Acres
 
@@ -1144,3 +1138,23 @@ dead world, which reads as "the game is broken" rather than "the handle is
 stale". That cost twenty minutes the first time.
 
 115 tests pass.
+
+### Every item has card art now
+
+`items.json` carried an `icon` field holding plain words — `clover`, `coffee`,
+`hat` — which were never atlas keys. Only five items had a real `cardSprite`, so
+seventeen rendered as text-only cards in the shop, the level-up screen and the
+Homestead alike. Invisible for two milestones because a missing sprite degrades
+to nothing rather than erroring, which is the same reason the Scythe's white
+square survived: **the fallbacks in this renderer are all quiet, so absent art
+never announces itself.**
+
+Most items borrow a frame that was already packed — the thing an item is about
+is usually already drawn somewhere. Barbed Wire takes the silver ore, the
+Rooster Alarm takes an actual rooster, the Silo Key takes gold ore. Four needed
+real icons and came from the pack's 32x32 icon set.
+
+`tests/content.test.ts` now reads the built `atlas.json` and fails if any item
+or weapon points at a sprite that is not in it. It checks the art and the
+content against each other rather than checking that a string is non-empty,
+which is the only version of this test that would have caught the original bug.

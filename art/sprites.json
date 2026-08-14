@@ -468,5 +468,15 @@
     5
    ]
   }
+ },
+ "itemIcons": {
+  "_note": "Card art for items whose effect has no weapon or node to borrow. The `icon` field in items.json holds plain words ('clover', 'coffee') that were never atlas keys, so 17 of 22 items rendered as text-only cards in the shop, the level-up and the Homestead alike.",
+  "_base": "assets/modern-farm/Icons/Icons_32x32/Icons_32x32/",
+  "files": {
+   "item.coffee": "Singles_Icons_32x32_Food_Coffee.png",
+   "item.boots": "Singles_Icons_32x32_Resources_Whool_Brown.png",
+   "item.cloth": "Singles_Icons_32x32_Resources_Whool_White.png",
+   "item.clover": "Singles_Icons_32x32_Crops_Lettuce.png"
+  }
  }
 }

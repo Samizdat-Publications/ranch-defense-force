@@ -7,7 +7,8 @@
     "blurb": "Everything you own hits harder.",
     "mods": {
       "damagePct": 10
-    }
+    },
+    "cardSprite": "tool.pickaxe.stone"
   },
   "hayHook": {
     "name": "Hay Hook",
@@ -17,7 +18,8 @@
     "blurb": "Your melee weapons bite deeper.",
     "mods": {
       "meleePct": 18
-    }
+    },
+    "cardSprite": "weapon.pitchfork.t2"
   },
   "slingBands": {
     "name": "Sling Bands",
@@ -27,7 +29,8 @@
     "blurb": "Your guns hit harder.",
     "mods": {
       "rangedPct": 18
-    }
+    },
+    "cardSprite": "weapon.seedSpitter"
   },
   "keroseneCan": {
     "name": "Kerosene Can",
@@ -38,7 +41,8 @@
     "mods": {
       "damagePct": 25,
       "maxHp": -15
-    }
+    },
+    "cardSprite": "weapon.slopBucket"
   },
   "feedSack": {
     "name": "Feed Sack",
@@ -48,7 +52,8 @@
     "blurb": "More of you to lose before the field takes you.",
     "mods": {
       "maxHp": 20
-    }
+    },
+    "cardSprite": "pickup.feed"
   },
   "workBoots": {
     "name": "Work Boots",
@@ -58,7 +63,8 @@
     "blurb": "Cover the ground faster.",
     "mods": {
       "moveSpeedPct": 8
-    }
+    },
+    "cardSprite": "item.boots"
   },
   "weatherVane": {
     "name": "Weather Vane",
@@ -68,7 +74,8 @@
     "blurb": "Everything you own fires faster.",
     "mods": {
       "attackSpeedPct": 12
-    }
+    },
+    "cardSprite": "weapon.rake"
   },
   "saltLick": {
     "name": "Salt Lick",
@@ -78,7 +85,8 @@
     "blurb": "You knit back together slowly on your own.",
     "mods": {
       "hpRegen": 1
-    }
+    },
+    "cardSprite": "node.rockSmall"
   },
   "barbedWire": {
     "name": "Barbed Wire",
@@ -88,7 +96,8 @@
     "special": "reflect",
     "reflectDamage": 5,
     "blurb": "Anything that touches you takes some back.",
-    "mods": {}
+    "mods": {},
+    "cardSprite": "node.oreSilver"
   },
   "tractorPlate": {
     "name": "Tractor Plate",
@@ -99,7 +108,8 @@
     "mods": {
       "armor": 4,
       "moveSpeedPct": -5
-    }
+    },
+    "cardSprite": "node.rockBig"
   },
   "roosterAlarm": {
     "name": "Rooster Alarm",
@@ -109,7 +119,8 @@
     "blurb": "Sweep up gems and feed from further out.",
     "mods": {
       "pickupRadiusPct": 25
-    }
+    },
+    "cardSprite": "rooster.idle.down.0"
   },
   "siloKey": {
     "name": "Silo Key",
@@ -119,7 +130,8 @@
     "blurb": "Work nodes from further away, and get more from them.",
     "mods": {
       "harvestPct": 15
-    }
+    },
+    "cardSprite": "node.oreGold"
   },
   "fourLeaf": {
     "name": "Four-Leaf",
@@ -129,7 +141,8 @@
     "blurb": "Better cards and rarer drops turn up more often.",
     "mods": {
       "luck": 10
-    }
+    },
+    "cardSprite": "item.clover"
   },
   "coffeeThermos": {
     "name": "Coffee Thermos",
@@ -141,7 +154,8 @@
       "moveSpeedPct": 6,
       "attackSpeedPct": 6,
       "maxHp": -10
-    }
+    },
+    "cardSprite": "item.coffee"
   },
   "strawHat": {
     "name": "Straw Hat",
@@ -152,7 +166,8 @@
     "radius": 60,
     "reductionPct": 15,
     "blurb": "Enemies pressing close do less to you.",
-    "mods": {}
+    "mods": {},
+    "cardSprite": "kid.idle.down.0"
   },
   "wetRag": {
     "name": "Wet Rag",
@@ -162,7 +177,8 @@
     "special": "gasGrace",
     "graceSeconds": 2,
     "blurb": "Buys you a moment inside gas before it starts to hurt.",
-    "mods": {}
+    "mods": {},
+    "cardSprite": "item.cloth"
   },
   "pickaxeHead": {
     "name": "Better Pickaxe Head",
@@ -194,7 +210,8 @@
     "blurb": "Reach further when harvesting, and get more out of every node.",
     "mods": {
       "harvestPct": 25
-    }
+    },
+    "cardSprite": "node.oreBlue"
   },
   "fireRounds": {
     "name": "Tracer Rounds",
