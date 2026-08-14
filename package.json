@@ -19,7 +19,8 @@
     "inspect": "vite-node tools/inspect-sheet.ts --",
     "pitch": "vite-node tools/sprite-pitch.ts --",
     "shot": "vite-node tools/screenshot.ts --",
-    "typecheck": "tsc --noEmit && tsc -p tools --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tools --noEmit",
+    "range": "vite-node tools/weapon-range.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

@@ -15,7 +15,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { ENEMIES, NODES, TUNING, WEAPONS } from '../content'
+import { ENEMIES, NODES, TUNING, WEAPONS, projectileScaleFor } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 
@@ -25,8 +25,14 @@ export const ZOOM = 2
 /** Walk cycle advances one frame per this many pixels travelled, so sprites
  *  never appear to skate. */
 const PIXELS_PER_WALK_FRAME = 11
-/** Weapon art is 32px; a projectile made of it needs to be smaller than the
- *  weapon that threw it. */
+/**
+ * Base scale for a projectile sprite; each weapon multiplies it by its own
+ * `projectileScale`.
+ *
+ * A single number could not serve both a 96x64 mortar shell and a 48x48 pellet
+ * burst, and the per-weapon multiplier is what lets each round be drawn at the
+ * size its silhouette needs to be recognised at.
+ */
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile clips are authored at 15fps. */
 const PROJECTILE_FPS = 15
@@ -414,7 +420,7 @@ export class Renderer {
         it.rotation = w.elapsed * 7 + p.t1
       } else if (p.vx !== 0 || p.vy !== 0) it.rotation = Math.atan2(p.vy, p.vx)
       else it.rotation = p.angle
-      it.scaleX = frame ? PROJECTILE_SCALE : 1
+      it.scaleX = frame ? PROJECTILE_SCALE * projectileScaleFor(p.weaponId) : 1
       it.scaleY = it.scaleX
     }
 
@@ -640,9 +646,6 @@ export class Renderer {
     // icon is a decent bullet for thrown produce and a poor one for anything
     // else — a spinning hacksaw was never going to read as a projectile.
     const def = WEAPONS[p.weaponId] as { projectileClip?: string; shardClip?: string } | undefined
-    // The element wins over the weapon's own bullet: a fire build fires
-    // fireballs whatever the weapon normally throws, which is the point of it
-    // being a build choice you can see from across the field.
     // An element RECOLOURS the weapon's own round rather than replacing it.
     // Swapping the clip outright made every weapon fire an identical bullet the
     // moment you took an element, which erased exactly the weapon identity the

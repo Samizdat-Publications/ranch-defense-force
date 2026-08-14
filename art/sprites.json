@@ -1,447 +1,441 @@
 {
-  "_note": "Source-of-truth asset manifest. The ONLY place a file path appears. tools/build-atlas.ts reads this and writes public/atlas.png + public/atlas.json; the game never reads assets/ at runtime.",
-  "cell": 32,
-  "humanoidRig": {
-    "_note": "All thirteen generator exports share one rig: 56 cols x 22 rows of 32px cells, and a character occupies TWO stacked rows (32 wide x 64 tall). Rows pair up: even row is the upper half, odd row the lower. Verified with tools/inspect-sheet.ts.",
-    "sheetWidth": 1792,
-    "sheetHeight": 704,
-    "frameWidth": 32,
-    "frameHeight": 64,
-    "directions": [
-      "down",
-      "up",
-      "left",
-      "right"
-    ],
-    "clips": {
-      "idle": {
-        "rowPair": 0,
-        "start": 0,
-        "framesPerDirection": 1
-      },
-      "walk": {
-        "rowPair": 1,
-        "start": 0,
-        "framesPerDirection": 6
-      }
-    }
-  },
-  "humanoids": {
-    "hand": "assets/generated/characters/farmer-01.png",
-    "kid": "assets/generated/characters/farmer-female-01.png",
-    "farmhand": "assets/generated/characters/zombie-01.png",
-    "acidZombie": "assets/generated/characters/zombie-acid-01.png",
-    "bloatedFarmhand": "assets/generated/characters/zombie-02.png",
-    "maskedSprayer": "assets/generated/characters/gas-enemy-01.png",
-    "maskedHauler": "assets/generated/characters/gas-enemy-02.png"
-  },
-  "animals": {
-    "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it \u2014 a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
-    "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then \u2014 that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views \u2014 was wrong. Nothing is wrong with the art. All four facings are used now.",
-    "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it \u2014 which means it was previously drawing its right-facing side view whenever it walked down.",
-    "_base": "assets/modern-farm/32x32/Animals_32x32/",
-    "directionOrder": [
-      "right",
-      "up",
-      "left",
-      "down"
-    ],
-    "sheets": {
-      "rooster": {
-        "path": "Chickens_and_Roosters_32x32/Rooster_Brown_32x32.png",
-        "rows": 1,
-        "frameWidth": 32,
-        "walkRow": 3,
-        "framesPerDirection": 6
-      },
-      "feralDog": {
-        "path": "Dogs_32x32/Dog_Basenji_Brown_32x32.png",
-        "rows": 2,
-        "frameWidth": 64,
-        "walkRow": 4,
-        "framesPerDirection": 6
-      },
-      "duckFlight": {
-        "path": "Ducks_32x32/Duck_Brown_32x32.png",
-        "rows": 2,
-        "frameWidth": 64,
-        "walkRow": 2,
-        "framesPerDirection": 6
-      },
-      "blownSheep": {
-        "path": "Sheeps_32x32/Sheep_2_White_32x32.png",
-        "rows": 2,
-        "frameWidth": 64,
-        "walkRow": 2,
-        "framesPerDirection": 6
-      },
-      "sickHog": {
-        "path": "Pigs_32x32/Pig_Pink_32x32.png",
-        "rows": 2,
-        "frameWidth": 64,
-        "walkRow": 2,
-        "framesPerDirection": 6
-      },
-      "prizeBull": {
-        "_note": "The wave 12 boss. The cow sheet is NOT shaped like the other animals \u2014 72x12 cells against their 48x8 \u2014 and its walk band sits at row 6 on a 96px pitch, not 64. Derived with npm run pitch; rows 2 and 4 look plausible and are not it. Cow_Big_Black is used because \u00a79 wants the Bull palette-shifted to near-black and this variant already is, so the shift costs nothing.",
-        "path": "Cows_32x32/Cow_Big_Black_32x32.png",
-        "rows": 2,
-        "frameWidth": 96,
-        "walkRow": 6,
-        "framesPerDirection": 6
-      }
-    }
-  },
-  "vehicles": {
-    "_note": "The Duster (\u00a79 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch \u2014 bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
-    "_directionNote": "Order is left, up, right, down \u2014 NOT the animals' right, up, left, down. Verified by eye against the sheet. Three sheet families in this project now use three different direction orders, which is why every one of them is measured rather than assumed.",
-    "_scaleNote": "\u00a79 says tractor at x3. That was written assuming a 32px source; this tractor is drawn ~130px wide already, so x3 would be nearly 400px against a 520px camera. It is packed at native size and drawn at x1 \u2014 which is still about four times the player, and the heavy read comes from the slowed frame rate instead.",
-    "_base": "assets/modern-farm/32x32/Vehicles_32x32/",
-    "frameWidth": 192,
-    "frameHeight": 192,
-    "framesPerDirection": 6,
-    "directionOrder": [
-      "left",
-      "up",
-      "right",
-      "down"
-    ],
-    "sheets": {
-      "duster": {
-        "path": "Tractor_32x32.png",
-        "firstBand": 1
-      }
-    }
-  },
-  "singles": {
-    "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field \u2014 break one for feed.",
-    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
-    "files": {
-      "crop.corn": "Crop_Corn_Ripe_32x32.png",
-      "crop.pumpkin": "Crop_Pumpkin_Ripe_32x32.png",
-      "crop.watermelon": "Crop_Watermelon_Ripe_32x32.png",
-      "crop.cabbage": "Crop_Cabbage_Ripe_32x32.png",
-      "crop.tomato": "Crop_Tomato_Ripe_32x32.png",
-      "crop.grain": "Crop_Grain_Ripe_32x32.png",
-      "crop.chili": "Crop_Chili_Pepper_Ripe_32x32.png",
-      "crop.strawberry": "Crop_Strawberry_Ripe_32x32.png",
-      "crop.cauliflower": "Crop_Cauliflower_Ripe_32x32.png",
-      "crop.zucchini": "Crop_Zucchini_Ripe_32x32.png"
-    }
-  },
-  "singlesExtra": {
-    "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. \u00a711 wants gems readable above all else.",
-    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
-    "files": {
-      "pickup.feed": "Pickup_Crop_Grain_32x32.png",
-      "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
-    }
-  },
-  "nodes": {
-    "_note": "Harvestable resource nodes. Rocks are mined with the pickaxe, trees felled with the axe \u2014 see src/content/nodes.json for their HP and payouts. The pack ships rocks with ore already embedded (bronze, silver, gold, blue and red stone), which is exactly the 'minerals inside the rock' read Deep Rock Galactic: Survivor is built on, so the ore tier is visible before you swing at it.",
-    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Props_and_Buildings_32x32/",
-    "files": {
-      "node.rockSmall": "Rock_Small_32x32.png",
-      "node.rockMedium": "Rock_Medium_32x32.png",
-      "node.rockBig": "Rock_Big_32x32.png",
-      "node.oreBronze": "Rock_Small_Bronze_Stone_32x32.png",
-      "node.oreSilver": "Rock_Medium_Silver_Stone_32x32.png",
-      "node.oreGold": "Rock_Medium_Gold_Stone_32x32.png",
-      "node.oreBlue": "Rock_Big_Blue_Stone_32x32.png",
-      "node.oreRed": "Rock_Big_REd_Stone_32x32.png"
-    }
-  },
-  "nodeTrees": {
-    "_note": "Single-tile trees only. The Trees directory is mostly *_Modular_Left/Middle/Right pieces meant to be tiled into a treeline; those are multi-tile and would fail the one-tile assertion. The standalone Tree_* files are what a fellable tree needs.",
-    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Trees_32x32/",
-    "files": {
-      "node.treeSmall": "Tree_Birch_Green_Small_32x32.png",
-      "node.treeMedium": "Tree_Oak_Brown_Medium_32x32.png",
-      "node.treeBig": "Tree_Oak_Blue_Green_Big_32x32.png"
-    }
-  },
-  "weapons": {
-    "_note": "One sprite per weapon, packed as weapon.<id> and keyed to the ids in src/content/weapons.json. These are what the player sees ringed around them and what the projectiles are drawn as. Nothing packed them before, so every weapon's `sprite` field pointed at a name the atlas had never heard of, every projectile fell through to the coloured-square fallback, and a melee arc drew as a ~100px white box.",
-    "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here \u2014 a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",
-    "_sizeNote": "Every entry must be ONE object at roughly one tile. Several files in this pack named *_Load_* or *_Stack_* are multi-tile piles \u2014 Bucket_Load is 58x64 of stacked buckets and rendered as an unreadable brown slab twice the player's size in the weapon ring. tools/build-atlas.ts asserts the packed size and fails the build naming the file.",
-    "_base": "assets/modern-farm/32x32/Single_Files_32x32/",
-    "files": {
-      "weapon.shovel": "Props_and_Buildings_32x32/Wooden_Shovel_1_Stone_Oven_32x32.png",
-      "weapon.seedSpitter": "Pickup_Items_32x32/Pickup_Crop_Corn_32x32.png",
-      "weapon.melonLob": "Pickup_Items_32x32/Pickup_Crop_Watermelon_32x32.png",
-      "weapon.chiliShot": "Pickup_Items_32x32/Pickup_Crop_Chili_Pepper_32x32.png",
-      "weapon.eggToss": "Props_and_Buildings_32x32/Egg_32x32.png",
-      "weapon.slopBucket": "Props_and_Buildings_32x32/Bucket_1_Single_32x32.png",
-      "weapon.framingHammer": "Props_and_Buildings_32x32/Hammer_1_Woodwork_Crafting_Table_32x32.png",
-      "weapon.grainLure": "Props_and_Buildings_32x32/Grain_1_32x32.png"
-    }
-  },
-  "weaponsFarmTools": {
-    "_note": "Caz Pixel Fantasy Icons: Farm Tools. The pack is 94 icons but 81 of them are seed packets \u2014 there are exactly FOUR tools in it, and three of them are weapons this project had no art for at all. farm-tool1 is a scythe, 2 a watering can, 3 a three-tine rake, 4 a fishing rod. They replace the hacksaw-as-axe, milk-can-as-watering-can and branch-as-rod stand-ins.",
-    "_styleNote": "Different hand from LimeZu: cool blue-grey metal against LimeZu's warm muted farm palette. Conformed on the way in for exactly the reason \u00a710 step 3 gives.",
-    "_base": "assets/icons-farm/MV Icons Farm Tools/Individual Icons/",
-    "conform": true,
-    "files": {
-      "weapon.axe": "farm-tool1.png",
-      "weapon.wateringCan": "farm-tool2.png",
-      "weapon.rake": "farm-tool3.png",
-      "weapon.fishingRod": "farm-tool4.png"
-    }
-  },
-  "tools": {
-    "_note": "Pixcuit Medieval Tool Icons. The pickaxe and axe ladders the player actually carries \u2014 six tiers each, keyed to the tiers in src/content/nodes.json so the sprite is looked up straight from the tool's current tier. The pack's six materials are why nodes.json has six tiers rather than the five it started with: matching the art beat inventing a mapping from steel to titanium.",
-    "_spellingNote": "The pack spells shovel 'Showel'. Not used here, but it will bite whoever adds it.",
-    "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
-    "conform": true,
-    "files": {
-      "tool.pickaxe.wood": "Wooden_Pickaxe.png",
-      "tool.pickaxe.stone": "Stone_Pickaxe.png",
-      "tool.pickaxe.iron": "Iron_Pickaxe.png",
-      "tool.pickaxe.golden": "Golden_Pickaxe.png",
-      "tool.pickaxe.titanium": "Titanium_Pickaxe.png",
-      "tool.pickaxe.ruby": "Ruby_Pickaxe.png",
-      "tool.axe.wood": "Wooden_Axe.png",
-      "tool.axe.stone": "Stone_Axe.png",
-      "tool.axe.iron": "Iron_Axe.png",
-      "tool.axe.golden": "Golden_Axe.png",
-      "tool.axe.titanium": "Titanium_Axe.png",
-      "tool.axe.ruby": "Ruby_Axe.png"
-    }
-  },
-  "weaponTiers": {
-    "_note": "Melee weapon art per TIER, so merging a weapon is visible on the weapon. Weapons tier 1-4 and the Pixcuit pack ships six materials, so four are picked that read as an obvious escalation rather than adjacent shades nobody would notice.",
-    "_gapNote": "The pack is NOT complete per tool, which is why the four materials differ by weapon rather than being one shared list: there is no Iron Pitchfork and no Golden Sickle. Checked against the directory, not assumed.",
-    "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
-    "conform": true,
-    "files": {
-      "weapon.pitchfork.t1": "Wooden_Pitchfork.png",
-      "weapon.pitchfork.t2": "Stone_Pitchfork.png",
-      "weapon.pitchfork.t3": "Titanium_Pitchfork.png",
-      "weapon.pitchfork.t4": "Ruby_Pitchfork.png",
-      "weapon.scythe.t1": "Wooden_Sickle.png",
-      "weapon.scythe.t2": "Iron_Sickle.png",
-      "weapon.scythe.t3": "Titanium_Sickle.png",
-      "weapon.scythe.t4": "Ruby_Sickle.png",
-      "weapon.sledge.t1": "Wooden_Hammer.png",
-      "weapon.sledge.t2": "Iron_Hammer.png",
-      "weapon.sledge.t3": "Titanium_Hammer.png",
-      "weapon.sledge.t4": "Ruby_Hammer.png"
-    }
-  },
-  "gunSheet": {
-    "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed \u2014 rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
-    "_layoutNote": "rowTops and colLefts are the measured content bands. Cells are sliced generously and trimmed to content by the builder, so the varying gun widths inside a column do not need listing.",
-    "path": "assets/icons-guns/pixel guns transparent background no text.png",
-    "conform": true,
-    "cellWidth": 28,
-    "cellHeight": 9,
-    "categories": [
-      "pistol",
-      "smg",
-      "carbine",
-      "rifle",
-      "shotgun",
-      "lmg"
-    ],
-    "colLefts": [
-      45,
-      130,
-      216,
-      302,
-      388,
-      471
-    ],
-    "rowTops": [
-      36,
-      45,
-      54,
-      63,
-      72,
-      81,
-      90,
-      99,
-      108,
-      118,
-      126,
-      135,
-      144,
-      153,
-      162,
-      171,
-      180,
-      189,
-      198,
-      207,
-      217,
-      225
-    ]
-  },
-  "fx": {
-    "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (\u00a710 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre \u2014 an explosion is centred on a point, it does not stand on the ground.",
-    "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",
-    "_base": "assets/effects-fx/Free/",
-    "cell": 64,
-    "clips": {
-      "hitSpark": {
-        "path": "Part 6/273.png",
-        "row": 5,
-        "frames": 8
-      },
-      "critStar": {
-        "path": "Part 10/486.png",
-        "row": 0,
-        "frames": 12
-      },
-      "muzzle": {
-        "path": "Part 11/526.png",
-        "row": 0,
-        "frames": 9
-      },
-      "slash": {
-        "path": "Part 10/477.png",
-        "row": 5,
-        "frames": 12
-      },
-      "explosion": {
-        "path": "Part 12/569.png",
-        "row": 0,
-        "frames": 13
-      },
-      "gas": {
-        "path": "Part 12/566.png",
-        "row": 3,
-        "frames": 13
-      },
-      "dust": {
-        "path": "Part 9/426.png",
-        "row": 4,
-        "frames": 10
-      },
-      "shock": {
-        "path": "Part 9/436.png",
-        "row": 5,
-        "frames": 9
-      }
-    }
-  },
-  "projectiles": {
-    "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid \u2014 no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
-    "_choiceNote": "Every type ships in 6-8 colours and two sizes; only ONE colour of the SMALL size is packed per entry. The large sizes are 36-64px wide, which is bigger than the player, and packing every colour would be ~3000 frames for an atlas that currently holds 449. Pick the colour closest to the intent here and let the conform do the rest.",
-    "_base": "assets/projectiles/",
-    "clips": {
-      "proj.spark": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_small_yellow"
-      },
-      "proj.fireball": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_fireball_small_orange"
-      },
-      "proj.meteor": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_small_green"
-      },
-      "proj.orb": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_magic_orb_small_yellow"
-      },
-      "proj.acid": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_small_green"
-      },
-      "proj.kunai": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_small_gray"
-      },
-      "proj.shuriken": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_shuriken_small_gray"
-      },
-      "proj.knife": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_knife_small_gray"
-      },
-      "proj.iceSpike": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ice_spike_small_blue"
-      },
-      "fx.shockwave": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ground_shockwave_small_white"
-      },
-      "fx.arrowImpact": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_orange"
-      },
-      "fx.bigImpact": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_red"
-      },
-      "proj.spark.fire": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_small_orange"
-      },
-      "proj.spark.acid": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_small_green"
-      },
-      "proj.spark.frost": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_small_blue"
-      },
-      "proj.meteor.fire": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_small_orange"
-      },
-      "proj.meteor.acid": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_small_green"
-      },
-      "proj.meteor.frost": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_small_blue"
-      },
-      "proj.orb.fire": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_magic_orb_small_orange"
-      },
-      "proj.orb.acid": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_magic_orb_small_green"
-      },
-      "proj.orb.frost": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_magic_orb_small_blue"
-      },
-      "proj.iceSpike.fire": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ice_spike_small_orange"
-      },
-      "proj.iceSpike.acid": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ice_spike_small_green"
-      },
-      "proj.iceSpike.frost": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ice_spike_small_blue"
-      },
-      "proj.kunai.fire": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_small_orange"
-      },
-      "proj.kunai.acid": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_small_green"
-      },
-      "proj.kunai.frost": {
-        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_small_blue"
-      },
-      "proj.acid.fire": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_small_orange"
-      },
-      "proj.acid.acid": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_small_green"
-      },
-      "proj.acid.frost": {
-        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_small_blue"
-      }
-    },
-    "_elementNote": "Each bullet clip is packed in three extra colours, one per element. An element RECOLOURS the weapon's own round rather than replacing it: a fire Scattergun still throws sparks, orange ones. Replacing the clip outright made every weapon fire an identical bullet the moment you took an element, which erased the weapon identity the ring and the bullets exist to communicate."
-  },
-  "terrainSource": {
-    "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
-    "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used \u2014 anything with a blob edge will not tile. Found with tools/_scan.ts.",
-    "tiles": {
-      "grass": [
-        3,
-        2
-      ],
-      "dirt": [
-        1,
-        1
-      ],
-      "soil": [
-        1,
-        13
-      ],
-      "hay": [
-        1,
-        5
-      ]
-    }
+ "_note": "Source-of-truth asset manifest. The ONLY place a file path appears. tools/build-atlas.ts reads this and writes public/atlas.png + public/atlas.json; the game never reads assets/ at runtime.",
+ "cell": 32,
+ "humanoidRig": {
+  "_note": "All thirteen generator exports share one rig: 56 cols x 22 rows of 32px cells, and a character occupies TWO stacked rows (32 wide x 64 tall). Rows pair up: even row is the upper half, odd row the lower. Verified with tools/inspect-sheet.ts.",
+  "sheetWidth": 1792,
+  "sheetHeight": 704,
+  "frameWidth": 32,
+  "frameHeight": 64,
+  "directions": [
+   "down",
+   "up",
+   "left",
+   "right"
+  ],
+  "clips": {
+   "idle": {
+    "rowPair": 0,
+    "start": 0,
+    "framesPerDirection": 1
+   },
+   "walk": {
+    "rowPair": 1,
+    "start": 0,
+    "framesPerDirection": 6
+   }
   }
+ },
+ "humanoids": {
+  "hand": "assets/generated/characters/farmer-01.png",
+  "kid": "assets/generated/characters/farmer-female-01.png",
+  "farmhand": "assets/generated/characters/zombie-01.png",
+  "acidZombie": "assets/generated/characters/zombie-acid-01.png",
+  "bloatedFarmhand": "assets/generated/characters/zombie-02.png",
+  "maskedSprayer": "assets/generated/characters/gas-enemy-01.png",
+  "maskedHauler": "assets/generated/characters/gas-enemy-02.png"
+ },
+ "animals": {
+  "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it — a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
+  "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then — that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views — was wrong. Nothing is wrong with the art. All four facings are used now.",
+  "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it — which means it was previously drawing its right-facing side view whenever it walked down.",
+  "_base": "assets/modern-farm/32x32/Animals_32x32/",
+  "directionOrder": [
+   "right",
+   "up",
+   "left",
+   "down"
+  ],
+  "sheets": {
+   "rooster": {
+    "path": "Chickens_and_Roosters_32x32/Rooster_Brown_32x32.png",
+    "rows": 1,
+    "frameWidth": 32,
+    "walkRow": 3,
+    "framesPerDirection": 6
+   },
+   "feralDog": {
+    "path": "Dogs_32x32/Dog_Basenji_Brown_32x32.png",
+    "rows": 2,
+    "frameWidth": 64,
+    "walkRow": 4,
+    "framesPerDirection": 6
+   },
+   "duckFlight": {
+    "path": "Ducks_32x32/Duck_Brown_32x32.png",
+    "rows": 2,
+    "frameWidth": 64,
+    "walkRow": 2,
+    "framesPerDirection": 6
+   },
+   "blownSheep": {
+    "path": "Sheeps_32x32/Sheep_2_White_32x32.png",
+    "rows": 2,
+    "frameWidth": 64,
+    "walkRow": 2,
+    "framesPerDirection": 6
+   },
+   "sickHog": {
+    "path": "Pigs_32x32/Pig_Pink_32x32.png",
+    "rows": 2,
+    "frameWidth": 64,
+    "walkRow": 2,
+    "framesPerDirection": 6
+   },
+   "prizeBull": {
+    "_note": "The wave 12 boss. The cow sheet is NOT shaped like the other animals — 72x12 cells against their 48x8 — and its walk band sits at row 6 on a 96px pitch, not 64. Derived with npm run pitch; rows 2 and 4 look plausible and are not it. Cow_Big_Black is used because §9 wants the Bull palette-shifted to near-black and this variant already is, so the shift costs nothing.",
+    "path": "Cows_32x32/Cow_Big_Black_32x32.png",
+    "rows": 2,
+    "frameWidth": 96,
+    "walkRow": 6,
+    "framesPerDirection": 6
+   }
+  }
+ },
+ "vehicles": {
+  "_note": "The Duster (§9 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch — bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
+  "_directionNote": "Order is left, up, right, down — NOT the animals' right, up, left, down. Verified by eye against the sheet. Three sheet families in this project now use three different direction orders, which is why every one of them is measured rather than assumed.",
+  "_scaleNote": "§9 says tractor at x3. That was written assuming a 32px source; this tractor is drawn ~130px wide already, so x3 would be nearly 400px against a 520px camera. It is packed at native size and drawn at x1 — which is still about four times the player, and the heavy read comes from the slowed frame rate instead.",
+  "_base": "assets/modern-farm/32x32/Vehicles_32x32/",
+  "frameWidth": 192,
+  "frameHeight": 192,
+  "framesPerDirection": 6,
+  "directionOrder": [
+   "left",
+   "up",
+   "right",
+   "down"
+  ],
+  "sheets": {
+   "duster": {
+    "path": "Tractor_32x32.png",
+    "firstBand": 1
+   }
+  }
+ },
+ "singles": {
+  "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
+  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
+  "files": {
+   "crop.corn": "Crop_Corn_Ripe_32x32.png",
+   "crop.pumpkin": "Crop_Pumpkin_Ripe_32x32.png",
+   "crop.watermelon": "Crop_Watermelon_Ripe_32x32.png",
+   "crop.cabbage": "Crop_Cabbage_Ripe_32x32.png",
+   "crop.tomato": "Crop_Tomato_Ripe_32x32.png",
+   "crop.grain": "Crop_Grain_Ripe_32x32.png",
+   "crop.chili": "Crop_Chili_Pepper_Ripe_32x32.png",
+   "crop.strawberry": "Crop_Strawberry_Ripe_32x32.png",
+   "crop.cauliflower": "Crop_Cauliflower_Ripe_32x32.png",
+   "crop.zucchini": "Crop_Zucchini_Ripe_32x32.png"
+  }
+ },
+ "singlesExtra": {
+  "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. §11 wants gems readable above all else.",
+  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
+  "files": {
+   "pickup.feed": "Pickup_Crop_Grain_32x32.png",
+   "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
+  }
+ },
+ "nodes": {
+  "_note": "Harvestable resource nodes. Rocks are mined with the pickaxe, trees felled with the axe — see src/content/nodes.json for their HP and payouts. The pack ships rocks with ore already embedded (bronze, silver, gold, blue and red stone), which is exactly the 'minerals inside the rock' read Deep Rock Galactic: Survivor is built on, so the ore tier is visible before you swing at it.",
+  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Props_and_Buildings_32x32/",
+  "files": {
+   "node.rockSmall": "Rock_Small_32x32.png",
+   "node.rockMedium": "Rock_Medium_32x32.png",
+   "node.rockBig": "Rock_Big_32x32.png",
+   "node.oreBronze": "Rock_Small_Bronze_Stone_32x32.png",
+   "node.oreSilver": "Rock_Medium_Silver_Stone_32x32.png",
+   "node.oreGold": "Rock_Medium_Gold_Stone_32x32.png",
+   "node.oreBlue": "Rock_Big_Blue_Stone_32x32.png",
+   "node.oreRed": "Rock_Big_REd_Stone_32x32.png"
+  }
+ },
+ "nodeTrees": {
+  "_note": "Single-tile trees only. The Trees directory is mostly *_Modular_Left/Middle/Right pieces meant to be tiled into a treeline; those are multi-tile and would fail the one-tile assertion. The standalone Tree_* files are what a fellable tree needs.",
+  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Trees_32x32/",
+  "files": {
+   "node.treeSmall": "Tree_Birch_Green_Small_32x32.png",
+   "node.treeMedium": "Tree_Oak_Brown_Medium_32x32.png",
+   "node.treeBig": "Tree_Oak_Blue_Green_Big_32x32.png"
+  }
+ },
+ "weapons": {
+  "_note": "One sprite per weapon, packed as weapon.<id> and keyed to the ids in src/content/weapons.json. These are what the player sees ringed around them and what the projectiles are drawn as. Nothing packed them before, so every weapon's `sprite` field pointed at a name the atlas had never heard of, every projectile fell through to the coloured-square fallback, and a melee arc drew as a ~100px white box.",
+  "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here — a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",
+  "_sizeNote": "Every entry must be ONE object at roughly one tile. Several files in this pack named *_Load_* or *_Stack_* are multi-tile piles — Bucket_Load is 58x64 of stacked buckets and rendered as an unreadable brown slab twice the player's size in the weapon ring. tools/build-atlas.ts asserts the packed size and fails the build naming the file.",
+  "_base": "assets/modern-farm/32x32/Single_Files_32x32/",
+  "files": {
+   "weapon.shovel": "Props_and_Buildings_32x32/Wooden_Shovel_1_Stone_Oven_32x32.png",
+   "weapon.seedSpitter": "Pickup_Items_32x32/Pickup_Crop_Corn_32x32.png",
+   "weapon.melonLob": "Pickup_Items_32x32/Pickup_Crop_Watermelon_32x32.png",
+   "weapon.chiliShot": "Pickup_Items_32x32/Pickup_Crop_Chili_Pepper_32x32.png",
+   "weapon.eggToss": "Props_and_Buildings_32x32/Egg_32x32.png",
+   "weapon.slopBucket": "Props_and_Buildings_32x32/Bucket_1_Single_32x32.png",
+   "weapon.framingHammer": "Props_and_Buildings_32x32/Hammer_1_Woodwork_Crafting_Table_32x32.png",
+   "weapon.grainLure": "Props_and_Buildings_32x32/Grain_1_32x32.png"
+  }
+ },
+ "weaponsFarmTools": {
+  "_note": "Caz Pixel Fantasy Icons: Farm Tools. The pack is 94 icons but 81 of them are seed packets — there are exactly FOUR tools in it, and three of them are weapons this project had no art for at all. farm-tool1 is a scythe, 2 a watering can, 3 a three-tine rake, 4 a fishing rod. They replace the hacksaw-as-axe, milk-can-as-watering-can and branch-as-rod stand-ins.",
+  "_styleNote": "Different hand from LimeZu: cool blue-grey metal against LimeZu's warm muted farm palette. Conformed on the way in for exactly the reason §10 step 3 gives.",
+  "_base": "assets/icons-farm/MV Icons Farm Tools/Individual Icons/",
+  "conform": true,
+  "files": {
+   "weapon.axe": "farm-tool1.png",
+   "weapon.wateringCan": "farm-tool2.png",
+   "weapon.rake": "farm-tool3.png",
+   "weapon.fishingRod": "farm-tool4.png"
+  }
+ },
+ "tools": {
+  "_note": "Pixcuit Medieval Tool Icons. The pickaxe and axe ladders the player actually carries — six tiers each, keyed to the tiers in src/content/nodes.json so the sprite is looked up straight from the tool's current tier. The pack's six materials are why nodes.json has six tiers rather than the five it started with: matching the art beat inventing a mapping from steel to titanium.",
+  "_spellingNote": "The pack spells shovel 'Showel'. Not used here, but it will bite whoever adds it.",
+  "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
+  "conform": true,
+  "files": {
+   "tool.pickaxe.wood": "Wooden_Pickaxe.png",
+   "tool.pickaxe.stone": "Stone_Pickaxe.png",
+   "tool.pickaxe.iron": "Iron_Pickaxe.png",
+   "tool.pickaxe.golden": "Golden_Pickaxe.png",
+   "tool.pickaxe.titanium": "Titanium_Pickaxe.png",
+   "tool.pickaxe.ruby": "Ruby_Pickaxe.png",
+   "tool.axe.wood": "Wooden_Axe.png",
+   "tool.axe.stone": "Stone_Axe.png",
+   "tool.axe.iron": "Iron_Axe.png",
+   "tool.axe.golden": "Golden_Axe.png",
+   "tool.axe.titanium": "Titanium_Axe.png",
+   "tool.axe.ruby": "Ruby_Axe.png"
+  }
+ },
+ "weaponTiers": {
+  "_note": "Melee weapon art per TIER, so merging a weapon is visible on the weapon. Weapons tier 1-4 and the Pixcuit pack ships six materials, so four are picked that read as an obvious escalation rather than adjacent shades nobody would notice.",
+  "_gapNote": "The pack is NOT complete per tool, which is why the four materials differ by weapon rather than being one shared list: there is no Iron Pitchfork and no Golden Sickle. Checked against the directory, not assumed.",
+  "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
+  "conform": true,
+  "files": {
+   "weapon.pitchfork.t1": "Wooden_Pitchfork.png",
+   "weapon.pitchfork.t2": "Stone_Pitchfork.png",
+   "weapon.pitchfork.t3": "Titanium_Pitchfork.png",
+   "weapon.pitchfork.t4": "Ruby_Pitchfork.png",
+   "weapon.scythe.t1": "Wooden_Sickle.png",
+   "weapon.scythe.t2": "Iron_Sickle.png",
+   "weapon.scythe.t3": "Titanium_Sickle.png",
+   "weapon.scythe.t4": "Ruby_Sickle.png",
+   "weapon.sledge.t1": "Wooden_Hammer.png",
+   "weapon.sledge.t2": "Iron_Hammer.png",
+   "weapon.sledge.t3": "Titanium_Hammer.png",
+   "weapon.sledge.t4": "Ruby_Hammer.png"
+  }
+ },
+ "gunSheet": {
+  "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed — rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
+  "_layoutNote": "rowTops and colLefts are the measured content bands. Cells are sliced generously and trimmed to content by the builder, so the varying gun widths inside a column do not need listing.",
+  "path": "assets/icons-guns/pixel guns transparent background no text.png",
+  "conform": true,
+  "cellWidth": 28,
+  "cellHeight": 9,
+  "categories": [
+   "pistol",
+   "smg",
+   "carbine",
+   "rifle",
+   "shotgun",
+   "lmg"
+  ],
+  "colLefts": [
+   45,
+   130,
+   216,
+   302,
+   388,
+   471
+  ],
+  "rowTops": [
+   36,
+   45,
+   54,
+   63,
+   72,
+   81,
+   90,
+   99,
+   108,
+   118,
+   126,
+   135,
+   144,
+   153,
+   162,
+   171,
+   180,
+   189,
+   198,
+   207,
+   217,
+   225
+  ]
+ },
+ "fx": {
+  "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (§10 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre — an explosion is centred on a point, it does not stand on the ground.",
+  "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",
+  "_base": "assets/effects-fx/Free/",
+  "cell": 64,
+  "clips": {
+   "hitSpark": {
+    "path": "Part 6/273.png",
+    "row": 5,
+    "frames": 8
+   },
+   "critStar": {
+    "path": "Part 10/486.png",
+    "row": 0,
+    "frames": 12
+   },
+   "muzzle": {
+    "path": "Part 11/526.png",
+    "row": 0,
+    "frames": 9
+   },
+   "slash": {
+    "path": "Part 10/477.png",
+    "row": 5,
+    "frames": 12
+   },
+   "explosion": {
+    "path": "Part 12/569.png",
+    "row": 0,
+    "frames": 13
+   },
+   "gas": {
+    "path": "Part 12/566.png",
+    "row": 3,
+    "frames": 13
+   },
+   "dust": {
+    "path": "Part 9/426.png",
+    "row": 4,
+    "frames": 10
+   },
+   "shock": {
+    "path": "Part 9/436.png",
+    "row": 5,
+    "frames": 9
+   }
+  }
+ },
+ "projectiles": {
+  "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid — no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
+  "_choiceNote": "Every type ships in 6-8 colours and two sizes. The LARGE size is packed for the six signature rounds: small ones are 16-20px, which at the renderer's 0.55 projectile scale is a 10px smudge next to a 64px character - the reason six visibly different bullets read as one. One silhouette per weapon (burst, dart, shell, missile, glob, spear) so weapons are told apart by SHAPE, and each ships in three element colours so an element recolours without erasing that shape.",
+  "_base": "assets/projectiles/",
+  "clips": {
+   "proj.pellet": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_yellow"
+   },
+   "proj.pellet.fire": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_orange"
+   },
+   "proj.pellet.acid": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_green"
+   },
+   "proj.pellet.frost": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_blue"
+   },
+   "proj.dart": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_black"
+   },
+   "proj.dart.fire": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_orange"
+   },
+   "proj.dart.acid": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_green"
+   },
+   "proj.dart.frost": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_blue"
+   },
+   "proj.shell": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_red"
+   },
+   "proj.shell.fire": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_orange"
+   },
+   "proj.shell.acid": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_green"
+   },
+   "proj.shell.frost": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_blue"
+   },
+   "proj.slug": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_white"
+   },
+   "proj.slug.fire": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_orange"
+   },
+   "proj.slug.acid": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_green"
+   },
+   "proj.slug.frost": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_blue"
+   },
+   "proj.glob": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_black"
+   },
+   "proj.glob.fire": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_orange"
+   },
+   "proj.glob.acid": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_green"
+   },
+   "proj.glob.frost": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_blue"
+   },
+   "proj.spear": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_gray"
+   },
+   "proj.spear.fire": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_orange"
+   },
+   "proj.spear.acid": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_green"
+   },
+   "proj.spear.frost": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_blue"
+   },
+   "proj.shard": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_knife_small_gray"
+   },
+   "fx.shockwave": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ground_shockwave_small_white"
+   },
+   "fx.arrowImpact": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_orange"
+   },
+   "fx.bigImpact": {
+    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_red"
+   }
+  },
+  "_elementNote": "Each bullet clip is packed in three extra colours, one per element. An element RECOLOURS the weapon's own round rather than replacing it: a fire Scattergun still throws sparks, orange ones. Replacing the clip outright made every weapon fire an identical bullet the moment you took an element, which erased the weapon identity the ring and the bullets exist to communicate."
+ },
+ "terrainSource": {
+  "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
+  "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used — anything with a blob edge will not tile. Found with tools/_scan.ts.",
+  "tiles": {
+   "grass": [
+    3,
+    2
+   ],
+   "dirt": [
+    1,
+    1
+   ],
+   "soil": [
+    1,
+    13
+   ],
+   "hay": [
+    1,
+    5
+   ]
+  }
+ }
 }

@@ -11,7 +11,7 @@
     "t2SpreadMultiplier": 0.8,
     "t3BonusProjectiles": 2,
     "t4Pierce": 1,
-    "projectileClip": "proj.spark",
+    "projectileClip": "proj.pellet",
     "tierSprites": [
       "gun.shotgun.0",
       "gun.shotgun.6",
@@ -24,7 +24,8 @@
       "2": "tighter choke",
       "3": "+2 pellets",
       "4": "pellets punch through"
-    }
+    },
+    "projectileScale": 1.09
   },
   "varmintRifle": {
     "name": "Varmint Rifle",
@@ -40,7 +41,7 @@
     "t3SpreadRadius": 90,
     "t3SpreadDamageMultiplier": 0.6,
     "t4Pierce": 4,
-    "projectileClip": "proj.iceSpike",
+    "projectileClip": "proj.dart",
     "tierSprites": [
       "gun.rifle.0",
       "gun.rifle.6",
@@ -53,7 +54,8 @@
       "2": "+2s burn",
       "3": "burn jumps on death",
       "4": "pierces four"
-    }
+    },
+    "projectileScale": 1.24
   },
   "grenadeLauncher": {
     "name": "Grenade Launcher",
@@ -69,7 +71,7 @@
     "t3RindSlowPct": 40,
     "t4Splits": 3,
     "t4SplitDamageMultiplier": 0.7,
-    "projectileClip": "proj.meteor",
+    "projectileClip": "proj.shell",
     "tierSprites": [
       "gun.carbine.0",
       "gun.carbine.6",
@@ -82,7 +84,8 @@
       "2": "+30% blast",
       "3": "leaves burning ground",
       "4": "fires a three-round salvo"
-    }
+    },
+    "projectileScale": 0.69
   },
   "drumGun": {
     "name": "Drum Gun",
@@ -96,8 +99,8 @@
     "t3Shards": 4,
     "t4ShardBounces": 1,
     "shardDamageMultiplier": 0.55,
-    "projectileClip": "proj.orb",
-    "shardClip": "proj.knife",
+    "projectileClip": "proj.slug",
+    "shardClip": "proj.shard",
     "tierSprites": [
       "gun.lmg.0",
       "gun.lmg.6",
@@ -110,7 +113,8 @@
       "2": "+1 ricochet",
       "3": "bursts into four",
       "4": "fragments ricochet too"
-    }
+    },
+    "projectileScale": 0.85
   },
   "tarBomb": {
     "name": "Tar Bomb",
@@ -131,14 +135,15 @@
       "gun.smg.13",
       "gun.smg.20"
     ],
-    "projectileClip": "proj.acid",
+    "projectileClip": "proj.glob",
     "sound": "shootNail",
     "blurb": "Throws a slick that halves their speed. Fire lights it.",
     "tiers": {
       "2": "+2s slick",
       "3": "the tar burns",
       "4": "+60% spread"
-    }
+    },
+    "projectileScale": 0.82
   },
   "harpoon": {
     "name": "Harpoon Gun",
@@ -159,14 +164,15 @@
       "gun.pistol.13",
       "gun.pistol.20"
     ],
-    "projectileClip": "proj.kunai",
+    "projectileClip": "proj.spear",
     "sound": "shootHarpoon",
     "blurb": "Hauls the furthest one to you. Opens up the back line.",
     "tiers": {
       "2": "+damage on landing",
       "3": "three lines",
       "4": "hauled targets take +25%"
-    }
+    },
+    "projectileScale": 1.93
   },
   "chemSprayer": {
     "name": "Chem Sprayer",
@@ -332,5 +338,6 @@
       "3": "two dogs",
       "4": "bites bleed"
     }
-  }
+  },
+  "_projectileNote": "projectileClip is the weapon's signature round and projectileScale multiplies the renderer's base projectile scale. Every ranged weapon draws a DIFFERENT silhouette on purpose - burst, dart, shell, missile, glob, spear - because colour alone does not survive being 10px wide on grass, which is exactly how six distinct weapons came to look like one bullet."
 }

@@ -203,7 +203,7 @@
     "rarity": "rare",
     "_note": "Every ranged weapon fires fire and leaves a burn. Sets slop slicks alight.",
     "element": "fire",
-    "cardSprite": "proj.fireball.0",
+    "cardSprite": "proj.pellet.fire.0",
     "blurb": "Every gun you own fires fire. Burns on hit, and sets tar slicks alight.",
     "mods": {}
   },
@@ -214,7 +214,7 @@
     "rarity": "rare",
     "_note": "Every ranged weapon fires acid and leaves a corrosion.",
     "element": "acid",
-    "cardSprite": "proj.acid.0",
+    "cardSprite": "proj.pellet.acid.0",
     "blurb": "Every gun you own fires acid. Corrodes for longer than fire burns.",
     "mods": {}
   },
@@ -225,7 +225,7 @@
     "rarity": "rare",
     "_note": "Every ranged weapon fires ice and slows what it hits. Buys space rather than damage.",
     "element": "frost",
-    "cardSprite": "proj.iceSpike.0",
+    "cardSprite": "proj.pellet.frost.0",
     "blurb": "Every gun you own fires ice. Slows hard instead of damaging.",
     "mods": {}
   }

@@ -884,3 +884,80 @@ plan changes or the build is hosted privately elsewhere.
    skips past.
 4. **Hitstop is global.** 40ms on a crit freezes the whole sim. At +200% attack
    speed with several crit sources this may need a floor.
+
+## The weapon range, and why the bullets all looked the same
+
+Playtest: *"all the bullets looked the same, new weapons didn't appear to equip
+or shoot any kind of novel round."* True, and not for the reason I assumed.
+
+**They were not identical. They were too small to tell apart.** The projectile
+packs ship every type in two sizes, and only the SMALL size was packed — 16-20px
+clips, drawn at the renderer's 0.55 projectile scale, so a bullet reached the
+screen about 10 world pixels wide next to a character 64 pixels tall. Six
+different silhouettes at 10px on grass are one grey smudge. Colour cannot carry
+identity at that size; only shape can, and there was no room for shape.
+
+Fixed by packing the LARGE size for six signature rounds, one silhouette per
+weapon — burst, dart, shell, missile, glob, harpoon head — and adding a
+per-weapon `projectileScale` in `weapons.json`, because a 89x64 mortar shell and
+a 40x40 pellet burst cannot share one number. Scales were computed from the
+actual trimmed atlas frames against a target size in world pixels, not guessed.
+
+`npm run range` is the new tool, and it is the point of this entry:
+
+| mode | what it shows |
+|---|---|
+| `--mode solo` | every weapon firing, one labelled tile each, plus a distinctness report |
+| `--mode stack` | 1-6 weapons at once, to check the ring |
+| `--mode element` | one loadout under each element |
+| `--mode rounds` | the rounds themselves at true size on grass, elements across |
+
+`--mode rounds` is the one that settled it. Judging a bullet off a gameplay tile
+is guesswork — it is 30 pixels of a 520 pixel frame, half the time behind an
+enemy. Lined up at true scale on the background they are always seen against,
+"can you tell these apart" answers itself in a second.
+
+### The instrument was wrong first. Again. Twice.
+
+This makes six times, and both instances were in the tool built to check the
+game:
+
+1. **God mode killed the player.** The range set `player.hp = player.maxHp` to
+   keep a slow weapon alive long enough to fire. There is no `player.maxHp` —
+   max HP is `player.stats.maxHp`. So hp became `undefined`, `alive()` went
+   false, `world.over` latched on tick one, and every later `step()` returned
+   immediately. The tool photographed a frozen world and reported, confidently,
+   that four weapons draw nothing at all.
+2. **"Visible" was defined as "is a projectile".** With that fixed, the Sledge
+   and the Bait Drum still reported nothing. A slam is a shockwave effect and a
+   bait drum is a ground hazard; neither has ever been a projectile, and the
+   headless painter did not draw hazards at all. The weapons were fine. The
+   definition was too narrow, and the painter had a hole in it.
+
+Both would have read as game bugs. Neither was. The habit that catches this is
+cheap: when a tool reports something surprising, check the tool before the game.
+
+### Also fixed here
+
+- **A design note crashed the offer pool.** `_projectileNote` added to
+  `weapons.json` went straight into `WEAPON_IDS`, and the offer pool read
+  `.tiers` off a bare string. This is the second time an `_`-prefixed note has
+  done this. `_`-keys are now stripped once at the content boundary in
+  `defsOf()`, so it cannot happen a third time.
+- **Elements carried a dead `clip` field** from when they replaced a weapon's
+  round instead of recolouring it, and `elements.json` still documented the
+  replaced behaviour. Both removed; a test now fails if `clip` comes back.
+- **The harpoon went through three rounds before landing.** A magic spike
+  trimmed down to something that read as an eye. A helix beam read correctly as
+  a cable, but its saturated colours do not survive the LimeZu palette conform —
+  fire came back blue and frost magenta. A kunai blade conforms like the other
+  five and actually looks like a harpoon head.
+- `tools/draw-world.ts` now holds the headless painter, shared by the screenshot
+  tool and the range, instead of a second and third copy of the renderer's frame
+  rules. `tools/tinyfont.ts` is a 3x5 bitmap font so contact sheets can be
+  labelled — an unlabelled twelve-tile sheet is a puzzle, not a report.
+
+`tests/content.test.ts` is new and guards the complaint directly: no two
+launching weapons may share a round, every one must have a round, every round
+must be scaled above the smudge threshold, and every weapon and item must have a
+one-sentence blurb. 96 tests pass.

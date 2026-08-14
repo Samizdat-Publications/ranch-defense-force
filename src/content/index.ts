@@ -92,6 +92,10 @@ export interface WeaponDef {
   cooldown: number
   behaviour: string
   tiers: Record<string, string>
+  /** The weapon's signature round; every ranged weapon draws a different one. */
+  projectileClip?: string
+  /** Multiplies the renderer's base projectile scale. See PROJECTILE_SCALE. */
+  projectileScale?: number
   [k: string]: unknown
 }
 
@@ -127,9 +131,26 @@ export interface EnemyDef {
   [k: string]: unknown
 }
 
-export const CLASSES = classesRaw as unknown as Record<string, ClassDef>
-export const WEAPONS = weaponsRaw as unknown as Record<string, WeaponDef>
-export const ITEMS = itemsRaw as unknown as Record<string, ItemDef>
+/**
+ * Drop `_`-prefixed keys, which are design notes rather than entries.
+ *
+ * The content files carry their reasoning inline, and every consumer that then
+ * iterates the object has to know that. Twice now one has not: a `_tierNote`
+ * crashed the tool layer at module load, and a `_projectileNote` put a bare
+ * string into the weapon roster where the offer pool read `.tiers` off it. The
+ * filter belongs here, once, at the boundary — not in each caller.
+ */
+function defsOf<T>(raw: unknown): Record<string, T> {
+  const out: Record<string, T> = {}
+  for (const [k, v] of Object.entries(raw as Record<string, T>)) {
+    if (!k.startsWith('_')) out[k] = v
+  }
+  return out
+}
+
+export const CLASSES = defsOf<ClassDef>(classesRaw)
+export const WEAPONS = defsOf<WeaponDef>(weaponsRaw)
+export const ITEMS = defsOf<ItemDef>(itemsRaw)
 
 // enemies.json carries the bosses under a `_bosses` key; split them out so the
 // spawner never has to filter a magic key out of the roster.
@@ -188,6 +209,18 @@ export const NODES = nodesRaw as unknown as {
 
 export const CLASS_IDS = Object.keys(CLASSES)
 export const WEAPON_IDS = Object.keys(WEAPONS)
+
+/**
+ * How much to multiply the base projectile scale by for this weapon.
+ *
+ * Lives here rather than in the renderer so the number stays in content, and so
+ * the headless painter reads the identical value — a screenshot tool that
+ * scales projectiles differently to the game is worse than no screenshot tool.
+ */
+export function projectileScaleFor(weaponId: string): number {
+  const s = WEAPONS[weaponId]?.projectileScale
+  return typeof s === 'number' ? s : 1
+}
 export const ITEM_IDS = Object.keys(ITEMS)
 /**
  * The spawner's roster — every enemy EXCEPT bosses.

@@ -1,10 +1,7 @@
 {
   "_note": "Elemental modifiers for ranged weapons. Taking one converts EVERY ranged weapon you own: the bullet it fires, the impact it leaves, and the lasting damage it does. One choice, visible everywhere, which is what makes it read as a build decision rather than another percentage.",
-
-  "_designNote": "Each element swaps the projectile CLIP rather than recolouring one. The packs ship a fireball, an acid glob and an ice spike as separate animations, so a fire build genuinely fires fire — it is not a green tint on a seed. Costs no extra atlas either; all three were already packed.",
-
+  "_designNote": "An element RECOLOURS each weapon's own round rather than replacing it. Every signature round is packed in three element colours, so a fire Scattergun still throws a burst and a fire Harpoon still throws a spear - both orange. Swapping the clip outright, which is what this used to do, made every weapon fire an identical bullet the moment you took an element, erasing the weapon identity the bullets exist to communicate.",
   "_payloadNote": "The lasting damage rides on the projectile payload fields the weapon riders already use (burnDps, bleedDps, slowOnHit) and is applied by World.applyHit, so an element needed no new damage plumbing at all.",
-
   "elements": {
     "none": {
       "name": "None",
@@ -13,7 +10,6 @@
     "fire": {
       "name": "Fire",
       "_note": "Burns, and sets slop slicks alight — a fire build turns the Chem Sprayer's puddle from a slow into a killing field.",
-      "clip": "proj.fireball",
       "impact": "bigImpact",
       "burnDps": 7,
       "burnSeconds": 3,
@@ -23,7 +19,6 @@
     "acid": {
       "name": "Acid",
       "_note": "Corrodes. Lower burst than fire, longer bite, and it stacks with the armour-shredding fantasy of the late waves.",
-      "clip": "proj.acid",
       "impact": "arrowImpact",
       "bleedDps": 5,
       "bleedSeconds": 5
@@ -31,7 +26,6 @@
     "frost": {
       "name": "Frost",
       "_note": "No damage over time; it buys space instead. The one element that is defensive, so an element pick is not purely a damage race.",
-      "clip": "proj.iceSpike",
       "impact": "arrowImpact",
       "slowOnHit": 45,
       "slowSeconds": 2
