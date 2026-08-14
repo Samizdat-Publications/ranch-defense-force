@@ -1,0 +1,31 @@
+{
+  "_comment": [
+    "PixelLab's official MCP server. Copy this file to .mcp.json, paste your key,",
+    "and restart Claude Code — the PixelLab tools then appear directly in the",
+    "session instead of only through `npm run pixellab`.",
+    "",
+    ".mcp.json is gitignored because it holds a live key and this repo is public.",
+    "The .example stays committed so the setup is discoverable.",
+    "",
+    "Two ways to use PixelLab, and they are for different jobs:",
+    "  npm run pixellab  — batch. Reads art/pixellab-queue.json, generates every",
+    "                      subject that has no sheet yet, prices itself with",
+    "                      --list first. Use it to work down the roadmap.",
+    "  this MCP server   — conversational. Lets Claude call the tools directly,",
+    "                      including the ones the script does not wrap: 8-direction",
+    "                      sprites, Generate 8 rotations, Animate with text, tilesets,",
+    "                      Portrait <-> Character, and the free utilities (Unzoom,",
+    "                      Reduce colors, Pixel art correction). Use it for one-off",
+    "                      work and for anything needing directional or animated",
+    "                      output, which the batch script deliberately does not do."
+  ],
+  "mcpServers": {
+    "pixellab": {
+      "type": "http",
+      "url": "https://api.pixellab.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer PASTE_YOUR_PIXELLAB_KEY_HERE"
+      }
+    }
+  }
+}
