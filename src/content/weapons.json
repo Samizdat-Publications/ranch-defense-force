@@ -25,7 +25,9 @@
       "3": "+2 pellets",
       "4": "pellets punch through"
     },
-    "projectileScale": 1.09
+    "projectileScale": 1.09,
+    "rarity": "common",
+    "source": "levelup"
   },
   "varmintRifle": {
     "name": "Varmint Rifle",
@@ -55,7 +57,9 @@
       "3": "burn jumps on death",
       "4": "pierces four"
     },
-    "projectileScale": 1.24
+    "projectileScale": 1.24,
+    "rarity": "common",
+    "source": "levelup"
   },
   "grenadeLauncher": {
     "name": "Grenade Launcher",
@@ -85,7 +89,9 @@
       "3": "leaves burning ground",
       "4": "fires a three-round salvo"
     },
-    "projectileScale": 0.69
+    "projectileScale": 0.69,
+    "rarity": "rare",
+    "source": "both"
   },
   "drumGun": {
     "name": "Drum Gun",
@@ -114,7 +120,9 @@
       "3": "bursts into four",
       "4": "fragments ricochet too"
     },
-    "projectileScale": 0.85
+    "projectileScale": 0.85,
+    "rarity": "uncommon",
+    "source": "both"
   },
   "tarBomb": {
     "name": "Tar Bomb",
@@ -143,7 +151,9 @@
       "3": "the tar burns",
       "4": "+60% spread"
     },
-    "projectileScale": 0.82
+    "projectileScale": 0.82,
+    "rarity": "rare",
+    "source": "both"
   },
   "harpoon": {
     "name": "Harpoon Gun",
@@ -172,7 +182,9 @@
       "3": "three lines",
       "4": "hauled targets take +25%"
     },
-    "projectileScale": 1.93
+    "projectileScale": 1.93,
+    "rarity": "epic",
+    "source": "shop"
   },
   "chemSprayer": {
     "name": "Chem Sprayer",
@@ -199,7 +211,9 @@
       "2": "+50% choke",
       "3": "strips gas from the air",
       "4": "+40% reach"
-    }
+    },
+    "rarity": "uncommon",
+    "source": "both"
   },
   "baitDrum": {
     "name": "Bait Drum",
@@ -227,7 +241,9 @@
       "2": "+2s",
       "3": "detonates for 60",
       "4": "+80% pull"
-    }
+    },
+    "rarity": "rare",
+    "source": "shop"
   },
   "pitchfork": {
     "name": "Pitchfork",
@@ -255,7 +271,9 @@
       "3": "hits twice",
       "4": "the shove stuns"
     },
-    "swingClip": "proj.claw"
+    "swingClip": "proj.claw",
+    "rarity": "common",
+    "source": "levelup"
   },
   "scythe": {
     "name": "Scythe",
@@ -285,7 +303,9 @@
       "4": "blades cut through"
     },
     "projectileClip": "proj.crescent",
-    "projectileScale": 1.0
+    "projectileScale": 1.0,
+    "rarity": "uncommon",
+    "source": "levelup"
   },
   "sledge": {
     "name": "Sledge",
@@ -313,7 +333,9 @@
       "3": "shockwave ring",
       "4": "the ring throws them"
     },
-    "swingClip": "fx.shockwave"
+    "swingClip": "fx.shockwave",
+    "rarity": "rare",
+    "source": "both"
   },
   "barnDog": {
     "name": "Barn Dog",
@@ -341,8 +363,133 @@
       "2": "+50% speed",
       "3": "two dogs",
       "4": "bites bleed"
-    }
+    },
+    "rarity": "epic",
+    "source": "shop"
   },
   "_projectileNote": "projectileClip is the weapon's signature round and projectileScale multiplies the renderer's base projectile scale. Every ranged weapon draws a DIFFERENT silhouette on purpose - burst, dart, shell, missile, glob, spear - because colour alone does not survive being 10px wide on grass, which is exactly how six distinct weapons came to look like one bullet.",
-  "_meleeNote": "Melee weapons draw real art too. `projectileClip` covers the orbiting kind (the scythe's blade); `swingClip` covers the swept kind, drawn stretched to the swing radius instead of the flat tinted wedge that used to stand in for it. The wedge rendered as a large pale rectangle - the 'white square' a player reported as an exposed hitbox, which is exactly what it looked like."
+  "_meleeNote": "Melee weapons draw real art too. `projectileClip` covers the orbiting kind (the scythe's blade); `swingClip` covers the swept kind, drawn stretched to the swing radius instead of the flat tinted wedge that used to stand in for it. The wedge rendered as a large pale rectangle - the 'white square' a player reported as an exposed hitbox, which is exactly what it looked like.",
+  "postAuger": {
+    "name": "Post Hole Auger",
+    "type": "melee",
+    "rarity": "uncommon",
+    "source": "levelup",
+    "sprite": "tool.pickaxe.stone",
+    "base": 7,
+    "cooldown": 0.18,
+    "behaviour": "arcSwing",
+    "arcDegrees": 40,
+    "range": 62,
+    "knockback": 40,
+    "t2ArcMultiplier": 1.4,
+    "t3SecondHitDelay": 0.06,
+    "t4StunSeconds": 0.2,
+    "tierSprites": [
+      "tool.pickaxe.stone",
+      "tool.pickaxe.iron",
+      "tool.pickaxe.golden",
+      "tool.pickaxe.titanium"
+    ],
+    "swingClip": "proj.claw",
+    "sound": "swing",
+    "blurb": "Chews a hole in whatever is directly in front of you. Very fast, very short.",
+    "tiers": {
+      "2": "+40% bite",
+      "3": "double bite",
+      "4": "the bite holds them"
+    },
+    "_standInArt": true
+  },
+  "crowBell": {
+    "name": "Crow Bell",
+    "type": "ranged",
+    "rarity": "rare",
+    "source": "both",
+    "sprite": "weapon.crowBell",
+    "base": 16,
+    "cooldown": 2.2,
+    "behaviour": "slam",
+    "radius": 150,
+    "stunDuration": 0,
+    "t2StunMultiplier": 1,
+    "t3RingRadiusMultiplier": 1.5,
+    "t3RingDamageMultiplier": 0.5,
+    "t4RingKnockback": 180,
+    "tierSprites": [
+      "weapon.crowBell",
+      "weapon.crowBell",
+      "weapon.crowBell",
+      "weapon.crowBell"
+    ],
+    "swingClip": "fx.shockwave",
+    "sound": "bell",
+    "blurb": "Rings out and everything in earshot feels it. No stun, all reach.",
+    "tiers": {
+      "2": "carries further",
+      "3": "a second ring",
+      "4": "the ring shoves"
+    }
+  },
+  "seedDrill": {
+    "name": "Seed Drill",
+    "type": "ranged",
+    "rarity": "epic",
+    "source": "shop",
+    "sprite": "weapon.seedDrill",
+    "base": 12,
+    "cooldown": 1.8,
+    "behaviour": "throwPuddle",
+    "puddleRadius": 84,
+    "puddleDuration": 6,
+    "slowPct": 20,
+    "t2BonusSeconds": 3,
+    "t3DamageMultiplier": 0.9,
+    "t4RadiusMultiplier": 1.5,
+    "projectileClip": "proj.seed",
+    "tierSprites": [
+      "weapon.seedDrill",
+      "weapon.seedDrill",
+      "weapon.seedDrill",
+      "weapon.seedDrill"
+    ],
+    "sound": "shootNail",
+    "blurb": "Sows a patch that comes up wrong and takes it out on whatever stands in it.",
+    "tiers": {
+      "2": "+3s in the ground",
+      "3": "the patch bites",
+      "4": "+50% spread"
+    },
+    "projectileScale": 0.98
+  },
+  "combineHead": {
+    "name": "Combine Head",
+    "type": "melee",
+    "rarity": "legendary",
+    "source": "shop",
+    "sprite": "tool.axe.stone",
+    "base": 46,
+    "cooldown": 1.5,
+    "behaviour": "arcSwing",
+    "arcDegrees": 190,
+    "range": 96,
+    "knockback": 150,
+    "t2ArcMultiplier": 1.1,
+    "t3SecondHitDelay": 0.2,
+    "t4StunSeconds": 0.5,
+    "tierSprites": [
+      "tool.axe.stone",
+      "tool.axe.iron",
+      "tool.axe.golden",
+      "tool.axe.titanium"
+    ],
+    "swingClip": "proj.crescent",
+    "sound": "scytheSpin",
+    "blurb": "Takes the whole front of the field at once. Slow, and it does not need to be quick.",
+    "tiers": {
+      "2": "wider still",
+      "3": "two passes",
+      "4": "the pass stuns"
+    },
+    "_standInArt": true
+  }
 }

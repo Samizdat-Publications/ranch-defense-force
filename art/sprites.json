@@ -447,6 +447,18 @@
    },
    "proj.claw": {
     "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_loop_large_orange"
+   },
+   "proj.seed": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_yellow"
+   },
+   "proj.seed.fire": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_orange"
+   },
+   "proj.seed.acid": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_green"
+   },
+   "proj.seed.frost": {
+    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_blue"
    }
   },
   "_elementNote": "Each bullet clip is packed in three extra colours, one per element. An element RECOLOURS the weapon's own round rather than replacing it: a fire Scattergun still throws sparks, orange ones. Replacing the clip outright made every weapon fire an identical bullet the moment you took an element, which erased the weapon identity the ring and the bullets exist to communicate."
@@ -473,14 +485,43 @@
    ]
   }
  },
- "itemIcons": {
-  "_note": "Card art for items whose effect has no weapon or node to borrow. The `icon` field in items.json holds plain words ('clover', 'coffee') that were never atlas keys, so 17 of 22 items rendered as text-only cards in the shop, the level-up and the Homestead alike.",
-  "_base": "assets/modern-farm/Icons/Icons_32x32/Icons_32x32/",
+ "pixellab": {
+  "_note": "Generated with PixelLab, style-anchored to assets/pixellab/limezu_style_256.png. Ours and commercially licensed, so unlike the purchased packs these CAN be committed. Card icons only -- they are 44-62px and exempt from the 32x32 field rule because a card draws at any integer zoom. Anything that reaches the game field must still be 32x32. See docs/PIXELLAB.md.",
+  "_base": "assets/pixellab/picked/",
   "files": {
-   "item.coffee": "Singles_Icons_32x32_Food_Coffee.png",
-   "item.boots": "Singles_Icons_32x32_Resources_Whool_Brown.png",
-   "item.cloth": "Singles_Icons_32x32_Resources_Whool_White.png",
-   "item.clover": "Singles_Icons_32x32_Crops_Lettuce.png"
+   "item.balingTwine": "twine.png",
+   "item.barbedWire": "barbed_wire.png",
+   "item.cattleProd": "cattle_prod.png",
+   "item.chalkLine": "chalk_line.png",
+   "item.coffeeThermos": "thermos.png",
+   "item.culvertPipe": "culvert_pipe.png",
+   "item.dogWhistle": "dog_whistle.png",
+   "item.fenceStaples": "staples.png",
+   "item.fourLeaf": "four_leaf.png",
+   "item.grainScoop": "grain_scoop.png",
+   "item.keroseneCan": "kerosene.png",
+   "item.lampOil": "lantern.png",
+   "item.postDriver": "post_driver.png",
+   "item.saltCircle": "salt_ring.png",
+   "item.saltLick": "salt_lick.png",
+   "item.slingBands": "sling_bands.png",
+   "item.splitRail": "split_rail.png",
+   "item.sundayBest": "sunday_best.png",
+   "item.tractorPlate": "tractor_plate.png",
+   "item.weatherVane": "weather_vane.png",
+   "item.wetRag": "wet_rag.png",
+   "item.whetstone": "whetstone.png",
+   "weapon.crowBell": "cow_bell.png",
+   "weapon.seedDrill": "seed_drill.png"
   }
+ },
+ "gasMaskIcon": {
+  "_note": "The gas mask cropped from the generator accessory sheet rather than generated. docs/PIXELLAB.md: 'A gas mask already exists ... crop it from that sheet rather than generating one.' Uses the idle down cell, which is the only front-on view.",
+  "path": "assets/modern-farm/Farmer_Generator_Pieces/Character Pieces/Accessories/32x32/Accessory_Gas_Mask.png",
+  "cellX": 0,
+  "cellY": 0,
+  "cellW": 32,
+  "cellH": 64,
+  "name": "item.gasMask"
  }
 }

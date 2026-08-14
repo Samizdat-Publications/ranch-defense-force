@@ -8,7 +8,7 @@ import { Player } from '../src/sim/player'
 import { Spawner } from '../src/sim/spawner'
 import { OfferPool } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
-import { ITEMS, TUNING } from '../src/content'
+import { ITEMS, TUNING, RARITY_ORDER } from '../src/content'
 
 describe('stat resolution', () => {
   it('sums percentages additively, never multiplicatively', () => {
@@ -279,9 +279,36 @@ describe('OfferPool', () => {
     for (let i = 0; i < 60; i++) {
       for (const o of pool.draw(p, 6, i * 1000, 0)) seen.set(o.id, o.rarity)
     }
-    expect(seen.get('whetstone')).toBe('common')
-    expect(seen.get('keroseneCan')).toBe('rare')
-    expect(seen.get('strawHat')).toBe('rare')
+    // Assert the CONTRACT, not three ids. Pinning ids meant this test failed
+    // the moment the roster was redesigned, while telling us nothing about
+    // whether rarity still worked — and it had to be read to discover that the
+    // real cause was `whetstone` becoming level-up-only, which is correct.
+    expect(seen.size).toBeGreaterThan(8)
+    for (const [id, rarity] of seen) {
+      expect(RARITY_ORDER, `${id} has an unknown rarity`).toContain(rarity)
+    }
+    // Every declared rarity should agree with what the pool reports.
+    for (const [id, def] of Object.entries(ITEMS)) {
+      if (def.rarity && seen.has(id)) expect(seen.get(id)).toBe(def.rarity)
+    }
+  })
+
+  it('never offers a level-up-only item in the shop, or vice versa', () => {
+    const p = new Player()
+    p.init('hand')
+    const pool = new OfferPool(new Rng(7))
+    for (const mode of ['shop', 'levelup'] as const) {
+      const seen = new Set<string>()
+      for (let i = 0; i < 80; i++) {
+        for (const o of pool.draw(p, 6, i * 1000, 0, mode)) seen.add(o.id)
+      }
+      for (const id of seen) {
+        const src = ITEMS[id]?.source
+        if (src && src !== 'both') {
+          expect(src, `${id} appeared in a ${mode} draw`).toBe(mode)
+        }
+      }
+    }
   })
 
   it('offers a source of raw damage scaling', () => {

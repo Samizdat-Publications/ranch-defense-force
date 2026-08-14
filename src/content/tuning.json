@@ -120,5 +120,10 @@
     "dwellSeconds": 2.0,
     "dwellMultiplier": 3.0,
     "dwellDecayRate": 2.5
+  },
+  "offers": {
+    "_note": "How the draw is composed, as opposed to what is in it.",
+    "weaponOfferWeight": 1.6,
+    "_weaponWeightNote": "Weapons are weighted up against items so merge pressure survives a big item roster. Once weapon slots are full only OWNED weapons can be offered, so a draw is six weapons against forty items; at 22 items that was six against twenty-two. The roster growing from 22 to 40 therefore cut merge opportunities by about a third without anything being rebalanced, and cleared runs stopped reaching tier 4 at all. 1.6 restores the old weapon share. This is the knob to turn when the item count changes again."
   }
 }

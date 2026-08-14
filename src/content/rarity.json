@@ -1,46 +1,58 @@
 {
-  "_note": "The five rarity tiers: how often each is drawn, and what it looks like. Weight is relative within a draw before luck is applied; `luckScaling` is how much a point of luck pushes toward that tier, so luck makes good cards likelier without ever making commons impossible. Colour and badge are the visual contract the UI renders — one place, so a tier means the same thing on a level-up card, a shop card and a Homestead card.",
+  "_note": "The five rarity tiers: how often each is drawn, and what it looks like. Weight is relative within a draw before luck is applied; `luckScaling` is how much a point of luck pushes toward that tier, so luck makes good cards likelier without ever making commons impossible. Colour and rank are the visual contract the UI renders — one place, so a tier means the same thing on a level-up card, a shop card and a Homestead card.",
   "_designNote": "Order matters: tiers are listed commonest first and the UI may rely on that for sorting.",
+  "_redesign": "Replaces the placeholder palette. `glow` and `badge` are GONE — the rosette and the tier-only glow are not part of the design any more. A tier is now a stamped tin plate riveted across the bottom of the card's art window: `colour` is the plate's top stop, `dark` its bottom stop, `ink` its text, and `rank` the number of diamond pips flanking the tier name (1-5). The tier name is spelled out on the plate, so colour is never the only channel — the word and the pip count both survive greyscale. Only Legendary animates (a foil sweep across the plate), which is why the sweep means one thing.",
+  "_epicColour": "Epic ships red per the standard genre ladder (grey/green/blue/red/orange). If red reads too close to the damage red in the HUD, the tested alternative is violet: colour #9b6bc8, dark #563579, ink #f6ecff. Changing it here changes it everywhere.",
   "tiers": {
     "common": {
       "name": "Common",
       "weight": 100,
       "luckScaling": 0,
-      "colour": "#9aa4ad",
-      "glow": "rgba(154, 164, 173, 0.0)",
-      "badge": "•"
+      "rank": 1,
+      "colour": "#9aa0a6",
+      "dark": "#5f646a",
+      "ink": "#f4f6f7",
+      "foil": false
     },
     "uncommon": {
       "name": "Uncommon",
       "weight": 55,
       "luckScaling": 0.6,
-      "colour": "#7fb069",
-      "glow": "rgba(127, 176, 105, 0.35)",
-      "badge": "◆"
+      "rank": 2,
+      "colour": "#6faa46",
+      "dark": "#3f6827",
+      "ink": "#f2fbe9",
+      "foil": false
     },
     "rare": {
       "name": "Rare",
       "weight": 24,
-      "luckScaling": 1.0,
-      "colour": "#5aa9e6",
-      "glow": "rgba(90, 169, 230, 0.45)",
-      "badge": "◆◆"
+      "luckScaling": 1,
+      "rank": 3,
+      "colour": "#4a8fd4",
+      "dark": "#26537f",
+      "ink": "#eaf4ff",
+      "foil": false
     },
     "epic": {
       "name": "Epic",
       "weight": 9,
       "luckScaling": 1.5,
-      "colour": "#b06ee0",
-      "glow": "rgba(176, 110, 224, 0.55)",
-      "badge": "◆◆◆"
+      "rank": 4,
+      "colour": "#cf4436",
+      "dark": "#801f18",
+      "ink": "#ffeceb",
+      "foil": false
     },
     "legendary": {
       "name": "Legendary",
       "weight": 3,
       "luckScaling": 2.2,
-      "colour": "#e0b040",
-      "glow": "rgba(224, 176, 64, 0.7)",
-      "badge": "★"
+      "rank": 5,
+      "colour": "#e8952a",
+      "dark": "#8f5410",
+      "ink": "#fff4dd",
+      "foil": true
     }
   }
 }

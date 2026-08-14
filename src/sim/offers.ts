@@ -8,7 +8,7 @@
  * fix, if it feels bad in play, is the short memory implemented here as
  * `recentlyOffered` — not two separate pools.
  */
-import { ITEMS, RARITY, WEAPONS, type ItemDef, type StatMods, type WeaponDef } from '../content'
+import { ITEMS, RARITY, TUNING, WEAPONS, type ItemDef, type StatMods, type WeaponDef } from '../content'
 import type { Rng } from '../core/rng'
 import type { Player } from './player'
 
@@ -36,6 +36,15 @@ export type OfferSource = 'levelup' | 'shop' | 'both'
 export function rarityWeight(rarity: Rarity, luck: number): number {
   const tier = RARITY[rarity] ?? RARITY.common
   return tier.weight * (1 + (luck / 100) * tier.luckScaling)
+}
+
+/** See tuning.offers.weaponOfferWeight — merge pressure vs a big item roster. */
+const WEAPON_WEIGHT =
+  (TUNING as unknown as { offers?: { weaponOfferWeight?: number } }).offers?.weaponOfferWeight ?? 1
+
+/** Weapons weigh more than items of the same tier, so merges stay reachable. */
+function offerWeight(o: Offer, luck: number): number {
+  return rarityWeight(o.rarity, luck) * (o.kind === 'weapon' ? WEAPON_WEIGHT : 1)
 }
 
 export interface Offer {
@@ -111,6 +120,10 @@ export class OfferPool {
       // best cards live and you pay feed for them.
       const source = def.source ?? 'both'
       if (source !== 'both' && source !== mode) continue
+      // A maxed-out item is not an offer. Without this the pool keeps handing
+      // out a card the player has already taken as many times as it can help,
+      // which is the "same five things over and over" complaint wearing a hat.
+      if (!player.canTakeItem(id)) continue
       candidates.push(this.itemOffer(id, def))
     }
 
@@ -122,7 +135,7 @@ export class OfferPool {
       // Suppressed rather than banned: with a thin pool late in a run, a hard
       // ban would leave the shop with nothing to show.
       const suppressed = last !== undefined && now - last < MEMORY_SECONDS ? 0.15 : 1
-      return suppressed * rarityWeight(o.rarity, luck)
+      return suppressed * offerWeight(o, luck)
     })
 
     const picked: Offer[] = []
@@ -170,7 +183,7 @@ export class OfferPool {
       const o = candidates[i]
       const last = this.recentlyOffered.get(o.id)
       const suppressed = last !== undefined && now - last < MEMORY_SECONDS ? 0.15 : 1
-      const rare = rarityWeight(o.rarity, luck) / RARITY.common.weight
+      const rare = offerWeight(o, luck) / RARITY.common.weight
       return suppressed * rare
     }
 
@@ -217,7 +230,7 @@ export class OfferPool {
     if (picked.some((o) => o.rarity !== 'common')) return
 
     const upgradeWeights = candidates.map((o, i) =>
-      o.rarity !== 'common' && !taken.has(i) ? rarityWeight(o.rarity, luck) : 0,
+      o.rarity !== 'common' && !taken.has(i) ? offerWeight(o, luck) : 0,
     )
     if (upgradeWeights.every((w) => w === 0)) return // pool has nothing better
 

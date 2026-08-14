@@ -134,7 +134,49 @@ export class World {
   private readonly spawnPoint = { x: 0, y: 0 }
   private readonly barkQueue: { x: number; y: number }[] = []
   private barkCooldown = 0
-  private specialItems = { reflect: 0, auraRadius: 0, auraReduction: 0 }
+  /**
+   * Item specials, flattened once per build change rather than read per hit.
+   *
+   * Every field is a number or a flag the hot loop can branch on cheaply. The
+   * alternative — walking `player.items` inside the collision pass — is a
+   * per-enemy-per-frame allocation-free-but-still-O(n) scan for something that
+   * only changes when a card is taken.
+   */
+  private specialItems = {
+    reflect: 0,
+    auraRadius: 0,
+    auraReduction: 0,
+    /** postDriver: multiplies every stun the player applies. */
+    stunMultiplier: 1,
+    /** secondCutting: the scythe's second blade, as a damage fraction. */
+    scytheSecondBlade: 0,
+    /** threshingFloor: a kill splashes to neighbours. */
+    chainRadius: 0,
+    chainDamageMultiplier: 0,
+    /** cropDuster: a gas trail behind the player. */
+    trailGasDps: 0,
+    trailGasRadius: 0,
+    /** cattleProd: touching you stuns, once per enemy per cooldown. */
+    touchStunSeconds: 0,
+    touchStunCooldown: 0,
+    /** ironLung: gas does nothing at all. */
+    gasImmune: false,
+    /** reapersOwn: melee pierces everything and kills re-swing. */
+    reswingDamageMultiplier: 0,
+    /** saltCircle: a ring that hurts and slows what crosses it. */
+    saltRingRadius: 0,
+    saltRingDamage: 0,
+    saltRingSlowPct: 0,
+    /** sundayBest: the first hit each wave is refunded, hard. */
+    firstHitShield: 0,
+  }
+
+  /** Spent when the wave's first hit lands; restored on wave complete. */
+  private shieldReady = false
+  /** Seconds until the gas trail drops its next puddle. */
+  private trailAcc = 0
+  /** Guard so a chained kill cannot chain again. */
+  private chaining = false
 
   /**
    * @param tier County Fair difficulty tier, 1-based. Scales enemy HP and the
@@ -257,6 +299,9 @@ export class World {
     if (abilityPressed) this.tryAbility()
     this.updateAbility(dt)
 
+    this.updatePlayerSpecials(dt)
+    this.updateBull(dt)
+
     // 3. spawner
     this.updateSpawner(dt)
 
@@ -338,6 +383,8 @@ export class World {
       const income = waveIncome(wasWave)
       this.player.feed += income
       this.wavesCleared = wasWave
+      // One save per wave, not one per run.
+      if (this.specialItems.firstHitShield > 0) this.shieldReady = true
       // Wave boundaries sweep up everything on the ground (§11).
       this.magnetiseAll()
       const next = wasWave + 1
@@ -755,7 +802,14 @@ export class World {
         this.applyHit(j, p)
         // Minions are never spent by hitting; they are refreshed by the weapon.
         if (!p.attached && p.type !== 'minion') {
-          if (p.pierce > 0) {
+          // The Reaper's Own: melee cuts clean through everything, and what it
+          // kills it keeps cutting. Ranged is untouched — a legendary that made
+          // every bullet infinitely piercing would end the game.
+          const reaper = this.specialItems.reswingDamageMultiplier > 0
+            && (p.type === 'melee' || p.type === 'orbit')
+          if (reaper) {
+            // no-op: never spent
+          } else if (p.pierce > 0) {
             p.pierce--
           } else {
             this.projectiles.free(i)
@@ -776,7 +830,10 @@ export class World {
     // never lit what it killed, and the T3 "burn spreads on death" rider could
     // therefore never fire at all. A mark works the same way: the hit that
     // applies it should benefit from it.
-    if (p.stunOnHit > 0 && !e.knockbackImmune) e.stun = Math.max(e.stun, p.stunOnHit)
+    if (p.stunOnHit > 0 && !e.knockbackImmune) {
+      // Post Driver multiplies every stun the player lands, wherever it comes from.
+      e.stun = Math.max(e.stun, p.stunOnHit * this.specialItems.stunMultiplier)
+    }
     if (p.burnDps > 0) this.applyBurn(e, p.burnDps, p.burnSeconds)
     if (p.bleedDps > 0) this.applyBleed(e, p.bleedDps, p.bleedSeconds)
     if (p.markPct > 0) this.applyMark(e, p.markPct, p.markSeconds)
@@ -949,12 +1006,32 @@ export class World {
       const want = e.radius + pl.radius
       if (dx * dx + dy * dy > want * want) continue
 
+      const sp = this.specialItems
+
+      // Sunday Best: the wave's first hit is refunded, hard, and the damage
+      // never lands. Restored on wave complete, so it is one save per wave
+      // rather than a permanent immunity.
+      if (sp.firstHitShield > 0 && this.shieldReady) {
+        this.shieldReady = false
+        this.damageEnemy(j, sp.firstHitShield, 'melee', false)
+        this.playFx('bigImpact', pl.x, pl.y - 12)
+        this.sound('crit')
+        e.touchCd = P.contactDamageInterval
+        continue
+      }
+
       this.damagePlayer(e.damage * waveScalar(this.spawner.wave))
       e.touchCd = P.contactDamageInterval
 
       // Barbed Wire reflects onto whatever touched you.
-      if (this.specialItems.reflect > 0) {
-        this.damageEnemy(j, this.specialItems.reflect, 'melee', false)
+      if (sp.reflect > 0) this.damageEnemy(j, sp.reflect, 'melee', false)
+
+      // Cattle Prod: touching you stuns. `touchCd` already rate-limits contact
+      // damage per enemy, so the stun rides the same gate rather than needing a
+      // second per-enemy timer.
+      if (sp.touchStunSeconds > 0) {
+        e.stun = Math.max(e.stun, sp.touchStunSeconds)
+        e.touchCd = Math.max(e.touchCd, sp.touchStunCooldown)
       }
     }
     void dt
@@ -999,7 +1076,11 @@ export class World {
       // Hazards that hurt the player. Acid pools and gas clouds spawned and
       // rendered but were harmless before this — the pools were the enemy's
       // whole point and they were decoration.
-      if (h.playerDps > 0 && this.player.alive) {
+      // Iron Lung makes gas inert. Checked here rather than at spawn so the
+      // cloud still exists, still renders, and still hurts enemies caught in it
+      // — the card removes the threat, not the object.
+      const inert = this.specialItems.gasImmune && h.kind === 'gas'
+      if (h.playerDps > 0 && this.player.alive && !inert) {
         const pd = Math.hypot(this.player.x - h.x, this.player.y - h.y)
         if (pd <= h.radius) {
           h.playerAcc += h.playerDps * dt
@@ -1590,6 +1671,21 @@ export class World {
     this.kills++
     const def = ENEMIES[e.typeId]
 
+    // Threshing Floor: what dies in reach takes the next one with it. Splash is
+    // NOT recursive — a chained kill does not chain again, or one dense wave
+    // would cascade into a screen clear and the card would be a nuke rather
+    // than a rider. Same reasoning as the Chili Shot's `burnGen` cap below.
+    const chain = this.specialItems
+    if (chain.chainRadius > 0 && chain.chainDamageMultiplier > 0 && !this.chaining) {
+      this.chaining = true
+      this.areaDamage(
+        e.x, e.y, chain.chainRadius,
+        e.maxHp * chain.chainDamageMultiplier, 'ranged', 0,
+      )
+      this.playFx('explosion', e.x, e.y)
+      this.chaining = false
+    }
+
     // Chili Shot T3 "burn spreads on death": a burning corpse lights its
     // neighbours. `burnGen` caps the chain — a spread fire cannot spread again,
     // or one lit enemy in a dense wave would set the whole field alight in a
@@ -1778,7 +1874,7 @@ export class World {
         e.kx += (dx / d) * knockback
         e.ky += (dy / d) * knockback
       }
-      if (stun > 0 && e.active) e.stun = Math.max(e.stun, stun)
+      if (stun > 0 && e.active) e.stun = Math.max(e.stun, stun * this.specialItems.stunMultiplier)
     }
   }
 
@@ -1922,19 +2018,173 @@ export class World {
   }
 
   /** Recompute the cached special-item effects. Called when items change. */
+  /**
+   * The two specials that act on the world every tick rather than on an event.
+   *
+   * Both are rate-limited rather than continuous: a gas puddle every 0.35s
+   * instead of one per frame, and a salt ring that only bites an enemy on the
+   * frame it crosses the line. Continuous versions of either would allocate
+   * hazards at 60Hz and melt the pool.
+   */
+  private updatePlayerSpecials(dt: number): void {
+    const sp = this.specialItems
+    const pl = this.player
+
+    if (sp.trailGasDps > 0) {
+      this.trailAcc -= dt
+      if (this.trailAcc <= 0) {
+        this.trailAcc = 0.35
+        this.dropGasStrip(pl.x, pl.y, sp.trailGasRadius, 2.4, sp.trailGasDps)
+      }
+    }
+
+    if (sp.saltRingRadius > 0 && sp.saltRingDamage > 0) {
+      const r = sp.saltRingRadius
+      const inner = r - 14
+      for (let i = 0; i < this.enemies.live; i++) {
+        const e = this.enemies.items[i]
+        if (e.dying > 0) continue
+        const dx = e.x - pl.x
+        const dy = e.y - pl.y
+        const d2 = dx * dx + dy * dy
+        const onLine = d2 <= r * r && d2 >= inner * inner
+        // `saltMark` latches so an enemy loitering on the line is hit once per
+        // crossing, not once per frame. "Nothing crosses it twice."
+        if (onLine && e.saltMark <= 0) {
+          e.saltMark = 1
+          this.damageEnemy(i, sp.saltRingDamage, 'ranged', false)
+          if (sp.saltRingSlowPct > 0) e.slowPct = Math.max(e.slowPct, sp.saltRingSlowPct)
+          this.playFx('arrowImpact', e.x, e.y - e.radius * 0.4)
+        } else if (!onLine && e.saltMark > 0) {
+          e.saltMark = 0
+        }
+      }
+    }
+  }
+
+  /** Second Cutting's extra blade damage fraction; 0 when not owned. */
+  get scytheSecondBlade(): number { return this.specialItems.scytheSecondBlade }
+
+  /**
+   * The Whitacre Bull: a permanent minion that charges on a cooldown.
+   *
+   * Kept as a projectile of type `minion`, exactly like the Barn Dog, rather
+   * than as an enemy on the player's side — the minion path already has
+   * steering, a bite rate-limit and pooled lifetime, and an "enemy that is
+   * friendly" would need every one of those written again with the factions
+   * inverted.
+   */
+  private updateBull(dt: number): void {
+    const def = ITEMS.whitacreBull as unknown as Record<string, unknown> | undefined
+    const owned = this.player.items.find((o) => o.id === 'whitacreBull')
+    if (!def || !owned) return
+
+    let p = this.findAttached('whitacreBull', 0)
+    if (!p) {
+      p = this.spawnProjectile()
+      if (!p) return
+      p.weaponId = 'whitacreBull'
+      p.type = 'minion'
+      p.behaviour = 'minionHunt'
+      p.attached = false
+      p.x = this.player.x
+      p.y = this.player.y
+      p.px = p.x
+      p.py = p.y
+      p.t1 = 0
+      p.radius = 20
+      p.pierce = 999
+      p.hitStamp = this.tick
+      p.rearm = 0
+    }
+    const charge = typeof def.chargeDamage === 'number' ? def.chargeDamage : 90
+    const cd = typeof def.chargeCooldown === 'number' ? def.chargeCooldown : 9
+    p.life = 1.2
+    p.damage = charge * (owned.boosted ? 2 : 1)
+    // Same fields the Barn Dog uses: `angularVelocity` is the steer-toward
+    // speed and `t0` the leash. A bull is slower than a dog and ranges wider.
+    p.angularVelocity = 190
+    p.t0 = 520
+    p.knockback = 220
+    // The charge IS the bite interval. A bull that hits for 90 once every nine
+    // seconds is a charge, and it costs no new steering code or state machine.
+    p.rearm = Math.max(p.rearm, 0)
+    if (p.rearm <= 0) {
+      p.rearm = cd
+      p.hitStamp = this.tick
+      p.hitsLeft = 1
+    } else {
+      p.rearm -= dt
+    }
+  }
+
   refreshSpecialItems(): void {
-    this.specialItems.reflect = 0
-    this.specialItems.auraRadius = 0
-    this.specialItems.auraReduction = 0
+    const s = this.specialItems
+    s.reflect = 0
+    s.auraRadius = 0
+    s.auraReduction = 0
+    s.stunMultiplier = 1
+    s.scytheSecondBlade = 0
+    s.chainRadius = 0
+    s.chainDamageMultiplier = 0
+    s.trailGasDps = 0
+    s.trailGasRadius = 0
+    s.touchStunSeconds = 0
+    s.touchStunCooldown = 0
+    s.gasImmune = false
+    s.reswingDamageMultiplier = 0
+    s.saltRingRadius = 0
+    s.saltRingDamage = 0
+    s.saltRingSlowPct = 0
+    s.firstHitShield = 0
+
+    const num = (d: Record<string, unknown>, k: string, f = 0): number =>
+      typeof d[k] === 'number' ? (d[k] as number) : f
+
     for (const owned of this.player.items) {
-      const def = ITEMS[owned.id]
+      const def = ITEMS[owned.id] as unknown as Record<string, unknown> | undefined
       if (!def?.special) continue
+      // A boosted copy is the rarity roll paying out, so it doubles the payload
+      // — but never a duration or a radius, which would stack into nonsense.
       const mult = owned.boosted ? 2 : 1
-      if (def.special === 'reflect') {
-        this.specialItems.reflect += ((def.reflectDamage as number) ?? 0) * mult
-      } else if (def.special === 'auraDamageReduction') {
-        this.specialItems.auraRadius = (def.radius as number) ?? 60
-        this.specialItems.auraReduction += ((def.reductionPct as number) ?? 0) * mult
+      switch (def.special) {
+        case 'reflect': s.reflect += num(def, 'reflectDamage') * mult; break
+        case 'auraDamageReduction':
+          s.auraRadius = num(def, 'radius', 60)
+          s.auraReduction += num(def, 'reductionPct') * mult
+          break
+        case 'stunMultiplier':
+          s.stunMultiplier = Math.max(s.stunMultiplier, num(def, 'stunMultiplier', 1))
+          break
+        case 'scytheSecondBlade':
+          s.scytheSecondBlade = num(def, 'bladeDamageMultiplier') * mult
+          break
+        case 'chainOnKill':
+          s.chainRadius = num(def, 'chainRadius')
+          s.chainDamageMultiplier += num(def, 'chainDamageMultiplier') * mult
+          break
+        case 'trailGas':
+          s.trailGasDps += num(def, 'dps') * mult
+          s.trailGasRadius = num(def, 'radius', 70)
+          break
+        case 'touchStun':
+          s.touchStunSeconds = num(def, 'stunSeconds')
+          s.touchStunCooldown = num(def, 'perEnemyCooldown', 8)
+          break
+        case 'gasImmune': s.gasImmune = true; break
+        case 'pierceAllAndReswing':
+          s.reswingDamageMultiplier = num(def, 'reswingDamageMultiplier') * mult
+          break
+        case 'saltRing':
+          s.saltRingRadius = num(def, 'radius', 160)
+          s.saltRingDamage += num(def, 'damage') * mult
+          s.saltRingSlowPct = num(def, 'slowPct')
+          break
+        case 'firstHitShield':
+          s.firstHitShield += num(def, 'returnDamage') * mult
+          this.shieldReady = true
+          break
+        default: break // bullMinion is spawned, not flattened; see summonFor
       }
     }
   }

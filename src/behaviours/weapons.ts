@@ -87,7 +87,12 @@ const arcSwing: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) =
  * means it comes round to bite again twice as fast.
  */
 const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) => {
-  const blades = tier >= 3 ? 2 : 1
+  // Second Cutting grants an extra blade at any tier, and a weaker one — so it
+  // is a real upgrade for a T1 scythe and a smaller one for a T3 that already
+  // has two. `extraBladeDamage` is the world's flattened item state, read here
+  // rather than the item being special-cased inside the world.
+  const extra = world.scytheSecondBlade > 0 ? 1 : 0
+  const blades = (tier >= 3 ? 2 : 1) + extra
 
   // The orbit tightens as you slow down.
   //
@@ -117,6 +122,8 @@ const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) 
     : 1
 
   for (let b = 0; b < blades; b++) {
+    // The granted blade hits for a fraction, so two scythes is not two scythes.
+    const bladeScale = extra > 0 && b === blades - 1 ? world.scytheSecondBlade : 1
     const angle = slot.t0 + (b * Math.PI * 2) / blades
     let p = world.findAttached(slot.id, b)
     if (!p) {
@@ -149,7 +156,7 @@ const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) 
     p.angle = angle
     p.orbitRadius = radius
     p.radius = 16
-    p.damage = damage * speedBonus
+    p.damage = damage * speedBonus * bladeScale
     p.px = p.x
     p.py = p.y
     p.x = player.x + Math.cos(angle) * radius

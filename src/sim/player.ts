@@ -183,6 +183,24 @@ export class Player {
     return this.sources
   }
 
+  /** How many copies of `id` this run already holds. */
+  itemCount(id: string): number {
+    let n = 0
+    for (const it of this.items) if (it.id === id) n++
+    return n
+  }
+
+  /**
+   * Whether another copy may be taken.
+   *
+   * `maxStacks` is declared per item; absent means unlimited, which is how the
+   * roster behaved before the field existed.
+   */
+  canTakeItem(id: string): boolean {
+    const max = (ITEMS[id] as { maxStacks?: number } | undefined)?.maxStacks
+    return typeof max !== 'number' || this.itemCount(id) < max
+  }
+
   addItem(id: string, boosted = false): void {
     this.items.push({ id, boosted })
 

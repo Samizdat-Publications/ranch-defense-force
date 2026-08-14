@@ -78,6 +78,8 @@ export interface Enemy {
   /** Movement slow, as a percent, while `slowLife > 0`. Stacks with the
    *  standing-in-a-puddle slow by taking the larger of the two. */
   slowPct: number
+  /** Salt Circle latch: 1 while standing on the ring, so it bites once per crossing. */
+  saltMark: number
   slowLife: number
 }
 
@@ -90,7 +92,7 @@ export function makeEnemy(): Enemy {
     dying: 0, hpBuffPct: 0, anim: 0, travelled: 0,
     burnDps: 0, burnLife: 0, burnAcc: 0, burnGen: 0,
     bleedDps: 0, bleedLife: 0, bleedAcc: 0,
-    markPct: 0, markLife: 0, slowPct: 0, slowLife: 0,
+    markPct: 0, markLife: 0, slowPct: 0, slowLife: 0, saltMark: 0,
   }
 }
 

@@ -70,7 +70,12 @@ interface Manifest {
   }
   singles: { _base: string; files: Record<string, string> }
   singlesExtra?: { _base: string; files: Record<string, string> }
-  itemIcons?: { _base: string; files: Record<string, string> }
+  /** Generated card art. Deliberately larger than 32px; cards zoom by integers. */
+  pixellab?: { _base: string; files: Record<string, string> }
+  /** One cell lifted out of a bigger sheet, for art that already exists. */
+  gasMaskIcon?: {
+    path: string; cellX: number; cellY: number; cellW: number; cellH: number; name: string
+  }
   weapons?: { _base: string; files: Record<string, string> }
   weaponsFarmTools?: { _base: string; files: Record<string, string>; conform?: boolean }
   nodes?: { _base: string; files: Record<string, string> }
@@ -131,6 +136,25 @@ const errors: string[] = []
 const SIDE_MIRROR_MIN = 0.45
 
 const clipLengths: Record<string, Record<string, number>> = {}
+
+// ------------------------------------------------------------ single cutouts
+
+if (manifest.gasMaskIcon) {
+  const c = manifest.gasMaskIcon
+  try {
+    const img = decodePng(readFileSync(c.path))
+    const b = contentBounds(img, c.cellX, c.cellY, c.cellW, c.cellH)
+    if (b.empty) errors.push(`${c.path}: cutout is entirely transparent`)
+    else {
+      pending.push({
+        name: c.name, img, sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        ox: b.x - (c.cellX + c.cellW / 2), oy: b.y - (c.cellY + c.cellH),
+      })
+    }
+  } catch (e) {
+    errors.push(`${c.path}: ${(e as Error).message}`)
+  }
+}
 
 // ---------------------------------------------------------------- humanoids
 
@@ -388,11 +412,28 @@ if (vehicles) {
 const WEAPON_MAX_W = 36
 const WEAPON_MAX_H = 52
 
+interface SingleGroup {
+  _base: string
+  files: Record<string, string>
+  conform?: boolean
+  /**
+   * Skip the weapon-size assertion for this group.
+   *
+   * That assertion catches multi-tile "_Load_" piles in the LimeZu packs, where
+   * an oversized icon means the WRONG FILE was picked. Generated card art is
+   * legitimately 44-62px — a card window zooms by integers and wants the detail
+   * — so the same number would be measuring a different thing and rejecting
+   * correct art. Scoped by group rather than loosened for everyone, because the
+   * pack assertion is still worth having.
+   */
+  cardArt?: boolean
+}
+
 const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
   manifest.nodes, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
-  manifest.itemIcons,
-].filter(Boolean) as { _base: string; files: Record<string, string>; conform?: boolean }[]
+  manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
+].filter(Boolean) as SingleGroup[]
 
 for (const group of singleGroups) {
 for (const [name, file] of Object.entries(group.files ?? {})) {
@@ -418,7 +459,7 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
     errors.push(`${path}: entirely transparent`)
     continue
   }
-  if (name.startsWith('weapon.') && (b.w > WEAPON_MAX_W || b.h > WEAPON_MAX_H)) {
+  if (!group.cardArt && name.startsWith('weapon.') && (b.w > WEAPON_MAX_W || b.h > WEAPON_MAX_H)) {
     errors.push(
       `${path}: weapon icon is ${b.w}x${b.h}, over the ${WEAPON_MAX_W}x${WEAPON_MAX_H} limit. ` +
       `This is almost certainly a multi-tile "_Load_" or "_Stack_" pile rather than a single ` +
