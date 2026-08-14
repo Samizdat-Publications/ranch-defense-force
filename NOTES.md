@@ -1028,3 +1028,14 @@ exactly this reason.
 
 That is now seven times the instrument was wrong before the game was. It is the
 single most reliable failure mode in this project.
+
+### Elements now change the impact, not just the bullet
+
+"Adding fire or acid changed nothing" was half about the round and half about
+the hit. Fire swapped to a bigger impact clip; **Acid and Frost both left the
+same orange spark**, so two of the three elements changed nothing at the moment
+of contact — which is the moment you are actually looking at. Both impact clips
+are now packed in all three element colours and picked via `World.elementalFx`.
+Renderer and headless painter both fall back to the base clip if a variant is
+missing, because drawing nothing is a worse failure than drawing the wrong
+colour.

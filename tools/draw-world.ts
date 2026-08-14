@@ -379,11 +379,17 @@ export class WorldPainter {
 
     for (let i = 0; i < world.effects.live; i++) {
       const e = world.effects.items[i]
-      const len = clipLengths[`fx.${e.clip}`]?.play ?? 1
+      // Same element fallback as the renderer: fx.arrowImpact.acid -> fx.arrowImpact.
+      let name = `fx.${e.clip}`
+      if (!frames[`${name}.0`]) {
+        const dot = name.lastIndexOf('.')
+        if (dot > 0) name = name.slice(0, dot)
+      }
+      const len = clipLengths[name]?.play ?? 1
       const t = 1 - e.life / e.maxLife
       let fi = (t * len) | 0
       if (fi >= len) fi = len - 1
-      const f = frames[`fx.${e.clip}.${fi}`]
+      const f = frames[`${name}.${fi}`]
       if (f) this.drawFrame(f, e.x, e.y)
     }
 

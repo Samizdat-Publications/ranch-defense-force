@@ -567,11 +567,20 @@ export class Renderer {
       if (e.under !== under) continue
       if (e.x < left || e.x > right || e.y < top || e.y > bottom) continue
 
-      const len = atlas.clipLength(`fx.${e.clip}`, 'play')
+      // An element-coloured clip falls back to its base if it was never packed
+      // — `fx.arrowImpact.acid` to `fx.arrowImpact`. Without this, adding an
+      // element to a clip that has no variants would silently draw nothing,
+      // which is a worse bug than showing the wrong colour.
+      let name = `fx.${e.clip}`
+      if (!atlas.has(`${name}.0`)) {
+        const dot = name.lastIndexOf('.')
+        if (dot > 0) name = name.slice(0, dot)
+      }
+      const len = atlas.clipLength(name, 'play')
       const t = 1 - e.life / e.maxLife
       let f = (t * len) | 0
       if (f >= len) f = len - 1
-      const frame = atlas.get(`fx.${e.clip}.${f}`)
+      const frame = atlas.get(`${name}.${f}`)
       if (!frame) continue
 
       ctx.save()

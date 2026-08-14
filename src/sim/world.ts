@@ -1548,17 +1548,16 @@ export class World {
       // A crit always announces itself; ordinary hits spark at a fixed rate, so
       // a late wave reads as combat rather than as a wall of white.
       if (isCrit) {
-        this.playFx('bigImpact', e.x, e.y - e.radius * 0.4)
-      this.sound('crit')
+        this.playFx(this.elementalFx('bigImpact'), e.x, e.y - e.radius * 0.4)
+        this.sound('crit')
       } else {
         this.sparkAcc += T.fx.hitSparkChance
         if (this.sparkAcc >= 1) {
           this.sparkAcc -= 1
           // The impact reads as the element too, not just the bullet.
-          const impact = (ELEMENTS[this.player.element]?.impact ?? 'arrowImpact') as
-            keyof typeof T.fx & string
-          this.playFx(impact, e.x, e.y - e.radius * 0.4)
-        this.sound('hit')
+          const impact = ELEMENTS[this.player.element]?.impact ?? 'arrowImpact'
+          this.playFx(this.elementalFx(impact), e.x, e.y - e.radius * 0.4)
+          this.sound('hit')
         }
       }
     }
@@ -1861,6 +1860,21 @@ export class World {
    * where enemies spawn and a seed would stop replaying. Any jitter an effect
    * wants comes from the caller, out of the roll it was already making.
    */
+  /**
+   * The element-coloured variant of an FX clip, or the clip itself under None.
+   *
+   * "Adding a fire upgrade or an acid bullet upgrade changed nothing" was half
+   * about the bullet and half about this: Fire swapped to a bigger impact, but
+   * Acid and Frost both left the same orange spark, so two of the three
+   * elements changed nothing at the moment of contact — the moment you are
+   * actually looking at. Every impact clip is packed in all three colours, so
+   * the suffix always resolves.
+   */
+  elementalFx(clip: string): keyof typeof T.fx & string {
+    const el = this.player.element
+    return (el === 'none' ? clip : `${clip}.${el}`) as keyof typeof T.fx & string
+  }
+
   playFx(
     clip: keyof typeof T.fx & string,
     x: number,
