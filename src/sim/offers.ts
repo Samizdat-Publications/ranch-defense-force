@@ -8,12 +8,35 @@
  * fix, if it feels bad in play, is the short memory implemented here as
  * `recentlyOffered` — not two separate pools.
  */
-import { ITEMS, WEAPONS, type ItemDef, type StatMods, type WeaponDef } from '../content'
+import { ITEMS, RARITY, WEAPONS, type ItemDef, type StatMods, type WeaponDef } from '../content'
 import type { Rng } from '../core/rng'
 import type { Player } from './player'
 
 export type OfferKind = 'weapon' | 'item'
-export type Rarity = 'common' | 'uncommon' | 'rare'
+/**
+ * Five tiers, rarest last. Every offer carries one — there is no unrated card.
+ *
+ * The weights and the per-tier colour live in `src/content/rarity.json`, not
+ * here: a rarity is a balance knob and a visual language at the same time, and
+ * both belong in content where they can be tuned without a rebuild of meaning.
+ */
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+
+/** Where an offer may appear. Shop-only is how the shop gets to be special. */
+export type OfferSource = 'levelup' | 'shop' | 'both'
+
+/**
+ * How likely a tier is to be drawn, before the recency penalty.
+ *
+ * Both numbers come from `rarity.json`: the base weight, and how hard a point
+ * of luck pushes toward this tier. Luck therefore makes good cards likelier
+ * without ever making commons impossible, which is what keeps a luck build a
+ * build rather than a different game.
+ */
+export function rarityWeight(rarity: Rarity, luck: number): number {
+  const tier = RARITY[rarity] ?? RARITY.common
+  return tier.weight * (1 + (luck / 100) * tier.luckScaling)
+}
 
 export interface Offer {
   kind: OfferKind
@@ -83,6 +106,11 @@ export class OfferPool {
 
     for (const [id, def] of Object.entries(ITEMS) as [string, ItemDef][]) {
       if (!this.isAvailable(id)) continue
+      // Shop-only items are the reason a shop visit is worth stopping for: the
+      // level-up hands you what the run offers, the shop is where the run's
+      // best cards live and you pay feed for them.
+      const source = def.source ?? 'both'
+      if (source !== 'both' && source !== mode) continue
       candidates.push(this.itemOffer(id, def))
     }
 
@@ -94,9 +122,7 @@ export class OfferPool {
       // Suppressed rather than banned: with a thin pool late in a run, a hard
       // ban would leave the shop with nothing to show.
       const suppressed = last !== undefined && now - last < MEMORY_SECONDS ? 0.15 : 1
-      const rarityWeight = o.rarity === 'rare' ? 0.4 : o.rarity === 'uncommon' ? 0.8 : 1
-      const luckBonus = o.rarity === 'common' ? 1 : 1 + luck / 100
-      return suppressed * rarityWeight * luckBonus
+      return suppressed * rarityWeight(o.rarity, luck)
     })
 
     const picked: Offer[] = []
@@ -114,7 +140,7 @@ export class OfferPool {
       picked.push(candidates[idx])
     }
 
-    this.guaranteeOneAboveCommon(candidates, taken, picked)
+    this.guaranteeOneAboveCommon(candidates, taken, picked, luck)
     for (const offer of picked) this.recentlyOffered.set(offer.id, now)
     return picked
   }
@@ -144,7 +170,7 @@ export class OfferPool {
       const o = candidates[i]
       const last = this.recentlyOffered.get(o.id)
       const suppressed = last !== undefined && now - last < MEMORY_SECONDS ? 0.15 : 1
-      const rare = o.rarity === 'rare' ? 0.4 + luck / 200 : 1
+      const rare = rarityWeight(o.rarity, luck) / RARITY.common.weight
       return suppressed * rare
     }
 
@@ -185,12 +211,13 @@ export class OfferPool {
     candidates: readonly Offer[],
     taken: Set<number>,
     picked: Offer[],
+    luck: number,
   ): void {
     if (picked.length === 0) return
     if (picked.some((o) => o.rarity !== 'common')) return
 
     const upgradeWeights = candidates.map((o, i) =>
-      o.rarity !== 'common' && !taken.has(i) ? (o.rarity === 'rare' ? 0.5 : 1) : 0,
+      o.rarity !== 'common' && !taken.has(i) ? rarityWeight(o.rarity, luck) : 0,
     )
     if (upgradeWeights.every((w) => w === 0)) return // pool has nothing better
 
@@ -213,7 +240,11 @@ export class OfferPool {
 ${stats}` : stats
     // A weapon's rarity is its tier: merging is the offensive game, and a
     // merge into tier 4 is the rarest thing the pool can hand you.
-    const rarity: Rarity = nextTier === null ? 'common' : nextTier >= 4 ? 'rare' : 'uncommon'
+    // A weapon's rarity is its tier: merging is the offensive game, so a merge
+    // into tier 4 should read as the rarest thing the pool can hand you.
+    const rarity: Rarity = nextTier === null
+      ? 'common'
+      : nextTier >= 4 ? 'legendary' : nextTier === 3 ? 'epic' : 'uncommon'
     const tierSprites = Array.isArray(def.tierSprites) ? (def.tierSprites as string[]) : null
     return {
       kind: 'weapon',

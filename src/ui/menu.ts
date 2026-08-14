@@ -13,10 +13,20 @@ export class MenuScreen {
   private readonly seedInput: HTMLInputElement
   private selected = CLASS_IDS[0]
   private cardsEl!: HTMLElement
+  private readonly homesteadBtn: HTMLButtonElement
   /** Which classes the save has paid for. Set by main before every open(). */
   private unlocked = new Set<string>(CLASS_IDS.filter((id) => CLASSES[id]?.unlocked === true))
 
-  constructor(parent: HTMLElement, private readonly onStart: (classId: string, seed: string) => void) {
+  constructor(
+    parent: HTMLElement,
+    private readonly onStart: (classId: string, seed: string) => void,
+    onHomestead?: () => void,
+  ) {
+    this.homesteadBtn = el('button', {
+      class: 'btn',
+      text: 'Homestead',
+      onClick: () => onHomestead?.(),
+    })
     this.seedInput = el('input', { class: 'seed' }) as HTMLInputElement
     this.seedInput.placeholder = 'seed (blank = random)'
     this.seedInput.style.fontFamily = 'inherit'
@@ -37,6 +47,12 @@ export class MenuScreen {
         cards,
         el('div', { class: 'actions' }, [
           this.seedInput,
+          // The Homestead needs a door from here. It used to be reachable only
+          // from the results screen, and only once you had acres to spend, so a
+          // player who missed that one button could never find the place that
+          // sells the other four classes — which reads as "the classes are
+          // broken" rather than "they are locked".
+          this.homesteadBtn,
           el('button', {
             class: 'btn primary',
             text: 'Head out →',

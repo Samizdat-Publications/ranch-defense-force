@@ -1,0 +1,46 @@
+{
+  "_note": "The five rarity tiers: how often each is drawn, and what it looks like. Weight is relative within a draw before luck is applied; `luckScaling` is how much a point of luck pushes toward that tier, so luck makes good cards likelier without ever making commons impossible. Colour and badge are the visual contract the UI renders — one place, so a tier means the same thing on a level-up card, a shop card and a Homestead card.",
+  "_designNote": "Order matters: tiers are listed commonest first and the UI may rely on that for sorting.",
+  "tiers": {
+    "common": {
+      "name": "Common",
+      "weight": 100,
+      "luckScaling": 0,
+      "colour": "#9aa4ad",
+      "glow": "rgba(154, 164, 173, 0.0)",
+      "badge": "•"
+    },
+    "uncommon": {
+      "name": "Uncommon",
+      "weight": 55,
+      "luckScaling": 0.6,
+      "colour": "#7fb069",
+      "glow": "rgba(127, 176, 105, 0.35)",
+      "badge": "◆"
+    },
+    "rare": {
+      "name": "Rare",
+      "weight": 24,
+      "luckScaling": 1.0,
+      "colour": "#5aa9e6",
+      "glow": "rgba(90, 169, 230, 0.45)",
+      "badge": "◆◆"
+    },
+    "epic": {
+      "name": "Epic",
+      "weight": 9,
+      "luckScaling": 1.5,
+      "colour": "#b06ee0",
+      "glow": "rgba(176, 110, 224, 0.55)",
+      "badge": "◆◆◆"
+    },
+    "legendary": {
+      "name": "Legendary",
+      "weight": 3,
+      "luckScaling": 2.2,
+      "colour": "#e0b040",
+      "glow": "rgba(224, 176, 64, 0.7)",
+      "badge": "★"
+    }
+  }
+}

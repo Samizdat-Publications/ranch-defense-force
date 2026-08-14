@@ -8,6 +8,7 @@ import itemsRaw from './items.json'
 import enemiesRaw from './enemies.json'
 import wavesRaw from './waves.json'
 import metaRaw from './meta.json'
+import rarityRaw from './rarity.json'
 import tuningRaw from './tuning.json'
 import nodesRaw from './nodes.json'
 import elementsRaw from './elements.json'
@@ -106,7 +107,9 @@ export interface ItemDef {
   mods: StatMods
   /** Declared in items.json; drives card colour and the guaranteed-uncommon
    *  slot in every offer set. */
-  rarity?: 'common' | 'uncommon' | 'rare'
+  rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  /** Where this may be offered. Defaults to 'both'. */
+  source?: 'levelup' | 'shop' | 'both'
   special?: string
   [k: string]: unknown
 }
@@ -160,6 +163,19 @@ export const BOSSES = (_bosses ?? {}) as Record<string, Record<string, unknown>>
 
 export const WAVES = wavesRaw
 export const META = metaRaw
+
+export interface RarityTier {
+  name: string
+  weight: number
+  luckScaling: number
+  colour: string
+  glow: string
+  badge: string
+}
+
+/** The five tiers, commonest first. See rarity.json. */
+export const RARITY = (rarityRaw as unknown as { tiers: Record<string, RarityTier> }).tiers
+export const RARITY_ORDER = Object.keys(RARITY) as (keyof typeof RARITY & string)[]
 export const AUDIO = audioRaw
 
 export const TUNING = tuningRaw

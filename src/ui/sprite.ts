@@ -48,3 +48,28 @@ export function spriteEl(name: string | undefined, box = 40): HTMLElement | null
   el.style.imageRendering = 'pixelated'
   return el
 }
+
+/**
+ * Publish the rarity tiers as CSS custom properties, once, at boot.
+ *
+ * The colours live in `rarity.json` because a tier is a balance knob and a
+ * visual language at the same time. Pushing them into `:root` means the
+ * stylesheet can use `var(--rarity-epic)` and the two can never disagree —
+ * which they would the moment someone tuned a colour in one place only.
+ */
+export function installRarityTheme(tiers: Record<string, { colour: string; glow: string }>): void {
+  const root = document.documentElement
+  for (const [id, tier] of Object.entries(tiers)) {
+    root.style.setProperty(`--rarity-${id}`, tier.colour)
+    root.style.setProperty(`--rarity-${id}-glow`, tier.glow)
+  }
+}
+
+/** The badge glyph for a tier, as a span the cards can drop in. */
+export function rarityBadge(rarity: string, badge: string, label: string): HTMLElement {
+  const el = document.createElement('span')
+  el.className = `rarity-badge rarity-badge-${rarity}`
+  el.textContent = badge
+  el.title = label
+  return el
+}

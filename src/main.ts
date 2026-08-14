@@ -24,8 +24,8 @@ import { MenuScreen } from './ui/menu'
 import { PauseScreen } from './ui/pause'
 import { HomesteadScreen } from './ui/homestead'
 import { DevOverlay } from './ui/dev'
-import { setSpriteAtlas } from './ui/sprite'
-import { WAVES } from './content'
+import { setSpriteAtlas, installRarityTheme } from './ui/sprite'
+import { WAVES, RARITY } from './content'
 import { load as loadSave, save as writeSave, type Save } from './sim/save'
 import { metaStats, unlockedWeapons, unlockedItems, bankRun, unlockedClasses } from './sim/meta'
 
@@ -67,7 +67,7 @@ const shakeRand = (): number => shakeRng.next()
 const levelUp = new LevelUpScreen(uiRoot)
 const shop = new ShopScreen(uiRoot)
 const results = new ResultsScreen(uiRoot)
-const menu = new MenuScreen(uiRoot, (classId, seed) => startRun(classId, seed))
+const menu = new MenuScreen(uiRoot, (classId, seed) => startRun(classId, seed), () => openHomestead())
 const pause = new PauseScreen(uiRoot)
 const homestead = new HomesteadScreen(uiRoot)
 
@@ -313,6 +313,7 @@ const loop = new Loop(
   },
 )
 
+installRarityTheme(RARITY)
 resize()
 // The boot menu must reflect the save too, or the very first screen of a
 // session hands out every paid class for free.
