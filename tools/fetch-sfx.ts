@@ -77,7 +77,11 @@ async function main(): Promise<void> {
   if (!key) {
     console.error(
       '\nELEVENLABS_API_KEY is not set.\n\n' +
-      '  ELEVENLABS_API_KEY=your-key npm run sfx\n\n' +
+      '  PowerShell:  $env:ELEVENLABS_API_KEY=\"your-key\"; npm run sfx\n' +
+      '  cmd.exe:     set ELEVENLABS_API_KEY=your-key && npm run sfx\n' +
+      '  bash/zsh:    ELEVENLABS_API_KEY=your-key npm run sfx\n\n' +
+      'NOTE: the bash form is a PARSE ERROR in PowerShell. That is what\n' +
+      '"is not recognized as the name of a cmdlet" means. Use the $env: form.\n\n' +
       `This would generate ${specs.length} effects; the other ` +
       `${Object.keys(audio.sfx).length - specs.length} are synthesised and need nothing.\n` +
       'The game is fully audible without this — every effect has a synth\n' +

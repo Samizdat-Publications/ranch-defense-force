@@ -134,6 +134,7 @@ function queueShop(): void {
   // a shop, only through a wave boundary.
   for (let i = world.enemies.live - 1; i >= 0; i--) world.enemies.free(i)
   state = 'shop'
+  audio.play('shopOpen')
   world.paused = true
   shop.open(
     world,
@@ -149,6 +150,7 @@ function queueShop(): void {
 
 function applyOffer(offer: Offer): void {
   if (!world) return
+  audio.play('purchase')
   if (offer.kind === 'weapon') world.player.addWeapon(offer.id, offer.tierJump)
   else {
     world.player.addItem(offer.id, offer.boosted)
@@ -158,6 +160,8 @@ function applyOffer(offer: Offer): void {
 
 function finishRun(cleared: boolean): void {
   if (!world) return
+  audio.play(cleared ? 'victory' : 'gameOver')
+  void audio.setLayer(null)
   state = 'results'
   world.paused = true
   results.open(

@@ -223,6 +223,11 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
    read as four UIs that happened to ship together.
 
    Three rules:
+     0. NEVER use the `fill` keyword on the border-image. `fill` paints the
+        frame's centre slice across the element, which tiles the wood's inner
+        edging over the whole card and puts cream text on a tan background —
+        unreadable, and the precise opposite of rule 2. The centre must stay
+        transparent so `background` shows through.
      1. Every floating surface is `.panel`: LimeZu's carved wood frame
         as a real CSS border-image, which is the 9-slice that art was
         drawn for. `image-rendering: pixelated` keeps it on the grid at
@@ -252,7 +257,7 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 .panel {
   background: var(--field);
   border: 10px solid var(--wood-mid);
-  border-image: url('/ui/panel.png') 12 fill repeat;
+  border-image: url('/ui/panel.png') 12 repeat;
   image-rendering: pixelated;
   color: var(--ink);
 }
@@ -317,7 +322,7 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 
 .card {
   border: 10px solid var(--wood-mid);
-  border-image: url('/ui/panel.png') 12 fill repeat;
+  border-image: url('/ui/panel.png') 12 repeat;
   image-rendering: pixelated;
   position: relative;
   padding: 14px;

@@ -18,6 +18,7 @@
       "gun.shotgun.13",
       "gun.shotgun.20"
     ],
+    "sound": "shootLight",
     "tiers": {
       "2": "tighter choke",
       "3": "+2 pellets",
@@ -45,6 +46,7 @@
       "gun.rifle.13",
       "gun.rifle.20"
     ],
+    "sound": "shootHeavy",
     "tiers": {
       "2": "+2s burn",
       "3": "burn jumps on death",
@@ -72,6 +74,7 @@
       "gun.carbine.13",
       "gun.carbine.20"
     ],
+    "sound": "shootLauncher",
     "tiers": {
       "2": "+30% blast",
       "3": "leaves burning ground",
@@ -98,6 +101,7 @@
       "gun.lmg.13",
       "gun.lmg.20"
     ],
+    "sound": "shootBurst",
     "tiers": {
       "2": "+1 ricochet",
       "3": "bursts into four",
@@ -124,6 +128,7 @@
       "gun.smg.20"
     ],
     "projectileClip": "proj.acid",
+    "sound": "shootNail",
     "tiers": {
       "2": "+2s slick",
       "3": "the tar burns",
@@ -150,6 +155,7 @@
       "gun.pistol.20"
     ],
     "projectileClip": "proj.kunai",
+    "sound": "shootHarpoon",
     "tiers": {
       "2": "+damage on landing",
       "3": "three lines",
@@ -175,6 +181,7 @@
       "weapon.wateringCan",
       "weapon.wateringCan"
     ],
+    "sound": "spray",
     "tiers": {
       "2": "+50% choke",
       "3": "strips gas from the air",
@@ -201,6 +208,7 @@
       "weapon.grainLure",
       "weapon.grainLure"
     ],
+    "sound": "baitDrop",
     "tiers": {
       "2": "+2s",
       "3": "detonates for 60",
@@ -226,6 +234,7 @@
       "weapon.pitchfork.t3",
       "weapon.pitchfork.t4"
     ],
+    "sound": "swing",
     "tiers": {
       "2": "+30% arc",
       "3": "hits twice",
@@ -252,6 +261,7 @@
       "weapon.scythe.t3",
       "weapon.scythe.t4"
     ],
+    "sound": "scytheSpin",
     "tiers": {
       "2": "+25% sweep",
       "3": "second blade",
@@ -277,6 +287,7 @@
       "weapon.sledge.t3",
       "weapon.sledge.t4"
     ],
+    "sound": "sledgeHit",
     "tiers": {
       "2": "+stun",
       "3": "shockwave ring",
@@ -303,6 +314,7 @@
       "feralDog.idle.down.0",
       "feralDog.idle.down.0"
     ],
+    "sound": "dogBark",
     "tiers": {
       "2": "+50% speed",
       "3": "two dogs",

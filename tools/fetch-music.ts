@@ -97,7 +97,11 @@ async function main(): Promise<void> {
   if (!key) {
     console.error(
       '\nGEMINI_API_KEY is not set.\n\n' +
-      '  GEMINI_API_KEY=your-key npm run music\n\n' +
+      '  PowerShell:  $env:GEMINI_API_KEY=\"your-key\"; npm run music\n' +
+      '  cmd.exe:     set GEMINI_API_KEY=your-key && npm run music\n' +
+      '  bash/zsh:    GEMINI_API_KEY=your-key npm run music\n\n' +
+      'NOTE: the bash form is a PARSE ERROR in PowerShell. That is what\n' +
+      '"is not recognized as the name of a cmdlet" means. Use the $env: form.\n\n' +
       'The three prompts live in src/content/audio.json under music.layers.\n' +
       'Nothing else is needed — sound effects are synthesised at runtime and do\n' +
       'not come from this tool.\n',

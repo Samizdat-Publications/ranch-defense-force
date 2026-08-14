@@ -513,8 +513,10 @@ export class World {
         // behaviours. A swing gets its arc; anything that throws something gets
         // a flash at the muzzle, rate-limited because six weapons at +200%
         // attack speed is a lot of flashes.
-        this.sound(def.type === 'melee' ? 'swing'
-          : def.cooldown >= 0.8 ? 'shootHeavy' : 'shootLight')
+        // Each weapon names its own voice in weapons.json. Routing by cooldown
+        // meant six weapons shared two sounds and you could not hear what your
+        // build was doing.
+        this.sound(typeof def.sound === 'string' ? def.sound : 'shootLight')
         if (def.behaviour === 'arcSwing') {
           this.playFx('slash', p.x + Math.cos(p.facing) * 30, p.y + Math.sin(p.facing) * 30, p.facing)
         } else if (def.type === 'ranged') {
@@ -831,7 +833,7 @@ export class World {
       const ramp = 1 + (n.dwell / h.dwellSeconds) * (h.dwellMultiplier - 1)
       n.hp -= dps * ramp * dt
       n.working = h.workingSeconds
-      this.sound('mine')
+      this.sound(n.kind === 'rock' ? 'mine' : 'chop')
       if (n.hp <= 0) {
         this.harvest(n)
         // `harvest` marks it dying; the prop pass frees the slot.
@@ -883,7 +885,7 @@ export class World {
 
   private harvest(c: Prop): void {
     this.cropsHarvested++
-    this.sound('nodeBreak')
+    this.sound(c.kind === 'tree' ? 'treeFall' : 'nodeBreak')
 
     if (c.feed > 0) {
       const f = this.pickups.acquire()
@@ -964,6 +966,7 @@ export class World {
       if (h.kind !== 'slow' || h.dps > 0) continue
       if (Math.hypot(h.x - x, h.y - y) > h.radius) continue
       h.dps = el.slickDps ?? 12
+      this.sound('igniteFire')
       this.playFx('explosion', h.x, h.y, 0, h.radius / 60)
     }
   }
@@ -1144,6 +1147,7 @@ export class World {
       this.sound('pickupFeed')
       this.player.feed += Math.round(g.value * (1 + this.player.stats.harvestPct / 100))
     } else {
+      this.sound('pickupHeal')
       this.player.hp = Math.min(this.player.stats.maxHp, this.player.hp + g.value)
     }
   }
@@ -1201,6 +1205,7 @@ export class World {
     p.abilityCooldown = a.cooldown
 
     if (a.id === 'digIn') {
+      this.sound('digIn')
       p.abilityActive = (a.duration as number) ?? 2.5
       p.rooted = true
     } else if (a.id === 'bolt') {
@@ -1208,6 +1213,7 @@ export class World {
       p.invuln = (a.iFrames as number) ?? 0.35
       p.x = Math.max(0, Math.min(this.arenaW, p.x + Math.cos(p.facing) * dist))
       p.y = Math.max(0, Math.min(this.arenaH, p.y + Math.sin(p.facing) * dist))
+      this.sound('dash')
       this.burstParticles(p.px, p.py, 10, 0xd9c9a3)
       // Under the sprites: the dash trail is on the ground, not in the air.
       this.playFx('dust', p.px, p.py, p.facing, 1, 0, 0, true)
@@ -1611,6 +1617,7 @@ export class World {
         h.slowPct = 0
         h.pullForce = 0
         h.tickAcc = 0
+        this.sound('explosion')
         this.playFx('explosion', e.x, e.y, 0, 0.7)
       }
     } else if (special?.onDeath === 'gasBurst') {
@@ -1679,7 +1686,7 @@ export class World {
       }
     }
 
-    this.sound('enemyDeath')
+    this.sound(ENEMIES[e.typeId]?.boss === true ? 'bossDeath' : 'enemyDeath')
     this.bleed(e.x, e.y, e.typeId === 'rooster' ? 2 : 10)
     // No death frames needed — spin and scale to zero (§10 step 4).
     e.dying = C.deathSpinSeconds
