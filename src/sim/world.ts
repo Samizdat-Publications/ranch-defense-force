@@ -1615,6 +1615,9 @@ export class World {
     const e = this.enemies.items[index]
     if (!e.active || e.dying > 0) return
     const s = this.player.stats
+    // Recorded so `killEnemy` knows whether a blade or a bullet finished it —
+    // the Reaper re-swings on melee kills only.
+    e.lastHitMelee = type === 'melee'
 
     const typePct = type === 'melee' ? s.meleePct : type === 'ranged' ? s.rangedPct : 0
     const dmg = resolveDamage(
@@ -1670,6 +1673,18 @@ export class World {
     const e = this.enemies.items[index]
     this.kills++
     const def = ENEMIES[e.typeId]
+
+    // The Reaper's Own: "what it kills, it keeps cutting." A melee kill swings
+    // again through the same space for a fraction. Guarded by `chaining` too,
+    // so a re-swing kill cannot re-swing — the same runaway the chain guard
+    // exists to stop, and they share it because they are the same shape.
+    const reap = this.specialItems.reswingDamageMultiplier
+    if (reap > 0 && !this.chaining && e.lastHitMelee) {
+      this.chaining = true
+      this.areaDamage(e.x, e.y, 70, e.maxHp * reap, 'melee', 60)
+      this.playFx('slash', e.x, e.y)
+      this.chaining = false
+    }
 
     // Threshing Floor: what dies in reach takes the next one with it. Splash is
     // NOT recursive — a chained kill does not chain again, or one dense wave

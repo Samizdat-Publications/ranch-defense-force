@@ -27,7 +27,9 @@ import { DevOverlay } from './ui/dev'
 import { setSpriteAtlas, installRarityTheme } from './ui/sprite'
 import { WAVES, RARITY } from './content'
 import { load as loadSave, save as writeSave, type Save } from './sim/save'
-import { metaStats, unlockedWeapons, unlockedItems, bankRun, unlockedClasses } from './sim/meta'
+import {
+  metaStats, unlockedWeapons, unlockedItems, bankRun, unlockedClasses, bunkhouseOffers,
+} from './sim/meta'
 
 type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused' | 'homestead'
 
@@ -177,6 +179,11 @@ function startRun(classId: string, seedText: string): void {
  * Closes every other screen first: this is a scene switch, not an overlay, and
  * a results panel left visible behind it reads as the game having hung.
  */
+/** Acre price per locked class, for the brand on a nailed packet. */
+function classPrices(): Map<string, number> {
+  return new Map(bunkhouseOffers(profile).map((o) => [o.id, o.cost]))
+}
+
 function openHomestead(): void {
   results.close()
   menu.close()
@@ -190,7 +197,7 @@ function openHomestead(): void {
       homestead.close()
       state = 'menu'
       // A class bought in the Bunkhouse must be pickable the moment you leave it.
-      menu.setUnlocked(unlockedClasses(profile))
+      menu.setUnlocked(unlockedClasses(profile), classPrices())
       menu.open()
     },
   )
@@ -249,7 +256,7 @@ function finishRun(cleared: boolean): void {
     () => startRun(currentClassId, ''),
     () => {
       state = 'menu'
-      menu.setUnlocked(unlockedClasses(profile))
+      menu.setUnlocked(unlockedClasses(profile), classPrices())
       menu.open()
     },
     () => openHomestead(),
@@ -321,7 +328,7 @@ installRarityTheme(RARITY)
 resize()
 // The boot menu must reflect the save too, or the very first screen of a
 // session hands out every paid class for free.
-menu.setUnlocked(unlockedClasses(profile))
+menu.setUnlocked(unlockedClasses(profile), classPrices())
 menu.open()
 loop.start()
 
@@ -333,6 +340,11 @@ Atlas.load(import.meta.env.BASE_URL)
     atlas = a
     // The card screens draw from the same atlas via CSS.
     setSpriteAtlas(a, `${import.meta.env.BASE_URL}atlas.png`)
+    // Screens built at module load asked the atlas for sprites before it
+    // existed and got null for every one of them — the home screen's yard came
+    // up empty and its class cards came up as text. Anything that draws sprites
+    // has to be rebuilt once the art is actually here.
+    menu.setUnlocked(unlockedClasses(profile), classPrices())
     if (world) {
       // A run already started against no atlas: rebuild the renderer so it
       // picks up the art rather than staying square for the rest of the run.

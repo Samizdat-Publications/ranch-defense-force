@@ -1,0 +1,256 @@
+/* ===================================================================
+   THE HOME SCREEN — the yard at dusk
+   ===================================================================
+   The design asks for a farmyard you stand in rather than a list you
+   read. There is no barn art in the atlas yet (it is priority 3 in
+   art/pixellab-queue.json), so this builds the yard from what the game
+   already owns: a dusk sky, a treeline, a ground band of real terrain
+   tiles, and the actors standing on it.
+
+   Two rules from the spec do the heavy lifting:
+     - SCENERY AT 1x, ACTORS AT 2x, both integer. That size difference
+       is what makes it read as depth rather than a wall of sprites.
+     - The porch light is the only EVENT on the screen: an 11s cycle
+       with one flicker. Everything else is still, so the eye goes
+       there and the yard feels inhabited instead of animated.
+   =================================================================== */
+
+.home {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, #1a1622 0%, #3b2b2e 34%, #6b4630 58%, #8a5a33 72%, #2f2a1c 86%, #17150f 100%);
+}
+
+/* Dusk haze sitting on the horizon, so the treeline has air in front of it. */
+.home::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 46%; height: 26%;
+  background: radial-gradient(60% 100% at 50% 100%, rgba(224, 160, 64, 0.28), transparent 70%);
+  pointer-events: none;
+}
+
+/* --- the yard --- */
+.home-yard {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 46%;
+  pointer-events: none;
+}
+
+/* A band of real terrain tiles, tiled by background-repeat rather than
+   one node per tile — a hundred divs to draw dirt is a hundred divs. */
+.home-ground {
+  position: absolute;
+  left: 0; right: 0; bottom: 0; height: 74%;
+  image-rendering: pixelated;
+  filter: brightness(0.62) saturate(0.85);
+}
+
+.home-treeline {
+  position: absolute;
+  left: 0; right: 0; bottom: 62%;
+  height: 96px;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 0 12px;
+  filter: brightness(0.34) saturate(0.5);
+}
+
+.home-treeline .card-sprite { flex: 0 0 auto; }
+
+/* Actors: 2x against the scenery's 1x. */
+.home-actors {
+  position: absolute;
+  left: 0; right: 0; bottom: 8%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 84px;
+  filter: brightness(0.78);
+}
+
+.home-actor { position: relative; }
+
+/* The porch light. One flicker in eleven seconds. */
+.home-lamp {
+  position: absolute;
+  left: 50%;
+  bottom: 24%;
+  width: 420px;
+  height: 300px;
+  margin-left: -210px;
+  pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 206, 120, 0.30), transparent 68%);
+  animation: porch 11s linear infinite;
+}
+
+@keyframes porch {
+  0%, 88%, 100% { opacity: 1; }
+  90% { opacity: 0.35; }
+  91% { opacity: 1; }
+  93% { opacity: 0.5; }
+  95% { opacity: 1; }
+}
+
+/* --- the printed matter on top --- */
+.home-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 4vh 24px 0;
+  max-width: 1180px;
+  width: 100%;
+}
+
+.home-title {
+  font-family: var(--display);
+  font-size: clamp(34px, 5.4vw, 62px);
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  margin: 0;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.55), 0 0 26px rgba(224, 160, 64, 0.28);
+  animation: title-in 700ms var(--ease-out) both;
+}
+
+@keyframes title-in {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.home-sub {
+  font-family: var(--body);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 62ch;
+  text-align: center;
+  margin: 0;
+  animation: title-in 700ms var(--ease-out) 120ms both;
+}
+
+.home-rail {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* The class rail card is narrower than a level-up card, per the spec. */
+.home-rail .pcard { width: 196px; }
+
+.home-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.home-foot {
+  font-family: var(--label);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted-3);
+  text-align: center;
+  line-height: 2;
+  padding-bottom: 12px;
+}
+
+/* --- a locked class: a packet somebody nailed shut --- */
+/*
+   Not a black silhouette. You can see the figure through the gap
+   between two boards, and the price is branded on the top board — so a
+   locked class advertises itself instead of hiding.
+*/
+.pcard.is-nailed .pcard-window::before,
+.pcard.is-nailed .pcard-window::after {
+  content: '';
+  position: absolute;
+  left: -8%;
+  width: 116%;
+  height: 22px;
+  background: linear-gradient(180deg, #7a5a34, #4e3a20);
+  border-top: 2px solid #906b3e;
+  border-bottom: 2px solid #2e2213;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.pcard.is-nailed .pcard-window::before { top: 26px; transform: rotate(-4deg); }
+.pcard.is-nailed .pcard-window::after { bottom: 26px; transform: rotate(3deg); }
+
+.pcard.is-nailed .card-sprite { filter: brightness(0.5) saturate(0.6); }
+
+.pcard-brand {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-4deg);
+  z-index: 3;
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: #f3d9a6;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+/* --- the seed field, dressed as a filled-in form line --- */
+.home-seed {
+  font-family: var(--body);
+  font-size: 12px;
+  padding: 9px 12px;
+  background: rgba(10, 9, 8, 0.7);
+  border: 2px solid var(--rule-warm);
+  color: var(--cream-2);
+  min-width: 210px;
+}
+.home-seed::placeholder { color: var(--muted-3); }
+
+/*
+   The class rail is six cards on one line, not four; a level-up card at full
+   height stacks them into two rows and pushes the buttons 260px below the fold.
+   The rail therefore gets a compact variant: a shorter art window and no
+   min-heights, so the whole screen fits at 900px without the card stopping
+   being the same object.
+*/
+.home-rail .pcard-window { height: 96px; }
+.home-rail .pcard-name { font-size: 16px; min-height: 0; padding: 9px 10px 0; }
+.home-rail .pcard-blurb {
+  font-size: 10.5px;
+  min-height: 0;
+  padding: 5px 10px 8px;
+  /* Three lines, then ellipsis: six blurbs of different lengths would
+     otherwise give six different card heights and the rail would jitter. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.home-rail .pcard-stats { padding: 7px 10px; gap: 3px; }
+.home-rail .pcard-stat-value { font-size: 10px; text-align: right; }
+.home-rail .pcard-foot { font-size: 6.5px; padding: 5px 10px; }
+
+/* Below about 1300px the six no longer fit; scroll them rather than wrap. */
+.home-rail {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  padding: 4px 8px 10px;
+  scrollbar-width: thin;
+}
+
+.home-rail .pcard { flex: 0 0 auto; }
