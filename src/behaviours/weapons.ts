@@ -201,7 +201,7 @@ const rotatingJet: WeaponBehaviour = ({ world, player, slot, def, damage, tier, 
  *
  * T2 hurts more on landing, T3 drags three at once, T4 leaves them vulnerable.
  */
-const hookFurthest: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const hookFurthest: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const range = num(def, 'range', 420)
   const wanted = tier >= 3 ? num(def, 't3Targets', 3) : 1
   const drag = num(def, 'dragSpeed', 340)
@@ -216,6 +216,28 @@ const hookFurthest: WeaponBehaviour = ({ world, player, def, damage, tier }) => 
     const dx = player.x - e.x
     const dy = player.y - e.y
     const d = Math.hypot(dx, dy) || 1
+
+    // A visible line. hookFurthest resolves instantly, so without this the
+    // Harpoon Gun fired nothing at all and looked broken next to the Scattergun.
+    const shot = world.spawnProjectile()
+    if (shot) {
+      shot.weaponId = slot.id
+      shot.type = 'ranged'
+      shot.behaviour = 'tracer'
+      shot.attached = false
+      shot.x = player.x
+      shot.y = player.y
+      shot.px = shot.x
+      shot.py = shot.y
+      const ang = Math.atan2(e.y - player.y, e.x - player.x)
+      shot.vx = Math.cos(ang) * 900
+      shot.vy = Math.sin(ang) * 900
+      shot.radius = 4
+      shot.damage = 0            // cosmetic: the hook already did the damage
+      shot.pierce = 999
+      shot.life = Math.min(0.4, d / 900)
+      shot.hitStamp = -1
+    }
 
     if (tier >= 4) world.applyMark(e, num(def, 't4MarkPct', 25), num(def, 't4MarkSeconds', 4))
     // Marked before the damage, so the hook's own hit already benefits.
@@ -386,10 +408,32 @@ const bounceSplit: WeaponBehaviour = ({ world, player, slot, def, damage, tier }
  *
  * T2 lasts longer, T3 makes the slick damage, T4 widens it.
  */
-const throwPuddle: WeaponBehaviour = ({ world, player, def, damage, tier }) => {
+const throwPuddle: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const target = world.findNearestEnemy(player.x, player.y, 480)
   const tx = target >= 0 ? world.enemies.items[target].x : player.x + Math.cos(player.facing) * 160
   const ty = target >= 0 ? world.enemies.items[target].y : player.y + Math.sin(player.facing) * 160
+
+  // A visible throw. throwPuddle spawns a hazard directly, so the Tar Bomb
+  // produced a puddle out of thin air with nothing leaving the barrel.
+  const lob = world.spawnProjectile()
+  if (lob) {
+    lob.weaponId = slot.id
+    lob.type = 'ranged'
+    lob.behaviour = 'tracer'
+    lob.attached = false
+    lob.x = player.x
+    lob.y = player.y
+    lob.px = lob.x
+    lob.py = lob.y
+    const d = Math.hypot(tx - player.x, ty - player.y) || 1
+    lob.vx = ((tx - player.x) / d) * 520
+    lob.vy = ((ty - player.y) / d) * 520
+    lob.radius = 5
+    lob.damage = 0
+    lob.pierce = 999
+    lob.life = Math.min(0.5, d / 520)
+    lob.hitStamp = -1
+  }
 
   const h = world.spawnHazard()
   if (!h) return

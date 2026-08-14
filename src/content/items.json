@@ -4,6 +4,7 @@
     "icon": "whetstone",
     "cost": 18,
     "rarity": "common",
+    "blurb": "Everything you own hits harder.",
     "mods": {
       "damagePct": 10
     }
@@ -13,6 +14,7 @@
     "icon": "hook",
     "cost": 17,
     "rarity": "uncommon",
+    "blurb": "Your melee weapons bite deeper.",
     "mods": {
       "meleePct": 18
     }
@@ -22,6 +24,7 @@
     "icon": "bands",
     "cost": 17,
     "rarity": "uncommon",
+    "blurb": "Your guns hit harder.",
     "mods": {
       "rangedPct": 18
     }
@@ -31,6 +34,7 @@
     "icon": "can",
     "cost": 26,
     "rarity": "rare",
+    "blurb": "A lot more damage, and less of you to lose it with.",
     "mods": {
       "damagePct": 25,
       "maxHp": -15
@@ -41,6 +45,7 @@
     "icon": "food_grain_bag",
     "cost": 12,
     "rarity": "common",
+    "blurb": "More of you to lose before the field takes you.",
     "mods": {
       "maxHp": 20
     }
@@ -50,6 +55,7 @@
     "icon": "boots",
     "cost": 14,
     "rarity": "common",
+    "blurb": "Cover the ground faster.",
     "mods": {
       "moveSpeedPct": 8
     }
@@ -59,6 +65,7 @@
     "icon": "vane",
     "cost": 18,
     "rarity": "uncommon",
+    "blurb": "Everything you own fires faster.",
     "mods": {
       "attackSpeedPct": 12
     }
@@ -68,6 +75,7 @@
     "icon": "salt",
     "cost": 15,
     "rarity": "common",
+    "blurb": "You knit back together slowly on your own.",
     "mods": {
       "hpRegen": 1
     }
@@ -77,15 +85,17 @@
     "icon": "wire",
     "cost": 20,
     "rarity": "uncommon",
-    "mods": {},
     "special": "reflect",
-    "reflectDamage": 5
+    "reflectDamage": 5,
+    "blurb": "Anything that touches you takes some back.",
+    "mods": {}
   },
   "tractorPlate": {
     "name": "Tractor Plate",
     "icon": "plate",
     "cost": 22,
     "rarity": "uncommon",
+    "blurb": "Blows land softer, but you move heavier.",
     "mods": {
       "armor": 4,
       "moveSpeedPct": -5
@@ -96,6 +106,7 @@
     "icon": "rooster",
     "cost": 10,
     "rarity": "common",
+    "blurb": "Sweep up gems and feed from further out.",
     "mods": {
       "pickupRadiusPct": 25
     }
@@ -105,6 +116,7 @@
     "icon": "key",
     "cost": 16,
     "rarity": "common",
+    "blurb": "Work nodes from further away, and get more from them.",
     "mods": {
       "harvestPct": 15
     }
@@ -114,6 +126,7 @@
     "icon": "clover",
     "cost": 18,
     "rarity": "uncommon",
+    "blurb": "Better cards and rarer drops turn up more often.",
     "mods": {
       "luck": 10
     }
@@ -123,6 +136,7 @@
     "icon": "coffee",
     "cost": 16,
     "rarity": "uncommon",
+    "blurb": "Everything fires faster.",
     "mods": {
       "moveSpeedPct": 6,
       "attackSpeedPct": 6,
@@ -134,19 +148,21 @@
     "icon": "hat",
     "cost": 24,
     "rarity": "rare",
-    "mods": {},
     "special": "auraDamageReduction",
     "radius": 60,
-    "reductionPct": 15
+    "reductionPct": 15,
+    "blurb": "Enemies pressing close do less to you.",
+    "mods": {}
   },
   "wetRag": {
     "name": "Wet Rag",
     "icon": "rag",
     "cost": 20,
     "rarity": "rare",
-    "mods": {},
     "special": "gasGrace",
-    "graceSeconds": 2
+    "graceSeconds": 2,
+    "blurb": "Buys you a moment inside gas before it starts to hurt.",
+    "mods": {}
   },
   "pickaxeHead": {
     "name": "Better Pickaxe Head",

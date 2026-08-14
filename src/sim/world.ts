@@ -716,6 +716,7 @@ export class World {
     for (let i = this.projectiles.live - 1; i >= 0; i--) {
       const p = this.projectiles.items[i]
       if (p.pierce === -1) continue // detonates on expiry, not on contact
+      if (p.behaviour === 'tracer') continue // purely visual; damage already dealt
 
       const n = this.grid.query(p.x, p.y, p.radius + 24, this.queryOut)
       for (let k = 0; k < n; k++) {

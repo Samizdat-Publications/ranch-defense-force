@@ -15,7 +15,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { ELEMENTS, ENEMIES, NODES, TUNING, WEAPONS } from '../content'
+import { ENEMIES, NODES, TUNING, WEAPONS } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 
@@ -643,12 +643,16 @@ export class Renderer {
     // The element wins over the weapon's own bullet: a fire build fires
     // fireballs whatever the weapon normally throws, which is the point of it
     // being a build choice you can see from across the field.
-    const el = ELEMENTS[this.world.player.element]
-    const elementClip = def?.projectileClip && el?.clip ? el.clip : undefined
-    const clipName = elementClip
-      ?? (p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'eggToss'
-        ? def.shardClip
-        : def?.projectileClip)
+    // An element RECOLOURS the weapon's own round rather than replacing it.
+    // Swapping the clip outright made every weapon fire an identical bullet the
+    // moment you took an element, which erased exactly the weapon identity the
+    // bullets exist to communicate.
+    const element = this.world.player.element
+    const base = p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'drumGun'
+      ? def.shardClip
+      : def?.projectileClip
+    const tinted = base && element !== 'none' ? `${base}.${element}` : undefined
+    const clipName = (tinted && this.atlas?.clipLength(tinted, 'play') ? tinted : base)
     if (clipName) {
       const len = atlas.clipLength(clipName, 'play')
       if (len > 0) {
