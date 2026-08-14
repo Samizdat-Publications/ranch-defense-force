@@ -22,7 +22,8 @@
     "typecheck": "tsc --noEmit && tsc -p tools --noEmit",
     "range": "vite-node tools/weapon-range.ts --",
     "zoom": "vite-node tools/zoom-check.ts --",
-    "characters": "vite-node tools/make-character.ts --"
+    "characters": "vite-node tools/make-character.ts --",
+    "pixellab": "vite-node tools/pixellab.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

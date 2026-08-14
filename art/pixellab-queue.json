@@ -1,0 +1,100 @@
+{
+  "_note": "What to generate next, in priority order. `npm run pixellab -- --list` prices a run without spending anything; a run generates every subject that has no sheet yet. Descriptions are THE SUBJECT ONLY — the style anchor carries palette, outline weight, shading and colour count, and a long style suffix actively fights it.",
+  "_budget": "Pro tools cost 20 generations each against 2,000/month. The list below is about 46 subjects = 920 generations, which is under half a month. Do not run it all at once — work down the priorities and look at what comes back.",
+  "_fieldRule": "Anything that reaches the game FIELD must end up 32x32; generate larger and use PixelLab's Unzoom, or generate at 32 directly. Card icons are exempt and 64px is better — a card window zooms by integers and wants the detail.",
+  "_next": "For directional field art the pipeline is: generate one side view here, then 'Generate 8 rotations', then 'Animate with text' for the walk. Those are separate tools and are not automated by this script yet.",
+
+  "subjects": [
+    {
+      "_priority": "1 — the five borrowed field families. These are flagged `_standInArt` in items.json and are currently wearing sprites that mean something else.",
+      "name": "barn_dog",
+      "description": "a scruffy brown farm dog standing in profile",
+      "serves": "the Barn Dog weapon's minion, currently a generic feral dog"
+    },
+    { "name": "whitacre_bull", "description": "a huge angry black bull in profile", "serves": "the Whitacre Bull legendary minion" },
+    { "name": "gas_cloud", "description": "a sickly green cloud of drifting gas", "serves": "Crop Duster's trail, Iron Lung, the gas grace period" },
+    { "name": "crop_duster_plane", "description": "a yellow crop duster biplane seen from above", "serves": "the Crop Duster card hero, and possibly a flyover" },
+    { "name": "salt_ring_decal", "description": "a ring of scattered white salt on bare dirt", "serves": "the Salt Circle ground decal" },
+
+    {
+      "_priority": "2 — infected livestock. The weakest thing on screen: ordinary animals recoloured with a filter, and it looks like it.",
+      "name": "infected_hen",
+      "description": "a diseased hen with grey feathers and red eyes in profile",
+      "serves": "enemy sheet, replaces a recoloured chicken"
+    },
+    { "name": "infected_rooster", "description": "a diseased rooster with ragged grey plumage in profile", "serves": "enemy sheet" },
+    { "name": "infected_hand", "description": "a farmhand in overalls with grey skin and a slack face, in profile", "serves": "enemy sheet" },
+    { "name": "infected_hog", "description": "a bloated diseased pig with grey mottled skin in profile", "serves": "enemy sheet" },
+    { "name": "infected_sheep", "description": "a diseased sheep with matted grey wool in profile", "serves": "enemy sheet" },
+
+    {
+      "_priority": "3 — the two Homestead signs still borrowing icons.",
+      "name": "seed_catalogue",
+      "description": "a worn paper seed catalogue with a corn illustration on the cover",
+      "serves": "the Seed Catalog building sign, currently a grain sack"
+    },
+    { "name": "prize_rosette", "description": "a blue county fair prize rosette with ribbons", "serves": "the County Fair building sign, currently a star" },
+    { "name": "bunkhouse_sign", "description": "a small wooden bunkhouse building", "serves": "the Bunkhouse sign" },
+    { "name": "feed_store_sign", "description": "a wooden feed store front with a hanging sign", "serves": "the Feed Store sign" },
+
+    {
+      "_priority": "4 — the two legendary card heroes. These carry the biggest moments in a run and deserve art that is not a reused tool sprite.",
+      "name": "sunday_suit_hero",
+      "description": "a folded black funeral suit with a white shirt and dark tie",
+      "serves": "Sunday Best, legendary"
+    },
+    { "name": "reapers_scythe_hero", "description": "an ancient scythe with a blackened curved blade", "serves": "The Reaper's Own, legendary" },
+
+    {
+      "_priority": "5 — weapons still wearing stand-in art.",
+      "name": "post_auger",
+      "description": "a hand-cranked iron fence post auger with a spiral bit",
+      "serves": "the Post Auger weapon, currently a pickaxe"
+    },
+    { "name": "combine_head", "description": "a rusted combine harvester cutting head with steel teeth", "serves": "the Combine Head weapon, currently an axe" },
+    { "name": "work_boots", "description": "a pair of worn brown leather work boots", "serves": "Work Boots item, currently a wooden axe" },
+    { "name": "feed_sack", "description": "a burlap feed sack tied with rope", "serves": "Feed Sack item, currently the feed pickup" },
+    { "name": "boot_knife", "description": "a small worn boot knife with a bone handle", "serves": "Boot Knife item, currently a cow bell" },
+    { "name": "straw_hat", "description": "a wide-brimmed straw sun hat", "serves": "Straw Hat item, currently a folded suit" },
+    { "name": "ditch_light", "description": "a battered handheld work lamp with a wire cage", "serves": "Ditch Light item, currently a lantern" },
+
+    {
+      "_priority": "6 — TERRAIN AND MAPS. The point of the subscription: we are no longer limited to one field. Each of these is a biome the arena could be, using PixelLab's tileset tools rather than this script — listed here so the plan lives in one place.",
+      "name": "_biome_note",
+      "description": "SKIP — see _priority. Use 'Create tiles (Pro)' for tilesets, not generate-with-style-v2.",
+      "serves": "planning only"
+    },
+
+    {
+      "_priority": "7 — props to dress new maps. Cheap, high variety, all card-or-field objects.",
+      "name": "hay_bale_round",
+      "description": "a large round hay bale",
+      "serves": "field prop / cover"
+    },
+    { "name": "water_trough", "description": "a galvanised metal water trough", "serves": "field prop" },
+    { "name": "tractor_rusted", "description": "a small rusted red tractor seen from above", "serves": "field prop / landmark" },
+    { "name": "grain_silo", "description": "a tall corrugated metal grain silo", "serves": "field landmark" },
+    { "name": "windmill_pump", "description": "a metal farm windmill water pump", "serves": "field landmark" },
+    { "name": "fence_post_wire", "description": "a wooden fence post strung with barbed wire", "serves": "arena boundary" },
+    { "name": "scarecrow", "description": "a ragged scarecrow on a wooden cross", "serves": "field prop" },
+    { "name": "well_stone", "description": "an old stone well with a wooden roof", "serves": "field landmark" },
+    { "name": "chicken_coop", "description": "a small wooden chicken coop", "serves": "field prop" },
+    { "name": "burn_barrel", "description": "a rusted burning barrel with flames", "serves": "field prop, lights the night map" },
+    { "name": "tool_shed", "description": "a small weathered wooden tool shed", "serves": "field landmark" },
+    { "name": "irrigation_pipe", "description": "a long section of aluminium irrigation pipe on wheels", "serves": "field prop" },
+    { "name": "corn_stalks", "description": "a dense clump of tall green corn stalks", "serves": "harvest node / cover" },
+    { "name": "pumpkin_patch", "description": "a cluster of orange pumpkins on the vine", "serves": "harvest node" },
+    { "name": "dead_tree", "description": "a bare dead tree with broken branches", "serves": "harvest node, blighted map" },
+    { "name": "boulder_mossy", "description": "a large mossy grey boulder", "serves": "harvest node" },
+
+    {
+      "_priority": "8 — pickups and feedback, so the ground reads at a glance.",
+      "name": "xp_seed",
+      "description": "a glowing green seed",
+      "serves": "the XP pickup, currently a flat coloured square"
+    },
+    { "name": "feed_token", "description": "a small burlap pouch of grain", "serves": "the feed pickup" },
+    { "name": "health_jar", "description": "a glass mason jar of red preserves", "serves": "the heal pickup" },
+    { "name": "chest_supply", "description": "a wooden supply crate with a rope handle", "serves": "a wave-reward drop we do not have yet" }
+  ]
+}

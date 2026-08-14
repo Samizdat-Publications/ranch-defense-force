@@ -36,3 +36,9 @@ desktop.ini
 
 # Claude Code local machine settings
 .claude/settings.local.json
+
+# API keys. PixelLab, ElevenLabs and Gemini keys are read from the environment
+# and must never land in the repo — this is a public repository.
+.env
+.env.*
+*.key
