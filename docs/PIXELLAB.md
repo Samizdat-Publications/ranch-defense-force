@@ -264,3 +264,80 @@ Player class *character sheets*. `npm run characters` composites those from the
 licensed generator pieces in the game's own rig, for free, and PixelLab cannot
 match that rig. Portraits are a different question and are still worth doing —
 `Portrait <-> Character (Pro)` is the recommended path there.
+
+### The character recipe — settings, anchors, prompt
+
+**Claude Design's, from generating the zombie farmer. Follow it exactly.** These
+settings are not defaults and the tool will not pick them for you.
+
+| Setting | Value | Why |
+|---|---|---|
+| Mode | **Pro** | Design is explicit: characters must use Pro. The cheap tools produce weaker silhouettes and a character is the one thing that cannot afford one. |
+| Character size | **40** — set it manually | The size box does not default to this. Our humanoids occupy 32x46 of content in a 32x64 cell; 40 is the setting that lands there. |
+| View | **low top down** | The game is a low top-down. Any other view generates a character that cannot stand in the field. |
+
+**Two images, doing two different jobs. Do not swap them.**
+
+```
+style image      ONE direction, front-facing   assets/pixellab/anchors/hand-style.png
+reference image  FOUR directions in a row      assets/pixellab/anchors/hand-reference.png
+```
+
+The **style** image carries palette, outline weight, shading and colour count.
+The **reference** image carries the rig — how a character in this game is posed,
+framed and turned. Getting them the wrong way round gives you a character that
+looks right and turns wrong, or turns right and looks like a different game.
+
+`npm run anchor` cuts both from a real packed humanoid, so they are reproducible
+and always match art that is actually in the game:
+
+```bash
+npm run anchor            # from the farmer
+npm run anchor -- kid vet # from any packed humanoid id
+```
+
+#### The prompt
+
+**This is where the character recipe differs from the icon recipe, and the
+difference is deliberate.** For icons the rule is *the subject only* — palette
+and outline notes fight the style anchor. For characters, Design's working
+prompt DOES carry palette and outline direction, because a character has far
+more surface area for the model to drift on.
+
+The zombie farmer, verbatim, as the worked example:
+
+> a farmhand who has gone wrong. brown dungarees with both shoulder straps on, a
+> dirty straw hat, a grubby cream shirt. grey-green skin, milky white eyes with
+> no pupils, both arms hanging limp and long at his sides, head level. still
+> clearly a farm worker, not a monster — someone the player would recognise as a
+> neighbour. muted earthy palette, soft dark brown outline, symmetrical
+
+Read what that prompt is actually doing, because it is a template:
+
+1. **A one-line premise.** "a farmhand who has gone wrong."
+2. **Clothing, itemised.** Every garment named, with its state. "both shoulder
+   straps on" is the kind of detail that stops the model inventing a variation.
+3. **The body, itemised.** Skin, eyes, arms, head. Pose is stated explicitly —
+   "arms hanging limp and long at his sides, head level" — because a character
+   generated in an action pose cannot be animated into a different one.
+4. **A line of authorial intent.** "still clearly a farm worker, not a monster —
+   someone the player would recognise as a neighbour." This is the line doing
+   the most work and the easiest to leave out.
+5. **Style closers.** "muted earthy palette, soft dark brown outline,
+   symmetrical."
+
+#### Then animate it
+
+The character comes back with a **character id**. Every animation after that is
+a state of that id, so they stay the same figure:
+
+- **Preset animations** for the ordinary ones — walk, idle, attack, death.
+- **Described animations** for anything else, in plain words. Design's examples
+  from the tool: a backflip, swinging a sword, throwing a fireball, *opening a
+  potion and drinking from it*. If it can be described it can be animated, which
+  means an enemy's telegraph, a class ability and a boss's wind-up are all now
+  ordinary asks rather than art commissions.
+
+This is why the character builder is worth more than the icon pipeline: the
+icons removed a constraint on what items can exist, and this removes the
+constraint on what anything in the game can *do*.

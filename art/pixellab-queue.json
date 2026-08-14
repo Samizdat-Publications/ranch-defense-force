@@ -241,5 +241,22 @@
     "the Duster and the Prize Bull -- both bosses currently have a walk and nothing else.",
     "class ability poses -- digIn (plant and brace) and bolt (dash), currently stat effects with an FX clip over them.",
     "weapon-holding player poses -- a farmer with a scythe and a farmer with a scattergun are the same sprite today."
-  ]
+  ],
+  "_characterRecipe": {
+    "_note": "Claude Design's settings for the character builder. Not defaults -- set them by hand. Full write-up and the prompt template in docs/PIXELLAB.md.",
+    "mode": "Pro (required)",
+    "characterSize": 40,
+    "view": "low top down",
+    "styleImage": "assets/pixellab/anchors/<id>-style.png (ONE direction, front)",
+    "referenceImage": "assets/pixellab/anchors/<id>-reference.png (FOUR directions in a row)",
+    "regenerateAnchors": "npm run anchor",
+    "promptShape": [
+      "one-line premise",
+      "clothing itemised, with its state",
+      "body itemised, and the POSE stated explicitly -- an action pose cannot be animated into a different one",
+      "a line of authorial intent (what the player should read this as)",
+      "style closers: palette, outline, symmetry"
+    ],
+    "differsFromIcons": "Icons take the SUBJECT ONLY; a style suffix fights the anchor. Characters DO carry palette and outline direction, because there is far more surface for the model to drift on."
+  }
 }
