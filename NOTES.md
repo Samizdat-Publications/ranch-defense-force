@@ -1110,13 +1110,8 @@ else. Three tracks make the game wider, one makes it easier and is capped:
 
 ### Two things that are deliberately not finished
 
-**The Bunkhouse has nothing to sell.** Only The Hand and The Kid exist, and both
-are free. The spec wants four more as dark silhouettes from day one, but a class
-is "one Farmer Generator export plus a stat block and one ability" — the export
-is the blocker. Adding four stub classes to `classes.json` would render the
-silhouettes the spec asks for and then hand the player a broken run when they
-bought one, so the ladder is built and priced and simply has no rungs yet. Drop
-four sheets into `assets/generated/characters/` and this becomes a content edit.
+**The Bunkhouse had nothing to sell** — now fixed, see "Characters are
+generated now" below.
 
 **Seventeen of twenty-two items had no card art** — now fixed, see below.
 
@@ -1158,3 +1153,46 @@ real icons and came from the pack's 32x32 icon set.
 or weapon points at a sprite that is not in it. It checks the art and the
 content against each other rather than checking that a string is non-empty,
 which is the only version of this test that would have caught the original bug.
+
+## Characters are generated now
+
+The Bunkhouse was blocked on art: the design treats "one Farmer Generator
+export" as a manual step, so adding a class meant leaving the codebase, opening
+a generator and exporting a PNG by hand. That is why the ladder shipped built,
+priced, and with no rungs.
+
+It did not have to be manual. **Every piece under `Farmer_Generator_Pieces/` is
+a full 1792x704 sheet in the same rig the atlas builder already reads** — 9
+bodies, 13 outfits, 45 hairstyles, 5 eyes, 8 accessories. A character is those
+layers alpha-composited in order: skin, eyes, clothes, hair, hat. Any other
+order puts a hat under a fringe.
+
+`npm run characters` reads `art/characters.json` and writes
+`assets/generated/characters/<id>.png`. **A new class is now five strings**, and
+the art is reproducible and diffable like the rest of the content. It runs
+automatically as the first step of `npm run atlas`, so a recipe change cannot
+leave a stale sheet packed. The two original farmers are deliberately NOT listed
+— regenerating them would overwrite art that already ships.
+
+Four classes added, all playable, priced at the spec's 40/90/150/240:
+
+| Class | Shape | Starts with |
+|---|---|---|
+| **The Widow** | Tanky, regenerating, low crit | Varmint Rifle |
+| **The Veteran** | Balanced, crit-leaning | Drum Gun |
+| **The Agronomist** | Harvest and luck, fragile | Chem Sprayer |
+| **The Drifter** | Fastest, dodgy, highest crit damage | Harpoon Gun |
+
+All six classes were run headlessly to wave 2 to confirm none of them dies to
+its own stat block. The Agronomist kills noticeably slower than the rest — the
+Chem Sprayer is an aura and ramps late — which is worth a balance look but is
+not broken.
+
+### The one compromise, stated plainly
+
+The four share the two *implemented* ability archetypes — `digIn` and `bolt` —
+retuned per class, rather than each getting a bespoke one. Abilities dispatch on
+`a.id` in `world.ts` and `player.ts`, so an unimplemented id gives the player a
+button that silently does nothing. A class with a borrowed ability is fully
+playable; a class with a dead button is worse than no class. Bespoke abilities
+are follow-up work and the dispatch is where they go.

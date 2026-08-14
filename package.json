@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "atlas": "vite-node tools/build-atlas.ts",
+    "atlas": "npm run characters && vite-node tools/build-atlas.ts",
     "conform": "vite-node tools/conform-fx.ts -- --write",
     "music": "vite-node tools/fetch-music.ts --",
     "sfx": "vite-node tools/fetch-sfx.ts --",
@@ -21,7 +21,8 @@
     "shot": "vite-node tools/screenshot.ts --",
     "typecheck": "tsc --noEmit && tsc -p tools --noEmit",
     "range": "vite-node tools/weapon-range.ts --",
-    "zoom": "vite-node tools/zoom-check.ts --"
+    "zoom": "vite-node tools/zoom-check.ts --",
+    "characters": "vite-node tools/make-character.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

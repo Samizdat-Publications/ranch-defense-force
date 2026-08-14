@@ -1,0 +1,34 @@
+{
+  "_note": "Recipes for generated character sheets. Every piece under Character Pieces/ is a full 1792x704 sheet in the same rig the atlas reads, so a character is those layers alpha-composited: skin, eyes, clothes, hair, hat. `npm run characters` writes assets/generated/characters/<id>.png. The two original farmers were exported by hand and are NOT listed here — regenerating them would overwrite art that already ships. Everything new goes through this file, so adding a class is five strings instead of a trip through a generator UI.",
+  "_layerOrder": "body -> eyes -> outfit -> hair -> accessory. Any other order puts a hat under a fringe.",
+  "characters": {
+    "farmer-widow-01": {
+      "body": "4",
+      "eyes": "Gray",
+      "outfit": "Dungarees_Black",
+      "hair": "Long_Gray",
+      "accessory": "Straw_Hat_Black"
+    },
+    "farmer-vet-01": {
+      "body": "7",
+      "eyes": "Brown",
+      "outfit": "Laborer_Blue",
+      "hair": "Balding_Brown_Dark",
+      "accessory": "Bamboo_Hat_Brown"
+    },
+    "farmer-agronomist-01": {
+      "body": "2",
+      "eyes": "Green",
+      "outfit": "Vest_Yellow",
+      "hair": "Tuft_Orange",
+      "accessory": "Gas_Mask"
+    },
+    "farmer-drifter-01": {
+      "body": "9",
+      "eyes": "Blue",
+      "outfit": "Braces_Brown",
+      "hair": "Unkept_Brown_Light",
+      "accessory": "Straw_Hat_Red"
+    }
+  }
+}

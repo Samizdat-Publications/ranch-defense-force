@@ -40,7 +40,11 @@
   "acidZombie": "assets/generated/characters/zombie-acid-01.png",
   "bloatedFarmhand": "assets/generated/characters/zombie-02.png",
   "maskedSprayer": "assets/generated/characters/gas-enemy-01.png",
-  "maskedHauler": "assets/generated/characters/gas-enemy-02.png"
+  "maskedHauler": "assets/generated/characters/gas-enemy-02.png",
+  "widow": "assets/generated/characters/farmer-widow-01.png",
+  "vet": "assets/generated/characters/farmer-vet-01.png",
+  "agronomist": "assets/generated/characters/farmer-agronomist-01.png",
+  "drifter": "assets/generated/characters/farmer-drifter-01.png"
  },
  "animals": {
   "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it — a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
