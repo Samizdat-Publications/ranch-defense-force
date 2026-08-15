@@ -1,0 +1,212 @@
+/* ===================================================================
+   THE SHEET — a paper panel, for pause / results / signs
+   ===================================================================
+   The same kraft stock as a card, at panel scale: dotted paper, a
+   3px ink edge, an inner hairline, and a perforated rule between
+   sections. Used by every screen that is a piece of paper rather than
+   a place.
+
+   Stat rows use a DOTTED LEADER — label left, dots, value right, the
+   way a printed tally sheet does it. That is what stops six numbers
+   reading as a database table.
+   =================================================================== */
+
+.psheet-scrim {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 8, 6, 0.6);
+  z-index: 5;
+}
+
+.psheet {
+  position: relative;
+  width: min(780px, 92vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.6);
+  /*
+     The centring gotcha from the design language: an animated panel that
+     is also centred by transform loses the centring, because the
+     animation's transform replaces it. This one is centred by the grid
+     on .psheet-scrim instead, so the keyframes are free to use transform.
+  */
+  animation: psheet-in 420ms var(--ease-out) both;
+}
+
+@keyframes psheet-in {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Dotted stock and the inner hairline — paper without them is flat tan. */
+.psheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  pointer-events: none;
+  background-image: radial-gradient(#5a4630 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.psheet::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(64, 49, 31, 0.3);
+  pointer-events: none;
+}
+
+.psheet-body { position: relative; padding: 26px 32px 0; }
+
+.psheet-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.psheet-title {
+  font-family: var(--display);
+  font-size: 38px;
+  margin: 0;
+  color: var(--ink);
+  font-weight: 400;
+}
+
+.psheet-hint {
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--ink-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.psheet-rule { margin: 18px 0 0; height: 0; border-top: var(--perf); }
+
+.psheet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 28px;
+  margin: 18px 0 0;
+}
+
+.psheet-stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  animation: row-in 300ms ease-out both;
+}
+
+/* The dotted leader. */
+.psheet-stat-lead {
+  flex: 1;
+  border-bottom: 1px dotted rgba(64, 49, 31, 0.5);
+  margin-bottom: 4px;
+}
+
+.psheet-stat-label {
+  font-family: var(--label);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  color: var(--ink-label);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.psheet-stat-value {
+  font-family: var(--display);
+  font-size: 19px;
+  color: var(--ink);
+}
+
+@keyframes row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.psheet-section {
+  font-family: var(--label);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink-label);
+  text-transform: uppercase;
+  margin: 16px 0 0;
+}
+
+/* What you are carrying: one chip per weapon and item. */
+.psheet-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+
+.psheet-chip {
+  font-family: var(--label);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  color: var(--cream-2);
+  background: var(--wood-chip, linear-gradient(180deg, #5d4b33, #3f3121));
+  border: 2px solid #2b241a;
+  padding: 4px 7px;
+  text-transform: uppercase;
+}
+
+/* Sliders, drawn as a filled gauge with a handle rather than a range input. */
+.psheet-sliders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 22px 0 0;
+}
+
+.psheet-slider-head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--label);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  color: var(--ink-label);
+  text-transform: uppercase;
+}
+
+.psheet-slider {
+  position: relative;
+  height: 12px;
+  margin-top: 7px;
+  background: rgba(64, 49, 31, 0.26);
+  border: 2px solid rgba(64, 49, 31, 0.55);
+  cursor: pointer;
+}
+
+.psheet-slider-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: repeating-linear-gradient(90deg, #6b4a28 0 3px, #8a6134 3px 6px);
+}
+
+.psheet-slider-knob {
+  position: absolute;
+  top: -6px;
+  width: 12px;
+  height: 22px;
+  margin-left: -6px;
+  background: #5d4b33;
+  border: 2px solid #2b241a;
+}
+
+.psheet-foot {
+  position: relative;
+  margin-top: 24px;
+  padding: 16px 32px;
+  border-top: 3px solid rgba(64, 49, 31, 0.5);
+  background: rgba(64, 49, 31, 0.1);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.psheet-foot .spacer { flex: 1; }

@@ -13,6 +13,7 @@
  */
 import type { Audio } from '../core/audio'
 import type { World } from '../sim/world'
+import { ITEMS, WEAPONS } from '../content'
 import { clear, el } from './dom'
 
 export class PauseScreen {
@@ -33,13 +34,20 @@ export class PauseScreen {
     this.onResume = onResume
     clear(this.root)
 
-    const stat = (label: string, value: string): HTMLElement[] => [
-      el('span', { text: label }),
-      el('b', { text: value }),
-    ]
-
     const mins = Math.floor(world.elapsed / 60)
     const secs = Math.floor(world.elapsed % 60)
+
+    // A tally sheet: label, dotted leader, value. Staggered so the rows land
+    // one after another rather than all at once.
+    const stat = (label: string, value: string, i: number): HTMLElement => {
+      const row = el('div', { class: 'psheet-stat' }, [
+        el('span', { class: 'psheet-stat-label', text: label }),
+        el('span', { class: 'psheet-stat-lead' }),
+        el('b', { class: 'psheet-stat-value', text: value }),
+      ])
+      row.style.animationDelay = `${i * 50}ms`
+      return row
+    }
 
     const resume = el('button', { class: 'btn btn-primary', text: 'Resume' })
     resume.addEventListener('click', () => this.close(onResume))
@@ -61,33 +69,97 @@ export class PauseScreen {
       mute.textContent = audio.muted ? 'Sound: off' : 'Sound: on'
     })
 
+    /**
+     * A gauge, not an `<input type=range>`.
+     *
+     * The design draws these as a filled bar with a square handle, and a range
+     * input cannot be styled into that shape across browsers without fighting
+     * every vendor pseudo-element. It is a div with a pointer handler, which is
+     * less code than the styling would have been.
+     */
     const slider = (label: string, value: number, onInput: (v: number) => void): HTMLElement => {
-      const input = el('input', { class: 'pause-slider' }) as HTMLInputElement
-      input.type = 'range'
-      input.min = '0'
-      input.max = '100'
-      input.value = String(Math.round(value * 100))
-      input.addEventListener('input', () => onInput(Number(input.value) / 100))
-      return el('label', { class: 'pause-row' }, [el('span', { text: label }), input])
+      const pct = (v: number): string => `${Math.round(v * 100)}%`
+      const readout = el('span', { text: String(Math.round(value * 100)) })
+      const fill = el('div', { class: 'psheet-slider-fill' })
+      const knob = el('div', { class: 'psheet-slider-knob' })
+      fill.style.width = pct(value)
+      knob.style.left = pct(value)
+
+      const track = el('div', { class: 'psheet-slider' }, [fill, knob])
+      const setFrom = (clientX: number): void => {
+        const b = track.getBoundingClientRect()
+        const v = Math.min(1, Math.max(0, (clientX - b.left) / b.width))
+        fill.style.width = pct(v)
+        knob.style.left = pct(v)
+        readout.textContent = String(Math.round(v * 100))
+        onInput(v)
+      }
+      track.addEventListener('pointerdown', (e: PointerEvent) => {
+        track.setPointerCapture(e.pointerId)
+        setFrom(e.clientX)
+      })
+      track.addEventListener('pointermove', (e: PointerEvent) => {
+        if (e.buttons & 1) setFrom(e.clientX)
+      })
+
+      return el('div', {}, [
+        el('div', { class: 'psheet-slider-head' }, [
+          el('span', { text: label }),
+          readout,
+        ]),
+        track,
+      ])
+    }
+
+    // Everything the run is currently carrying, as chips.
+    const chips = el('div', { class: 'psheet-chips' })
+    for (const w of world.player.weapons) {
+      chips.append(el('span', {
+        class: 'psheet-chip',
+        text: `${WEAPONS[w.id]?.name ?? w.id} T${w.tier}`,
+      }))
+    }
+    for (const it of world.player.items) {
+      chips.append(el('span', {
+        class: 'psheet-chip',
+        text: `${ITEMS[it.id]?.name ?? it.id}${it.boosted ? ' 2x' : ''}`,
+      }))
+    }
+    if (!world.player.weapons.length && !world.player.items.length) {
+      chips.append(el('span', { class: 'psheet-chip', text: 'nothing yet' }))
     }
 
     this.root.appendChild(
-      el('div', { class: 'panel pause-card' }, [
-        el('h2', { class: 'pause-title', text: 'Paused' }),
-        el('p', { class: 'pause-sub', text: 'Esc or P to get back to work' }),
-        el('div', { class: 'pause-stats' }, [
-          ...stat('Wave', String(world.spawner.wave)),
-          ...stat('Level', String(world.player.level)),
-          ...stat('Kills', String(world.kills)),
-          ...stat('Harvested', String(world.cropsHarvested)),
-          ...stat('Feed', String(world.player.feed)),
-          ...stat('Time', `${mins}:${String(secs).padStart(2, '0')}`),
+      el('div', { class: 'psheet-scrim' }, [
+        el('div', { class: 'psheet' }, [
+          el('div', { class: 'psheet-body' }, [
+            el('div', { class: 'psheet-head' }, [
+              el('h2', { class: 'psheet-title', text: 'Paused' }),
+              el('span', { class: 'psheet-hint', text: 'Esc or P to get back to work' }),
+            ]),
+            el('div', { class: 'psheet-rule' }),
+            el('div', { class: 'psheet-stats' }, [
+              stat('Wave', String(world.spawner.wave), 0),
+              stat('Level', String(world.player.level), 1),
+              stat('Kills', String(world.kills), 2),
+              stat('Harvested', String(world.cropsHarvested), 3),
+              stat('Feed', String(world.player.feed), 4),
+              stat('Time', `${mins}:${String(secs).padStart(2, '0')}`, 5),
+            ]),
+            el('div', { class: 'psheet-rule', style: { marginTop: '22px' } }),
+            el('div', { class: 'psheet-section', text: 'What you are carrying' }),
+            chips,
+            el('div', { class: 'psheet-sliders' }, [
+              slider('Effects', audio.sfxVolume, (v) => audio.setVolumes(v, audio.musicVolume)),
+              slider('Music', audio.musicVolume, (v) => audio.setVolumes(audio.sfxVolume, v)),
+            ]),
+          ]),
+          el('div', { class: 'psheet-foot' }, [
+            resume, mute,
+            el('span', { class: 'spacer' }),
+            quit,
+          ]),
         ]),
-        el('div', { class: 'pause-audio' }, [
-          slider('Effects', audio.sfxVolume, (v) => audio.setVolumes(v, audio.musicVolume)),
-          slider('Music', audio.musicVolume, (v) => audio.setVolumes(audio.sfxVolume, v)),
-        ]),
-        el('div', { class: 'pause-actions' }, [mute, resume, quit]),
       ]),
     )
     this.root.style.display = ''
