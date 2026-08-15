@@ -19,77 +19,96 @@ import { card, deal } from './card'
 import { spriteEl, spriteTileUrl, frameOf } from './sprite'
 
 /**
- * The yard, as placements on a 1920x1080 reference frame.
+ * The two backdrops, straight from the design's `PLACEMENTS.md`.
  *
- * Positions are percentages of that frame so the scene scales with the window
- * without anything needing to be re-measured. `zoom` is the integer sprite
- * scale: distant buildings at 1x, actors at 2x, and ONE foreground building at
- * 2x cropped by the frame edge — the silo. That scale ladder is what carries
- * the depth; without it the yard is a wall of sprites at one size.
+ * **Absolute pixels in 1920x1080 stage space**, not percentages of the window.
+ * The stage letterboxes as one unit, so these numbers are the composition and
+ * nothing here needs a breakpoint.
+ *
+ * Every sprite is drawn at an INTEGER multiple of its native size. The design's
+ * table computes that column rather than asserting it, and a non-integer zoom is
+ * a bug on either side — so `stagePlace` derives the size from the atlas frame
+ * and the zoom instead of taking a drawn size on trust.
+ *
+ * The one composition rule to preserve if anything moves:
+ *
+ *   NOTHING THAT MOVES GOES IN x 0-430 ABOVE y 726.
+ *
+ * The left third is reserved for print. The class panel is only 78% opaque, so
+ * anything behind it ghosts through and reads as a rendering fault rather than
+ * as scenery. Two rounds of that bug are why the rule is written down.
  */
-interface Placement {
+interface Place {
   sprite: string
-  /** Percent of the reference frame, from the left / from the top. */
   x: number
   y: number
-  zoom: number
-  /** Distance haze. Far things are dimmer and slightly blue. */
-  dim?: number
+  /** Integer multiple of the sprite's native size. */
+  zoom?: number
+  /** A tiled band rather than a single sprite: tile w/h in stage pixels. */
+  tile?: [number, number]
+  /** Band size when tiled; otherwise the sprite's own size is used. */
+  size?: [number, number]
+  anim?: string
+  opacity?: number
   blur?: number
-  z?: number
 }
 
-const YARD: Placement[] = [
-  { sprite: 'scene.barn', x: 10, y: 30, zoom: 1, dim: 0.72, z: 1 },
-  { sprite: 'scene.house', x: 33, y: 22, zoom: 1, dim: 0.66, z: 1 },
-  { sprite: 'scene.coop', x: 57, y: 44, zoom: 1, dim: 0.8, z: 2 },
-  { sprite: 'scene.well', x: 70, y: 56, zoom: 1, dim: 0.82, z: 2 },
-  { sprite: 'scene.scarecrow', x: 47, y: 52, zoom: 1, dim: 0.78, z: 2 },
-  { sprite: 'scene.doghouse', x: 78, y: 52, zoom: 1, dim: 0.84, z: 2 },
-  { sprite: 'scene.hay', x: 26, y: 62, zoom: 2, dim: 0.9, z: 3 },
-  { sprite: 'scene.tractorLeft', x: 6, y: 58, zoom: 1, dim: 0.8, z: 2 },
-  // The foreground silo, deliberately running off the right edge.
-  { sprite: 'scene.silo', x: 86, y: 8, zoom: 2, dim: 0.5, z: 6 },
+const YARD: Place[] = [
+  { sprite: 'scene.treeOak', x: 1150, y: 300 },
+  { sprite: 'scene.treeOak', x: 1420, y: 282 },
+  { sprite: 'scene.treeOak', x: 596, y: 268 },
+  { sprite: 'scene.silo', x: 1664, y: 192 },
+  { sprite: 'scene.coop', x: 800, y: 478 },
+  { sprite: 'scene.nest', x: 936, y: 542 },
+  { sprite: 'scene.scarecrow', x: 968, y: 546, anim: 'y-sway 7.4s ease-in-out infinite' },
+  { sprite: 'scene.well', x: 1112, y: 596 },
+  { sprite: 'scene.hay', x: 646, y: 616 },
+  { sprite: 'scene.treeOak', x: 1742, y: 414 },
+  { sprite: 'scene.doghouse', x: 722, y: 552 },
+  { sprite: 'scene.penV', x: -2, y: 20 },
+  { sprite: 'scene.cow', x: 1628, y: 658, anim: 'y-bob 5.4s ease-in-out infinite' },
+  { sprite: 'scene.calf', x: 1746, y: 672, anim: 'y-bob 3.1s ease-in-out infinite 0.6s' },
+  { sprite: 'scene.sheep', x: 1826, y: 678, anim: 'y-bob 4.2s ease-in-out infinite 1.4s' },
+  { sprite: 'scene.trough', x: 1600, y: 700 },
+  { sprite: 'scene.chickenPeckStrip', x: 856, y: 676, tile: [256, 64], size: [256, 64], anim: 'y-strip-256 2s steps(4) infinite' },
+  { sprite: 'scene.chick', x: 920, y: 678, zoom: 2, anim: 'y-bob 2.2s ease-in-out infinite' },
+  { sprite: 'scene.chickenPeckStrip', x: 992, y: 660, tile: [256, 64], size: [256, 64], anim: 'y-strip-256 2.6s steps(4) infinite 0.8s' },
+  { sprite: 'scene.chickenPeckStrip', x: 1064, y: 674, tile: [256, 64], size: [256, 64], anim: 'y-strip-256 3.1s steps(4) infinite 1.9s' },
+  { sprite: 'scene.fencePicket', x: -20, y: 742, tile: [96, 32], size: [1960, 32] },
+  { sprite: 'scene.dogLab', x: 132, y: 818, zoom: 2, anim: 'y-bob 2.4s ease-in-out infinite' },
+  { sprite: 'scene.milkcan', x: 24, y: 872, zoom: 2 },
+  { sprite: 'scene.milkcan', x: 66, y: 890, zoom: 2 },
 ]
 
-/** Walking actors: one strip each, stepped by CSS. */
-interface Walker {
-  sprite: string
-  frames: number
-  x: number
-  y: number
-  zoom: number
-  /** Seconds for one full cycle. */
-  cycle: number
-  dim?: number
+const FIELD: Place[] = [
+  { sprite: 'scene.treeOak', x: 900, y: 352 },
+  { sprite: 'scene.treeOak', x: 1560, y: 352 },
+  { sprite: 'scene.silo', x: 1672, y: 116 },
+  { sprite: 'scene.barn', x: 1208, y: 340 },
+  { sprite: 'scene.house', x: 560, y: 244 },
+  { sprite: 'scene.farmerIdle', x: 1392, y: 508 },
+  { sprite: 'scene.farmer2Idle', x: 1436, y: 512 },
+  { sprite: 'scene.chickenPeckStrip', x: 1350, y: 542, tile: [128, 32], size: [128, 32], anim: 'f-strip-128 2.4s steps(4) infinite' },
+  { sprite: 'scene.chickenPeckStrip', x: 1386, y: 548, tile: [128, 32], size: [128, 32], anim: 'f-strip-128 3.1s steps(4) infinite 0.7s' },
+  { sprite: 'scene.chickenPeckStrip', x: 1478, y: 544, tile: [128, 32], size: [128, 32], anim: 'f-strip-128 2.8s steps(4) infinite 1.5s' },
+  { sprite: 'scene.chickenPeckStrip', x: 1560, y: 540, tile: [128, 32], size: [128, 32], anim: 'f-strip-128 3.4s steps(4) infinite 2.2s' },
+  // The crop bands SKEW in place rather than scrolling, so the field breathes
+  // without the tiling reading as moving wallpaper. Each carries a different
+  // x-offset so the seams never line up vertically.
+  { sprite: 'scene.wheat', x: -32, y: 574, tile: [64, 64], size: [1984, 64], opacity: 0.9, anim: 'f-crop 5.2s ease-in-out infinite' },
+  { sprite: 'scene.wheat', x: -32, y: 636, tile: [64, 64], size: [1984, 64], opacity: 0.62, anim: 'f-crop 5.9s ease-in-out infinite 0.7s' },
+  { sprite: 'scene.wheat2', x: -32, y: 700, tile: [96, 96], size: [1984, 96], opacity: 0.92, anim: 'f-crop 6.4s ease-in-out infinite' },
+  { sprite: 'scene.wheat2', x: -32, y: 806, tile: [96, 96], size: [1984, 96], opacity: 0.55, blur: 1.2, anim: 'f-crop-slow 7.1s ease-in-out infinite 1.2s' },
+  { sprite: 'scene.wheat2', x: -32, y: 902, tile: [128, 128], size: [1984, 128], opacity: 0.95, blur: 2.6, anim: 'f-crop-slow 8.3s ease-in-out infinite' },
+  { sprite: 'scene.scarecrow', x: 640, y: 522, anim: 'f-sway 6.6s ease-in-out infinite' },
+  { sprite: 'scene.hay', x: 700, y: 606 },
+]
+
+/** Edge colours the letterbox bleeds with, per scene. */
+const BLEED = {
+  yard: { top: '#191b36', bottom: '#191d13' },
+  field: { top: '#1d2140', bottom: '#201e13' },
 }
-
-/**
- * The field: distant buildings, then crop bands scrolling toward the viewer.
- *
- * The mockup draws the buildings at half scale. That would put pixel art on a
- * half-pixel grid, so they are placed at 1x and pushed further up the frame
- * instead — perspective from position rather than from a fractional zoom.
- */
-const FIELD: Placement[] = [
-  { sprite: 'scene.silo', x: 82, y: 16, zoom: 1, dim: 0.62, z: 1 },
-  { sprite: 'scene.barn', x: 66, y: 34, zoom: 1, dim: 0.6, z: 1 },
-  { sprite: 'scene.house', x: 20, y: 26, zoom: 1, dim: 0.58, z: 1 },
-  { sprite: 'scene.scarecrow', x: 45, y: 44, zoom: 1, dim: 0.7, z: 2 },
-]
-
-/** Crop bands: tile, on-screen tile size, top, seconds per loop. */
-const FIELD_CROPS: { sprite: string; zoom: number; y: number; cycle: number }[] = [
-  { sprite: 'scene.wheat', zoom: 2, y: 52, cycle: 5.2 },
-  { sprite: 'scene.wheat2', zoom: 3, y: 62, cycle: 6.4 },
-  { sprite: 'scene.wheat', zoom: 4, y: 76, cycle: 4.1 },
-]
-
-const WALKERS: Walker[] = [
-  { sprite: 'scene.farmerWalkstrip', frames: 6, x: 41, y: 70, zoom: 2, cycle: 0.75, dim: 0.92 },
-  { sprite: 'scene.chickenWalkLeftstrip', frames: 6, x: 62, y: 76, zoom: 2, cycle: 0.6, dim: 0.9 },
-  { sprite: 'scene.chickenPeckstrip', frames: 4, x: 30, y: 78, zoom: 2, cycle: 1.1, dim: 0.9 },
-]
 
 export class MenuScreen {
   private readonly root: HTMLElement
@@ -155,109 +174,73 @@ export class MenuScreen {
    * screen feel unstable, which is the opposite of what a home screen is for.
    */
   private scene(): HTMLElement {
-    return this.isField ? this.field() : this.yard()
-  }
-
-  /** The field: sun, clouds, distant buildings, parallax crop bands. */
-  private field(): HTMLElement {
+    const places = this.isField ? FIELD : YARD
     const scene = el('div', { class: 'home-yard' })
-    scene.append(el('div', { class: 'field-sun' }))
 
-    // Three cloud layers at very different speeds; the difference is the depth.
-    for (const [top, secs, opacity] of [[11, 150, 0.5], [21, 104, 0.7], [31, 76, 0.9]] as const) {
-      const c = el('div', { class: 'field-cloud' })
-      c.style.top = `${top}%`
-      c.style.opacity = String(opacity)
-      c.style.animation = `field-drift ${secs}s linear infinite`
-      scene.append(c)
+    if (this.isField) {
+      scene.append(el('div', { class: 'field-sun' }))
+      for (const [top, secs, opacity] of [[11, 150, 0.5], [21, 104, 0.7], [31, 76, 0.9]] as const) {
+        const c = el('div', { class: 'field-cloud' })
+        c.style.top = `${top}%`
+        c.style.opacity = String(opacity)
+        c.style.animation = `field-drift ${secs}s linear infinite`
+        scene.append(c)
+      }
+      // A distant treeline is a small SPRITE, not a small scale, so this band is
+      // a blurred CSS silhouette rather than shrunken oaks.
+      scene.append(el('div', { class: 'field-treeline' }))
     }
 
-    for (const p of FIELD) {
-      const sp = spriteEl(p.sprite, 4096, p.zoom)
-      if (!sp) continue
-      const wrap = el('div', { class: 'home-place' }, [sp])
-      wrap.style.left = `${p.x}%`
-      wrap.style.top = `${p.y}%`
-      wrap.style.zIndex = String(p.z ?? 1)
-      wrap.style.filter = `brightness(${p.dim ?? 1})`
-      scene.append(wrap)
+    for (const p of places) {
+      const node = this.stagePlace(p)
+      if (node) scene.append(node)
     }
 
-    FIELD_CROPS.forEach((c, i) => {
-      const url = spriteTileUrl(c.sprite)
-      const f = frameOf(c.sprite)
-      if (!url || !f) return
-      const size = f.w * c.zoom
-      const band = el('div', { class: 'field-crop' })
-      band.style.top = `${c.y}%`
-      band.style.height = `${f.h * c.zoom}px`
-      band.style.backgroundImage = `url('${url}')`
-      band.style.backgroundSize = `${size}px ${f.h * c.zoom}px`
-      band.style.setProperty('--crop-end', `-${size}px`)
-      band.style.animation = `field-crop ${c.cycle}s linear infinite`
-      band.style.zIndex = String(3 + i)
-      scene.append(band)
-    })
-
+    if (!this.isField) scene.append(el('div', { class: 'home-lamp' }))
+    // The scene's own two shaped passes, on the stage so they letterbox with it.
+    scene.append(el('div', { class: 'home-vignette' }))
     return scene
   }
 
-  /** The yard: ground, buildings, walkers, porch light. All dressing, no state. */
-  private yard(): HTMLElement {
-    const yard = el('div', { class: 'home-yard' })
+  /**
+   * One placement, in stage pixels.
+   *
+   * Sizes are derived from the atlas frame times the zoom rather than taken from
+   * the design's drawn-size column, so a sprite that gets re-cropped cannot end
+   * up stretched — the table's `zoom` is the intent and the frame is the truth.
+   */
+  private stagePlace(p: Place): HTMLElement | null {
+    const f = frameOf(p.sprite)
+    if (!f) return null
 
-    // The ground band tiles one terrain frame rather than spawning a node per
-    // tile — a hundred divs to draw dirt is a hundred divs. It must be a
-    // standalone tile texture, NOT an atlas window: repeating an atlas window
-    // repeats the whole atlas, and the first version of this drew a wall of
-    // every sprite in the game across the bottom of the home screen.
-    const ground = el('div', { class: 'home-ground' })
-    const dirt = spriteTileUrl('terrain.dirt')
-    if (dirt) {
-      ground.style.backgroundImage = `url('${dirt}')`
-      ground.style.backgroundRepeat = 'repeat'
-      ground.style.backgroundSize = '64px 64px'
-    }
-    yard.append(ground)
+    const node = el('div', { class: 'home-place' })
+    node.style.left = `${p.x}px`
+    node.style.top = `${p.y}px`
 
-    for (const p of YARD) {
-      const s = spriteEl(p.sprite, 4096, p.zoom)
-      if (!s) continue
-      const wrap = el('div', { class: 'home-place' }, [s])
-      wrap.style.left = `${p.x}%`
-      wrap.style.top = `${p.y}%`
-      wrap.style.zIndex = String(p.z ?? 1)
-      wrap.style.filter =
-        `brightness(${p.dim ?? 1})${p.blur ? ` blur(${p.blur}px)` : ''}`
-      yard.append(wrap)
-    }
-
-    for (const w of WALKERS) {
-      const strip = spriteTileUrl(w.sprite)
-      if (!strip) continue
-      const f = frameOf(w.sprite)
-      if (!f) continue
-      const cellW = f.w / w.frames
-      const el2 = el('div', { class: 'home-walker' })
-      // Pixel background-position and an explicit pixel background-size.
-      // PERCENTAGES LOOK EQUIVALENT AND ARE NOT: with a 6-frame strip, -600%
-      // lands frame 0 and then five blank offsets, so the character shows one
-      // frame and then flickers. Documented in the handoff as already shipped
-      // once into a mockup.
-      el2.style.width = `${cellW * w.zoom}px`
-      el2.style.height = `${f.h * w.zoom}px`
-      el2.style.backgroundImage = `url('${strip}')`
-      el2.style.backgroundSize = `${f.w * w.zoom}px ${f.h * w.zoom}px`
-      el2.style.setProperty('--walk-end', `-${f.w * w.zoom}px`)
-      el2.style.animation = `walk-strip ${w.cycle}s steps(${w.frames}) infinite`
-      el2.style.left = `${w.x}%`
-      el2.style.top = `${w.y}%`
-      el2.style.filter = `brightness(${w.dim ?? 1})`
-      yard.append(el2)
+    if (p.tile) {
+      // A tiled band: needs a standalone tile texture, never an atlas window —
+      // repeating an atlas window repeats the whole atlas.
+      const url = spriteTileUrl(p.sprite)
+      if (!url) return null
+      const [tw, th] = p.tile
+      const [w, h] = p.size ?? p.tile
+      node.style.width = `${w}px`
+      node.style.height = `${h}px`
+      node.style.backgroundImage = `url('${url}')`
+      node.style.backgroundSize = `${tw}px ${th}px`
+      node.style.backgroundRepeat = 'repeat-x'
+      node.style.setProperty('--tile-w', `-${tw}px`)
+      node.style.imageRendering = 'pixelated'
+    } else {
+      const sprite = spriteEl(p.sprite, 4096, p.zoom ?? 1)
+      if (!sprite) return null
+      node.append(sprite)
     }
 
-    yard.append(el('div', { class: 'home-lamp' }))
-    return yard
+    if (p.anim) node.style.animation = p.anim
+    if (p.opacity !== undefined) node.style.opacity = String(p.opacity)
+    if (p.blur) node.style.filter = `blur(${p.blur}px)`
+    return node
   }
 
   /**
@@ -338,15 +321,23 @@ export class MenuScreen {
   }
 
   /**
-   * Scale the 1920x1080 stage to cover the window.
+   * Fit the 1920x1080 stage INSIDE the window.
    *
-   * `cover`, not `contain`: a letterboxed farmyard with bars down the sides
-   * would look like a bug. The overflow is hidden by `.home`, and the design
-   * already expects the silo to run off the right edge.
+   * `contain`, not `cover`, and that is Design's call rather than a preference:
+   * the composition is horizontal — barn right, print left — so cropping the
+   * sides destroys exactly the relationship the scene is built on. The leftover
+   * space is bled with the scene's own edge colours, which reads as a wider
+   * window rather than as bars.
    */
   private fitScene(): void {
-    const s = Math.max(window.innerWidth / 1920, window.innerHeight / 1080)
+    const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080)
     this.root.style.setProperty('--scene', String(s))
+    // The bleed lives here rather than in `scene()`: that runs while the stage
+    // is being built, which is BEFORE `this.root` exists, and setting a
+    // property on it there threw on construction.
+    const bleed = this.isField ? BLEED.field : BLEED.yard
+    this.root.style.setProperty('--bleed-top', bleed.top)
+    this.root.style.setProperty('--bleed-bottom', bleed.bottom)
   }
 
   close(): void {

@@ -26,31 +26,40 @@
     linear-gradient(180deg, #1a1622 0%, #3b2b2e 34%, #6b4630 58%, #8a5a33 72%, #2f2a1c 86%, #17150f 100%);
 }
 
-/* Dusk haze on the horizon, and a vertical scrim so the printed matter
-   at the top of the screen always has something to sit on. */
-.home::before {
-  content: '';
+/*
+   NO SCRIM. Design was explicit: there is none in the mockups and there
+   should not be one. The scene ends with two full-bleed passes of its
+   own that do the same job better because they are SHAPED — a vignette
+   and a top/bottom falloff — and the second darkens exactly the band
+   the card rail sits in. Every printed panel also carries its own
+   opaque kraft background, so it never needed help.
+
+   These live on the stage, not on `.home`, so they letterbox with the
+   scene instead of covering the bleed.
+*/
+.home-vignette {
   position: absolute;
   inset: 0;
-  z-index: 8;
+  z-index: 40;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(8, 7, 6, 0.82) 0%, rgba(8, 7, 6, 0.62) 38%, rgba(8, 7, 6, 0.12) 58%, transparent 74%),
-    radial-gradient(60% 40% at 50% 62%, rgba(224, 160, 64, 0.22), transparent 70%);
+    radial-gradient(120% 78% at 50% 56%, transparent 42%, rgba(12, 10, 14, 0.52) 100%),
+    linear-gradient(180deg, rgba(10, 9, 14, 0.44) 0%, transparent 22%, transparent 56%, rgba(10, 9, 8, 0.68) 100%);
 }
 
 /* --- the yard --- */
 /*
-   THE SCENE IS A FIXED STAGE, SCALED AS ONE UNIT.
+   THE SCENE IS A FIXED 1920x1080 STAGE, LETTERBOXED.
 
-   Design composes on 1920x1080, where the barn is 480px — a quarter of
-   the width. Positioning those same sprites by percentage of an
-   arbitrary viewport does not reproduce that: on a 1129px window the
-   barn becomes 43% of the width and the silo grows to 896px on a
-   1153px screen, so the yard reads as a close-up of a barn instead of
-   a farmyard. The stage is therefore 1920x1080 always, and `--scene`
-   scales the whole thing to cover the window. Every placement inside
-   is then stable, and the scale ladder the design depends on survives.
+   Design's call, and the reasoning is that the composition is
+   HORIZONTAL: the barn is on the right, the print is on the left, and
+   cropping the sides destroys exactly that relationship. So the stage
+   is fitted INSIDE the window (`contain`, not `cover`) and the leftover
+   space is bled with the scene's own edge colours, which reads as a
+   wider window rather than as bars.
+
+   Everything inside is then absolute pixels in stage space, straight
+   from PLACEMENTS.md. No percentages, no breakpoints.
 */
 .home-scene {
   position: absolute;
@@ -64,6 +73,19 @@
   pointer-events: none;
 }
 
+/* The bleed behind the letterbox: the scene's own edge colours, so the
+   leftover space reads as more room rather than as black bars. */
+.home { background: var(--bleed-top); }
+
+.home::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 50%; bottom: 0;
+  background: var(--bleed-bottom);
+  z-index: 0;
+  pointer-events: none;
+}
+
 .home-yard {
   position: absolute;
   inset: 0;
@@ -71,7 +93,7 @@
   overflow: hidden;
 }
 
-/* Buildings and props, placed as a percentage of a 1920x1080 frame. */
+/* Buildings and props, absolute pixels in 1920x1080 stage space. */
 .home-place { position: absolute; }
 .home-place .card-sprite { display: block; }
 
@@ -165,12 +187,20 @@
   animation: title-in 700ms var(--ease-out) 120ms both;
 }
 
+/*
+   Six cards, one row, no scroll and no compact variant. Once the stage
+   letterboxes the internal layout is always 1920 wide, so there is no
+   breakpoint to handle: 6x196 + 5x16 = 1256, centred, with 332px either
+   side. Design was blunt about the scroll — a picker you have to scroll
+   hides the thing you are asking the player to compare, and the card it
+   clipped was the locked Drifter, the most interesting one.
+*/
 .home-rail {
   display: flex;
   gap: 16px;
   align-items: stretch;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: 10px;
 }
 
@@ -248,41 +278,6 @@
 }
 .home-seed::placeholder { color: var(--muted-3); }
 
-/*
-   The class rail is six cards on one line, not four; a level-up card at full
-   height stacks them into two rows and pushes the buttons 260px below the fold.
-   The rail therefore gets a compact variant: a shorter art window and no
-   min-heights, so the whole screen fits at 900px without the card stopping
-   being the same object.
-*/
-.home-rail .pcard-window { height: 96px; }
-.home-rail .pcard-name { font-size: 16px; min-height: 0; padding: 9px 10px 0; }
-.home-rail .pcard-blurb {
-  font-size: 10.5px;
-  min-height: 0;
-  padding: 5px 10px 8px;
-  /* Three lines, then ellipsis: six blurbs of different lengths would
-     otherwise give six different card heights and the rail would jitter. */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.home-rail .pcard-stats { padding: 7px 10px; gap: 3px; }
-.home-rail .pcard-stat-value { font-size: 10px; text-align: right; }
-.home-rail .pcard-foot { font-size: 6.5px; padding: 5px 10px; }
-
-/* Below about 1300px the six no longer fit; scroll them rather than wrap. */
-.home-rail {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-wrap: nowrap;
-  padding: 4px 8px 10px;
-  scrollbar-width: thin;
-}
-
-.home-rail .pcard { flex: 0 0 auto; }
 
 /* ===================================================================
    THE FIELD — the second backdrop
@@ -348,4 +343,57 @@
 
 @keyframes field-crop {
   to { background-position: var(--crop-end) 0; }
+}
+
+/* --- scene animations, from PLACEMENTS.md --- */
+/*
+   Prefixed y* / f* so the two scenes can never collide, which is how the
+   design's own scene modules are written.
+*/
+@keyframes y-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes y-sway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+}
+
+@keyframes f-sway {
+  0%, 100% { transform: rotate(-1.6deg); }
+  50% { transform: rotate(1.6deg); }
+}
+
+/* Stepped strips: pixel offsets, never percentages. */
+@keyframes y-strip-256 { to { background-position: -256px 0; } }
+@keyframes f-strip-128 { to { background-position: -128px 0; } }
+
+/*
+   The crop bands SKEW in place rather than scrolling. A scrolling band reads as
+   moving wallpaper; a skew reads as wind through a field, which is what a field
+   at dusk actually does.
+*/
+@keyframes f-crop {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(1.6deg); }
+}
+
+@keyframes f-crop-slow {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(1deg); }
+}
+
+/* The field's distant treeline: a blurred silhouette band, because a distant
+   tree needs a small sprite and we only have a big one. */
+.field-treeline {
+  position: absolute;
+  left: 0; right: 0;
+  top: 486px;
+  height: 82px;
+  z-index: 1;
+  pointer-events: none;
+  filter: blur(2.4px);
+  background:
+    radial-gradient(closest-side, rgba(26, 34, 22, 0.95), transparent 72%) 0 0 / 190px 82px repeat-x;
 }

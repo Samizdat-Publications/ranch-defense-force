@@ -559,15 +559,26 @@
   "_base": "assets/scene/",
   "files": {
    "scene.barn": "barn.png",
+   "scene.calf": "calf.png",
    "scene.chick": "chick.png",
    "scene.coop": "coop.png",
+   "scene.cow": "cow.png",
+   "scene.dogLab": "dog_lab.png",
    "scene.doghouse": "doghouse.png",
-   "scene.fencePicket": "fence_picket.png",
+   "scene.farmer2Idle": "farmer2_idle.png",
+   "scene.farmerIdle": "farmer_idle.png",
    "scene.fenceRail": "fence_rail.png",
+   "scene.hay": "hay.png",
    "scene.house": "house.png",
+   "scene.milkcan": "milkcan.png",
+   "scene.nest": "nest.png",
+   "scene.penV": "pen_v.png",
    "scene.scarecrow": "scarecrow.png",
+   "scene.sheep": "sheep.png",
    "scene.silo": "silo.png",
    "scene.tractorLeft": "tractor_left.png",
+   "scene.treeOak": "tree_oak.png",
+   "scene.trough": "trough.png",
    "scene.well": "well.png"
   },
   "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent; the yard uses the game's own rooster sprite instead."
@@ -577,13 +588,13 @@
   "_base": "assets/scene/",
   "noTrim": true,
   "files": {
-   "scene.chickenPeckstrip": "chicken_peck_strip.png",
-   "scene.chickenWalkLeftstrip": "chicken_walk_left_strip.png",
-   "scene.farmerWalkstrip": "farmer_walk_strip.png",
-   "scene.farmerWalkUpstrip": "farmer_walk_up_strip.png",
+   "scene.chickenPeckStrip": "chicken_peck_strip.png",
+   "scene.chickenWalkLeftStrip": "chicken_walk_left_strip.png",
+   "scene.farmerWalkStrip": "farmer_walk_strip.png",
+   "scene.farmerWalkUpStrip": "farmer_walk_up_strip.png",
+   "scene.fencePicket": "fence_picket.png",
    "scene.wheat": "wheat.png",
-   "scene.wheat2": "wheat2.png",
-   "scene.hay": "hay.png"
+   "scene.wheat2": "wheat2.png"
   }
  }
 }
