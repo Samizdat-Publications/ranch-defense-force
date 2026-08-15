@@ -490,6 +490,7 @@
   "_base": "assets/pixellab/picked/",
   "files": {
    "item.ditchLight": "ditch_light.png",
+   "scene.oak": "oak_tree.png",
    "scene.rooster": "rooster_big.png",
    "item.strawHat": "straw_hat.png",
    "meta.bunkhouse": "bunkhouse_sign.png",
@@ -498,6 +499,7 @@
    "meta.countyFair": "prize_rosette.png",
    "weapon.combineHead": "combine_head.png",
    "weapon.postAuger": "post_auger.png",
+   "item.bootKnife": "boot_knife.png",
    "item.balingTwine": "twine.png",
    "item.barbedWire": "barbed_wire.png",
    "item.cattleProd": "cattle_prod.png",

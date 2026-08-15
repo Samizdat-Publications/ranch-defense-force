@@ -164,11 +164,13 @@ without grinding to it.
 6. **The owner's own animals** — a fjord pony, an arabian, a draft mule, a
    donkey — are generated as side views and wired to nothing. See
    `_ranchRoster` in the queue.
-7. **Boot Knife cannot be generated.** The safety classifier refuses the prompt
-   outright. Ask the owner how they want it handled rather than working the
-   wording.
-8. **M7 meta progression is built and untested by real play** — save, acres,
+7. **M7 meta progression is built and untested by real play** — save, acres,
    four Homestead buildings, six classes, County Fair tiers.
+
+**If a generation comes back refused, check WHICH layer refused it.** One did,
+once, and it was the Claude Code permission classifier rather than PixelLab —
+the prompt never reached the API. Retrying the identical request went straight
+through. Rewriting the wording would have been solving the wrong problem.
 
 ## Logged, not started
 

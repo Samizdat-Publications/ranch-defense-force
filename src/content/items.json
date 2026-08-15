@@ -238,8 +238,7 @@
       "critChancePct": 8,
       "critDamagePct": 12
     },
-    "cardSprite": "weapon.crowBell",
-    "_standInArt": true
+    "cardSprite": "item.bootKnife"
   },
   "dogWhistle": {
     "name": "Dog Whistle",

@@ -147,8 +147,13 @@ rather than a generation.
    bigger canvas costs twelve of the sixteen tries, which is exactly when a bad
    generation has nowhere to hide. Generate small, draw at an integer zoom.
 
-The safety classifier refused `a small worn boot knife with a bone handle`
-outright. Boot Knife still wears a cow bell; the wording was not worked around.
+**One refusal, and it was the wrong layer.** `a small worn boot knife with a
+bone handle` came back refused, and it was written up here as a PixelLab
+refusal. It was not: the block came from the **Claude Code permission
+classifier**, so the prompt never reached the API at all. Retrying the identical
+request went straight through and returned sixteen good knives, one of which is
+now the Boot Knife's card art. Check which layer refused a generation before
+rewriting the prompt — the wording was never the problem.
 
 `npm run fetch -- <job-id> <name>` is new: it pulls every candidate down plus a
 4-across contact sheet, because the REST API returns candidates as separate files

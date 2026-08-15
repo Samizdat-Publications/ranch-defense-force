@@ -42,7 +42,7 @@
  * left and eighteen high of where it belongs, and so did every other prop.
  */
 import { el } from './dom'
-import { spriteEl, spriteTileUrl } from './sprite'
+import { spriteEl, spriteTileUrl, frameOf } from './sprite'
 
 export type SceneKind = 'yard' | 'field'
 
@@ -256,6 +256,23 @@ function yard(): (HTMLElement | null)[] {
     'clip-path:polygon(46% 0,55% 0,100% 100%,0 100%)',
   ))
 
+  // -- the treeline behind the place, from PLACEMENTS.md
+  //
+  // These were REMOVED last pass with the note "a wrong tree is louder than no
+  // tree": the pack's oak is a modular piece and read as three identical shrubs
+  // at this size. The generated one is 59x54, so it goes in at 4x — 236x216
+  // against the table's 250x212, and 4 is the integer that lands closest.
+  // Design's own final yard drops the oaks entirely; they are back because the
+  // owner wants them and the art is now good enough to carry them.
+  // The dusk correction is not a preference. Everything else in this scene is
+  // lit by a setting sun and carries a warm, low-key palette; the generated oak
+  // is drawn at full daylight saturation and read as pasted on until it was
+  // brought down to meet the rest. The fence does the same thing harder
+  // (brightness 0.62) because it is nearer the camera and more in shadow.
+  for (const [x, y] of [[596, 268], [1150, 300], [1420, 282], [1742, 414]] as const) {
+    L.push(sprite('scene.oak', x, y, 4, 'opacity:0.9;filter:brightness(0.78) saturate(0.82)'))
+  }
+
   // -- the far buildings, all at 1x
   L.push(sprite('scene.silo', 1664, 192))
 
@@ -388,6 +405,34 @@ function yard(): (HTMLElement | null)[] {
   return L
 }
 
+/**
+ * The far treeline: real oaks, small, hazed, on the horizon line.
+ *
+ * Spacings and sizes come from the gradient band this replaces — 640px of
+ * repeat carrying five trees at roughly 60, 190, 300, 430 and 560 — so the
+ * rhythm is Design's and only the art changed. Every oak is drawn at 1x on its
+ * own baseline; the varied look comes from spacing and vertical offset rather
+ * than from scaling, because scaling a pixel tree is what made the pack's oak
+ * unusable in the first place.
+ */
+function treeline(): HTMLElement | null {
+  if (!frameOf('scene.oak')) return null
+  const band = box(
+    'left:-40px;right:-40px;top:486px;height:82px;opacity:0.5;filter:blur(3px);' +
+    'overflow:hidden',
+  )
+  // Offsets within one 640px repeat: x, and how far the crown sits above the
+  // band's floor. Two trees never share both.
+  const rhythm = [[60, 0], [190, -6], [300, 4], [430, -10], [560, 2]] as const
+  for (let x = -640; x < 2040; x += 640) {
+    for (const [dx, dy] of rhythm) {
+      const t = sprite('scene.oak', x + dx, 82 - 54 + dy, 1)
+      if (t) band.append(t)
+    }
+  }
+  return band
+}
+
 /** A pecking hen at 2x: a four-frame strip, 256px wide on screen. */
 function peck(x: number, y: number, dur: string, delay?: string): HTMLElement | null {
   const s = stripActor('scene.chickenPeckStrip', {
@@ -436,18 +481,20 @@ function field(): (HTMLElement | null)[] {
     'background:linear-gradient(180deg,rgba(46,40,44,0) 0%,rgba(40,36,40,0.55) 60%,rgba(34,32,34,0.8) 100%)',
   ))
 
-  // The distant treeline is a SILHOUETTE BAND, not shrunken oaks: a far tree
-  // needs a small sprite, and scaling a big one down breaks the pixel grid.
-  L.push(box(
-    'left:-40px;right:-40px;top:486px;height:82px;opacity:0.5;filter:blur(3px);' +
-    'background:' +
-    'radial-gradient(58px 46px at 60px 100%,#2c3a24 0 62%,transparent 64%),' +
-    'radial-gradient(74px 58px at 190px 100%,#26331f 0 62%,transparent 64%),' +
-    'radial-gradient(52px 40px at 300px 100%,#2c3a24 0 62%,transparent 64%),' +
-    'radial-gradient(86px 62px at 430px 100%,#223019 0 62%,transparent 64%),' +
-    'radial-gradient(60px 44px at 560px 100%,#2c3a24 0 62%,transparent 64%);' +
-    'background-repeat:repeat-x;background-size:640px 82px',
-  ))
+  // THE TREELINE, and it is real trees now.
+  //
+  // Design's own field draws this band as five repeating radial gradients —
+  // the green mounds — and says why: "a distant tree needs a small SPRITE, not
+  // a small scale", and the LimeZu pack's modular oak read as three identical
+  // shrubs at any size that fit here. The mounds were a placeholder for art
+  // that did not exist.
+  //
+  // It exists now: `scene.oak` is generated at 59x54, which is already a small
+  // sprite, so it goes in at 1x with no scaling at all. The band keeps the
+  // gradients' own numbers — same y, same 82px height, same 0.5 opacity and
+  // 3px blur — because those are what make it read as distance rather than as
+  // a row of trees in the middle ground.
+  L.push(treeline())
 
   // The far end of the place, all at 1x on the horizon line. Distance comes
   // from position and haze, never from scale.

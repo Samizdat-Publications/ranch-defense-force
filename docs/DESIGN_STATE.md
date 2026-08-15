@@ -90,15 +90,16 @@ Flagged `_standInArt` in the content files, and queued in
 
 | What | Wearing | Note |
 |---|---|---|
-| Boot Knife | a cow bell | the generator's safety classifier **refuses** this prompt |
 | Threshing Floor | a shockwave FX frame | |
 | Crop Duster | a gas FX frame | art generated, not yet cut in |
 | Whitacre Bull | the Prize Bull boss sprite | art generated, not yet cut in |
 | Post Auger | the pickaxe tier ladder | one icon generated; **wants a ladder of four** |
 | Combine Head | the axe tier ladder | one icon generated; **wants a ladder of four** |
 
-Work Boots, Feed Sack, the Straw Hat, the Ditch Light and **all four Homestead
-building signs** are real art now. So is the yard's rooster.
+Work Boots, Feed Sack, the Straw Hat, the Ditch Light, the Boot Knife and **all
+four Homestead building signs** are real art now. So is the yard's rooster, and
+so are the oaks — the field's treeline was a band of CSS mounds standing in for
+trees that did not exist yet, and it is real trees at 1x now.
 
 Infected livestock are still ordinary animals. The infected **farmhand** is
 real — generated, and the enemy you see most in a run. Side views for the
