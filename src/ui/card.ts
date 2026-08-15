@@ -37,8 +37,17 @@ export interface CardSpec {
   lot?: string
   /** Footer right slot — where the card came from, or its price. */
   source?: string
-  /** Shop: the feed price, rendered in the footer. */
+  /** Shop and Homestead: the price, rendered in the footer. */
   price?: number
+  /** What the price is denominated in. Feed in the shop, acres at the Homestead. */
+  priceUnit?: string
+  /**
+   * A plain tin plate carrying this many pips, for a surface that has a RANK
+   * rather than a rarity — the Homestead's purchase cards, per the design:
+   * "rank pips instead of a rarity tier". Ignored when `rarity` is set; a card
+   * has one plate.
+   */
+  pips?: number
   affordable?: boolean
   selected?: boolean
   /** Unaffordable or locked: unprinted stock rather than disabled chrome. */
@@ -75,6 +84,26 @@ function plate(rarity: string): HTMLElement | null {
   return p
 }
 
+/**
+ * The same tin, carrying a RANK rather than a tier.
+ *
+ * The Homestead's purchases have no rarity — a rank of the Feed Store is not
+ * rare, it is your third one — so the design puts pips on a plain plate there
+ * instead. Same stamped metal, same position, no colour claim.
+ */
+function rankPlate(pips?: number): HTMLElement | null {
+  if (!pips || pips < 1) return null
+  const p = el('div', { class: 'pcard-plate is-rank' })
+  const wrap = el('div', { class: 'pcard-pips' })
+  for (let i = 0; i < pips; i++) wrap.append(el('div', { class: 'pcard-pip' }))
+  p.append(
+    el('div', { class: 'pcard-rivet left' }),
+    wrap,
+    el('div', { class: 'pcard-rivet right' }),
+  )
+  return p
+}
+
 /** Build one card. Returns a button so it is focusable and keyboard-operable. */
 export function card(spec: CardSpec): HTMLElement {
   const classes = ['pcard']
@@ -99,7 +128,7 @@ export function card(spec: CardSpec): HTMLElement {
   if (art) window.append(art)
   root.append(window)
 
-  const pl = spec.rarity ? plate(spec.rarity) : null
+  const pl = spec.rarity ? plate(spec.rarity) : rankPlate(spec.pips)
   if (pl) root.append(pl)
 
   root.append(el('div', { class: 'pcard-name', text: spec.name }))
@@ -124,7 +153,10 @@ export function card(spec: CardSpec): HTMLElement {
   const foot = el('div', { class: 'pcard-foot' })
   foot.append(el('div', { text: spec.lot ?? '' }))
   if (typeof spec.price === 'number') {
-    foot.append(el('div', { class: 'pcard-price', text: `${spec.price} feed` }))
+    foot.append(el('div', {
+      class: 'pcard-price',
+      text: `${spec.price} ${spec.priceUnit ?? 'feed'}`,
+    }))
   } else {
     foot.append(el('div', { text: spec.source ?? '' }))
   }

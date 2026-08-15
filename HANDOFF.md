@@ -7,11 +7,10 @@ TypeScript + Vite + Canvas 2D, no engine. The repo is public.
 
 1. `CLAUDE.md` — the non-negotiables. Fixed timestep, zero allocation in the hot
    loop, seeded RNG, content-not-code for every tunable, 32×32 art only.
-2. `NOTES.md` — what was built, milestone by milestone, and every bug that cost
-   real time. Long, and worth it.
-3. `docs/DESIGN_STATE.md` — **the current state of the UI redesign.** What is
-   built, what is still on old styling, what is wearing borrowed art. If a
-   handoff document ever disagrees with this file, this file is right.
+2. `NOTES.md` — what was built, session by session, and every bug that cost real
+   time. Long, and worth it.
+3. `docs/DESIGN_STATE.md` — **the current state of the UI.** If a handoff
+   document ever disagrees with this file, this file is right.
 4. `docs/DESIGN_LANGUAGE.md` — the Paper & Pin spec the UI is built to.
 
 `docs/archive/` is superseded briefs. **It is not the state of anything.**
@@ -20,80 +19,75 @@ TypeScript + Vite + Canvas 2D, no engine. The repo is public.
 
 ## Where the work stopped
 
-The UI redesign is most of the way in. Two screens are still on the old styling
-and one screen is close but not right.
+**Every screen is in Paper & Pin.** The shop and the Homestead were the last two
+and they are converted. Both backdrops are layer-for-layer ports of Design's own
+reference scenes.
 
 | Screen | State |
 |---|---|
-| Home / class select | Built to the mockup. **Not visually signed off** — see below. |
+| Home / class select | Ported from `docs/reference/`. **Not signed off by eye.** |
 | Level-up | Built. |
 | Pause | Built. |
 | Results | Built. |
 | HUD | Built. |
-| **Shop** | **NOT CONVERTED.** Old styling. |
-| **Homestead** | **NOT CONVERTED.** Old styling. |
+| Shop | Converted — the same packet priced, plus the kraft counter. |
+| Homestead | Converted — the yard, four staked signs, purchase cards. |
 
 ### The immediate next task
 
-Convert the **shop** and the **Homestead** to Paper & Pin.
+**Look at it.** Nothing in this project has been signed off by eye since the
+scenes landed, because the browser pane was not displayed for the session that
+built them. Everything is verified structurally — layer counts, computed styles,
+measured sprite geometry, 131 passing tests — and none of that is the same as
+looking.
 
-`docs/mockups/Game Screens.dc.html` is the source of truth for both. Every mockup is now IN THE REPO under `docs/mockups/` — open them straight in a browser, they need no build step.
-**Read the mockup for the LAYOUT before writing any code.** The single biggest
-mistake made on this project was implementing the design's scene placements
-correctly and then laying a self-invented layout over them — it measured right
-and looked nothing like the design. The mockups are not decoration; they are the
-spec.
+Open `npm run dev` next to `docs/reference/Whitacre Yard at Dusk.html` and
+`Whitacre Field at Dusk.html` and compare directly. `F1` toggles the dev
+overlay; the scene toggle bottom-right flips backdrops without a reload, and you
+need it — the two scenes are composed differently and only one is on screen at a
+time.
 
-### The home screen is not signed off
+### The one thing that has gone wrong twice, in the same way
 
-The owner's last word: *"It's not even close."* It has since been rebuilt to
-`docs/mockups/Home Screen.dc.html`'s actual layout — title stacked top-left, "YOU ARE
-PLAYING" panel, seed as a form line, the Homestead as a call-out against the
-barn, class rail along the bottom — but **it has not been confirmed by eye since
-that rebuild.**
+Both times the scenes were built, they were built from
+`docs/mockups/PLACEMENTS.md` — which is an index of the scenes' **sprites**, and
+nothing else. No sky, no sun, no ground, no barn, no farmhouse, no porch light,
+no walking actors, no vignette: those are CSS layers and the table does not have
+them. A build made faithfully from it measures correct against the table and is
+missing two thirds of the picture.
 
-Two reference files are in `docs/reference/`: `Whitacre Yard at Dusk.html` and
-`Whitacre Field at Dusk.html`. These are the design's own runtime-bundled
-scenes. Open them in a browser next to `npm run dev` and compare directly. They
-are the target.
-
-Known gaps in the current home screen:
-
-- **The oaks are removed.** `scene.treeOak` is a modular LimeZu piece and at
-  this scale it read as three identical shrubs, not a treeline. It is priority 0
-  in `art/pixellab-queue.json`. A wrong tree is louder than no tree.
-- The foreground and ground band may not match the reference. Compare.
-- The dev scene toggle (bottom-right, dev builds only) flips backdrops without a
-  reload. Use it — the two scenes are composed differently and only one is on
-  screen at a time.
+**`docs/reference/*.html` are the scenes.** They are self-contained; extract the
+`<script type="__bundler/template">` payload and you have the literal source.
 
 ---
 
-## The five rules that have cost real time
+## The six rules that have cost real time
 
-Every one of these has bitten more than once, and every one failed **silently**.
+Every one failed **silently**.
 
-1. **The atlas trims every frame to content bounds.** Right for a sprite, fatal
-   for anything **tiled or stepped**: a 192px six-frame strip packs to 188px and
-   `steps(6)` slides instead of stepping; a 32px tile packs to 26px and every
-   repeat gaps. Use the `noTrim` group flag in `art/sprites.json`.
+1. **The atlas trims every frame to content bounds.** Right for a sprite drawn
+   from a pivot; wrong for anything drawn from a BOX, tiled or stepped. A 192px
+   six-frame strip packs to 188px and `steps(6)` slides; a 32px tile packs to
+   26px and every repeat gaps; a 96×96 scarecrow packs to 84×78 and stands 12px
+   left of where the design put it. Use the `noTrim` group flag.
 2. **Strip offsets are pixels, never percentages.** `-600%` on a six-frame strip
    lands frame 0 and then five blanks.
-3. **Adding to a namespace someone already owns fails silently.** Five times so
-   far: a second `.sheet`; keying an enemy as `hand.*` when `hand` is the player
-   class; `farmhand` existing as both a LimeZu sheet and a generated one, with
-   the later pass winning; a new `hud.css` imported above the rules it meant to
-   replace and losing the cascade; and a key generator producing
-   `chickenPeckstrip` where the table said `chickenPeckStrip`. **Grep the name
-   before you choose it.**
+3. **Adding to a namespace someone already owns fails silently.** Six times so
+   far — the newest being two `window.rdf` handles that overwrote each other, so
+   which one the console gave you depended on whether a run had started.
+   **Grep the name before you choose it.**
 4. **Screens are built at module load; the atlas resolves later.** Anything that
    draws sprites must rebuild when the art lands, or it renders empty.
 5. **Integer zoom only.** If a mockup draws something at half scale, move it
    further away rather than scaling it.
+6. **A CSS shorthand followed by a longhand that overwrites its payload is
+   invisible.** `background: var(--paper)` puts the gradient in the image slot
+   and resets the colour to transparent; the `background-image` on the next line
+   replaced the gradient. Every level-up card was 94% see-through for two
+   milestones. Paint a flat colour under any layered background.
 
-And the meta-rule, which has held six times: **when a tool reports something
-surprising, check the tool before the game.** The instrument has been wrong more
-often than the code.
+And the meta-rule, which has held seven times: **when a tool reports something
+surprising, check the tool before the game.**
 
 ---
 
@@ -101,31 +95,30 @@ often than the code.
 
 PixelLab is live, paid, and wired two ways.
 
-- `npm run pixellab -- --list` prices a run for free. Without `--list` it
-  generates everything in `art/pixellab-queue.json` that has no sheet yet.
-  **Pro tools cost 20 generations each against 2,000/month.** Do not run the
-  whole queue in one go.
+- `npm run pixellab -- --list` prices a run for free; without `--list` it
+  generates everything in `art/pixellab-queue.json` that has no sheet yet. Needs
+  `PIXELLAB_API_KEY` in the environment.
 - The **MCP server** is configured in `.mcp.json` (gitignored; template at
-  `.mcp.json.example`). It reaches the tools the batch script does not wrap —
-  8-direction sprites, rotations, `animate_with_text`, tilesets,
-  Portrait↔Character.
+  `.mcp.json.example`) and needs no key in the shell. It reaches the tools the
+  batch script does not wrap — 8-direction sprites, rotations, tilesets,
+  animation, Portrait↔Character.
+- `npm run fetch -- <job-id> <name>` pulls a finished job's candidates down plus
+  a 4-across contact sheet, then `npm run cut -- single <src> <dst>` trims one.
 
-Read `docs/PIXELLAB_API_PIPELINE.md` before generating. Two things it will save
-you: background removal leaves an **alpha 1–8 fringe**, so trim at `alpha > 8`
-(`contentBounds()` uses `!== 0` — `tools/pixellab-cut.ts` carries its own
-threshold); and `create_image_pro` returns each candidate as a **separate file**,
-not the web UI's 4×4 sheet, so use `npm run cut -- single <src> <dst>`.
+Three things the queue now records that will save you real generations:
 
-**The style anchor goes in as a URL** pointing at this repo's own
-`raw.githubusercontent.com` path — the repo is public, so it is its own asset
-host. No base64 argument.
+- **The concurrency limit is 8 jobs, not a time window.** A ninth is refused.
+  There is no cooldown — the batch lands in about nine minutes and the slots
+  free.
+- **The style anchor is a sheet of farm produce.** `style_copy` defaults to
+  including `detail`, which drags the anchor's SUBJECT across: the first oak came
+  back as four pumpkins and an onion. For anything larger than a hand-held
+  object, pass `style_copy` without `detail`.
+- **64×64 is the sweet spot.** Pro returns 16 candidates at that size, 4 at
+  128px and 1 above 170px, all for the same 20 generations.
 
-Character generation is `docs/PIXELLAB.md` — Pro mode, character size **40**
-set manually, view **low top-down**, and two anchor images doing two different
-jobs (`npm run anchor` regenerates them). Generated characters come back as a
-directory tree, not a sheet, and **the frame sizes are not uniform** — rotations
-at 40×40, animation frames padded to 56×56, and on the one character generated
-so far, one direction out of eight came back a different size again.
+Read `docs/PIXELLAB_API_PIPELINE.md` before generating; character work is
+`docs/PIXELLAB.md`.
 
 ---
 
@@ -137,6 +130,8 @@ npm run atlas      # regenerate characters + repack the atlas. Run after any art
 npm test           # 131 tests, including a headless full-run acceptance test
 npm run typecheck  # game and tools have separate tsconfigs
 npm run build      # atlas + typecheck + production build
+npm run fetch      # pull a PixelLab job's candidates + a contact sheet
+npm run cut        # trim one candidate onto the game's grid
 npm run zoom       # render the home scene at several target heights
 npm run range      # every weapon firing, on one contact sheet
 npm run shot       # headless screenshot of a real run
@@ -145,27 +140,42 @@ npm run shot       # headless screenshot of a real run
 `F1` in game toggles the dev overlay; `N` skips a wave.
 
 **Verify in the browser.** Types and tests pass happily while a screen renders
-blank — four of the five silent bugs above were found by looking, not by
-running. There is a `window.rdf` handle in dev builds exposing the live world,
-renderer, atlas, save and every screen.
+blank or see-through — five of the six silent bugs above were found by looking,
+not by running. `window.rdf` in dev builds exposes the live world, renderer,
+atlas, save, and every screen object, so a UI change can be driven directly
+without grinding to it.
 
 ---
 
 ## Outstanding, roughly in order
 
-1. **Shop and Homestead** to Paper & Pin, from `Game Screens.dc.html`.
-2. **Sign off the home screen** against `docs/reference/`.
-3. **Generate the oak** (priority 0 in the queue) and put the treeline back.
-4. **Ten items and two weapons are wearing borrowed art**, flagged
-   `_standInArt` in the content files and queued.
-5. **Infected livestock are still ordinary animals** with a CSS filter. The
-   infected farmhand is real and generated; the rest of the roster is not.
-6. **M7 meta progression is built** — save, acres, four Homestead buildings, six
-   classes, County Fair tiers. Untested by real play.
+1. **Sign off both scenes** against `docs/reference/`. Nothing else is blocked
+   on this, but nothing else should be trusted before it.
+2. **A human playtest.** Still nobody has held the controls since the art
+   landed, and the last time one did they found a blocking bug no test caught.
+3. **Cut in the art that is generated and staged** — the oak, the Whitacre bull,
+   the barn dog, the gas cloud, the crop duster, the salt ring. All sitting in
+   `assets/pixellab/picked/`, none wired.
+4. **The Post Auger and the Combine Head want a ladder of four**, not the one
+   icon each that exists. Deciding what a tier means for a farm tool is a design
+   call, not a generation.
+5. **Infected livestock are still ordinary animals** with a CSS filter. Side
+   views are generated; they need the 8-direction and walk passes.
+6. **The owner's own animals** — a fjord pony, an arabian, a draft mule, a
+   donkey — are generated as side views and wired to nothing. See
+   `_ranchRoster` in the queue.
+7. **Boot Knife cannot be generated.** The safety classifier refuses the prompt
+   outright. Ask the owner how they want it handled rather than working the
+   wording.
+8. **M7 meta progression is built and untested by real play** — save, acres,
+   four Homestead buildings, six classes, County Fair tiers.
 
-## What the owner has asked for that is not done
+## Logged, not started
 
-- The home screen matching the reference scenes.
-- A full generation run once the pipeline was validated. It **has** been
-  validated end to end (two icons generated, trimmed, packed, wired), so the
-  remaining queue is safe to spend.
+- **`_horrorPlan`** in the queue: make the whole cast scary the way the farmhand
+  already is, generating each horror version FROM its healthy counterpart so the
+  two read as the same animal before and after.
+- **`_mapsAndTilesets`** in the queue: more maps. Note that **the seed does not
+  currently pick a map** — there is one arena and one tileset. Making it pick one
+  means the map choice has to be the FIRST draw off the RNG, or every existing
+  seed stops replaying.

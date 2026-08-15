@@ -14,7 +14,7 @@ import { ITEMS, STAT_KEYS, STAT_LABELS, WEAPONS } from '../content'
 import type { Offer, OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta, type DerivedStats } from '../sim/stats'
-import { spriteEl } from './sprite'
+import { card, deal, lotOf } from './card'
 import { interestOn, shopRerollCost } from '../sim/formulas'
 import { clear, el, fmtStat } from './dom'
 
@@ -44,31 +44,27 @@ export class ShopScreen {
   private hovered: Offer | null = null
 
   constructor(parent: HTMLElement) {
-    this.cardsEl = el('div', { class: 'cards' })
-    this.sheetEl = el('div', { class: 'sheet' })
-    this.feedEl = el('div', { class: 'card-cost' })
-    this.subtitle = el('h2', { text: '' })
-    this.rerollBtn = el('button', { class: 'btn', text: 'Reroll', onClick: () => this.reroll() })
+    // The cards row and the counter sit in the SAME flex row, per the mockup.
+    // The counter is a column of that row rather than a sidebar, so on a narrow
+    // window it wraps under the cards instead of being cropped off the edge.
+    this.cardsEl = el('div', { class: 'pshop-row' })
+    this.sheetEl = el('div', { class: 'pshop-counter' })
+    this.feedEl = el('div', { class: 'pshop-feed' })
+    this.subtitle = el('div', { class: 'pshop-sub' })
+    this.rerollBtn = el('button', {
+      class: 'pshop-btn is-gold',
+      text: 'REROLL',
+      onClick: () => this.reroll(),
+    })
 
-    this.root = el('div', { class: 'screen' }, [
-      el('div', { class: 'screen-inner' }, [
-        el('h1', { text: 'THE SHOP' }),
-        this.subtitle,
-        el('div', { class: 'row' }, [
-          el('div', {}, [
-            this.cardsEl,
-            el('div', { class: 'actions' }, [
-              this.rerollBtn,
-              el('button', {
-                class: 'btn primary',
-                text: 'Back to work →',
-                onClick: () => this.finish(),
-              }),
-            ]),
-            this.feedEl,
-          ]),
-          this.sheetEl,
+    this.root = el('div', { class: 'screen pshop' }, [
+      el('div', { class: 'pshop-inner' }, [
+        el('div', { class: 'pshop-head' }, [
+          el('div', { class: 'pshop-eyebrow', text: 'BETWEEN WAVES' }),
+          el('h1', { class: 'pshop-title', text: 'Same packet, priced' }),
+          this.subtitle,
         ]),
+        this.cardsEl,
       ]),
     ])
     this.root.style.display = 'none'
@@ -158,59 +154,89 @@ export class ShopScreen {
     this.onClose?.()
   }
 
+  /**
+   * The shop is the level-up frame with a price plate. Design was explicit that
+   * there is no shop card: the same packet, plus a feed price in the footer and
+   * a bulldog clip when you hold one for the next visit.
+   *
+   * `card()` already carried `price`, `affordable`, `dead` and `clipped`. This
+   * screen used to draw its own `.card` and ask for none of them, which is how
+   * the shop and the level-up ended up looking like two different games.
+   */
   private render(): void {
     const world = this.world
     if (!world) return
     clear(this.cardsEl)
 
+    const built: HTMLElement[] = []
     this.offers.forEach((offer, i) => {
       if (!offer) return
       const affordable = world.player.feed >= offer.cost
-      const isLocked = this.locked[i] !== null
-      const card = el('div', {
-        class: `card rarity-${offer.rarity}${affordable ? '' : ' unaffordable'}${isLocked ? ' locked' : ''}`,
+      const held = this.locked[i] !== null
+
+      const c = card({
+        kind: offer.kind,
+        name: offer.name,
+        blurb: offer.detail,
+        sprite: offer.sprite,
+        rarity: offer.rarity,
+        stats: this.statRows(offer),
+        lot: lotOf(offer.id),
+        price: offer.cost,
+        affordable,
+        // Unaffordable is UNPRINTED STOCK, not disabled chrome — pulpboard
+        // grey, and the plate drops its emboss. It reads as "not for you yet"
+        // rather than "broken".
+        dead: !affordable,
+        clipped: held,
         onClick: () => this.buy(i),
-      }, [
-        el('div', { class: 'card-key', text: offer.kind }),
-        el('div', { class: 'card-head' }, [
-          spriteEl(offer.sprite, 40),
-          el('div', { class: 'card-name', text: offer.name }),
-        ]),
-        el('div', { class: 'card-detail', text: offer.detail }),
+      })
+
+      // Hovering previews the card against the live build, in the counter. The
+      // listener is on the SLOT rather than the card, because `dead` disables
+      // the card's button and a disabled button fires no pointer events — and
+      // the card you cannot afford is exactly the one you most want to price.
+      const slot = el('div', { class: 'pshop-slot' }, [
+        c,
+        el('button', {
+          class: `pshop-hold${held ? ' is-held' : ''}`,
+          text: held ? 'HELD' : 'HOLD',
+          onClick: () => this.toggleLock(i),
+        }),
       ])
-
-      const deltas = this.deltaLines(offer)
-      if (deltas.length > 0) {
-        card.appendChild(el('div', { class: 'card-delta' }, deltas.map((d) => el('div', { text: d }))))
-      }
-
-      card.appendChild(el('div', { class: 'card-cost', text: `${offer.cost} feed` }))
-      card.appendChild(el('button', {
-        class: 'card-lock',
-        text: isLocked ? 'Locked ✓' : 'Lock',
-        onClick: (e) => {
-          e.stopPropagation()
-          this.toggleLock(i)
-        },
-      }))
-
-      card.addEventListener('mouseenter', () => {
+      slot.addEventListener('mouseenter', () => {
         this.hovered = offer
         this.renderSheet()
       })
-      card.addEventListener('mouseleave', () => {
+      slot.addEventListener('mouseleave', () => {
         this.hovered = null
         this.renderSheet()
       })
 
-      this.cardsEl.appendChild(card)
+      this.cardsEl.appendChild(slot)
+      built.push(c)
     })
 
+    this.cardsEl.appendChild(this.sheetEl)
+    deal(built)
+
     const cost = shopRerollCost(this.rerollsThisShop)
-    this.rerollBtn.textContent = `Reroll (${cost} feed)`
+    this.rerollBtn.textContent = `REROLL · ${cost}`
     this.rerollBtn.disabled = world.player.feed < cost
-    this.feedEl.textContent = `${world.player.feed} feed`
     this.renderSheet()
+  }
+
+  /** The card's stat rows, split the way the level-up splits them. */
+  private statRows(offer: Offer): { label: string; value: string; tone?: 'gain' | 'cost' }[] {
+    return this.deltaLines(offer).map((d) => {
+      const m = d.match(/^(.*?)\s+([-+\d].*)$/)
+      const raw = m ? m[2] : d
+      return {
+        label: m ? m[1] : d,
+        value: raw,
+        tone: raw.includes('-') && !raw.includes('→') ? 'cost' as const : 'gain' as const,
+      }
+    })
   }
 
   private deltaLines(offer: Offer): string[] {
@@ -220,36 +246,48 @@ export class ShopScreen {
     return changes.map((c) => `${STAT_LABELS[c.key]} ${fmtStat(c.key, c.from)} → ${fmtStat(c.key, c.to)}`)
   }
 
-  /** Live character sheet: slots, passives, and the full stat block. */
+  /**
+   * The counter: who you are, what you are carrying, what it costs.
+   *
+   * The mockup draws five stat rows against placeholder content. This keeps the
+   * real thing — weapons with their tiers, passives with their stack counts,
+   * every non-zero stat — because the panel's job is to answer "do I need this"
+   * and five rows cannot. The chrome is the mockup's; the content is the game's.
+   */
   private renderSheet(): void {
     const world = this.world
     if (!world) return
     const p = world.player
     clear(this.sheetEl)
 
-    this.sheetEl.appendChild(el('h3', { text: p.def.name }))
+    this.sheetEl.appendChild(el('div', {
+      class: 'pshop-counter-head',
+      text: `${p.def.name.toUpperCase()} · WAVE ${world.spawner.wave - 1}`,
+    }))
 
-    this.sheetEl.appendChild(el('h3', { text: `Weapons (${p.weapons.length}/6)` }))
-    for (const slot of p.weapons) {
-      this.sheetEl.appendChild(el('div', { class: 'sheet-row' }, [
-        el('span', { text: WEAPONS[slot.id]?.name ?? slot.id }),
-        el('span', { text: `T${slot.tier}` }),
-      ]))
-    }
+    const rows = (lines: HTMLElement[]): HTMLElement => el('div', { class: 'pshop-rows' }, lines)
+    const line = (
+      label: string, value: string, tone?: 'changed' | 'preview',
+    ): HTMLElement => el('div', {
+      class: `pshop-row-line${tone ? ` is-${tone}` : ''}`,
+    }, [el('span', { text: label }), el('b', { text: value })])
+
+    this.sheetEl.appendChild(el('div', {
+      class: 'pshop-section',
+      text: `WEAPONS ${p.weapons.length}/6`,
+    }))
+    this.sheetEl.appendChild(rows(p.weapons.map((slot) =>
+      line(WEAPONS[slot.id]?.name ?? slot.id, `T${slot.tier}`))))
 
     if (p.items.length > 0) {
-      this.sheetEl.appendChild(el('h3', { text: 'Passives' }))
       const counts = new Map<string, number>()
       // A boosted copy counts as two, which is exactly how it resolves.
       for (const owned of p.items) {
         counts.set(owned.id, (counts.get(owned.id) ?? 0) + (owned.boosted ? 2 : 1))
       }
-      for (const [id, n] of counts) {
-        this.sheetEl.appendChild(el('div', { class: 'sheet-row' }, [
-          el('span', { text: ITEMS[id]?.name ?? id }),
-          el('span', { text: n > 1 ? `x${n}` : '' }),
-        ]))
-      }
+      this.sheetEl.appendChild(el('div', { class: 'pshop-section', text: 'CARRYING' }))
+      this.sheetEl.appendChild(rows([...counts].map(([id, n]) =>
+        line(ITEMS[id]?.name ?? id, n > 1 ? `x${n}` : '·'))))
     }
 
     // Hover preview resolves the hovered card against the live build.
@@ -259,22 +297,37 @@ export class ShopScreen {
       preview = this.scratchB
     }
 
-    this.sheetEl.appendChild(el('h3', { text: 'Stats' }))
+    this.sheetEl.appendChild(el('div', { class: 'pshop-section', text: 'STATS' }))
+    const statLines: HTMLElement[] = []
     for (const key of STAT_KEYS) {
       const value = p.stats[key]
-      if (value === 0 && key !== 'maxHp') continue
       const changedThisWave = this.opening[key] !== value
-      const previewed = preview && preview[key] !== value
-      const row = el('div', { class: `sheet-row${changedThisWave || previewed ? ' changed' : ''}` }, [
-        el('span', { text: STAT_LABELS[key] }),
-        el('span', {
-          text: previewed
-            ? `${fmtStat(key, value)} → ${fmtStat(key, preview![key])}`
-            : fmtStat(key, value),
-        }),
-      ])
-      this.sheetEl.appendChild(row)
+      const previewed = preview !== null && preview[key] !== value
+      // A stat you have none of is hidden, so the panel stays a build sheet
+      // rather than a table of zeroes — but NOT when the card under the cursor
+      // would give you some. "This is the thing that gets you luck at all" is
+      // the most interesting answer this panel has, and it was the one row it
+      // could never show.
+      if (value === 0 && key !== 'maxHp' && !previewed) continue
+      statLines.push(line(
+        STAT_LABELS[key],
+        previewed
+          ? `${fmtStat(key, value)} → ${fmtStat(key, preview![key])}`
+          : fmtStat(key, value),
+        previewed ? 'preview' : changedThisWave ? 'changed' : undefined,
+      ))
     }
+    this.sheetEl.appendChild(rows(statLines))
+
+    this.sheetEl.appendChild(el('div', { class: 'pshop-dash' }))
+    this.feedEl.textContent = `FEED ${p.feed}`
+    this.sheetEl.appendChild(this.feedEl)
+    this.sheetEl.appendChild(this.rerollBtn)
+    this.sheetEl.appendChild(el('button', {
+      class: 'pshop-btn',
+      text: 'BACK TO THE FIELD',
+      onClick: () => this.finish(),
+    }))
   }
 
   destroy(): void {

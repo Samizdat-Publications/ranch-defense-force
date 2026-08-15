@@ -1,18 +1,21 @@
 /* ===================================================================
-   THE HOME SCREEN — the yard at dusk
+   THE HOME SCREEN — the Whitacre place at dusk
    ===================================================================
-   The design asks for a farmyard you stand in rather than a list you
-   read. There is no barn art in the atlas yet (it is priority 3 in
-   art/pixellab-queue.json), so this builds the yard from what the game
-   already owns: a dusk sky, a treeline, a ground band of real terrain
-   tiles, and the actors standing on it.
+   The scene itself is built in `scene.ts`, layer for layer from
+   `docs/reference/Whitacre Yard at Dusk.html` and `Whitacre Field at
+   Dusk.html`. Those two documents are Design's own runtime scenes and
+   they are the target; read the header of `scene.ts` before changing
+   anything here.
 
-   Two rules from the spec do the heavy lifting:
-     - SCENERY AT 1x, ACTORS AT 2x, both integer. That size difference
-       is what makes it read as depth rather than a wall of sprites.
-     - The porch light is the only EVENT on the screen: an 11s cycle
-       with one flicker. Everything else is still, so the eye goes
-       there and the yard feels inhabited instead of animated.
+   This file owns three things and nothing else:
+     - the stage, and how it letterboxes;
+     - the two skies, which are the scene's background;
+     - every keyframe the scenes reference.
+
+   The y* / f* prefixes are Design's, and they matter: the two scenes
+   are composed differently, only one is mounted at a time, and a
+   shared keyframe name would let one scene's timing silently become
+   the other's.
    =================================================================== */
 
 .home {
@@ -22,32 +25,9 @@
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, #1a1622 0%, #3b2b2e 34%, #6b4630 58%, #8a5a33 72%, #2f2a1c 86%, #17150f 100%);
 }
 
-/*
-   NO SCRIM. Design was explicit: there is none in the mockups and there
-   should not be one. The scene ends with two full-bleed passes of its
-   own that do the same job better because they are SHAPED — a vignette
-   and a top/bottom falloff — and the second darkens exactly the band
-   the card rail sits in. Every printed panel also carries its own
-   opaque kraft background, so it never needed help.
-
-   These live on the stage, not on `.home`, so they letterbox with the
-   scene instead of covering the bleed.
-*/
-.home-vignette {
-  position: absolute;
-  inset: 0;
-  z-index: 40;
-  pointer-events: none;
-  background:
-    radial-gradient(120% 78% at 50% 56%, transparent 42%, rgba(12, 10, 14, 0.52) 100%),
-    linear-gradient(180deg, rgba(10, 9, 14, 0.44) 0%, transparent 22%, transparent 56%, rgba(10, 9, 8, 0.68) 100%);
-}
-
-/* --- the yard --- */
+/* --- the stage --- */
 /*
    THE SCENE IS A FIXED 1920x1080 STAGE, LETTERBOXED.
 
@@ -58,8 +38,9 @@
    space is bled with the scene's own edge colours, which reads as a
    wider window rather than as bars.
 
-   Everything inside is then absolute pixels in stage space, straight
-   from PLACEMENTS.md. No percentages, no breakpoints.
+   Everything inside is then absolute pixels in stage space. No
+   percentages, no breakpoints — the interface scales with the scene
+   because it lives in the same coordinate space.
 */
 .home-stagewrap {
   position: absolute;
@@ -70,9 +51,10 @@
   margin: -540px 0 0 -960px;
   transform: scale(var(--scene, 1));
   transform-origin: center center;
+  z-index: 1;
 }
 
-.home-scene { position: absolute; inset: 0; pointer-events: none; }
+.home-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 
 /* The interface, in the SAME 1920x1080 space as the scene. */
 .home-ui { position: absolute; inset: 0; }
@@ -97,130 +79,191 @@
   pointer-events: none;
 }
 
-.home-stagewrap { z-index: 1; }
-
 /*
    The sky belongs to the SCENE, not to the page. It used to be a gradient
    on `.home`, and pointing that at the flat bleed colour deleted it — the
    scene rendered against a solid navy rectangle with no dusk in it at all.
+
+   Both gradients are Design's, stop for stop. They are the single largest
+   surface on the screen and the whole palette hangs off them.
 */
 .home-yard {
   position: absolute;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, #191b36 0%, #2a2440 22%, #6b4a4a 46%, #b5763f 58%,
-                    #7d6a34 66%, #3d4a22 76%, #26331a 88%, #191d13 100%);
 }
 
-.home.is-field .home-yard {
-  background:
-    linear-gradient(180deg, #1d2140 0%, #2f2b4c 20%, #6d4d55 42%, #c08347 56%,
-                    #8a7238 64%, #46592c 74%, #2b3a1c 88%, #201e13 100%);
+.home-yard.is-yard {
+  background: linear-gradient(180deg,
+    #191b36 0%, #302e4a 18%, #5d454f 33%, #a2685a 44%, #dc9f5c 52%,
+    #f4cd88 57%, #c9a06a 61%, #6a6b41 66%, #3f4a2c 100%);
 }
 
-/* Buildings and props, absolute pixels in 1920x1080 stage space. */
-.home-place { position: absolute; }
-.home-place .card-sprite { display: block; }
-
-/* A walking actor: one strip, stepped. See the comment in menu.ts about
-   why the offsets are pixels and never percentages. */
-.home-walker {
-  position: absolute;
-  z-index: 4;
-  image-rendering: pixelated;
-  background-repeat: no-repeat;
+.home-yard.is-field {
+  background: linear-gradient(180deg,
+    #1d2140 0%, #383455 16%, #6b4a52 30%, #b0705a 40%, #e5a75f 47%,
+    #f8d894 52%, #cfa96f 56%, #7a7645 60%, #4a5330 100%);
 }
 
-@keyframes walk-strip {
-  to { background-position: var(--walk-end) 0; }
+/* The barn doorway is the one thing on this screen you can walk into. */
+.home-yard .home-door-hit { pointer-events: auto; cursor: pointer; }
+
+/* ===================================================================
+   THE YARD'S KEYFRAMES
+   ===================================================================
+   STRIP OFFSETS ARE PIXELS, NEVER PERCENTAGES. `-600%` on a six-frame
+   strip lands frame 0 and then five blanks: the character shows one
+   pose and then flickers. This has shipped twice.
+   =================================================================== */
+
+@keyframes y-strip-384 { from { background-position: 0 0; } to { background-position: -384px 0; } }
+@keyframes y-strip-256 { from { background-position: 0 0; } to { background-position: -256px 0; } }
+
+@keyframes y-cross { 0% { transform: translateX(0); } 100% { transform: translateX(-2260px); } }
+@keyframes y-up { 0% { transform: translateY(0); } 100% { transform: translateY(-460px); } }
+@keyframes y-across { 0% { transform: translateX(0); } 100% { transform: translateX(830px); } }
+@keyframes y-cloud { from { transform: translateX(0); } to { transform: translateX(-560px); } }
+
+/* The porch light catching, once, at second five of eleven. */
+@keyframes y-porch {
+  0%, 42% { opacity: 0; }
+  47% { opacity: 0.85; }
+  49% { opacity: 0.2; }
+  52%, 100% { opacity: 1; }
 }
 
-/* A band of real terrain tiles, tiled by background-repeat rather than
-   one node per tile — a hundred divs to draw dirt is a hundred divs. */
-.home-ground {
-  position: absolute;
-  left: 0; right: 0; bottom: 0; height: 46%;
-  image-rendering: pixelated;
-  filter: brightness(0.62) saturate(0.85);
+@keyframes y-smoke {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  18% { opacity: 0.5; }
+  100% { opacity: 0; transform: translate(46px, -160px) scale(2.2); }
 }
 
-
-
-/* The porch light. One flicker in eleven seconds. */
-.home-lamp {
-  position: absolute;
-  z-index: 5;
-  left: 50%;
-  bottom: 24%;
-  width: 420px;
-  height: 300px;
-  margin-left: -210px;
-  pointer-events: none;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 206, 120, 0.30), transparent 68%);
-  animation: porch 11s linear infinite;
+@keyframes y-fly {
+  0% { opacity: 0; transform: translate(0, 0); }
+  22% { opacity: 1; }
+  72% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(var(--fx, 60px), var(--fy, -80px)); }
 }
 
-@keyframes porch {
-  0%, 88%, 100% { opacity: 1; }
-  90% { opacity: 0.35; }
-  91% { opacity: 1; }
-  93% { opacity: 0.5; }
-  95% { opacity: 1; }
+@keyframes y-sway {
+  0%, 100% { transform: rotate(-1.6deg); }
+  50% { transform: rotate(1.6deg); }
 }
 
-
-
-/* --- scene animations, from PLACEMENTS.md --- */
-/*
-   Prefixed y* / f* so the two scenes can never collide, which is how the
-   design's own scene modules are written.
-*/
 @keyframes y-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
 }
 
-@keyframes y-sway {
-  0%, 100% { transform: rotate(-1.2deg); }
-  50% { transform: rotate(1.2deg); }
+@keyframes y-sun {
+  0%, 100% { opacity: 1; }
+  47% { opacity: 0.88; }
+  52% { opacity: 1; }
 }
-
-@keyframes f-sway {
-  0%, 100% { transform: rotate(-1.6deg); }
-  50% { transform: rotate(1.6deg); }
-}
-
-/* Stepped strips: pixel offsets, never percentages. */
-@keyframes y-strip-256 { to { background-position: -256px 0; } }
-@keyframes f-strip-128 { to { background-position: -128px 0; } }
 
 /*
-   The crop bands SKEW in place rather than scrolling. A scrolling band reads as
-   moving wallpaper; a skew reads as wind through a field, which is what a field
-   at dusk actually does.
+   The barn doorway's glow.
+
+   DELIBERATE ADDITION. Design's yard scene animates this `doorPulse` and
+   never defines the keyframe, so in their own bundle the glow is static.
+   The intent is not ambiguous — it is the Homestead entrance and the only
+   affordance on the screen — so it breathes here rather than sitting dead.
+   Renamed to the y* family so it cannot collide.
+*/
+@keyframes y-door {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
+}
+
+/* ===================================================================
+   THE FIELD'S KEYFRAMES
+   =================================================================== */
+
+@keyframes f-strip-384 { from { background-position: 0 0; } to { background-position: -384px 0; } }
+@keyframes f-strip-192 { from { background-position: 0 0; } to { background-position: -192px 0; } }
+@keyframes f-strip-128 { from { background-position: 0 0; } to { background-position: -128px 0; } }
+
+@keyframes f-cross { 0% { transform: translateX(0); } 100% { transform: translateX(2260px); } }
+@keyframes f-cloud { from { transform: translateX(0); } to { transform: translateX(-560px); } }
+@keyframes f-tractor { 0% { transform: translateX(0); } 100% { transform: translateX(-2280px); } }
+@keyframes f-horizon { 0% { transform: translateX(0); } 100% { transform: translateX(-460px); } }
+
+/* Walking the other way. The mirror is IN the keyframe, so the strip does
+   not need a second sheet drawn facing right. */
+@keyframes f-horizon-back {
+  0% { transform: translateX(0) scaleX(-1); }
+  100% { transform: translateX(380px) scaleX(-1); }
+}
+
+/*
+   The crop bands SKEW in place rather than scrolling. A scrolling band
+   reads as moving wallpaper; a skew reads as wind through a field, which
+   is what a field at dusk actually does.
 */
 @keyframes f-crop {
-  0%, 100% { transform: skewX(0deg); }
-  50% { transform: skewX(1.6deg); }
+  0%, 100% { transform: skewX(-1.4deg); }
+  50% { transform: skewX(1.4deg); }
 }
 
 @keyframes f-crop-slow {
-  0%, 100% { transform: skewX(0deg); }
-  50% { transform: skewX(1deg); }
+  0%, 100% { transform: skewX(-0.8deg); }
+  50% { transform: skewX(0.8deg); }
 }
 
-/* The field's distant treeline: a blurred silhouette band, because a distant
-   tree needs a small sprite and we only have a big one. */
-.field-treeline {
-  position: absolute;
-  left: 0; right: 0;
-  top: 486px;
-  height: 82px;
-  z-index: 1;
-  pointer-events: none;
-  filter: blur(2.4px);
-  background:
-    radial-gradient(closest-side, rgba(26, 34, 22, 0.95), transparent 72%) 0 0 / 190px 82px repeat-x;
+@keyframes f-sway {
+  0%, 100% { transform: rotate(-1.8deg); }
+  50% { transform: rotate(1.8deg); }
+}
+
+@keyframes f-bird {
+  0% { opacity: 0; transform: translate(0, 0); }
+  8% { opacity: 0.7; }
+  88% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate(var(--bx, -1200px), var(--by, -40px)); }
+}
+
+@keyframes f-flap {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.35); }
+}
+
+@keyframes f-dust {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  25% { opacity: 0.32; }
+  100% { opacity: 0; transform: translate(46px, -18px) scale(2.4); }
+}
+
+@keyframes f-shimmer {
+  0%, 100% { opacity: 0.16; transform: translateY(0); }
+  50% { opacity: 0.26; transform: translateY(-2px); }
+}
+
+@keyframes f-smoke {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  20% { opacity: 0.45; }
+  100% { opacity: 0; transform: translate(-34px, -120px) scale(2); }
+}
+
+@keyframes f-fly {
+  0% { opacity: 0; transform: translate(0, 0); }
+  22% { opacity: 1; }
+  72% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(var(--fx, 60px), var(--fy, -80px)); }
+}
+
+@keyframes f-sun {
+  0%, 100% { opacity: 1; }
+  47% { opacity: 0.88; }
+  52% { opacity: 1; }
+}
+
+/*
+   Everything above moves. Somebody who has asked their machine to stop
+   moving things gets a still evening rather than no evening — the scene
+   is composed to hold as a single frame, which is why the placements are
+   fixed and nothing depends on where an animation happens to be.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .home-yard * { animation: none !important; }
 }

@@ -61,6 +61,26 @@
   --paper: linear-gradient(178deg, #d9c7a2 0%, #cdb994 58%, #c4ae86 100%);
   --paper-bright: linear-gradient(178deg, #eadcb8 0%, #ddca9f 56%, #d2bc8c 100%);
   --paper-dead: linear-gradient(178deg, #c8bfa8 0%, #b6ad96 58%, #a89f88 100%);
+
+  /*
+     The same three stocks as a FLAT COLOUR.
+
+     `--paper` is a gradient, which means it is a background-IMAGE, and
+     `background: var(--paper)` therefore sets the image and resets the
+     background-COLOUR to transparent. Any later `background-image` on the
+     same element then replaces the gradient outright and the surface has
+     nothing opaque left in it at all — which is exactly how every level-up
+     card ended up showing the field through its own blurb.
+
+     Paint the colour as well as the gradient and paper is paper even when
+     something else wins the image slot.
+  */
+  --paper-flat: #cdb994;
+  --paper-bright-flat: #ddca9f;
+  --paper-dead-flat: #b6ad96;
+
+  /* The dotted stock, as a layer rather than a whole background. */
+  --paper-dots: radial-gradient(#5a4630 1px, transparent 1px);
   --paper-edge: #40311f;
   --paper-edge-gold: #6b4a12;
 

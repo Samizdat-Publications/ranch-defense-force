@@ -1,0 +1,281 @@
+/* ===================================================================
+   THE HOMESTEAD — between runs
+   ===================================================================
+   `docs/mockups/Game Screens.dc.html` § 04: "The yard at dusk with the
+   four buildings you spend acres in standing in it, each fronted by a
+   staked sign. The affordable rule from the current screen is kept:
+   anything you can buy right now carries a warm outline, so the screen
+   answers 'what can I afford' without being read."
+
+   THE BACKDROP IS THE HOME SCREEN'S YARD, not a third composition.
+   The mockup draws its own cut-down yard on a 1760x940 stage — the same
+   silo, barn, house, coop, scarecrow, well, fence and fireflies, moved
+   to fit a different rectangle. Building that separately would be a
+   second yard to keep in step with the first, and the two would drift
+   the first time either moved. `scene.ts` builds the real one and this
+   screen mounts it on the same 1920x1080 letterboxed stage the home
+   screen uses, so there is one yard and it is the good one.
+
+   Prefixed `phome-`. Grepped first: `home-` is the title screen and
+   `homestead-` is this screen's own old styling, both still live.
+   =================================================================== */
+
+.phome {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #191b36;
+}
+
+.phome::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 50%; bottom: 0;
+  background: #191d13;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.phome-stagewrap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1920px;
+  height: 1080px;
+  margin: -540px 0 0 -960px;
+  transform: scale(var(--scene, 1));
+  transform-origin: center center;
+  z-index: 1;
+}
+
+.phome-scene { position: absolute; inset: 0; pointer-events: none; }
+.phome-ui { position: absolute; inset: 0; }
+
+/* --- the head: what this place is, and what you have to spend --- */
+.phome-head {
+  position: absolute;
+  left: 68px;
+  top: 56px;
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+}
+
+.phome-eyebrow {
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: #eec583;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
+}
+
+.phome-title {
+  font-family: var(--display);
+  font-size: 52px;
+  font-weight: 400;
+  margin: 8px 0 0;
+  color: #f8e9c6;
+  text-shadow: 0 5px 0 #6b3a1c, 0 10px 22px rgba(0, 0, 0, 0.75);
+}
+
+/* The acres tile. Rye at 30px because this is the number the whole
+   screen is about, and it is the only one that changes the next run. */
+.phome-acres {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 8px 16px;
+  background-color: var(--paper-flat);
+  background-image: var(--paper-dots), var(--paper);
+  background-size: 4px 4px, 100% 100%;
+  border: 3px solid var(--paper-edge);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+.phome-acres-n {
+  font-family: var(--display);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.phome-acres-unit {
+  font-family: var(--label);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  line-height: 1.5;
+  color: #6b5840;
+}
+
+/* --- the four staked signs --- */
+.phome-signs {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 150px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.phome-sign {
+  position: relative;
+  width: 300px;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  animation: phome-sign-in 520ms var(--ease-out) both;
+  transition: transform 170ms ease-out;
+}
+
+.phome-sign:hover { transform: translateY(-9px); }
+
+@keyframes phome-sign-in {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+.phome-sign-drop { filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.6)); }
+
+.phome-sign-board {
+  padding: 14px 16px;
+  background-color: var(--paper-flat);
+  background-image: var(--paper-dots), var(--paper);
+  background-size: 4px 4px, 100% 100%;
+  border: 3px solid var(--paper-edge);
+}
+
+/* Affordable gets the warm outline. Design calls this out as one of the
+   three things that earned their place and stay — the screen answers
+   "what can I afford" without being read. */
+.phome-sign.is-open .phome-sign-board {
+  border-color: var(--paper-edge-gold);
+  box-shadow: 0 0 0 3px rgba(224, 160, 46, 0.28), 0 0 26px rgba(224, 160, 46, 0.22);
+}
+
+.phome-sign-row { display: flex; align-items: center; gap: 12px; }
+
+.phome-sign-icon {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: rgba(36, 29, 19, 0.4);
+  border: 2px solid rgba(64, 49, 31, 0.55);
+}
+
+.phome-sign-name {
+  font-family: var(--display);
+  font-size: 19px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.phome-sign-count {
+  font-family: var(--label);
+  font-size: 7.5px;
+  letter-spacing: 0.1em;
+  color: #6b5840;
+  margin-top: 4px;
+}
+
+.phome-sign-blurb {
+  font-family: var(--body);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-body);
+  margin-top: 11px;
+  min-height: 34px;
+  text-wrap: pretty;
+}
+
+.phome-sign-foot {
+  height: 9px;
+  background: var(--wood-dark);
+  border: 3px solid var(--paper-edge);
+  border-top: none;
+}
+
+.phome-sign.is-open .phome-sign-foot {
+  background: var(--gold-btn);
+  border-color: var(--paper-edge-gold);
+}
+
+/* The stake it stands on. Without it the sign floats. */
+.phome-stake {
+  width: 14px;
+  height: 26px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, #4a3a24, #6b5433 40%, #3b2d1c);
+  border: 2px solid #2b241a;
+  border-top: none;
+}
+
+/* --- inside a building --- */
+.phome-room {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 92px 40px 56px;
+  overflow: auto;
+  background: rgba(10, 9, 8, 0.72);
+}
+
+.phome-room-note {
+  font-family: var(--body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #b6a789;
+  max-width: 76ch;
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.phome-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.phome-empty {
+  font-family: var(--body);
+  font-size: 13px;
+  color: #8a7c62;
+}
+
+/* --- the footer rail --- */
+.phome-foot {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: rgba(10, 9, 8, 0.8);
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #8a7c62;
+}
+
+.phome-foot button {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--gold);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.phome-foot button:hover { filter: brightness(1.25); }

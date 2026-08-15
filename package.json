@@ -25,7 +25,8 @@
     "characters": "vite-node tools/make-character.ts --",
     "pixellab": "vite-node tools/pixellab.ts --",
     "anchor": "vite-node tools/char-anchor.ts --",
-    "cut": "vite-node tools/pixellab-cut.ts --"
+    "cut": "vite-node tools/pixellab-cut.ts --",
+    "fetch": "vite-node tools/pixellab-fetch.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

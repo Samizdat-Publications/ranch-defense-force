@@ -489,6 +489,15 @@
   "_note": "Generated with PixelLab, style-anchored to assets/pixellab/limezu_style_256.png. Ours and commercially licensed, so unlike the purchased packs these CAN be committed. Card icons only -- they are 44-62px and exempt from the 32x32 field rule because a card draws at any integer zoom. Anything that reaches the game field must still be 32x32. See docs/PIXELLAB.md.",
   "_base": "assets/pixellab/picked/",
   "files": {
+   "item.ditchLight": "ditch_light.png",
+   "scene.rooster": "rooster_big.png",
+   "item.strawHat": "straw_hat.png",
+   "meta.bunkhouse": "bunkhouse_sign.png",
+   "meta.feedStore": "feed_store_sign.png",
+   "meta.seedCatalog": "seed_catalogue.png",
+   "meta.countyFair": "prize_rosette.png",
+   "weapon.combineHead": "combine_head.png",
+   "weapon.postAuger": "post_auger.png",
    "item.balingTwine": "twine.png",
    "item.barbedWire": "barbed_wire.png",
    "item.cattleProd": "cattle_prod.png",
@@ -556,7 +565,9 @@
  },
  "scene": {
   "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",
+  "_noTrimNote": "PACKED UNTRIMMED, and this is load-bearing. Design's scene coordinates are the top-left of the sprite's FULL BOX, so a trimmed frame is drawn at the right place and the wrong offset -- the scarecrow trimmed 96x96 to 84x78 and stood 12px left and 18px high of where it belongs, silently, on every prop in both scenes. Trimming is right for a field sprite drawn from a pivot; it is wrong for anything positioned by its box.",
   "_base": "assets/scene/",
+  "noTrim": true,
   "files": {
    "scene.barn": "barn.png",
    "scene.calf": "calf.png",
@@ -572,16 +583,19 @@
    "scene.house": "house.png",
    "scene.milkcan": "milkcan.png",
    "scene.nest": "nest.png",
+   "scene.penC1": "pen_c1.png",
+   "scene.penGate": "pen_gate.png",
    "scene.penV": "pen_v.png",
    "scene.scarecrow": "scarecrow.png",
    "scene.sheep": "sheep.png",
+   "scene.signCow": "sign_cow.png",
    "scene.silo": "silo.png",
    "scene.tractorLeft": "tractor_left.png",
    "scene.treeOak": "tree_oak.png",
    "scene.trough": "trough.png",
    "scene.well": "well.png"
   },
-  "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent; the yard uses the game's own rooster sprite instead."
+  "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent. The yard borrowed the game's own 32px rooster for a while; it is now `scene.rooster` in the pixellab group -- generated art, drawn at 1x, and visibly bigger than the hens pecking beside it, which is what a rooster in a yard should be."
  },
  "sceneStrips": {
   "_note": "Anything TILED or STEPPED, packed untrimmed. A strip animated with steps(n) divides its width by n and a repeating tile repeats at its packed size, so both need the real cell rather than the content bounds. Trimming a 192px six-frame strip to 188px makes 188/6 fractional; trimming a 32px wheat tile to 26px leaves a gap in every repeat.",
@@ -590,6 +604,7 @@
   "files": {
    "scene.chickenPeckStrip": "chicken_peck_strip.png",
    "scene.chickenWalkLeftStrip": "chicken_walk_left_strip.png",
+   "scene.penH": "pen_h.png",
    "scene.farmerWalkStrip": "farmer_walk_strip.png",
    "scene.farmerWalkUpStrip": "farmer_walk_up_strip.png",
    "scene.fencePicket": "fence_picket.png",

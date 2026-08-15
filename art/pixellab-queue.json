@@ -1,269 +1,244 @@
 {
-  "_note": "What to generate next, in priority order. `npm run pixellab -- --list` prices a run without spending anything; a run generates every subject that has no sheet yet. Descriptions are THE SUBJECT ONLY — the style anchor carries palette, outline weight, shading and colour count, and a long style suffix actively fights it.",
-  "_budget": "Pro tools cost 20 generations each against 2,000/month. The list below is about 46 subjects = 920 generations, which is under half a month. Do not run it all at once — work down the priorities and look at what comes back.",
-  "_fieldRule": "Anything that reaches the game FIELD must end up 32x32; generate larger and use PixelLab's Unzoom, or generate at 32 directly. Card icons are exempt and 64px is better — a card window zooms by integers and wants the detail.",
-  "_next": "For directional field art the pipeline is: generate one side view here, then 'Generate 8 rotations', then 'Animate with text' for the walk. Those are separate tools and are not automated by this script yet.",
-  "subjects": [
-    {
-      "_priority": "0 — BLOCKING THE HOME SCREEN. The oaks are removed from both scenes until these exist.",
-      "name": "oak_tree_dusk",
-      "description": "a large green oak tree with a thick trunk, seen from a low angle",
-      "serves": "the home screen treeline in both scenes; the LimeZu modular oak reads as three identical shrubs at this scale"
-    },
-    {
-      "_priority": "1 — the five borrowed field families. These are flagged `_standInArt` in items.json and are currently wearing sprites that mean something else.",
-      "name": "barn_dog",
-      "description": "a scruffy brown farm dog standing in profile",
-      "serves": "the Barn Dog weapon's minion, currently a generic feral dog"
-    },
-    {
-      "name": "whitacre_bull",
-      "description": "a huge angry black bull in profile",
-      "serves": "the Whitacre Bull legendary minion"
-    },
-    {
-      "name": "gas_cloud",
-      "description": "a sickly green cloud of drifting gas",
-      "serves": "Crop Duster's trail, Iron Lung, the gas grace period"
-    },
-    {
-      "name": "crop_duster_plane",
-      "description": "a yellow crop duster biplane seen from above",
-      "serves": "the Crop Duster card hero, and possibly a flyover"
-    },
-    {
-      "name": "salt_ring_decal",
-      "description": "a ring of scattered white salt on bare dirt",
-      "serves": "the Salt Circle ground decal"
-    },
-    {
-      "_priority": "2 — infected livestock. The weakest thing on screen: ordinary animals recoloured with a filter, and it looks like it.",
-      "name": "infected_hen",
-      "description": "a diseased hen with grey feathers and red eyes in profile",
-      "serves": "enemy sheet, replaces a recoloured chicken"
-    },
-    {
-      "name": "infected_rooster",
-      "description": "a diseased rooster with ragged grey plumage in profile",
-      "serves": "enemy sheet"
-    },
-    {
-      "name": "infected_hand",
-      "description": "a farmhand in overalls with grey skin and a slack face, in profile",
-      "serves": "enemy sheet"
-    },
-    {
-      "name": "infected_hog",
-      "description": "a bloated diseased pig with grey mottled skin in profile",
-      "serves": "enemy sheet"
-    },
-    {
-      "name": "infected_sheep",
-      "description": "a diseased sheep with matted grey wool in profile",
-      "serves": "enemy sheet"
-    },
-    {
-      "_priority": "3 — the two Homestead signs still borrowing icons.",
-      "name": "seed_catalogue",
-      "description": "a worn paper seed catalogue with a corn illustration on the cover",
-      "serves": "the Seed Catalog building sign, currently a grain sack"
-    },
-    {
-      "name": "prize_rosette",
-      "description": "a blue county fair prize rosette with ribbons",
-      "serves": "the County Fair building sign, currently a star"
-    },
-    {
-      "name": "bunkhouse_sign",
-      "description": "a small wooden bunkhouse building",
-      "serves": "the Bunkhouse sign"
-    },
-    {
-      "name": "feed_store_sign",
-      "description": "a wooden feed store front with a hanging sign",
-      "serves": "the Feed Store sign"
-    },
-    {
-      "_priority": "4 — the two legendary card heroes. These carry the biggest moments in a run and deserve art that is not a reused tool sprite.",
-      "name": "sunday_suit_hero",
-      "description": "a folded black funeral suit with a white shirt and dark tie",
-      "serves": "Sunday Best, legendary"
-    },
-    {
-      "name": "reapers_scythe_hero",
-      "description": "an ancient scythe with a blackened curved blade",
-      "serves": "The Reaper's Own, legendary"
-    },
-    {
-      "_priority": "5 — weapons still wearing stand-in art.",
-      "name": "post_auger",
-      "description": "a hand-cranked iron fence post auger with a spiral bit",
-      "serves": "the Post Auger weapon, currently a pickaxe"
-    },
-    {
-      "name": "combine_head",
-      "description": "a rusted combine harvester cutting head with steel teeth",
-      "serves": "the Combine Head weapon, currently an axe"
-    },
-    {
-      "name": "work_boots",
-      "description": "a pair of worn brown leather work boots",
-      "serves": "Work Boots item, currently a wooden axe"
-    },
-    {
-      "name": "feed_sack",
-      "description": "a burlap feed sack tied with rope",
-      "serves": "Feed Sack item, currently the feed pickup"
-    },
-    {
-      "name": "boot_knife",
-      "description": "a small worn boot knife with a bone handle",
-      "serves": "Boot Knife item, currently a cow bell"
-    },
-    {
-      "name": "straw_hat",
-      "description": "a wide-brimmed straw sun hat",
-      "serves": "Straw Hat item, currently a folded suit"
-    },
-    {
-      "name": "ditch_light",
-      "description": "a battered handheld work lamp with a wire cage",
-      "serves": "Ditch Light item, currently a lantern"
-    },
-    {
-      "_priority": "6 — TERRAIN AND MAPS. The point of the subscription: we are no longer limited to one field. Each of these is a biome the arena could be, using PixelLab's tileset tools rather than this script — listed here so the plan lives in one place.",
-      "name": "_biome_note",
-      "description": "SKIP — see _priority. Use 'Create tiles (Pro)' for tilesets, not generate-with-style-v2.",
-      "serves": "planning only"
-    },
-    {
-      "_priority": "7 — props to dress new maps. Cheap, high variety, all card-or-field objects.",
-      "name": "hay_bale_round",
-      "description": "a large round hay bale",
-      "serves": "field prop / cover"
-    },
-    {
-      "name": "water_trough",
-      "description": "a galvanised metal water trough",
-      "serves": "field prop"
-    },
-    {
-      "name": "tractor_rusted",
-      "description": "a small rusted red tractor seen from above",
-      "serves": "field prop / landmark"
-    },
-    {
-      "name": "grain_silo",
-      "description": "a tall corrugated metal grain silo",
-      "serves": "field landmark"
-    },
-    {
-      "name": "windmill_pump",
-      "description": "a metal farm windmill water pump",
-      "serves": "field landmark"
-    },
-    {
-      "name": "fence_post_wire",
-      "description": "a wooden fence post strung with barbed wire",
-      "serves": "arena boundary"
-    },
-    {
-      "name": "scarecrow",
-      "description": "a ragged scarecrow on a wooden cross",
-      "serves": "field prop"
-    },
-    {
-      "name": "well_stone",
-      "description": "an old stone well with a wooden roof",
-      "serves": "field landmark"
-    },
-    {
-      "name": "chicken_coop",
-      "description": "a small wooden chicken coop",
-      "serves": "field prop"
-    },
-    {
-      "name": "burn_barrel",
-      "description": "a rusted burning barrel with flames",
-      "serves": "field prop, lights the night map"
-    },
-    {
-      "name": "tool_shed",
-      "description": "a small weathered wooden tool shed",
-      "serves": "field landmark"
-    },
-    {
-      "name": "irrigation_pipe",
-      "description": "a long section of aluminium irrigation pipe on wheels",
-      "serves": "field prop"
-    },
-    {
-      "name": "corn_stalks",
-      "description": "a dense clump of tall green corn stalks",
-      "serves": "harvest node / cover"
-    },
-    {
-      "name": "pumpkin_patch",
-      "description": "a cluster of orange pumpkins on the vine",
-      "serves": "harvest node"
-    },
-    {
-      "name": "dead_tree",
-      "description": "a bare dead tree with broken branches",
-      "serves": "harvest node, blighted map"
-    },
-    {
-      "name": "boulder_mossy",
-      "description": "a large mossy grey boulder",
-      "serves": "harvest node"
-    },
-    {
-      "_priority": "8 — pickups and feedback, so the ground reads at a glance.",
-      "name": "xp_seed",
-      "description": "a glowing green seed",
-      "serves": "the XP pickup, currently a flat coloured square"
-    },
-    {
-      "name": "feed_token",
-      "description": "a small burlap pouch of grain",
-      "serves": "the feed pickup"
-    },
-    {
-      "name": "health_jar",
-      "description": "a glass mason jar of red preserves",
-      "serves": "the heal pickup"
-    },
-    {
-      "name": "chest_supply",
-      "description": "a wooden supply crate with a rope handle",
-      "serves": "a wave-reward drop we do not have yet"
-    }
-  ],
-  "_characterNote": "The CHARACTER BUILDER is a separate pipeline from this queue and is not run by `npm run pixellab`. Characters are generated once, get a character id, and are then animated as states of that id -- so a walk, an attack and a death are the same figure rather than three drawings that resemble each other. See docs/PIXELLAB.md. It needs a `pixellabRig` block in art/sprites.json before anything it produces can be packed, and that rig must be written against a real generated sheet rather than guessed from the docs.",
-  "_characterWishlist": [
-    "infected_hen / rooster / hand / hog / sheep -- walk, attack, death. Replaces the CSS-filtered animals.",
-    "barn_dog -- walk + bite. Currently a generic feral dog.",
-    "whitacre_bull -- walk + charge. The legendary minion, currently a boss sprite.",
-    "the Duster and the Prize Bull -- both bosses currently have a walk and nothing else.",
-    "class ability poses -- digIn (plant and brace) and bolt (dash), currently stat effects with an FX clip over them.",
-    "weapon-holding player poses -- a farmer with a scythe and a farmer with a scattergun are the same sprite today."
-  ],
-  "_characterRecipe": {
-    "_note": "Claude Design's settings for the character builder. Not defaults -- set them by hand. Full write-up and the prompt template in docs/PIXELLAB.md.",
-    "mode": "Pro (required)",
-    "characterSize": 40,
-    "view": "low top down",
-    "styleImage": "assets/pixellab/anchors/<id>-style.png (ONE direction, front)",
-    "referenceImage": "assets/pixellab/anchors/<id>-reference.png (FOUR directions in a row)",
-    "regenerateAnchors": "npm run anchor",
-    "promptShape": [
-      "one-line premise",
-      "clothing itemised, with its state",
-      "body itemised, and the POSE stated explicitly -- an action pose cannot be animated into a different one",
-      "a line of authorial intent (what the player should read this as)",
-      "style closers: palette, outline, symmetry"
-    ],
-    "differsFromIcons": "Icons take the SUBJECT ONLY; a style suffix fights the anchor. Characters DO carry palette and outline direction, because there is far more surface for the model to drift on."
+ "_note": "What to generate next, in priority order. `npm run pixellab -- --list` prices a run without spending anything; a run generates every subject that has no sheet yet. Descriptions are THE SUBJECT ONLY — the style anchor carries palette, outline weight, shading and colour count, and a long style suffix actively fights it.",
+ "_budget": "Pro tools cost 20 generations each against 2,000/month. Check the live figure with get_balance before a batch rather than trusting this line. THE CONCURRENCY LIMIT IS 8 JOBS, not a time window: fire eight, they finish in about nine minutes, fire eight more. There is no cooldown to wait out.",
+ "_fieldRule": "Anything that reaches the game FIELD must end up 32x32; generate larger and use PixelLab's Unzoom, or generate at 32 directly. Card icons are exempt and 64px is better — a card window zooms by integers and wants the detail.",
+ "_next": "For directional field art the pipeline is: generate one side view here, then 'Generate 8 rotations', then 'Animate with text' for the walk. Those are separate tools and are not automated by this script yet.",
+ "subjects": [
+  {
+   "name": "infected_hand",
+   "description": "a farmhand in overalls with grey skin and a slack face, in profile",
+   "serves": "enemy sheet"
   },
-  "_apiNote": "VALIDATED against the live API on 2026-08-15. Two icons generated end to end and wired in (work_boots, feed_sack) at 20 generations each. Two things worth knowing that the handoff could not have: the style anchor can be passed as `style_image_url` pointing at this repo's own raw.githubusercontent URL, which avoids a 25KB base64 argument entirely -- the repo being public makes it its own asset host. And create_image_pro returns each candidate as a SEPARATE file, not the web UI's 4x4 sheet, so pixellab-cut's `icon` command does not apply; `npm run cut -- single <src> <dst>` was added for that path."
+  {
+   "name": "reapers_scythe_hero",
+   "description": "an ancient scythe with a blackened curved blade",
+   "serves": "The Reaper's Own, legendary"
+  },
+  {
+   "name": "work_boots",
+   "description": "a pair of worn brown leather work boots",
+   "serves": "Work Boots item, currently a wooden axe"
+  },
+  {
+   "name": "feed_sack",
+   "description": "a burlap feed sack tied with rope",
+   "serves": "Feed Sack item, currently the feed pickup"
+  },
+  {
+   "name": "boot_knife",
+   "description": "a small worn boot knife with a bone handle",
+   "serves": "Boot Knife item, currently a cow bell"
+  },
+  {
+   "_priority": "6 — TERRAIN AND MAPS. The point of the subscription: we are no longer limited to one field. Each of these is a biome the arena could be, using PixelLab's tileset tools rather than this script — listed here so the plan lives in one place.",
+   "name": "_biome_note",
+   "description": "SKIP — see _priority. Use 'Create tiles (Pro)' for tilesets, not generate-with-style-v2.",
+   "serves": "planning only"
+  },
+  {
+   "_priority": "7 — props to dress new maps. Cheap, high variety, all card-or-field objects.",
+   "name": "hay_bale_round",
+   "description": "a large round hay bale",
+   "serves": "field prop / cover"
+  },
+  {
+   "name": "water_trough",
+   "description": "a galvanised metal water trough",
+   "serves": "field prop"
+  },
+  {
+   "name": "tractor_rusted",
+   "description": "a small rusted red tractor seen from above",
+   "serves": "field prop / landmark"
+  },
+  {
+   "name": "grain_silo",
+   "description": "a tall corrugated metal grain silo",
+   "serves": "field landmark"
+  },
+  {
+   "name": "windmill_pump",
+   "description": "a metal farm windmill water pump",
+   "serves": "field landmark"
+  },
+  {
+   "name": "fence_post_wire",
+   "description": "a wooden fence post strung with barbed wire",
+   "serves": "arena boundary"
+  },
+  {
+   "name": "scarecrow",
+   "description": "a ragged scarecrow on a wooden cross",
+   "serves": "field prop"
+  },
+  {
+   "name": "well_stone",
+   "description": "an old stone well with a wooden roof",
+   "serves": "field landmark"
+  },
+  {
+   "name": "chicken_coop",
+   "description": "a small wooden chicken coop",
+   "serves": "field prop"
+  },
+  {
+   "name": "burn_barrel",
+   "description": "a rusted burning barrel with flames",
+   "serves": "field prop, lights the night map"
+  },
+  {
+   "name": "tool_shed",
+   "description": "a small weathered wooden tool shed",
+   "serves": "field landmark"
+  },
+  {
+   "name": "irrigation_pipe",
+   "description": "a long section of aluminium irrigation pipe on wheels",
+   "serves": "field prop"
+  },
+  {
+   "name": "corn_stalks",
+   "description": "a dense clump of tall green corn stalks",
+   "serves": "harvest node / cover"
+  },
+  {
+   "name": "pumpkin_patch",
+   "description": "a cluster of orange pumpkins on the vine",
+   "serves": "harvest node"
+  },
+  {
+   "name": "dead_tree",
+   "description": "a bare dead tree with broken branches",
+   "serves": "harvest node, blighted map"
+  },
+  {
+   "name": "boulder_mossy",
+   "description": "a large mossy grey boulder",
+   "serves": "harvest node"
+  },
+  {
+   "_priority": "8 — pickups and feedback, so the ground reads at a glance.",
+   "name": "xp_seed",
+   "description": "a glowing green seed",
+   "serves": "the XP pickup, currently a flat coloured square"
+  },
+  {
+   "name": "feed_token",
+   "description": "a small burlap pouch of grain",
+   "serves": "the feed pickup"
+  },
+  {
+   "name": "health_jar",
+   "description": "a glass mason jar of red preserves",
+   "serves": "the heal pickup"
+  },
+  {
+   "name": "chest_supply",
+   "description": "a wooden supply crate with a rope handle",
+   "serves": "a wave-reward drop we do not have yet"
+  }
+ ],
+ "_characterNote": "The CHARACTER BUILDER is a separate pipeline from this queue and is not run by `npm run pixellab`. Characters are generated once, get a character id, and are then animated as states of that id -- so a walk, an attack and a death are the same figure rather than three drawings that resemble each other. See docs/PIXELLAB.md. It needs a `pixellabRig` block in art/sprites.json before anything it produces can be packed, and that rig must be written against a real generated sheet rather than guessed from the docs.",
+ "_characterWishlist": [
+  "infected_hen / rooster / hand / hog / sheep -- walk, attack, death. Replaces the CSS-filtered animals.",
+  "barn_dog -- walk + bite. Currently a generic feral dog.",
+  "whitacre_bull -- walk + charge. The legendary minion, currently a boss sprite.",
+  "the Duster and the Prize Bull -- both bosses currently have a walk and nothing else.",
+  "class ability poses -- digIn (plant and brace) and bolt (dash), currently stat effects with an FX clip over them.",
+  "weapon-holding player poses -- a farmer with a scythe and a farmer with a scattergun are the same sprite today."
+ ],
+ "_characterRecipe": {
+  "_note": "Claude Design's settings for the character builder. Not defaults -- set them by hand. Full write-up and the prompt template in docs/PIXELLAB.md.",
+  "mode": "Pro (required)",
+  "characterSize": 40,
+  "view": "low top down",
+  "styleImage": "assets/pixellab/anchors/<id>-style.png (ONE direction, front)",
+  "referenceImage": "assets/pixellab/anchors/<id>-reference.png (FOUR directions in a row)",
+  "regenerateAnchors": "npm run anchor",
+  "promptShape": [
+   "one-line premise",
+   "clothing itemised, with its state",
+   "body itemised, and the POSE stated explicitly -- an action pose cannot be animated into a different one",
+   "a line of authorial intent (what the player should read this as)",
+   "style closers: palette, outline, symmetry"
+  ],
+  "differsFromIcons": "Icons take the SUBJECT ONLY; a style suffix fights the anchor. Characters DO carry palette and outline direction, because there is far more surface for the model to drift on."
+ },
+ "_apiNote": "VALIDATED against the live API on 2026-08-15. Two icons generated end to end and wired in (work_boots, feed_sack) at 20 generations each. Two things worth knowing that the handoff could not have: the style anchor can be passed as `style_image_url` pointing at this repo's own raw.githubusercontent URL, which avoids a 25KB base64 argument entirely -- the repo being public makes it its own asset host. And create_image_pro returns each candidate as a SEPARATE file, not the web UI's 4x4 sheet, so pixellab-cut's `icon` command does not apply; `npm run cut -- single <src> <dst>` was added for that path.",
+ "_styleAnchorNote": "THE ANCHOR IS A SHEET OF FARM PRODUCE, and with the default style_copy (all four of color_palette, outline, detail, shading) the model copies its SUBJECT as well as its rendering. The first oak came back as four pumpkins and an onion. For anything that is not a small hand-held object, pass style_copy WITHOUT \"detail\" -- palette, outline and shading carry the look, and detail is what drags the anchor content across. Same prompt, same anchor, detail dropped: a correct oak, first try.",
+ "_modelNote": "create_image_pro is 20 generations and returns a SET -- 64 candidates at <=42px, 16 at <=85px, 4 at <=170px, 1 above. 64x64 is the sweet spot: 16 candidates for one price, and enough resolution for a card. Going to 128px to get a bigger sprite costs you twelve of the sixteen tries, which is exactly when a bad generation has nowhere to hide. Generate small, draw at an integer zoom. The cheaper models (pixen at 1 generation, pixflux for img2img/forced palette) are the right call for simple flat objects; pro earns its cost on anything with form.",
+ "_pickNote": "npm run fetch -- <job-id> <name> pulls every candidate plus a 4-across contact sheet into assets/pixellab/sheets/<name>/. Look at the contact sheet, then npm run cut -- single <sheet>/<name>_NN.png assets/pixellab/picked/<name>.png. Keep every candidate: they are paid for, and the first cell picked has more than once not been the best one.",
+ "_refusalNote": "The safety classifier refused \"a small worn boot knife with a bone handle\" outright. Boot Knife is still wearing a cow bell. Rephrasing around it was not attempted -- ask the owner how they want that one handled rather than working the wording.",
+ "_ranchRoster": {
+  "_note": "THE OWNER'S OWN ANIMALS. These are real animals on a real ranch and the point is that the game has them in it. Side views are GENERATED AND STAGED in assets/pixellab/picked/ -- fjord_pony, arabian_horse, draft_mule, donkey, rooster_big. rooster_big is wired (the yard scene). The other four are not wired to anything yet, deliberately: a side view is a reference, not an enemy.",
+  "_whatIsMissing": "A field animal needs eight facings and a walk, not one profile. The path is: create_8_direction_object (or create_character for anything humanoid) using the staged side view as a reference image, then animate the walk, then npm run cut -- cell / strip onto the game grid. That is a different and more expensive tool than the icon recipe, and it has not been run on an animal yet.",
+  "_sizeRule": "Field art ends at 32x32. These were generated at 64 for the candidate count; unzoom or regenerate at 32 before packing, and do NOT scale a 64px sprite down in CSS -- it breaks the pixel grid.",
+  "animals": [
+   {
+    "name": "fjord_pony",
+    "state": "side view staged",
+    "want": "white/blonde fjord pony, thick upright mane"
+   },
+   {
+    "name": "arabian_horse",
+    "state": "side view staged",
+    "want": "bay arabian, arched neck, high tail"
+   },
+   {
+    "name": "draft_mule",
+    "state": "side view staged",
+    "want": "big black draft mule"
+   },
+   {
+    "name": "donkey",
+    "state": "side view staged",
+    "want": "small grey donkey"
+   },
+   {
+    "name": "rooster_big",
+    "state": "WIRED as scene.rooster",
+    "want": "a rooster that reads as a rooster and stands taller than the hens"
+   }
+  ]
+ },
+ "_horrorPlan": {
+  "_note": "MAKE THE WHOLE CAST SCARY, the way the farmhand already is. The infected farmhand is the one piece of this that is finished and it is the enemy you see most in a run; everything else infected is still an ordinary animal wearing a CSS filter, and it looks like it.",
+  "_whatWorks": "The farmhand was made with Characters -> Create from Text, Humanoid, Pro, character size 40 custom, camera Low Top-Down, with limezu_character_ref.png and limezu_style_char_128.png as references, then the Scary Walk 8-frame preset. Full recipe in docs/PIXELLAB.md. Use the FARMHAND ITSELF as the Style Character for everything infected that follows -- that is what makes a cast rather than a collection.",
+  "_order": "Do the animals the player meets most first. The infected side views for hen, rooster, hog and sheep are generated and staged; they are references for the 8-direction pass, not shippable enemies.",
+  "_pairing": "Every horror version should be generated FROM its healthy counterpart as a reference image, so the two read as the same animal before and after. That is the whole horror premise of the game and it does not survive generating them independently.",
+  "staged": [
+   "infected_hen",
+   "infected_rooster",
+   "infected_hog",
+   "infected_sheep"
+  ],
+  "wanted": [
+   "infected fjord pony",
+   "infected arabian",
+   "infected mule",
+   "infected donkey",
+   "infected cow",
+   "infected dog",
+   "infected duck"
+  ]
+ },
+ "_mapsAndTilesets": {
+  "_note": "OWNER WANTS MORE MAPS. Logged to think through before generating, because this is the first thing on the list that changes the GAME rather than the art.",
+  "_whatTheSeedActuallyDoes": "Right now the seed drives enemy spawns, elite rolls, drops, offer-pool draws and crop scatter -- everything that goes through the mulberry32 RNG. It does NOT pick a map, because there is one arena: a flat terrain bake with crop nodes scattered on it. Same ground every run. So \"maps spawn randomly on the seed\" is not true yet; making it true is a real feature, not a content drop.",
+  "_whatItWouldTake": [
+   "A map descriptor in content: tileset, ground bake, node mix, hazard flavour, arena size.",
+   "The terrain bake reading that descriptor instead of the one hardcoded set.",
+   "The seed choosing a map, which means the map choice must be the FIRST draw off the RNG -- anything else and adding a map silently changes every existing seed replay.",
+   "A test that the same seed still replays identically, which is a non-negotiable in this project."
+  ],
+  "_generationSide": "PixelLab does have the tools for this: create_topdown_tileset for whole ground sets, create_path_tiles for tracks and dirt roads, create_map_object for props, and animate_object for the twinkle. An animated gem seam or a plant that moves is exactly what create_object_state / animate_object are for, and it would make a harvest node read as worth standing on before you commit to standing there -- which is the mining design already in place.",
+  "_mapIdeas": [
+   "the home quarter at dusk (what exists)",
+   "the blighted field, dead trees and ash",
+   "the orchard",
+   "the creek bottom, water and mud that slows",
+   "the night pasture, lit only by burn barrels"
+  ],
+  "_doFirst": "Do NOT generate a tileset until the map descriptor exists. A tileset with nowhere to go is the most expensive kind of art to have made."
+ }
 }

@@ -18,9 +18,26 @@
   width: 210px;
   display: flex;
   flex-direction: column;
-  background: var(--paper);
-  background-image: radial-gradient(#5a4630 1px, transparent 1px);
-  background-size: 4px 4px;
+  /*
+     THE STOCK IS TWO LAYERS AND A COLOUR, in one declaration.
+
+     This used to be `background: var(--paper)` followed by a
+     `background-image` for the dots. The shorthand puts the paper gradient
+     in the IMAGE slot and resets the colour to transparent; the longhand on
+     the next line then replaced that gradient with the dot pattern. What was
+     left was a 1px dot on a 4px grid over nothing — a card about 94% see-
+     through, with the game field legible straight through its own blurb.
+     Nothing errors, every colour token is correct, and it survived several
+     screens' worth of review.
+
+     `.psheet` and `.hero-body` are the same stock and get it right by
+     hanging the dots off a pseudo-element. Layering both images here is the
+     same fix without a second node, and the flat colour underneath means
+     paper stays opaque whatever wins the image slot next.
+  */
+  background-color: var(--paper-flat);
+  background-image: var(--paper-dots), var(--paper);
+  background-size: 4px 4px, 100% 100%;
   border: 3px solid var(--paper-edge);
   color: var(--ink);
   text-align: left;
@@ -39,14 +56,16 @@
 
 .pcard.is-selected,
 .pcard.is-affordable {
-  background: var(--paper-bright);
+  background-color: var(--paper-bright-flat);
+  background-image: var(--paper-dots), var(--paper-bright);
   border-color: var(--paper-edge-gold);
 }
 
 /* Unaffordable and locked read as UNPRINTED STOCK, not as disabled UI —
    greyed-out chrome says "broken", dead paper says "not for you yet". */
 .pcard.is-dead {
-  background: var(--paper-dead);
+  background-color: var(--paper-dead-flat);
+  background-image: var(--paper-dots), var(--paper-dead);
   cursor: not-allowed;
 }
 
@@ -133,6 +152,20 @@
 }
 
 .pcard-plate.is-legendary { border-color: #5d3a08; }
+
+/*
+   A rank plate: the same stamped tin, with no colour claim on it.
+
+   The Homestead's purchases have a RANK, not a rarity — your third rank of the
+   Feed Store is not rare, it is your third one — so the plate carries pips and
+   nothing else. Plain steel, so it cannot be mistaken for a tier.
+*/
+.pcard-plate.is-rank {
+  --tier-colour: #b9bec4;
+  --tier-dark: #7f868d;
+  --tier-ink: #241c10;
+  gap: 5px;
+}
 
 .pcard-plate-name {
   font-family: var(--label);

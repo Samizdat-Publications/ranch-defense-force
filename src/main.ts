@@ -128,24 +128,12 @@ function startRun(classId: string, seedText: string): void {
   // be inspected from the console. Headless tools can be made to agree with
   // themselves and still disagree with the browser; this is how that gets
   // caught instead of argued about.
-  if (import.meta.env.DEV) {
-    // Getters, not values. A plain object captures whatever the module locals
-    // held at construction, and every later `startRun` leaves the console
-    // holding a dead world — which reads as "the game is broken" rather than
-    // "the handle is stale".
-    ;(window as unknown as Record<string, unknown>).rdf = {
-      get world() { return world },
-      get renderer() { return renderer },
-      get atlas() { return atlas },
-      get offers() { return offers },
-      get profile() { return profile },
-      openHomestead,
-      // The screens themselves, so a UI change can be driven without waiting
-      // for a rAF-driven game loop that a headless pane may never run.
-      screens: { levelUp, shop, results, menu, pause, homestead },
-      openLevelUp: () => openLevelUpIfPending(),
-    }
-  }
+  // NOTE: `window.rdf` is built ONCE, at the bottom of this file. It used to be
+  // rebuilt here on every `startRun` as well, and the two definitions did not
+  // carry the same keys — so `rdf.screens` existed only after a run had begun
+  // and `rdf.startRun` only before one had. Which handle you got depended on
+  // what you had already done, which is a miserable thing to debug from a
+  // console. Everything below is a getter, so one object stays live.
 
   world.events = {
     onSound: (name) => audio.play(name as SfxName),
@@ -345,6 +333,8 @@ Atlas.load(import.meta.env.BASE_URL)
     // up empty and its class cards came up as text. Anything that draws sprites
     // has to be rebuilt once the art is actually here.
     menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
+    // The Homestead mounts the same yard, and it was built at module load too.
+    homestead.refreshScene()
     if (world) {
       // A run already started against no atlas: rebuild the renderer so it
       // picks up the art rather than staying square for the rest of the run.
@@ -363,10 +353,20 @@ Atlas.load(import.meta.env.BASE_URL)
 // wave-skip key.
 Object.assign(window as unknown as Record<string, unknown>, {
   rdf: {
+    // Getters, not values. A plain object captures whatever the module locals
+    // held at construction, and every later `startRun` leaves the console
+    // holding a dead world — which reads as "the game is broken" rather than
+    // "the handle is stale".
     get world() { return world },
     get renderer() { return renderer },
+    get atlas() { return atlas },
     get offers() { return offers },
+    get profile() { return profile },
     startRun,
+    openHomestead,
+    // The screens themselves, so a UI change can be driven without waiting for
+    // a rAF-driven game loop that a headless pane may never run.
+    screens: { levelUp, shop, results, menu, pause, homestead },
     openLevelUp: () => {
       pendingLevelUps++
       openLevelUpIfPending()

@@ -1,0 +1,199 @@
+/* ===================================================================
+   THE SHOP — same packet, priced
+   ===================================================================
+   Design's words, from `docs/mockups/Card System.dc.html` § 04:
+
+     "The shop is the same card with two additions: a feed price in
+      the footer, and a bulldog clip when you lock a card for the next
+      visit. Unaffordable cards go to pulpboard grey and the plate
+      loses its emboss and drop shadow — they read as unprinted stock,
+      not as disabled UI."
+
+   So there is no shop card. `card()` already carried `price`,
+   `affordable`, `dead` and `clipped`; the shop simply never asked for
+   any of them and drew its own `.card` instead.
+
+   What IS new here is the counter you buy across: a 236px kraft panel
+   holding what you are, what you have, and the two things you can do.
+   Everything below is that panel. Prefixed `pshop-` — grepped first,
+   because adding to a namespace someone already owns has failed
+   silently in this repo five times.
+   =================================================================== */
+
+.pshop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  background:
+    radial-gradient(120% 90% at 50% 40%, rgba(20, 16, 12, 0.55), rgba(8, 7, 6, 0.86));
+}
+
+.pshop-inner {
+  padding: 28px 24px;
+  max-width: 1240px;
+}
+
+.pshop-head { margin-bottom: 18px; }
+
+.pshop-eyebrow {
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #7d7057;
+}
+
+.pshop-title {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 400;
+  margin: 8px 0 4px;
+  color: #ecdcbc;
+}
+
+.pshop-sub {
+  font-family: var(--body);
+  font-size: 13px;
+  color: #9a8e76;
+}
+
+/* Cards and the counter, on one baseline. The counter is a column of
+   the row rather than a sidebar, so it wraps under the cards on a
+   narrow window instead of being cropped off the edge. */
+.pshop-row {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* One card and the control that holds it. The hold button is OUTSIDE
+   the card because the card is a button that buys — nesting a second
+   button inside it is invalid HTML and it made the whole card
+   un-clickable in the level-up screen's ancestor once already. */
+.pshop-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pshop-hold {
+  font-family: var(--label);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: #cbb992;
+  background: rgba(24, 20, 15, 0.72);
+  border: 2px solid var(--paper-edge);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.pshop-hold:hover { filter: brightness(1.2); }
+
+/* Held reads as the clip that is on the card: same steel, same idea. */
+.pshop-hold.is-held {
+  color: #241c10;
+  background: linear-gradient(180deg, #cfd3d6, #8b9196);
+  border-color: #3a3f43;
+}
+
+/* --- the counter --- */
+.pshop-counter {
+  width: 236px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Colour first, then the layers. See the note in card.css: a paper
+     gradient in the shorthand leaves the colour transparent. */
+  background-color: var(--paper-flat);
+  background-image: var(--paper-dots), var(--paper);
+  background-size: 4px 4px, 100% 100%;
+  border: 3px solid var(--paper-edge);
+}
+
+.pshop-counter-head {
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #4b3a24;
+  border-bottom: 2px solid rgba(64, 49, 31, 0.5);
+  padding-bottom: 8px;
+}
+
+.pshop-section {
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: #6b573b;
+  margin-top: 2px;
+}
+
+.pshop-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--body);
+  font-size: 12px;
+  color: #5c4a33;
+}
+
+.pshop-row-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pshop-row-line b { color: #33261a; font-weight: 700; }
+
+/* Two different greens, and they mean two different things: what this
+   wave already bought you, and what the card under the cursor would.
+   The preview is the brighter one because it is the question you are
+   currently asking. */
+.pshop-row-line.is-changed b { color: #2f6b30; }
+.pshop-row-line.is-preview b { color: var(--gain); }
+
+.pshop-dash { height: 0; border-top: 2px dashed rgba(64, 49, 31, 0.45); }
+
+.pshop-feed {
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #5b4830;
+}
+
+.pshop-btn {
+  font-family: var(--label);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #f0e2c4;
+  background: linear-gradient(180deg, #5d4b33, #3f3121);
+  border: 2px solid var(--gold-edge);
+  box-shadow: 0 3px 0 #241c10;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.pshop-btn.is-gold {
+  color: #241c10;
+  background: var(--gold-btn);
+  box-shadow: 0 3px 0 #33271a;
+}
+
+.pshop-btn:hover:not(:disabled) { filter: brightness(1.1); }
+
+.pshop-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+/* An unaffordable reroll is unprinted stock too, not greyed chrome. */
+.pshop-btn:disabled {
+  color: #6f6249;
+  background: var(--paper-dead-flat);
+  box-shadow: 0 3px 0 #4a4234;
+  cursor: not-allowed;
+}

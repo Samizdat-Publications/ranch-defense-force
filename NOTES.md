@@ -1,60 +1,188 @@
 # NOTES
 
-Handoff back to the next design pass, per `CLAUDE.md`. Latest session first.
+Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
-## Start here
+# Session 9 — the two scenes, and a card you could see through
 
-**State:** M0–M5 done, and **M0's "on a live URL" is finally met** — the repo
-is public and Pages deploys on push:
+## The scenes were built from an index of the scenes
 
-**https://samizdat-publications.github.io/ranch-defense-force/**
+`docs/reference/Whitacre Yard at Dusk.html` and `Whitacre Field at Dusk.html` are
+Design's own runtime-bundled backdrops. They are the target, and until this
+session almost none of either one was in the game.
 
-A full 24-wave run plays start to finish in real pixel art, with conformed FX,
-every advertised weapon tier rider firing, and animals that turn to face you.
-85 tests pass.
+The previous pass built both scenes faithfully from `docs/mockups/PLACEMENTS.md`
+and measured correct against it. **That table lists the scenes' `<img>`
+placements and only those.** Everything that is not a sprite — and in these two
+scenes that is most of the picture — is a CSS layer, and none of it is in the
+table. What was missing from the yard:
 
-Verified on the live build, not just locally: the atlas serves (438 frames,
-122KB), the animal facings are in it, and every `assets/` path 404s — only the
-packed atlas ships.
+- the dusk sky itself (a nine-stop gradient; the build had an invented six-stop one)
+- the sun, its core, and the flicker they share
+- three drifting cloud bands
+- the haze band the buildings stand in front of
+- the ground — the yard had **no ground layer at all**, just sky to the bottom edge
+- the lit top edge of the ground, and the furrow stripes
+- the track worn up to the barn doors
+- **the barn**, and the glowing doorway that is the Homestead entrance
+- **the farmhouse**, its porch light, and three puffs of chimney smoke
+- the stock pen: rails, gate, two posts, a sign
+- two hens crossing the yard, a hand crossing it, a hand walking away up the track
+- four fireflies
+- both shaped vignette passes
 
-**First thing:** `npm install && npm run atlas && npm run dev`. The atlas is
-gitignored and generated; without it you get coloured squares.
+And from the field: the sun, the clouds, the treeline silhouette band, the ground
+and its lit edge, two walking hands, two walking hens, the heat shimmer, three
+birds, **the tractor** with its exhaust and dust, the crosser, two fireflies and
+the vignettes.
 
-**Still not played by a human since the art landed.** Session 3 drove the sim
-and the UI directly and verified the shop → level-up → resume cycle by
-hit-testing, but nobody has held the controls. The last time a human did, they
-found a blocking bug no test caught. Combat changed a lot in M5 — play it.
+So the yard was a sky with nineteen props sitting on it, and the field was a sky
+with a treeline. Both were *correct against the table they were built from*.
 
-### What is outstanding
+`src/ui/scene.ts` is now a layer-for-layer port of the two reference documents,
+in their DOM order, which is paint order and is load-bearing. 43 layers in the
+yard, 38 in the field.
 
-1. **Art direction** — boss art, the animals' unused front/back clips, fences
-   and props, palette-index enemy recolours. In progress.
-2. **A human playtest.** A first balance pass is done (`npm run balance`) and
-   found three bugs, but nobody has held the controls since the art landed.
-3. **M6 — bosses.** Prize Bull (wave 12) and Duster (wave 25) have entries in
-   `waves.json` and no behaviour and no art.
-4. **Elites are spawn-time only** — an enemy cannot become one later. Now that
-   the per-group roll is fixed this is a design question rather than a bug.
+**The lesson, and it is the same one this project keeps paying for:** a table
+extracted from a design is an index of the design, not the design. Read the
+thing itself.
 
-### The repo is public now, and M0's live URL is unblocked
+## Every scene sprite was in the wrong place, silently
 
-Pages will not deploy from a private repo on a free plan, and the repo was
-private because the LimeZu licence forbids redistributing the packs. The owner
-obtained permission from LimeZu to publish this repository and chose to do so
-with the licence text in front of them, so both halves of that deadlock are
-gone. Pages is enabled and building from the workflow:
+The `scene` group was packed **trimmed**, like every other sprite group. Trimming
+is right for a field sprite, which is drawn from a pivot — and wrong for anything
+positioned by its box, which is every sprite in these two scenes.
 
-**https://samizdat-publications.github.io/ranch-defense-force/**
+Design's coordinates are the top-left of the sprite's FULL box. Measured against
+the packed atlas:
 
-The permission is specific to this repository. `assets/` still never deploys —
-only the packed atlas ships — and the packs should not be copied into other
-projects.
+| Sprite | Native | Packed | Drawn |
+|---|---|---|---|
+| scarecrow | 96x96 | 84x78 | 12px left and 18px high of where it belongs |
+| house | 256x320 | 248x296 | 8 and 24 out |
+| well | 96x64 | 70x64 | 26 out |
+| silo | 224x448 | 216x448 | 8 out |
+| hay | 64x32 | 46x32 | 18 out |
+| chick | 32x32 | 22x20 | 10 and 12 out, doubled by the 2x zoom |
 
-The deploy workflow ran `vite build` without `npm run atlas` for as long as it
-was never actually deploying, which would have published a game rendering every
-sprite as a coloured square. It builds the atlas now.
+Nothing errors. Every sprite is present, every frame is non-empty, and the scene
+renders a confident, wrong composition. `scene` carries `noTrim` now and every
+sprite measures its native size in the live DOM.
+
+This is the fourth distinct thing the atlas's trimming has broken — after the
+six-frame strip, the 32px tile and the stepped walk cycle. The rule worth
+carrying: **trim what is drawn from a pivot, never what is drawn from a box.**
+
+## The card stock was 94% transparent
+
+Reported with a screenshot: the level-up cards showed the game field straight
+through their own blurb text. One rule, in `card.css`:
+
+    background: var(--paper);                                        /* opaque gradient */
+    background-image: radial-gradient(#5a4630 1px, transparent 1px); /* replaces it */
+    background-size: 4px 4px;
+
+`--paper` is a gradient, so it is a background-IMAGE, and the shorthand also
+resets background-COLOR to transparent. The longhand on the next line then
+replaced the gradient with the dot pattern. What was left was a 1px dot on a 4px
+grid over nothing.
+
+Proved rather than reasoned: applying those two old declarations to a bare
+element computes to `background-color: rgba(0,0,0,0)` with a single
+radial-gradient. The paper was never there.
+
+`.psheet` and `.hero-body` are the same stock and get it right by hanging the
+dots off a pseudo-element — and `tokens.css` even carries a `.stock` helper
+whose comment warns that paper elements already own their gradient. The card did
+it inline anyway. It now layers both images in one declaration over a flat
+colour (`--paper-flat`), so paper stays paper whatever wins the image slot next.
+
+**Worth keeping:** a shorthand followed by a longhand that overwrites the part
+doing the work is invisible to review, to types and to tests. Every colour token
+in that rule was correct.
+
+## The barn doorway is the Homestead entrance now
+
+`DOOR` was a pair of hand-placed coordinates that predated the barn existing in
+the yard at all. It derives from the barn's own position and its door offset now,
+so moving a barn moves its door.
+
+## Art
+
+Twelve subjects generated, in three batches of eight.
+
+Landed and wired: the Ditch Light, the Straw Hat, and **all four Homestead
+building signs** — which were borrowing a grain lure, a feed pickup, the player's
+own head and a tier-3 scythe, and so read as four inventory items rather than
+four places you walk into. Also `scene.rooster`, generated, replacing a
+transparent crop, and visibly taller than the hens beside him.
+
+Generated and staged, not wired: the oak, four infected livestock side views, the
+Whitacre bull, the barn dog, the gas cloud, the crop duster, the salt ring, a post
+auger, a combine head, and the owner's own animals — a fjord pony, an arabian, a
+draft mule and a donkey. A side view is a reference, not an enemy; see
+`art/pixellab-queue.json` for what each still needs.
+
+**The post auger and the combine head are still flagged `_standInArt` on
+purpose.** Both weapons carry a four-rung tier ladder borrowed from the pickaxe
+and the axe, and one icon replaces one rung. A weapon showing a real auger at T1
+and a pickaxe at T2 is worse than one honestly borrowed throughout. They want a
+ladder of four, and that is a design call about what a tier means for a tool
+rather than a generation.
+
+### Three things about PixelLab that cost something to learn
+
+1. **The concurrency limit is 8 jobs, not a time window.** A ninth returns "rate
+   limit exceeded (8/8)". There is no cooldown to wait out: the batch finishes in
+   about nine minutes and the slots free. Fire eight, wait, fire eight more.
+2. **The style anchor is a sheet of farm produce, and `style_copy` defaults to
+   copying `detail` as well as palette, outline and shading — which drags the
+   anchor's SUBJECT across.** The first oak came back as four pumpkins and an
+   onion. Same prompt, same anchor, `style_copy` narrowed to
+   palette/outline/shading: a correct oak, first try. Small hand-held objects are
+   fine on the default; anything larger is not.
+3. **64x64 is the sweet spot for Pro.** It returns 16 candidates at that size, 4
+   at 128px and 1 above 170px, all for the same 20 generations. Reaching for a
+   bigger canvas costs twelve of the sixteen tries, which is exactly when a bad
+   generation has nowhere to hide. Generate small, draw at an integer zoom.
+
+The safety classifier refused `a small worn boot knife with a bone handle`
+outright. Boot Knife still wears a cow bell; the wording was not worked around.
+
+`npm run fetch -- <job-id> <name>` is new: it pulls every candidate down plus a
+4-across contact sheet, because the REST API returns candidates as separate files
+and there is no grid for `pixellab-cut grid` to slice.
+
+## There is one map, and the seed does not choose it
+
+Asked directly, and worth writing down because the answer is not what it looks
+like. The seed drives everything through the `mulberry32` RNG — spawns, elite
+rolls, drops, offer draws, crop scatter — and the terrain bake derives its own
+stream from `seed ^ 0x7e44a1` so the ground varies without moving the sim. But
+there is **one arena and one tileset**: grass, dirt and soil, scattered. Same
+ground every run.
+
+Making the seed pick a map is a real feature, not a content drop, and the
+constraint that matters is that the map choice has to be the FIRST draw off the
+RNG — anything later and adding a map silently changes every existing seed's
+replay, which this project has a test for. Sketched under `_mapsAndTilesets` in
+the generation queue, with what PixelLab can actually make for it.
+
+## Verified
+
+- 131 tests pass; typecheck clean on game and tools.
+- Both scenes mount with every layer present: 43 in the yard, 38 in the field,
+  nothing dropped to a null sprite, console clean after a reload.
+- Every scene sprite measures its native size in the live DOM — silo 224x448,
+  coop 128x160, well 96x64, milkcan 48x64 at 2x, fence band 1960 wide.
+- Card stock computes opaque in all three states, on a `<button>`, which is what
+  a card actually is.
+
+**Not verified by eye.** The browser pane was not displayed for this session, so
+no screenshot was possible. Everything above is structural and computed-style
+evidence. The scenes still want a human looking at them next to
+`docs/reference/`.
 
 ---
 

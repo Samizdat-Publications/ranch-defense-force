@@ -317,8 +317,7 @@
     "special": "auraDamageReduction",
     "radius": 60,
     "reductionPct": 15,
-    "cardSprite": "item.sundayBest",
-    "_standInArt": true
+    "cardSprite": "item.strawHat"
   },
   "wetRag": {
     "name": "Wet Rag",
@@ -408,8 +407,7 @@
       "luck": 12,
       "pickupRadiusPct": 40
     },
-    "cardSprite": "item.lampOil",
-    "_standInArt": true
+    "cardSprite": "item.ditchLight"
   },
   "secondCutting": {
     "name": "Second Cutting",

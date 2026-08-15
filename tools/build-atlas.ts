@@ -71,7 +71,7 @@ interface Manifest {
   singles: { _base: string; files: Record<string, string> }
   singlesExtra?: { _base: string; files: Record<string, string> }
   /** Home-screen backdrop crops. DOM art, not field sprites; exempt from 32px. */
-  scene?: { _base: string; files: Record<string, string> }
+  scene?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** Walk strips. Packed untrimmed so steps() lands on cell boundaries. */
   sceneStrips?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** Generated card art. Deliberately larger than 32px; cards zoom by integers. */
