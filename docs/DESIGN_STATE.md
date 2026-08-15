@@ -90,11 +90,12 @@ Flagged `_standInArt` in the content files, and queued in
 
 | What | Wearing | Note |
 |---|---|---|
-| Threshing Floor | a shockwave FX frame | |
-| Crop Duster | a gas FX frame | art generated, not yet cut in |
-| Whitacre Bull | the Prize Bull boss sprite | art generated, not yet cut in |
-| Post Auger | the pickaxe tier ladder | one icon generated; **wants a ladder of four** |
-| Combine Head | the axe tier ladder | one icon generated; **wants a ladder of four** |
+| Threshing Floor | a shockwave FX frame | the only one left; nothing generated for it |
+
+**One item is still borrowing, down from eight.** The Post Auger and the Combine
+Head each have a real four-rung ladder — rusted iron, clean steel, blackened
+steel, polished chrome — generated rung-from-rung so they read as one tool at
+four qualities rather than four unrelated tools.
 
 Work Boots, Feed Sack, the Straw Hat, the Ditch Light, the Boot Knife and **all
 four Homestead building signs** are real art now. So is the yard's rooster, and

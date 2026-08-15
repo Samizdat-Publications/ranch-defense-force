@@ -448,8 +448,7 @@
     "special": "trailGas",
     "dps": 12,
     "radius": 70,
-    "cardSprite": "fx.gas.4",
-    "_standInArt": true
+    "cardSprite": "item.cropDuster"
   },
   "cattleProd": {
     "name": "Cattle Prod",
@@ -519,8 +518,7 @@
     "special": "bullMinion",
     "chargeDamage": 90,
     "chargeCooldown": 9,
-    "cardSprite": "prizeBull.idle.right.0",
-    "_standInArt": true
+    "cardSprite": "item.whitacreBull"
   },
   "sundayBest": {
     "name": "Sunday Best",

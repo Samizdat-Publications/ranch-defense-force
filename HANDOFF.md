@@ -25,7 +25,7 @@ reference scenes.
 
 | Screen | State |
 |---|---|
-| Home / class select | Ported from `docs/reference/`. **Not signed off by eye.** |
+| Home / class select | Ported from `docs/reference/` and **compared against it on screen.** |
 | Level-up | Built. |
 | Pause | Built. |
 | Results | Built. |
@@ -35,17 +35,16 @@ reference scenes.
 
 ### The immediate next task
 
-**Look at it.** Nothing in this project has been signed off by eye since the
-scenes landed, because the browser pane was not displayed for the session that
-built them. Everything is verified structurally — layer counts, computed styles,
-measured sprite geometry, 131 passing tests — and none of that is the same as
-looking.
+**Play it.** Every screen is built and both scenes have been compared against
+the reference on screen. What has never happened is a person holding the
+controls since the art landed, and that is now the only milestone left.
 
-Open `npm run dev` next to `docs/reference/Whitacre Yard at Dusk.html` and
-`Whitacre Field at Dusk.html` and compare directly. `F1` toggles the dev
-overlay; the scene toggle bottom-right flips backdrops without a reload, and you
-need it — the two scenes are composed differently and only one is on screen at a
-time.
+To compare a scene against its reference again: the two `docs/reference/*.html`
+files will not load through the Vite dev server — Vite tries to transform them
+as HTML entries and throws a parse overlay over the game. Serve them from a
+throwaway static server on another port instead. `F1` toggles the dev overlay;
+the scene toggle bottom-right flips backdrops without a reload, and you need it —
+the two scenes are composed differently and only one is on screen at a time.
 
 ### The one thing that has gone wrong twice, in the same way
 
@@ -149,22 +148,22 @@ without grinding to it.
 
 ## Outstanding, roughly in order
 
-1. **Sign off both scenes** against `docs/reference/`. Nothing else is blocked
-   on this, but nothing else should be trusted before it.
-2. **A human playtest.** Still nobody has held the controls since the art
+1. **A human playtest.** Still nobody has held the controls since the art
    landed, and the last time one did they found a blocking bug no test caught.
-3. **Cut in the art that is generated and staged** — the oak, the Whitacre bull,
-   the barn dog, the gas cloud, the crop duster, the salt ring. All sitting in
-   `assets/pixellab/picked/`, none wired.
-4. **The Post Auger and the Combine Head want a ladder of four**, not the one
-   icon each that exists. Deciding what a tier means for a farm tool is a design
-   call, not a generation.
-5. **Infected livestock are still ordinary animals** with a CSS filter. Side
-   views are generated; they need the 8-direction and walk passes.
-6. **The owner's own animals** — a fjord pony, an arabian, a draft mule, a
+   This is also M8's acceptance criterion — "a competent player clears Tier 1 in
+   about six runs" — and it is the only milestone left.
+2. **Two staged sprites want a renderer change, not a card slot.** The gas cloud
+   and the salt-ring decal are trimmed in `assets/pixellab/picked/` and wired to
+   nothing, because the FX they would replace are animated clips rather than
+   static frames. Threshing Floor is the one item still on borrowed art and has
+   nothing generated for it at all.
+3. **Infected livestock are still ordinary animals** with a CSS filter. Side
+   views for the hen, rooster, hog and sheep are generated; they need the
+   8-direction and walk passes.
+4. **The owner's own animals** — a fjord pony, an arabian, a draft mule, a
    donkey — are generated as side views and wired to nothing. See
    `_ranchRoster` in the queue.
-7. **M7 meta progression is built and untested by real play** — save, acres,
+5. **M7 meta progression is built and untested by real play** — save, acres,
    four Homestead buildings, six classes, County Fair tiers.
 
 **If a generation comes back refused, check WHICH layer refused it.** One did,

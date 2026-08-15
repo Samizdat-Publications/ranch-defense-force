@@ -124,12 +124,26 @@ auger, a combine head, and the owner's own animals — a fjord pony, an arabian,
 draft mule and a donkey. A side view is a reference, not an enemy; see
 `art/pixellab-queue.json` for what each still needs.
 
-**The post auger and the combine head are still flagged `_standInArt` on
-purpose.** Both weapons carry a four-rung tier ladder borrowed from the pickaxe
-and the axe, and one icon replaces one rung. A weapon showing a real auger at T1
-and a pickaxe at T2 is worse than one honestly borrowed throughout. They want a
-ladder of four, and that is a design call about what a tier means for a tool
-rather than a generation.
+**The post auger and the combine head have real four-rung ladders now**, and
+the way they were made is the point. Each rung was generated FROM the rung below
+it as a `reference_images` URL pointing at this repo's own raw.githubusercontent
+path — the repo is public, so it is its own asset host — with the description
+changing only the material. Generated independently they would have been four
+unrelated tools; referenced, they are one tool at four qualities.
+
+The ladder is wear and quality rather than the pickaxe's stone/iron/gold/
+titanium, because gold is a silly thing for a fence auger to be made of:
+**rusted iron, clean steel, blackened hardened steel, polished chrome.**
+
+Two rungs had to be re-picked or re-run, and both were caught by looking rather
+than by measuring. `brass crank handle` on the auger's T4 dragged an orange
+squash out of the style anchor into all sixteen candidates; dropping `detail`
+from `style_copy` and the colour word fixed it, which is the second time that
+exact fix has worked. And the first T3 pick read as T2 with a wooden grip rather
+than as an escalation — a ladder has to be judged as a ladder, so `tools/`
+grew a throwaway contact-sheet script to put all four side by side on a grey
+field. Judging rungs one at a time is how you get four fine icons that are not
+a progression.
 
 ### Three things about PixelLab that cost something to learn
 
@@ -207,8 +221,9 @@ So: **ElevenLabs for effects, Lyria for music.** `npm run audio` runs both.
 
 ## Not everything should be a recording
 
-Nine effects are generated and seven are still synthesised, chosen per sound in
-`audio.json`. **Physical** sounds — gunfire, impacts, stone, a bull scraping
+Twenty-six effects are generated and thirteen are still synthesised, chosen per
+sound in `audio.json`. (This entry originally said nine and seven; the roster
+grew and the line went stale.) **Physical** sounds — gunfire, impacts, stone, a bull scraping
 dirt — are unambiguously better from a real generator. **Arcade feedback** — an
 XP pickup, a level-up flourish, a UI blip — is not a real-world sound at all,
 and a realistic recording of one fights the pixel art rather than serving it.
