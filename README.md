@@ -80,3 +80,11 @@ resolution, seeded RNG, tick order) are in [CLAUDE.md](CLAUDE.md).
 ## Credits
 
 Art by [LimeZu](https://limezu.itch.io/).
+
+Music by **Abstraction** — three tracks from the
+[Music Loop Bundle](https://tallbeard.itch.io/music-loop-bundle) by Benjamin
+Burnes / Tallbeard Studios, released CC-0. Credit is not required by that
+licence; it is here because the work deserves it.
+
+Sound effects generated with [ElevenLabs](https://elevenlabs.io/); character and
+item art generated with [PixelLab](https://pixellab.ai/).

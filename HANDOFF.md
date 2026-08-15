@@ -157,12 +157,19 @@ without grinding to it.
    nothing, because the FX they would replace are animated clips rather than
    static frames. Threshing Floor is the one item still on borrowed art and has
    nothing generated for it at all.
-3. **Infected livestock are still ordinary animals** with a CSS filter. Side
-   views for the hen, rooster, hog and sheep are generated; they need the
-   8-direction and walk passes.
-4. **The owner's own animals** — a fjord pony, an arabian, a draft mule, a
-   donkey — are generated as side views and wired to nothing. See
-   `_ranchRoster` in the queue.
+3. **Ten animals are finished as art and not packed.** Eight rotations and a
+   nine-frame walk in each of eight directions, in
+   `assets/pixellab/object/<name>/`: the fjord pony, arabian, draft mule and
+   donkey; the Barn Dog and the Whitacre Bull; and the four infected livestock.
+   Nothing references any of it. **This is the single biggest ready-to-go item
+   on the list**, and what remains is engineering rather than generation — see
+   `_howToWireIt` in the queue. Four small decisions have to be made rather than
+   guessed: the compass→game direction mapping (a fourth distinct order in this
+   project), four directions or eight, nine frames against LimeZu's six, and
+   56–68px sprites against LimeZu's 46–54 wide by 32–40 tall.
+4. **Listen to the new music in a real run.** The three CC-0 tracks were chosen
+   from the pack's metadata — tags, energy, duration, the author's own score —
+   which means they were chosen by reading, not by ear.
 5. **M7 meta progression is built and untested by real play** — save, acres,
    four Homestead buildings, six classes, County Fair tiers.
 

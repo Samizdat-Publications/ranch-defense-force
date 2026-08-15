@@ -102,7 +102,17 @@ four Homestead building signs** are real art now. So is the yard's rooster, and
 so are the oaks — the field's treeline was a band of CSS mounds standing in for
 trees that did not exist yet, and it is real trees at 1x now.
 
-Infected livestock are still ordinary animals. The infected **farmhand** is
+**The soundtrack is three CC-0 tracks by Abstraction** (Music Loop Bundle),
+replacing the Lyria clips. OGG rather than MP3 because MP3 will not loop
+seamlessly, and every layer loops for as long as a wave lasts. Credit is on the
+title screen and in the README.
+
+**Ten animals have eight rotations and an eight-direction walk** in
+assets/pixellab/object/ and NONE of it is packed. See _howToWireIt in the queue:
+four decisions have to be made rather than guessed, starting with the direction
+mapping, which is the fourth distinct order in this project.
+
+Infected livestock are still ordinary animals IN GAME. The infected **farmhand** is
 real — generated, and the enemy you see most in a run. Side views for the
 infected hen, rooster, hog and sheep are generated and staged in
 `assets/pixellab/picked/`; they are references for the 8-direction pass, not

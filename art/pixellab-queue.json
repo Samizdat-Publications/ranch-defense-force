@@ -170,27 +170,27 @@
  "_pickNote": "npm run fetch -- <job-id> <name> pulls every candidate plus a 4-across contact sheet into assets/pixellab/sheets/<name>/. Look at the contact sheet, then npm run cut -- single <sheet>/<name>_NN.png assets/pixellab/picked/<name>.png. Keep every candidate: they are paid for, and the first cell picked has more than once not been the best one.",
  "_ranchRoster": {
   "_note": "THE OWNER'S OWN ANIMALS. These are real animals on a real ranch and the point is that the game has them in it. Side views are GENERATED AND STAGED in assets/pixellab/picked/ -- fjord_pony, arabian_horse, draft_mule, donkey, rooster_big. rooster_big is wired (the yard scene). The other four are not wired to anything yet, deliberately: a side view is a reference, not an enemy.",
-  "_whatIsMissing": "THE WALK. All ten animals have eight rotations in assets/pixellab/object/<name>/ and none of them move. animate_object(mode=\"v3\") is the next step and it animates all eight directions in one call. Until then these cannot be enemies: a static sprite in a game whose renderer advances walk frames by DISTANCE TRAVELLED would slide across the ground, which reads worse than the placeholder it replaces.",
+  "_whatIsMissing": "PACKING AND WIRING. All ten animals are complete as ART -- eight rotations and a nine-frame walk in each of eight directions, in assets/pixellab/object/<name>/. None of it is in the atlas and nothing references it. What is left is engineering, not generation.",
   "_sizeRule": "Field art ends at 32x32. These were generated at 64 for the candidate count; unzoom or regenerate at 32 before packing, and do NOT scale a 64px sprite down in CSS -- it breaks the pixel grid.",
   "animals": [
    {
     "name": "fjord_pony",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "white/blonde fjord pony, thick upright mane"
    },
    {
     "name": "arabian_horse",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "bay arabian, arched neck, high tail"
    },
    {
     "name": "draft_mule",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "big black draft mule"
    },
    {
     "name": "donkey",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "small grey donkey"
    },
    {
@@ -200,36 +200,43 @@
    },
    {
     "name": "barn_dog",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "the Barn Dog weapon minion"
    },
    {
     "name": "whitacre_bull",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "the Whitacre Bull legendary minion"
    },
    {
     "name": "infected_hen",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "enemy roster"
    },
    {
     "name": "infected_rooster",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "enemy roster"
    },
    {
     "name": "infected_hog",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "enemy roster"
    },
    {
     "name": "infected_sheep",
-    "state": "8 rotations done, NO walk yet",
+    "state": "8 rotations + 8-direction walk (72 frames). NOT PACKED.",
     "want": "enemy roster"
    }
   ],
-  "_thenWhat": "After the walk: map PixelLab compass (south, south-west, west, north-west, north, north-east, east, south-east) onto the game order. That is a FOURTH direction order in this project after the humanoids, the animals and the tractor -- measure it, do not assume it. Then pack as a directional sheet and add it to art/sprites.json."
+  "_thenWhat": "After the walk: map PixelLab compass (south, south-west, west, north-west, north, north-east, east, south-east) onto the game order. That is a FOURTH direction order in this project after the humanoids, the animals and the tractor -- measure it, do not assume it. Then pack as a directional sheet and add it to art/sprites.json.",
+  "_howToWireIt": [
+   "MEASURE THE DIRECTION MAPPING FIRST. PixelLab returns south, south-west, west, north-west, north, north-east, east, south-east. The game renders four directions and its own three sheet families already use three DIFFERENT orders. This is the fourth. Do not assume it.",
+   "Decide four or eight. The renderer picks a direction bucket from the enemy's velocity; going to eight is a change there, not in the art. Four (dropping the diagonals) ships sooner and wastes half of what was generated.",
+   "Frame count differs from everything else in the atlas. These walks are NINE frames per direction because v3 keeps the input frame as frame 0; the LimeZu animals are six. atlas.json already emits per-sheet clip lengths for exactly this reason.",
+   "Size: 56-68px against LimeZu animals at 46-54 wide and 32-40 tall. These stand upright where LimeZu draws flatter. Put one next to a pig at game zoom before committing.",
+   "Then: a sprites.json group, npm run atlas, and an enemies.json entry pointing at the new keys."
+  ]
  },
  "_horrorPlan": {
   "_note": "MAKE THE WHOLE CAST SCARY, the way the farmhand already is. The infected farmhand is the one piece of this that is finished and it is the enemy you see most in a run; everything else infected is still an ordinary animal wearing a CSS filter, and it looks like it.",
@@ -273,12 +280,10 @@
  },
  "_classifierNote": "A generation request for the Boot Knife was once refused by the CLAUDE CODE permission classifier -- the agent harness, not PixelLab. The prompt never reached the API. Retrying the identical request went straight through and returned sixteen good knives. If a generation is refused, check WHICH layer refused it before rewriting the prompt: the wording was never the problem.",
  "_musicTodo": {
-  "_note": "LATER, not now. Swap the three Lyria clips for real composed loops.",
-  "_candidate": "Tallbeard Studios / Abstraction \"Music Loop Bundle\" -- https://tallbeard.itch.io/music-loop-bundle. CC-0, free, 200+ loops. The only licence-clean pack surveyed: every other candidate (both horse packs, both admurin monster packs, both JDSherbert UI packs, the Echoes kit) forbids redistribution, which THIS PUBLIC REPO cannot honour if the files live in assets/.",
-  "_whatWeHaveNow": "Three Lyria clips in public/audio/, one per layer (field, combat, boss), all the same length. Generated from prompts in src/content/audio.json, which stays the source of truth.",
-  "_theWork": "Listening to 200 loops and picking three or four that fit a farm-horror bullet-heaven is taste, not mechanics. Pick first, then it is a five-minute wiring job: drop the files in public/audio/ under the existing names and the loader finds them.",
-  "_credit": "Abstraction asks for attribution by name with a link. The title screen already credits LimeZu; this would join it.",
-  "_doNotBuy": "The two JDSherbert UI packs and the Echoes kit were evaluated and rejected. We synthesise all thirteen UI blips in-browser from five numbers each in audio.json, at zero download and with no credit obligation, and the twenty-six physical effects were prompted for THIS game rather than picked from a general library."
+  "_status": "DONE. Landed as public/audio/music-{field,combat,boss}.ogg.",
+  "_what": "Three CC-0 tracks by Abstraction from the Music Loop Bundle. See src/content/audio.json.",
+  "_oggNotMp3": "The pack author warns that MP3 will not loop seamlessly -- the format leaves a short gap at the loop point. Every layer loops for as long as a wave lasts, so that gap would be audible dozens of times a run. The loader takes its filename from content, so this was a JSON change with no code change at all.",
+  "_leftToDo": "Listen to them in a real run. They were chosen from the pack's own metadata -- tags, energy, duration, the author's own score -- and by reading, not by ear. The choice of a 64s ambient spooky bed for the field and an 85s dnb for combat is a judgement that should be checked against actual play."
  },
  "_licenceRule": "THE REPO IS PUBLIC, so committing a pack to assets/ IS redistribution -- the exact deadlock that kept this repo private through M0-M5 until LimeZu gave written permission. Almost every itch.io pack forbids redistribution while allowing use in a project. If one is ever wanted: gitignore its assets/ subfolder. The atlas and public/audio/ are already generated and gitignored, so the build output ships (which those licences allow) and nothing licensed enters the public repo. The cost is that a fresh clone cannot rebuild without the packs on disk.",
  "_eightDirNotes": {
@@ -286,6 +291,8 @@
   "identity": "The tool warns that reference identity transfer is unreliable for CHARACTER sprites. It held perfectly for all ten ANIMALS -- every ring is recognisably the same animal as the side view it was generated from. Do not extrapolate to humanoids; the docs say use create_character (mode=v3) for those.",
   "size": "Output size comes from the reference image and cannot be set alongside it. Ours came back 56-68px. The game's existing LimeZu animals measure 46-54px wide and 32-40px TALL, so these are noticeably taller -- they stand upright where LimeZu's are drawn at a flatter top-down angle. Stand one next to a pig before committing them to the field.",
   "transitBug": "reference_image_base64 IS INTERMITTENTLY TRUNCATED IN TRANSIT. The error says \"broken data stream\" and reports the full byte count, so it reads like a corrupt file when it is not -- the same file opens fine in PIL locally. It is NOT size-related: 814, 1424, 1938 and 2149 byte payloads succeeded while 1365, 2098 and 3898 byte ones failed, and one file failed twice then succeeded unchanged. JUST RETRY. Re-encoding through PIL, or quantising to the LimeZu palette, shortens the payload and makes a retry likelier to land -- and quantising conforms the art on the way in as a bonus.",
-  "horrorNote": "The four infected rings came back only mildly diseased -- the hog reads as a spotted pig and the sheep as an ordinary sheep in grey. They are not frightening. The prompts carried the horror (\"diseased\", \"red eyes\", \"matted\") and the model mostly ignored it in favour of the reference. Getting a genuinely horrific cast is a direction problem, not a throughput one."
+  "horrorNote": "The four infected rings came back only mildly diseased -- the hog reads as a spotted pig and the sheep as an ordinary sheep in grey. They are not frightening. The prompts carried the horror (\"diseased\", \"red eyes\", \"matted\") and the model mostly ignored it in favour of the reference. Getting a genuinely horrific cast is a direction problem, not a throughput one.",
+  "animation": "animate_object(mode=\"v3\") costs ONE generation per direction -- eight for a full ring, against 160-320 for mode=\"pro\". Measured, not read: balance went 451 to 443 across one animal. It queues one job per direction, so a single call consumes the whole 8-job concurrency limit and animals have to be animated one at a time, about four minutes each.",
+  "download": "\"npm run object -- <object-id> <name>\" pulls the whole object as a zip from /mcp/objects/<id>/download -- rotations and every animation frame in named folders -- and writes _ring.png plus a _walk_<dir>.png strip per direction. The zip is read in-process rather than shelled out: this machine's tar is GNU tar, which does not read zips at all, and whether `unzip` exists varies. Zip's central directory is forty lines to walk and the entries are raw-deflated, which Node's zlib already does for the PNG codec."
  }
 }

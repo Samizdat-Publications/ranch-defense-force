@@ -173,6 +173,87 @@ rewriting the prompt — the wording was never the problem.
 4-across contact sheet, because the REST API returns candidates as separate files
 and there is no grid for `pixellab-cut grid` to slice.
 
+## The cast can turn now, and it can walk
+
+Ten animals have eight rotations and an eight-direction walk: the owner's own
+fjord pony, arabian, draft mule and donkey; the Barn Dog and the Whitacre Bull,
+both of which were borrowing a generic sprite; and the four infected livestock.
+
+**`create_8_direction_object` is the tool, not the character creator.** Each
+animal was generated FROM its own side view passed as `reference_image_base64`,
+so the ring is recognisably the same animal rather than a generic one — the
+fjord pony stays white and blonde, the mule black, the donkey small and grey.
+The tool's own docs warn that reference identity transfer is unreliable for
+CHARACTER sprites; it held for all ten ANIMALS. Do not extrapolate that to
+humanoids.
+
+**Animation is one generation per direction.** `animate_object(mode="v3")` cost
+eight generations for a full eight-direction walk, against the 160–320 that
+`mode="pro"` would have cost. Measured rather than read: the balance moved 451
+to 443 across one animal. It queues one job per direction, which is the entire
+8-job concurrency limit, so animals animate one at a time at about four minutes
+each.
+
+### Two instruments were wrong before the game was, again
+
+- **`reference_image_base64` is intermittently truncated in transit.** The error
+  says "broken data stream" and reports the full byte count, so it reads like a
+  corrupt file — and the same file opens fine in PIL locally. It is not
+  size-related: payloads of 814, 1424, 1938 and 2149 bytes went through while
+  1365, 2098 and 3898 byte ones did not, and one file failed twice then
+  succeeded unchanged. **Retry.** Quantising through `conform-fx`'s LimeZu
+  palette shortens the payload, makes a retry likelier to land, and conforms the
+  art on the way in as a bonus.
+- **`tar` here is GNU tar, which does not read zips at all.** The object
+  download is a zip; the first version of `npm run object` shelled out to `tar`
+  and got "This does not look like a tar archive". Zip's central directory is
+  forty lines to walk and its entries are raw-deflated, which Node's zlib
+  already does for the PNG codec — so it is read in-process now and cannot be
+  broken by a PATH.
+
+**`npm run object` writes a `_ring.png` and a `_walk_<dir>.png` per direction,
+and that is the point of it.** The failure mode of an eight-way rotation is not
+a bad frame, it is ONE DIRECTION that does not belong to the same animal as the
+other seven — invisible one frame at a time, obvious on a strip.
+
+**None of it is packed or wired, deliberately.** The renderer advances walk
+frames by distance travelled, so a static sprite would skate across the ground:
+worse than the placeholder it replaces. And these walks are NINE frames per
+direction where the LimeZu animals are six, at 56–68px where LimeZu's are 46–54
+wide and 32–40 tall, in a compass order that is the fourth distinct direction
+order in this project. Each of those is a small decision and none of them should
+be guessed. `_howToWireIt` in the queue lists them.
+
+## The soundtrack is licensed now, not generated
+
+Three CC-0 tracks by **Abstraction** (Benjamin Burnes / Tallbeard Studios) from
+the Music Loop Bundle replace the three Lyria clips: an ambient-spooky bed for
+the field, an 85-second drum-and-bass for combat, and the pack's heaviest
+non-chiptune track for the boss. Chosen from the pack's own metadata — tags,
+energy, duration, the author's score — which means they were chosen by reading
+and still want checking by ear in a real run.
+
+**OGG, not MP3, and that is the pack author's own instruction:** MP3 leaves a
+short gap at the loop point that is very hard to remove, and every layer here
+loops for as long as a wave lasts. The loader takes its filename from content,
+so this was a JSON edit with no code change.
+
+The prompts stay in `audio.json`. They no longer describe what plays, but they
+still describe what each layer is FOR, and they are the brief if the soundtrack
+is ever regenerated. `npm run music` would now write `.mp3` files that nothing
+points at — noted in the file so the next person does not wonder.
+
+**One clean licence out of ten packs surveyed.** Both horse packs, both admurin
+monster packs, both JDSherbert UI packs and the Echoes kit all forbid
+redistribution, and this repo is public — committing them to `assets/` *is*
+redistribution. That is the same deadlock that kept this repo private through
+M0–M5. The rule and the workaround (gitignore the pack, ship only the generated
+atlas) are written down in the queue under `_licenceRule`.
+
+The two JDSherbert UI packs were also simply not needed: eleven and fourteen
+distinct sounds, all UI blips, against thirteen we already synthesise in-browser
+from five numbers each at zero download and no credit obligation.
+
 ## There is one map, and the seed does not choose it
 
 Asked directly, and worth writing down because the answer is not what it looks

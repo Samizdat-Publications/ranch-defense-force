@@ -1,12 +1,12 @@
 {
-  "_note": "Every sound in the game (\u00a76 of MILESTONES: sixteen sounds, three music layers). Sound EFFECTS are synthesised in the browser from the specs below; MUSIC is generated offline by Lyria and shipped as files. See _whyNote.",
-  "_whyNote": "Gemini has Lyria 3 for music and TTS for speech, and NO dedicated sound-effects model \u2014 checked against the API docs, not assumed. Prompting a music model for a 90ms shotgun report gets you a short piece of music about a shotgun. So effects are synthesised: oscillators, noise and envelopes through Web Audio. That is also the better answer for this game. It matches the architecture already here (a hand-written PNG codec rather than sharp, an atlas built from a manifest), it adds no dependency and no download, every sound is a few numbers you can tune in this file, and retro synthesis is stylistically right for pixel art in a way a recorded sample is not.",
-  "_specNote": "wave: sine|square|saw|triangle|noise. freq/freqTo sweep over the sound's life. decay is seconds. Sounds are polyphonic and rate-limited per key so sixty hits in a frame do not stack into a wall \u2014 see limitPerSecond.",
+  "_note": "Every sound in the game (§6 of MILESTONES: sixteen sounds, three music layers). Sound EFFECTS are synthesised in the browser from the specs below; MUSIC is generated offline by Lyria and shipped as files. See _whyNote.",
+  "_whyNote": "Gemini has Lyria 3 for music and TTS for speech, and NO dedicated sound-effects model — checked against the API docs, not assumed. Prompting a music model for a 90ms shotgun report gets you a short piece of music about a shotgun. So effects are synthesised: oscillators, noise and envelopes through Web Audio. That is also the better answer for this game. It matches the architecture already here (a hand-written PNG codec rather than sharp, an atlas built from a manifest), it adds no dependency and no download, every sound is a few numbers you can tune in this file, and retro synthesis is stylistically right for pixel art in a way a recorded sample is not.",
+  "_specNote": "wave: sine|square|saw|triangle|noise. freq/freqTo sweep over the sound's life. decay is seconds. Sounds are polyphonic and rate-limited per key so sixty hits in a frame do not stack into a wall — see limitPerSecond.",
   "master": {
     "sfxVolume": 0.45,
     "musicVolume": 0.32,
     "_muteNote": "Both persist to localStorage under rdf.audio so a muted player stays muted.",
-    "_sampleGainNote": "Generated samples arrive normalised to roughly full scale, while the synth path peaks far lower for the same `gain` value \u2014 measured 1.0 against about 0.12. Reusing one gain for both would make every sampled effect about twice as loud as its synthesised neighbour and clip when several overlap. Sample playback is scaled by this instead of retuning sixteen hand-set gains.",
+    "_sampleGainNote": "Generated samples arrive normalised to roughly full scale, while the synth path peaks far lower for the same `gain` value — measured 1.0 against about 0.12. Reusing one gain for both would make every sampled effect about twice as loud as its synthesised neighbour and clip when several overlap. Sample playback is scaled by this instead of retuning sixteen hand-set gains.",
     "sampleGainScale": 0.5
   },
   "sfx": {
@@ -37,7 +37,7 @@
       "prompt": "A heavy hunting rifle firing once. Deep crack with a short low thump, dry, no echo, no music."
     },
     "swing": {
-      "_note": "Pitchfork and Sledge. A whoosh, not an impact \u2014 the impact is a separate sound and they must not merge.",
+      "_note": "Pitchfork and Sledge. A whoosh, not an impact — the impact is a separate sound and they must not merge.",
       "wave": "noise",
       "freq": 2600,
       "freqTo": 900,
@@ -121,7 +121,7 @@
       "source": "synth"
     },
     "mine": {
-      "_note": "The pickaxe tick. Quiet and frequent \u2014 it is a texture that tells you the tool is working, not an event.",
+      "_note": "The pickaxe tick. Quiet and frequent — it is a texture that tells you the tool is working, not an event.",
       "wave": "noise",
       "freq": 1400,
       "freqTo": 500,
@@ -154,11 +154,11 @@
       "limitPerSecond": 6,
       "source": "elevenlabs",
       "file": "sfx-explosion.mp3",
-      "durationSeconds": 1.0,
+      "durationSeconds": 1,
       "prompt": "A compact explosion in an open field. Sharp blast with a short low rumble, no long tail, no music."
     },
     "bossTell": {
-      "_note": "The Bull pawing the ground. Low, rising, and long enough to react to \u2014 \u00a79 wants every attack telegraphed.",
+      "_note": "The Bull pawing the ground. Low, rising, and long enough to react to — §9 wants every attack telegraphed.",
       "wave": "saw",
       "freq": 90,
       "freqTo": 200,
@@ -200,7 +200,7 @@
       "file": "sfx-shootLauncher.mp3",
       "durationSeconds": 0.8,
       "prompt": "A loud grenade launcher firing. Deep hollow THUMP with a metallic clank, punchy and immediate, close-miked. Single shot, dry, no reverb.",
-      "_gainNote": "Generated quiet (peak 0.05 against most effects' 0.9). Compensated here rather than spending another generation on it \u2014 gain is free, credits are not."
+      "_gainNote": "Generated quiet (peak 0.05 against most effects' 0.9). Compensated here rather than spending another generation on it — gain is free, credits are not."
     },
     "shootBurst": {
       "_note": "Drum Gun. Heard in bursts, so it must stay tight.",
@@ -448,13 +448,13 @@
       "wave": "triangle",
       "freq": 520,
       "freqTo": 1560,
-      "decay": 1.0,
+      "decay": 1,
       "gain": 0.5,
       "limitPerSecond": 1,
       "source": "synth"
     },
     "bossDeath": {
-      "_note": "The Duster does not explode (\u00a79) \u2014 it coughs and stops.",
+      "_note": "The Duster does not explode (§9) — it coughs and stops.",
       "wave": "noise",
       "freq": 400,
       "freqTo": 60,
@@ -463,35 +463,44 @@
       "limitPerSecond": 1,
       "source": "elevenlabs",
       "file": "sfx-bossDeath.mp3",
-      "durationSeconds": 2.0,
+      "durationSeconds": 2,
       "prompt": "A large diesel engine coughing, sputtering and dying. Mechanical failure winding down to silence, no music."
     }
   },
   "music": {
-    "_note": "Three layers (\u00a76). Generated offline by `npm run music` with Lyria 3 and committed to public/audio as mp3 \u2014 a music model is the right tool for music, and generating it at runtime would be a network call in a game loop. Layers cross-fade rather than cut.",
+    "_note": "Three layers (§6). The soundtrack is three CC-0 tracks by Abstraction (Benjamin Burnes, Tallbeard Studios) from the Music Loop Bundle, https://tallbeard.itch.io/music-loop-bundle. Public domain: commercial use and modification both permitted, credit not required. Credit is given anyway, under the artist name Abstraction, on the title screen and in the README. Layers cross-fade rather than cut.",
     "_promptNote": "These prompts are the source of truth for the soundtrack. Re-running the tool regenerates from them; tune the prose, not the audio.",
     "crossfadeSeconds": 2.5,
     "layers": {
       "field": {
-        "file": "music-field.mp3",
+        "file": "music-field.ogg",
         "_when": "Waves 1-11. The farm is still a farm.",
-        "prompt": "Sparse, unhurried instrumental Americana. Fingerpicked acoustic guitar and a lonely pedal steel over a slow brushed snare. Warm, rural, slightly melancholy, like an empty field at dusk. No vocals. Loopable, steady tempo around 84 BPM, no dramatic build."
+        "prompt": "Sparse, unhurried instrumental Americana. Fingerpicked acoustic guitar and a lonely pedal steel over a slow brushed snare. Warm, rural, slightly melancholy, like an empty field at dusk. No vocals. Loopable, steady tempo around 84 BPM, no dramatic build.",
+        "_track": "Abstraction — Ludum Dare 32 05 (ambient/spooky, 64s)",
+        "_why": "Chosen for the quiet-dread end of the pack rather than the pretty end. The farm is still a farm in waves 1-11 and the music should be the thing that says it is not going to stay one."
       },
       "combat": {
-        "file": "music-combat.mp3",
+        "file": "music-combat.ogg",
         "_when": "Waves 12-24, and any wave with heavy pressure.",
-        "prompt": "Driving instrumental country-rock with menace. Palm-muted electric guitar riff, insistent kick and tambourine, low fiddle drone underneath. Rural horror, not action-movie heroics. No vocals. Loopable, around 128 BPM, relentless rather than building."
+        "prompt": "Driving instrumental country-rock with menace. Palm-muted electric guitar riff, insistent kick and tambourine, low fiddle drone underneath. Rural horror, not action-movie heroics. No vocals. Loopable, around 128 BPM, relentless rather than building.",
+        "_track": "Abstraction — Sketchbook 2024-02-07 (dnb, 85s)",
+        "_why": "The longest loop of the three at 85s, which matters more than it looks: a run is seventeen minutes and a 30s loop announces itself."
       },
       "boss": {
-        "file": "music-boss.mp3",
+        "file": "music-boss.ogg",
         "_when": "Wave 12 and wave 25.",
-        "prompt": "Heavy, slow, dread-filled instrumental. Detuned baritone guitar, groaning cello, sparse thunderous drum hits with lots of space between them. The sound of something very large and very patient. No vocals. Loopable, around 70 BPM, oppressive."
+        "prompt": "Heavy, slow, dread-filled instrumental. Detuned baritone guitar, groaning cello, sparse thunderous drum hits with lots of space between them. The sound of something very large and very patient. No vocals. Loopable, around 70 BPM, oppressive.",
+        "_track": "Abstraction — Sketchbook 2024-10-30 (electronic, 54s)",
+        "_why": "Highest energy in the pack that is not chiptune, which would read arcade rather than dread."
       }
-    }
+    },
+    "_formatNote": "OGG, NOT MP3, and this is the pack author’s own instruction: an MP3 will not loop seamlessly because the format leaves a short gap at the loop point that is very hard to remove. Every layer here loops for as long as a wave lasts, so that gap would be audible dozens of times in a run. Do not re-encode these to mp3 to save bytes.",
+    "_replacedNote": "These replace three Lyria 3 clips generated by \"npm run music\" from the prompts below. The prompts are KEPT: they still describe what each layer is FOR, and they are the brief if the soundtrack is ever regenerated. They are no longer the source of truth for what actually plays. Running \"npm run music\" now writes music-<layer>.mp3 alongside these and nothing points at them -- delete those or repoint `file` if you want the generated set back.",
+    "_sizeNote": "About 6.9MB across the three, against 2.2MB for the Lyria mp3s they replace. That is the price of a seamless loop at this quality and it is paid once, on demand: the loader fetches a layer the first time it is needed, not at boot, and a failed fetch is remembered so it does not retry every wave. Missing music has never been an error here -- the game just runs quiet."
   },
-  "_sourceNote": "Each effect declares its source. ElevenLabs has a purpose-built text-to-sound-effects API and Gemini does not, so PHYSICAL sounds \u2014 gunfire, impacts, stone, a bull scraping dirt \u2014 are generated there, where a real generator beats an oscillator outright. ARCADE feedback stays synthesised on purpose: an XP pickup, a level-up flourish and a UI blip are not real-world sounds, and a realistic recording of one would fight the pixel art rather than serve it. Vampire Survivors and Brotato both use synthetic blips for exactly this reason.",
+  "_sourceNote": "Each effect declares its source. ElevenLabs has a purpose-built text-to-sound-effects API and Gemini does not, so PHYSICAL sounds — gunfire, impacts, stone, a bull scraping dirt — are generated there, where a real generator beats an oscillator outright. ARCADE feedback stays synthesised on purpose: an XP pickup, a level-up flourish and a UI blip are not real-world sounds, and a realistic recording of one would fight the pixel art rather than serve it. Vampire Survivors and Brotato both use synthetic blips for exactly this reason.",
   "_fallbackNote": "EVERY sound keeps its synth spec, including the ElevenLabs ones. The engine prefers a loaded sample and falls back to synthesis when the file is absent, so the game is fully audible with no API key at all and degrades one sound at a time rather than going silent.",
   "_durationNote": "ElevenLabs enforces a 0.5s minimum, and several of these want to be 70ms. The generated file therefore carries trailing silence; that is harmless because playback is one-shot and the decay is in the audio.",
   "_countNote": "Thirty-eight effects. The milestone asks for sixteen; sixteen covers a game where every gun sounds the same. Each weapon has its own voice, each element announces itself, and the two abilities and both boss deaths are distinct, because a player who cannot hear which of six weapons just fired cannot tell what their build is doing.",
-  "_promptLessonNote": "shootLauncher first came back near-silent from a prompt built mostly of negatives (no explosion, no music). Describing what the sound IS, loudly and concretely, gets a usable file; listing what it is not gets an empty one. Worth checking new generations for silence \u2014 the tool cannot, since a valid MP3 of nothing is still a valid MP3."
+  "_promptLessonNote": "shootLauncher first came back near-silent from a prompt built mostly of negatives (no explosion, no music). Describing what the sound IS, loudly and concretely, gets a usable file; listing what it is not gets an empty one. Worth checking new generations for silence — the tool cannot, since a valid MP3 of nothing is still a valid MP3."
 }

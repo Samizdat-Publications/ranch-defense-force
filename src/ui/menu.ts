@@ -134,7 +134,7 @@ export class MenuScreen {
 
     const foot = el('div', { class: 'home-footbar' }, [
       el('span', { text: '24 WAVES · TWO BOSSES · WEAPONS FIRE THEMSELVES' }),
-      el('span', { text: 'ART BY LIMEZU · LIMEZU.ITCH.IO' }),
+      el('span', { text: 'ART BY LIMEZU · MUSIC BY ABSTRACTION' }),
     ])
 
     this.uiEl.append(title, playing, seedBox, door, rail, foot)
