@@ -1,0 +1,491 @@
+/* ===================================================================
+   THE HOME SCREEN'S PRINTED MATTER — all in 1920x1080 stage space
+   ===================================================================
+   Every number here is lifted from `Home Screen.dc.html` and
+   `Class Card.dc.html`. The interface scales with the scene because it
+   lives inside the same stage, which is why there is not a single
+   breakpoint or media query in this file.
+
+   Separate from home.css because that one owns the SCENE and this owns
+   the INTERFACE, and the first version of this screen went wrong
+   precisely by mixing the two: the scene came from the design and the
+   layout over it was mine.
+   =================================================================== */
+
+/* --- title block, left 80 / top 64 --- */
+.home-title-block {
+  position: absolute;
+  left: 80px;
+  top: 64px;
+  animation: title-in 900ms var(--ease-out) both;
+}
+
+.home-eyebrow {
+  font-family: var(--label);
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  color: #eec583;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
+  white-space: nowrap;
+}
+
+.home-title {
+  font-family: var(--display);
+  font-size: 92px;
+  line-height: 0.9;
+  margin: 10px 0 0;
+  color: #f8e9c6;
+  font-weight: 400;
+  text-shadow: 0 6px 0 #6b3a1c, 0 12px 28px rgba(0, 0, 0, 0.8);
+}
+
+.home-tagline {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  font-family: var(--body);
+  font-size: 16px;
+  color: #ecd8ac;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
+}
+
+.home-tagrule { width: 54px; height: 2px; background: var(--gold); }
+
+@keyframes title-in {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --- who you are playing, left 80 / top 388 / width 336 --- */
+.home-playing {
+  position: absolute;
+  left: 80px;
+  top: 388px;
+  width: 336px;
+  padding: 16px 18px;
+  background: var(--panel-dark);
+  border: 1px solid var(--rule-warm);
+  animation: card-in 700ms var(--ease-out) both 420ms;
+}
+
+.home-playing-label {
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+}
+
+.home-playing-name {
+  font-family: var(--display);
+  font-size: 30px;
+  color: var(--cream);
+  margin: 8px 0 0;
+}
+
+.home-playing-blurb {
+  font-family: var(--body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c2b193;
+  margin: 8px 0 0;
+}
+
+.home-playing-rule {
+  margin: 14px 0 0;
+  height: 0;
+  border-top: 1px dashed var(--rule-warm);
+}
+
+.home-playing-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.home-playing-row { display: grid; grid-template-columns: 62px 1fr; gap: 10px; }
+
+.home-playing-key {
+  font-family: var(--label);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+}
+
+.home-playing-val { font-family: var(--body); color: #d6c6a6; }
+
+/* --- the seed, left 80 / top 662 --- */
+.home-seedbox {
+  position: absolute;
+  left: 80px;
+  top: 662px;
+  display: flex;
+  align-items: stretch;
+  animation: card-in 700ms var(--ease-out) both 520ms;
+}
+
+.home-seed-field {
+  padding: 8px 14px;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+}
+
+.home-seed-label {
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: #5b4830;
+}
+
+.home-seed-input {
+  display: block;
+  margin-top: 4px;
+  width: 190px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.home-seed-input:focus { outline: none; }
+.home-seed-input::placeholder { color: rgba(51, 38, 26, 0.42); }
+
+.home-seed-new {
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--cream-2);
+  background: linear-gradient(180deg, #5d4b33, #3f3121);
+  border: 3px solid var(--paper-edge);
+  border-left: none;
+  padding: 0 15px;
+  cursor: pointer;
+}
+
+.home-seed-new:hover { filter: brightness(1.2); }
+.home-seed-new:active { transform: translateY(2px); }
+
+/* --- the Homestead, standing against the barn --- */
+.home-door {
+  position: absolute;
+  text-align: center;
+  animation: card-in 700ms var(--ease-out) both 860ms;
+}
+
+.home-door-btn {
+  font-family: var(--label);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #2b1d08;
+  background: var(--gold-brand);
+  border: 3px solid var(--paper-edge-gold);
+  box-shadow: 0 5px 0 var(--paper-edge-gold), 0 10px 22px rgba(0, 0, 0, 0.5);
+  padding: 11px 20px;
+  cursor: pointer;
+}
+
+.home-door-btn:hover { filter: brightness(1.1); }
+
+.home-door-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--paper-edge-gold);
+}
+
+.home-door-note {
+  margin-top: 7px;
+  font-family: var(--body);
+  font-size: 12px;
+  color: #e6d2ab;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.9);
+}
+
+/* --- the class rail, along the bottom edge --- */
+.home-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 52px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* --- the footer bar --- */
+.home-footbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
+  background: rgba(10, 9, 8, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted-2);
+}
+
+/* ===================================================================
+   THE CLASS CARD
+   ===================================================================
+   A different object from `.pcard`, per `Class Card.dc.html`: a keyword
+   band, a lit figure window with a horizon line, three read-off meters,
+   and a footer of ability and weapon.
+   =================================================================== */
+
+.hero {
+  position: relative;
+  width: 196px;
+  cursor: pointer;
+  animation: card-in 640ms var(--ease-out) both;
+  transition: transform 170ms ease-out, filter 170ms ease-out;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.62));
+}
+
+.hero:hover {
+  transform: translateY(-12px);
+  filter: brightness(1.07) drop-shadow(0 18px 24px rgba(0, 0, 0, 0.7));
+}
+
+/* The punched hang tab. */
+.hero-tab {
+  position: relative;
+  width: 92px;
+  height: 20px;
+  margin: 0 auto -3px;
+  background: #cbb68d;
+  border: 3px solid var(--paper-edge);
+  border-bottom: none;
+  clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+  display: grid;
+  place-items: center;
+}
+
+.hero-punch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #1b1610;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9);
+  margin-top: 4px;
+}
+
+.hero-body {
+  position: relative;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+  padding: 9px 10px 0;
+}
+
+/* Inner hairline and dotted stock. */
+.hero-body::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(64, 49, 31, 0.32);
+  pointer-events: none;
+}
+
+.hero-body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.13;
+  background-image: radial-gradient(#5a4630 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.hero-tag {
+  position: relative;
+  font-family: var(--label);
+  font-size: 7.5px;
+  letter-spacing: 0.11em;
+  color: var(--ink-band);
+  border-bottom: 2px solid rgba(64, 49, 31, 0.5);
+  padding-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.hero-window {
+  position: relative;
+  margin: 9px 0 0;
+  height: 120px;
+  background: radial-gradient(70% 74% at 50% 30%, #4a3d26 0%, #241d13 100%);
+  border: 3px solid var(--paper-edge);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+
+.hero-figure { position: absolute; left: 50%; margin-left: -48px; top: -38px; }
+
+.hero-horizon {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 14px;
+  height: 1px;
+  background: rgba(224, 160, 46, 0.2);
+}
+
+.hero-shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55));
+}
+
+/* The two nailed boards, with the figure still visible in the gap. */
+.hero-board {
+  position: absolute;
+  left: -12px;
+  right: -12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border-top: 2px solid #3b2b18;
+  border-bottom: 2px solid #241a0e;
+  display: grid;
+  place-items: center;
+}
+
+.hero-board-top {
+  top: 20px;
+  height: 26px;
+  background: linear-gradient(180deg, #8a6a42 0%, #5f472a 100%);
+  transform: rotate(-4deg);
+}
+
+.hero-board-bottom {
+  top: 78px;
+  height: 22px;
+  background: linear-gradient(180deg, #7e6039 0%, #543f26 100%);
+  transform: rotate(3deg);
+}
+
+.hero-price {
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #f2dcae;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.hero-name {
+  position: relative;
+  font-family: var(--display);
+  font-size: 19px;
+  line-height: 1.05;
+  color: var(--ink);
+  margin: 9px 0 0;
+  white-space: nowrap;
+}
+
+.hero-rule { position: relative; margin: 8px 0 0; height: 0; border-top: var(--perf); }
+
+.hero-bars {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0 0;
+}
+
+.hero-bar { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 7px; }
+
+.hero-bar-label {
+  font-family: var(--label);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  color: var(--ink-label);
+}
+
+.hero-bar-track {
+  position: relative;
+  height: 8px;
+  background: rgba(64, 49, 31, 0.28);
+  border: 1px solid rgba(64, 49, 31, 0.55);
+}
+
+.hero-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(90deg, #6b4a28 0 3px, #8a6134 3px 6px);
+}
+
+.hero-foot {
+  position: relative;
+  margin: 9px -10px 0;
+  padding: 6px 10px;
+  border-top: 2px solid rgba(64, 49, 31, 0.5);
+  background: rgba(64, 49, 31, 0.09);
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--label);
+  font-size: 7.5px;
+  letter-spacing: 0.09em;
+  color: #5b4830;
+}
+
+/* The selected card wears its own call to action. */
+.hero-taking {
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: -12px;
+  padding: 5px 0;
+  text-align: center;
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: #2b1d08;
+  background: var(--gold-brand);
+  border-top: 2px solid var(--paper-edge-gold);
+  border-bottom: 2px solid var(--paper-edge-gold);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.hero.is-selected .hero-body {
+  border-color: var(--paper-edge-gold);
+  background: var(--paper-bright);
+}
+
+.hero.is-selected .hero-tab { border-color: var(--paper-edge-gold); }
+.hero.is-locked .hero-body { background: var(--paper-dead); }
+.hero.is-locked .hero-figure { filter: brightness(0.55) saturate(0.6); }
+
+/* Dev-only backdrop toggle. Design calls this a reviewer control and does not
+   ship it; it is gated on import.meta.env.DEV in menu.ts. */
+.home-scene-toggle {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  font-family: var(--label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #cbbb9c;
+  background: rgba(10, 9, 8, 0.7);
+  border: 1px solid var(--rule-warm);
+  padding: 7px 11px;
+  cursor: pointer;
+}
+
+.home-scene-toggle:hover { color: #f0e2c4; border-color: var(--muted-2); }

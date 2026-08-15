@@ -197,7 +197,7 @@ function openHomestead(): void {
       homestead.close()
       state = 'menu'
       // A class bought in the Bunkhouse must be pickable the moment you leave it.
-      menu.setUnlocked(unlockedClasses(profile), classPrices())
+      menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
       menu.open()
     },
   )
@@ -256,7 +256,7 @@ function finishRun(cleared: boolean): void {
     () => startRun(currentClassId, ''),
     () => {
       state = 'menu'
-      menu.setUnlocked(unlockedClasses(profile), classPrices())
+      menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
       menu.open()
     },
     () => openHomestead(),
@@ -328,7 +328,7 @@ installRarityTheme(RARITY)
 resize()
 // The boot menu must reflect the save too, or the very first screen of a
 // session hands out every paid class for free.
-menu.setUnlocked(unlockedClasses(profile), classPrices())
+menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
 menu.open()
 loop.start()
 
@@ -344,7 +344,7 @@ Atlas.load(import.meta.env.BASE_URL)
     // existed and got null for every one of them — the home screen's yard came
     // up empty and its class cards came up as text. Anything that draws sprites
     // has to be rebuilt once the art is actually here.
-    menu.setUnlocked(unlockedClasses(profile), classPrices())
+    menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
     if (world) {
       // A run already started against no atlas: rebuild the renderer so it
       // picks up the art rather than staying square for the rest of the run.

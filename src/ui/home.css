@@ -61,7 +61,7 @@
    Everything inside is then absolute pixels in stage space, straight
    from PLACEMENTS.md. No percentages, no breakpoints.
 */
-.home-scene {
+.home-stagewrap {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -70,11 +70,22 @@
   margin: -540px 0 0 -960px;
   transform: scale(var(--scene, 1));
   transform-origin: center center;
-  pointer-events: none;
 }
 
-/* The bleed behind the letterbox: the scene's own edge colours, so the
-   leftover space reads as more room rather than as black bars. */
+.home-scene { position: absolute; inset: 0; pointer-events: none; }
+
+/* The interface, in the SAME 1920x1080 space as the scene. */
+.home-ui { position: absolute; inset: 0; }
+
+/*
+   The bleed behind the letterbox: the scene's own edge colours, so the
+   leftover space reads as more room rather than as black bars.
+
+   BOTH LAYERS ARE BEHIND THE STAGE. `::after` is generated as the last
+   child, so at equal z-index it paints last — the first version of this
+   covered the bottom half of the scene with a flat green rectangle and
+   took the foreground and the whole card rail with it.
+*/
 .home { background: var(--bleed-top); }
 
 .home::after {
@@ -86,11 +97,27 @@
   pointer-events: none;
 }
 
+.home-stagewrap { z-index: 1; }
+
+/*
+   The sky belongs to the SCENE, not to the page. It used to be a gradient
+   on `.home`, and pointing that at the flat bleed colour deleted it — the
+   scene rendered against a solid navy rectangle with no dusk in it at all.
+*/
 .home-yard {
   position: absolute;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  background:
+    linear-gradient(180deg, #191b36 0%, #2a2440 22%, #6b4a4a 46%, #b5763f 58%,
+                    #7d6a34 66%, #3d4a22 76%, #26331a 88%, #191d13 100%);
+}
+
+.home.is-field .home-yard {
+  background:
+    linear-gradient(180deg, #1d2140 0%, #2f2b4c 20%, #6d4d55 42%, #c08347 56%,
+                    #8a7238 64%, #46592c 74%, #2b3a1c 88%, #201e13 100%);
 }
 
 /* Buildings and props, absolute pixels in 1920x1080 stage space. */
@@ -143,207 +170,7 @@
   95% { opacity: 1; }
 }
 
-/* --- the printed matter on top --- */
-/*
-   The printed matter sits above the stage with a scrim behind it. Without
-   the scrim the class cards land on top of a barn and neither reads —
-   the yard is a backdrop, not a competitor.
-*/
-.home-inner {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 4vh 24px 0;
-  max-width: 1180px;
-  width: 100%;
-}
 
-.home-title {
-  font-family: var(--display);
-  font-size: clamp(34px, 5.4vw, 62px);
-  letter-spacing: 0.06em;
-  color: var(--cream);
-  margin: 0;
-  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.55), 0 0 26px rgba(224, 160, 64, 0.28);
-  animation: title-in 700ms var(--ease-out) both;
-}
-
-@keyframes title-in {
-  from { opacity: 0; transform: translateY(-14px); }
-  to { opacity: 1; transform: none; }
-}
-
-.home-sub {
-  font-family: var(--body);
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--muted);
-  max-width: 62ch;
-  text-align: center;
-  margin: 0;
-  animation: title-in 700ms var(--ease-out) 120ms both;
-}
-
-/*
-   Six cards, one row, no scroll and no compact variant. Once the stage
-   letterboxes the internal layout is always 1920 wide, so there is no
-   breakpoint to handle: 6x196 + 5x16 = 1256, centred, with 332px either
-   side. Design was blunt about the scroll — a picker you have to scroll
-   hides the thing you are asking the player to compare, and the card it
-   clipped was the locked Drifter, the most interesting one.
-*/
-.home-rail {
-  display: flex;
-  gap: 16px;
-  align-items: stretch;
-  justify-content: center;
-  flex-wrap: nowrap;
-  margin-top: 10px;
-}
-
-/* The class rail card is narrower than a level-up card, per the spec. */
-.home-rail .pcard { width: 196px; }
-
-.home-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.home-foot {
-  position: relative;
-  z-index: 10;
-  font-family: var(--label);
-  font-size: 8px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted-3);
-  text-align: center;
-  line-height: 2;
-  padding-bottom: 12px;
-}
-
-/* --- a locked class: a packet somebody nailed shut --- */
-/*
-   Not a black silhouette. You can see the figure through the gap
-   between two boards, and the price is branded on the top board — so a
-   locked class advertises itself instead of hiding.
-*/
-.pcard.is-nailed .pcard-window::before,
-.pcard.is-nailed .pcard-window::after {
-  content: '';
-  position: absolute;
-  left: -8%;
-  width: 116%;
-  height: 22px;
-  background: linear-gradient(180deg, #7a5a34, #4e3a20);
-  border-top: 2px solid #906b3e;
-  border-bottom: 2px solid #2e2213;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
-  z-index: 2;
-}
-
-.pcard.is-nailed .pcard-window::before { top: 26px; transform: rotate(-4deg); }
-.pcard.is-nailed .pcard-window::after { bottom: 26px; transform: rotate(3deg); }
-
-.pcard.is-nailed .card-sprite { filter: brightness(0.5) saturate(0.6); }
-
-.pcard-brand {
-  position: absolute;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%) rotate(-4deg);
-  z-index: 3;
-  font-family: var(--label);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: #f3d9a6;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
-  pointer-events: none;
-}
-
-/* --- the seed field, dressed as a filled-in form line --- */
-.home-seed {
-  font-family: var(--body);
-  font-size: 12px;
-  padding: 9px 12px;
-  background: rgba(10, 9, 8, 0.7);
-  border: 2px solid var(--rule-warm);
-  color: var(--cream-2);
-  min-width: 210px;
-}
-.home-seed::placeholder { color: var(--muted-3); }
-
-
-/* ===================================================================
-   THE FIELD — the second backdrop
-   ===================================================================
-   Two scenes ship and one is picked per load: the yard, which is where
-   you live, and the field, which is where you work. Same printed matter
-   on top; only what is behind it changes.
-
-   The field is a low horizon: a sun, three cloud layers drifting at
-   very different speeds, small distant buildings, and three bands of
-   crop scrolling toward the viewer at increasing size. The parallax is
-   the whole effect — the bands are 2x, 3x and 4x the same 32px tile,
-   and the nearest one moves fastest.
-   =================================================================== */
-
-.home.is-field {
-  background:
-    linear-gradient(180deg, #24304a 0%, #4a4a58 22%, #8a6a48 44%, #b5854a 56%, #6d7a3e 64%, #46592c 100%);
-}
-
-.field-sun {
-  position: absolute;
-  left: 34%; top: 22%;
-  width: 120px; height: 120px;
-  margin: -60px 0 0 -60px;
-  border-radius: 50%;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 226, 150, 0.95), rgba(240, 170, 70, 0.35) 55%, transparent 72%);
-  animation: field-sun 9s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes field-sun {
-  0%, 100% { transform: scale(1); opacity: 0.92; }
-  50% { transform: scale(1.06); opacity: 1; }
-}
-
-/* Cloud bands. Very slow, very different speeds — that difference is the
-   only thing telling you the sky has depth. */
-.field-cloud {
-  position: absolute;
-  left: -20%;
-  width: 140%;
-  height: 60px;
-  pointer-events: none;
-  background: radial-gradient(closest-side, rgba(238, 226, 200, 0.30), transparent 70%);
-  background-size: 340px 60px;
-  background-repeat: repeat-x;
-}
-
-@keyframes field-drift {
-  to { background-position: 1360px 0; }
-}
-
-/* Crop bands, nearest fastest. */
-.field-crop {
-  position: absolute;
-  left: -64px;
-  right: -64px;
-  image-rendering: pixelated;
-  background-repeat: repeat-x;
-  pointer-events: none;
-}
-
-@keyframes field-crop {
-  to { background-position: var(--crop-end) 0; }
-}
 
 /* --- scene animations, from PLACEMENTS.md --- */
 /*

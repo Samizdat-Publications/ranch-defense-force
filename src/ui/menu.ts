@@ -13,9 +13,8 @@
  * there from your first run, which is the whole reason the Bunkhouse has a
  * ladder worth climbing.
  */
-import { CLASSES, CLASS_IDS } from '../content'
+import { CLASSES, CLASS_IDS, WEAPONS } from '../content'
 import { clear, el } from './dom'
-import { card, deal } from './card'
 import { spriteEl, spriteTileUrl, frameOf } from './sprite'
 
 /**
@@ -110,68 +109,218 @@ const BLEED = {
   field: { top: '#1d2140', bottom: '#201e13' },
 }
 
+/** Where the Homestead call-out sits, per scene — the barn is in a different spot. */
+const DOOR = { yard: [832, 624], field: [822, 618] } as const
+
 export class MenuScreen {
   private readonly root: HTMLElement
+  private readonly stageEl: HTMLElement
+  private readonly uiEl: HTMLElement
   private readonly seedInput: HTMLInputElement
-  private readonly homesteadBtn: HTMLButtonElement
-  private cardsEl!: HTMLElement
-  private stageEl!: HTMLElement
   private selected = CLASS_IDS[0]
-  /** Which classes the save has paid for. Set by main before every open(). */
   private unlocked = new Set<string>(CLASS_IDS.filter((id) => CLASSES[id]?.unlocked === true))
-  /** id -> acre price, for the brand on a nailed packet. */
   private prices = new Map<string, number>()
-  /** Which backdrop this page load got. Fixed for the session, see `scene()`. */
-  private readonly isField = Math.random() < 0.5
+  private acres = 0
+  /** Which backdrop this load got. Mutable only via the dev toggle. */
+  private isField: boolean
 
   constructor(
     parent: HTMLElement,
     private readonly onStart: (classId: string, seed: string) => void,
-    onHomestead?: () => void,
+    private readonly onHomestead?: () => void,
   ) {
-    this.homesteadBtn = el('button', { class: 'btn', text: 'Homestead' })
-    this.homesteadBtn.onclick = () => onHomestead?.()
+    // Alternate rather than randomise: the design reads the last scene from
+    // storage and mounts the other one, so the game never opens the same way
+    // twice running. Random would repeat about half the time.
+    let last = ''
+    try { last = localStorage.getItem('rdf.homeScene') ?? '' } catch { /* private mode */ }
+    this.isField = last !== 'field'
+    try { localStorage.setItem('rdf.homeScene', this.isField ? 'field' : 'yard') } catch { /* ignore */ }
 
-    this.seedInput = el('input', { class: 'home-seed' })
-    this.seedInput.placeholder = 'seed (blank = random)'
-
-    this.cardsEl = el('div', { class: 'home-rail' })
-
-    const head = el('button', { class: 'btn btn-primary', text: 'Head out →' })
-    head.onclick = () => this.onStart(this.selected, this.seedInput.value.trim())
+    this.seedInput = el('input', { class: 'home-seed-input' })
+    this.seedInput.placeholder = 'random'
 
     this.stageEl = el('div', { class: 'home-scene' }, [this.scene()])
+    // The UI lives INSIDE the stage's coordinate space and scales with it.
+    // That is the whole reason this design needs no breakpoints: every number
+    // in the mockup is a 1920x1080 stage pixel, interface included. Building
+    // the scene to the design and then laying my own responsive UI over it is
+    // exactly the mistake that made the first attempt look nothing like it.
+    this.uiEl = el('div', { class: 'home-ui' })
 
     this.root = el('div', { class: `screen home${this.isField ? ' is-field' : ''}` }, [
-      this.stageEl,
-      el('div', { class: 'home-inner' }, [
-        el('h1', { class: 'home-title', text: 'RANCH DEFENSE FORCE' }),
-        el('p', {
-          class: 'home-sub',
-          text: 'Something came off the crop duster that went over low on Tuesday. '
-            + 'Work the field until the light goes.',
-        }),
-        this.cardsEl,
-        el('div', { class: 'home-actions' }, [this.seedInput, this.homesteadBtn, head]),
-      ]),
-      el('div', { class: 'home-foot' }, [
-        el('div', { text: 'WASD / arrows / left stick to move · Space or RT for your ability · weapons fire themselves' }),
-        el('div', { text: 'Art by LimeZu (limezu.itch.io)' }),
-      ]),
+      el('div', { class: 'home-stagewrap' }, [this.stageEl, this.uiEl]),
     ])
     this.root.style.display = 'none'
     parent.appendChild(this.root)
-    this.renderCards()
+    this.renderUi()
     this.fitScene()
     window.addEventListener('resize', () => this.fitScene())
   }
 
+  /** Dev only: swap the backdrop in place, no reload. */
+  private flipScene(): void {
+    this.isField = !this.isField
+    this.root.classList.toggle('is-field', this.isField)
+    this.stageEl.replaceChildren(this.scene())
+    this.renderUi()
+    this.fitScene()
+  }
+
+  /** Everything printed, in stage coordinates. */
+  private renderUi(): void {
+    clear(this.uiEl)
+    const def = CLASSES[this.selected]
+    const [doorX, doorY] = this.isField ? DOOR.field : DOOR.yard
+
+    const title = el('div', { class: 'home-title-block' }, [
+      el('div', { class: 'home-eyebrow', text: 'THE WHITACRE PLACE · 1987' }),
+      el('h1', { class: 'home-title' }, [
+        el('span', { text: 'Ranch' }), el('br'),
+        el('span', { text: 'Defense' }), el('br'),
+        el('span', { text: 'Force' }),
+      ]),
+      el('div', { class: 'home-tagline' }, [
+        el('span', { class: 'home-tagrule' }),
+        el('span', { text: 'Work the field until the light goes.' }),
+      ]),
+    ])
+
+    const playing = el('div', { class: 'home-playing' }, [
+      el('div', { class: 'home-playing-label', text: 'YOU ARE PLAYING' }),
+      el('div', { class: 'home-playing-name', text: def?.name ?? '' }),
+      el('div', { class: 'home-playing-blurb', text: def?.blurb ?? '' }),
+      el('div', { class: 'home-playing-rule' }),
+      el('div', { class: 'home-playing-rows' }, [
+        row('PASSIVE', def?.cardPassive ?? def?.passive.desc ?? ''),
+        row('ABILITY', def?.ability.name ?? ''),
+        row('STARTS', WEAPONS[def?.startingWeapon ?? '']?.name ?? def?.startingWeapon ?? ''),
+      ]),
+    ])
+
+    const seedBox = el('div', { class: 'home-seedbox' }, [
+      el('div', { class: 'home-seed-field' }, [
+        el('div', { class: 'home-seed-label', text: 'SEED' }),
+        this.seedInput,
+      ]),
+      el('button', {
+        class: 'home-seed-new',
+        text: 'NEW',
+        onClick: () => { this.seedInput.value = '' },
+      }),
+    ])
+
+    const door = el('div', { class: 'home-door' }, [
+      el('button', {
+        class: 'home-door-btn',
+        text: 'THE HOMESTEAD',
+        onClick: () => this.onHomestead?.(),
+      }),
+      el('div', { class: 'home-door-note', text: `${this.acres} acres banked` }),
+    ])
+    door.style.left = `${doorX}px`
+    door.style.top = `${doorY}px`
+
+    const rail = el('div', { class: 'home-rail' })
+    CLASS_IDS.forEach((id, i) => {
+      const c = this.heroCard(id, i)
+      if (c) rail.append(c)
+    })
+
+    const foot = el('div', { class: 'home-footbar' }, [
+      el('span', { text: '24 WAVES · TWO BOSSES · WEAPONS FIRE THEMSELVES' }),
+      el('span', { text: 'ART BY LIMEZU · LIMEZU.ITCH.IO' }),
+    ])
+
+    this.uiEl.append(title, playing, seedBox, door, rail, foot)
+
+    // The scene toggle. Design marks it a REVIEWER CONTROL, not shipped — so it
+    // is dev-only. Flipping backdrops without reloading is the difference
+    // between checking both compositions and checking one.
+    if (import.meta.env.DEV) {
+      this.uiEl.append(el('button', {
+        class: 'home-scene-toggle',
+        text: `SCENE: ${this.isField ? 'FIELD' : 'YARD'}`,
+        onClick: () => this.flipScene(),
+      }))
+    }
+  }
+
   /**
-   * Pick a backdrop for this load.
+   * One class card, per `Class Card.dc.html`.
    *
-   * Two ship and one is chosen at random per page load rather than per open —
-   * re-rolling every time you back out of the Homestead would make the home
-   * screen feel unstable, which is the opposite of what a home screen is for.
+   * Deliberately NOT the `pcard` the level-up and shop use. The design draws
+   * this one as a different object — a keyword band, a figure window with a
+   * horizon line, three read-off stat bars, a footer of ability and weapon —
+   * and a card that is genuinely different should be a different component
+   * rather than eight flags bolted onto the first one.
+   */
+  private heroCard(id: string, index: number): HTMLElement | null {
+    const def = CLASSES[id]
+    if (!def) return null
+    const locked = !this.unlocked.has(id)
+    const price = this.prices.get(id)
+    const bars = def.bars ?? { body: 50, speed: 50, reach: 50 }
+    const selected = id === this.selected
+
+    const figure = el('div', { class: 'hero-window' })
+    const sprite = spriteEl(`${id}.idle.down.0`, 4096, 3)
+    if (sprite) {
+      sprite.classList.add('hero-figure')
+      figure.append(sprite)
+    }
+    figure.append(el('div', { class: 'hero-horizon' }), el('div', { class: 'hero-shade' }))
+
+    if (locked) {
+      // A packet somebody nailed shut: two boards across the window, the figure
+      // still visible in the gap, the acre price branded on the top board. Not
+      // a black silhouette — you should be able to see there is somebody there.
+      figure.append(
+        el('div', { class: 'hero-board hero-board-top' }, [
+          el('span', { class: 'hero-price', text: price ? `${price} ACRES` : 'LOCKED' }),
+        ]),
+        el('div', { class: 'hero-board hero-board-bottom' }),
+      )
+    }
+
+    const card = el('div', {
+      class: `hero${locked ? ' is-locked' : ''}${selected ? ' is-selected' : ''}`,
+    }, [
+      el('div', { class: 'hero-tab' }, [el('div', { class: 'hero-punch' })]),
+      el('div', { class: 'hero-body' }, [
+        el('div', { class: 'hero-tag', text: def.tag ?? '' }),
+        figure,
+        el('div', { class: 'hero-name', text: def.name }),
+        el('div', { class: 'hero-rule' }),
+        el('div', { class: 'hero-bars' }, [
+          bar('BODY', bars.body), bar('SPEED', bars.speed), bar('REACH', bars.reach),
+        ]),
+        el('div', { class: 'hero-foot' }, [
+          el('span', { text: (def.ability.name ?? '').toUpperCase() }),
+          el('span', {
+            text: (WEAPONS[def.startingWeapon]?.name ?? def.startingWeapon).toUpperCase(),
+          }),
+        ]),
+      ]),
+      selected && !locked ? el('div', { class: 'hero-taking', text: 'TAKING THE FIELD' }) : null,
+    ])
+    card.style.animationDelay = `${index * 90}ms`
+    card.onclick = () => {
+      // A locked card sends you where you can unlock it, rather than doing
+      // nothing — a dead click on the most interesting card is a bad answer.
+      if (locked) { this.onHomestead?.(); return }
+      if (selected) { this.onStart(id, this.seedInput.value.trim()); return }
+      this.selected = id
+      this.renderUi()
+    }
+    return card
+  }
+
+  /**
+   * Pick a backdrop for this load and build it.
+   *
+   * Placements come from the design's table; see the block at the top of this
+   * file. Nothing here is composed by eye.
    */
   private scene(): HTMLElement {
     const places = this.isField ? FIELD : YARD
@@ -186,8 +335,8 @@ export class MenuScreen {
         c.style.animation = `field-drift ${secs}s linear infinite`
         scene.append(c)
       }
-      // A distant treeline is a small SPRITE, not a small scale, so this band is
-      // a blurred CSS silhouette rather than shrunken oaks.
+      // A distant treeline needs a small SPRITE, not a small scale, so this is
+      // a blurred silhouette band rather than shrunken oaks.
       scene.append(el('div', { class: 'field-treeline' }))
     }
 
@@ -205,9 +354,9 @@ export class MenuScreen {
   /**
    * One placement, in stage pixels.
    *
-   * Sizes are derived from the atlas frame times the zoom rather than taken from
-   * the design's drawn-size column, so a sprite that gets re-cropped cannot end
-   * up stretched — the table's `zoom` is the intent and the frame is the truth.
+   * Sizes are derived from the atlas frame times the zoom rather than taken
+   * from the design's drawn-size column, so a re-cropped sprite cannot end up
+   * stretched — the table's `zoom` is the intent and the frame is the truth.
    */
   private stagePlace(p: Place): HTMLElement | null {
     const f = frameOf(p.sprite)
@@ -218,7 +367,7 @@ export class MenuScreen {
     node.style.top = `${p.y}px`
 
     if (p.tile) {
-      // A tiled band: needs a standalone tile texture, never an atlas window —
+      // A tiled band needs a standalone tile texture, never an atlas window —
       // repeating an atlas window repeats the whole atlas.
       const url = spriteTileUrl(p.sprite)
       if (!url) return null
@@ -229,7 +378,6 @@ export class MenuScreen {
       node.style.backgroundImage = `url('${url}')`
       node.style.backgroundSize = `${tw}px ${th}px`
       node.style.backgroundRepeat = 'repeat-x'
-      node.style.setProperty('--tile-w', `-${tw}px`)
       node.style.imageRendering = 'pixelated'
     } else {
       const sprite = spriteEl(p.sprite, 4096, p.zoom ?? 1)
@@ -244,75 +392,19 @@ export class MenuScreen {
   }
 
   /**
-   * Build the class cards for whoever is currently unlocked.
-   *
-   * Rebuilt on every `open()` rather than once in the constructor: the
-   * constructor runs before the Homestead has ever been visited, so a list
-   * built there can only ever show the starting two — or, if it ignores the
-   * save, silently hand out every paid class for free. It did the latter the
-   * moment four buyable classes existed.
-   */
-  private renderCards(): void {
-    clear(this.cardsEl)
-    const built: HTMLElement[] = []
-
-    for (const id of CLASS_IDS) {
-      const def = CLASSES[id]
-      if (!def) continue
-      const locked = !this.unlocked.has(id)
-      const price = this.prices.get(id)
-
-      const c = card({
-        kind: locked ? 'Bunkhouse · locked' : 'The Bunkhouse',
-        name: def.name,
-        blurb: def.blurb,
-        sprite: `${id}.idle.down.0`,
-        zoom: 2,
-        stats: [
-          { label: 'Passive', value: shortOf(def.passive.desc) },
-          { label: def.ability.name, value: shortOf(def.ability.desc) },
-          { label: 'Starts with', value: def.startingWeapon },
-        ],
-        lot: locked ? 'NAILED SHUT' : 'READY',
-        source: locked && price ? `${price} ACRES` : 'HIRED',
-        selected: !locked && id === this.selected,
-        dead: locked,
-        onClick: () => this.select(id),
-      })
-      if (locked) {
-        c.classList.add('is-nailed')
-        if (price) {
-          c.querySelector('.pcard-window')?.append(
-            el('div', { class: 'pcard-brand', text: `${price} ACRES` }),
-          )
-        }
-      }
-      this.cardsEl.appendChild(c)
-      built.push(c)
-    }
-
-    if (!this.unlocked.has(this.selected)) {
-      this.selected = CLASS_IDS.find((id) => this.unlocked.has(id)) ?? CLASS_IDS[0]
-    }
-    deal(built)
-  }
-
-  /**
    * Called by main from the save, before opening — and again once the atlas
    * resolves, because this screen is built at module load and every sprite it
    * asked for before then came back null.
    */
-  setUnlocked(ids: readonly string[], prices?: ReadonlyMap<string, number>): void {
+  setUnlocked(ids: readonly string[], prices?: ReadonlyMap<string, number>, acres = 0): void {
     this.unlocked = new Set(ids)
     if (prices) this.prices = new Map(prices)
+    this.acres = acres
+    if (!this.unlocked.has(this.selected)) {
+      this.selected = CLASS_IDS.find((id) => this.unlocked.has(id)) ?? CLASS_IDS[0]
+    }
     this.stageEl.replaceChildren(this.scene())
-    this.renderCards()
-  }
-
-  private select(id: string): void {
-    if (!this.unlocked.has(id)) return
-    this.selected = id
-    this.renderCards()
+    this.renderUi()
   }
 
   open(): void {
@@ -320,33 +412,42 @@ export class MenuScreen {
     this.fitScene()
   }
 
+  close(): void {
+    this.root.style.display = 'none'
+  }
+
   /**
    * Fit the 1920x1080 stage INSIDE the window.
    *
-   * `contain`, not `cover`, and that is Design's call rather than a preference:
-   * the composition is horizontal — barn right, print left — so cropping the
-   * sides destroys exactly the relationship the scene is built on. The leftover
-   * space is bled with the scene's own edge colours, which reads as a wider
-   * window rather than as bars.
+   * `contain`, not `cover`, and that is the design's call rather than a
+   * preference: the composition is horizontal — barn right, print left — so
+   * cropping the sides destroys exactly the relationship the scene is built on.
+   * The leftover space is bled with the scene's own edge colours, which reads
+   * as a wider window rather than as bars.
    */
   private fitScene(): void {
     const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080)
     this.root.style.setProperty('--scene', String(s))
-    // The bleed lives here rather than in `scene()`: that runs while the stage
-    // is being built, which is BEFORE `this.root` exists, and setting a
-    // property on it there threw on construction.
     const bleed = this.isField ? BLEED.field : BLEED.yard
     this.root.style.setProperty('--bleed-top', bleed.top)
     this.root.style.setProperty('--bleed-bottom', bleed.bottom)
   }
-
-  close(): void {
-    this.root.style.display = 'none'
-  }
 }
 
-/** Ability and passive text is a sentence; a card stat row is a phrase. */
-function shortOf(text: string): string {
-  const first = text.split('.')[0]
-  return first.length > 46 ? `${first.slice(0, 44)}…` : first
+/** A label/value line in the "you are playing" panel. */
+function row(label: string, value: string): HTMLElement {
+  return el('div', { class: 'home-playing-row' }, [
+    el('span', { class: 'home-playing-key', text: label }),
+    el('span', { class: 'home-playing-val', text: value }),
+  ])
+}
+
+/** One BODY/SPEED/REACH meter. */
+function bar(label: string, pct: number): HTMLElement {
+  const fill = el('div', { class: 'hero-bar-fill' })
+  fill.style.width = `${Math.max(0, Math.min(100, pct))}%`
+  return el('div', { class: 'hero-bar' }, [
+    el('span', { class: 'hero-bar-label', text: label }),
+    el('div', { class: 'hero-bar-track' }, [fill]),
+  ])
 }

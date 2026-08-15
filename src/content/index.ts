@@ -81,6 +81,10 @@ export interface ClassDef {
     [k: string]: unknown
   }
   startingWeapon: string
+  /** Class-card presentation; see the note in classes.json. */
+  tag?: string
+  bars?: { body: number; speed: number; reach: number }
+  cardPassive?: string
 }
 
 export type WeaponType = 'melee' | 'ranged' | 'orbit' | 'aura' | 'utility' | 'minion'
