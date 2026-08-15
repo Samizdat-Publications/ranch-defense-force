@@ -36,51 +36,50 @@
 }
 
 /* --- the yard --- */
+/*
+   Full height, not a strip: the buildings sit against the sky and the
+   scale ladder (1x distant, 2x actors, 2x cropped silo) is what makes
+   it depth. A band across the bottom cannot do that.
+*/
 .home-yard {
   position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 46%;
+  inset: 0;
   pointer-events: none;
+  overflow: hidden;
+}
+
+/* Buildings and props, placed as a percentage of a 1920x1080 frame. */
+.home-place { position: absolute; }
+.home-place .card-sprite { display: block; }
+
+/* A walking actor: one strip, stepped. See the comment in menu.ts about
+   why the offsets are pixels and never percentages. */
+.home-walker {
+  position: absolute;
+  z-index: 4;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+}
+
+@keyframes walk-strip {
+  to { background-position: var(--walk-end) 0; }
 }
 
 /* A band of real terrain tiles, tiled by background-repeat rather than
    one node per tile — a hundred divs to draw dirt is a hundred divs. */
 .home-ground {
   position: absolute;
-  left: 0; right: 0; bottom: 0; height: 74%;
+  left: 0; right: 0; bottom: 0; height: 42%;
   image-rendering: pixelated;
   filter: brightness(0.62) saturate(0.85);
 }
 
-.home-treeline {
-  position: absolute;
-  left: 0; right: 0; bottom: 62%;
-  height: 96px;
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  padding: 0 12px;
-  filter: brightness(0.34) saturate(0.5);
-}
 
-.home-treeline .card-sprite { flex: 0 0 auto; }
-
-/* Actors: 2x against the scenery's 1x. */
-.home-actors {
-  position: absolute;
-  left: 0; right: 0; bottom: 8%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 84px;
-  filter: brightness(0.78);
-}
-
-.home-actor { position: relative; }
 
 /* The porch light. One flicker in eleven seconds. */
 .home-lamp {
   position: absolute;
+  z-index: 5;
   left: 50%;
   bottom: 24%;
   width: 420px;

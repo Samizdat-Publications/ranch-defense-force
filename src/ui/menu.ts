@@ -16,13 +16,58 @@
 import { CLASSES, CLASS_IDS } from '../content'
 import { clear, el } from './dom'
 import { card, deal } from './card'
-import { spriteEl, spriteTileUrl } from './sprite'
+import { spriteEl, spriteTileUrl, frameOf } from './sprite'
 
-/** Scenery, drawn once. Kept small — this is dressing, not a level. */
-const TREELINE = [
-  'node.treeBig', 'node.treeMedium', 'node.treeBig', 'node.treeSmall',
-  'node.treeMedium', 'node.treeBig', 'node.treeMedium', 'node.treeSmall',
-  'node.treeBig', 'node.treeMedium', 'node.treeBig',
+/**
+ * The yard, as placements on a 1920x1080 reference frame.
+ *
+ * Positions are percentages of that frame so the scene scales with the window
+ * without anything needing to be re-measured. `zoom` is the integer sprite
+ * scale: distant buildings at 1x, actors at 2x, and ONE foreground building at
+ * 2x cropped by the frame edge — the silo. That scale ladder is what carries
+ * the depth; without it the yard is a wall of sprites at one size.
+ */
+interface Placement {
+  sprite: string
+  /** Percent of the reference frame, from the left / from the top. */
+  x: number
+  y: number
+  zoom: number
+  /** Distance haze. Far things are dimmer and slightly blue. */
+  dim?: number
+  blur?: number
+  z?: number
+}
+
+const YARD: Placement[] = [
+  { sprite: 'scene.barn', x: 10, y: 30, zoom: 1, dim: 0.72, z: 1 },
+  { sprite: 'scene.house', x: 33, y: 22, zoom: 1, dim: 0.66, z: 1 },
+  { sprite: 'scene.coop', x: 57, y: 44, zoom: 1, dim: 0.8, z: 2 },
+  { sprite: 'scene.well', x: 70, y: 56, zoom: 1, dim: 0.82, z: 2 },
+  { sprite: 'scene.scarecrow', x: 47, y: 52, zoom: 1, dim: 0.78, z: 2 },
+  { sprite: 'scene.doghouse', x: 78, y: 52, zoom: 1, dim: 0.84, z: 2 },
+  { sprite: 'scene.hay', x: 26, y: 62, zoom: 2, dim: 0.9, z: 3 },
+  { sprite: 'scene.tractorLeft', x: 6, y: 58, zoom: 1, dim: 0.8, z: 2 },
+  // The foreground silo, deliberately running off the right edge.
+  { sprite: 'scene.silo', x: 86, y: 8, zoom: 2, dim: 0.5, z: 6 },
+]
+
+/** Walking actors: one strip each, stepped by CSS. */
+interface Walker {
+  sprite: string
+  frames: number
+  x: number
+  y: number
+  zoom: number
+  /** Seconds for one full cycle. */
+  cycle: number
+  dim?: number
+}
+
+const WALKERS: Walker[] = [
+  { sprite: 'scene.farmerWalkstrip', frames: 6, x: 41, y: 70, zoom: 2, cycle: 0.75, dim: 0.92 },
+  { sprite: 'scene.chickenWalkLeftstrip', frames: 6, x: 62, y: 76, zoom: 2, cycle: 0.6, dim: 0.9 },
+  { sprite: 'scene.chickenPeckstrip', frames: 4, x: 30, y: 78, zoom: 2, cycle: 1.1, dim: 0.9 },
 ]
 
 export class MenuScreen {
@@ -77,15 +122,9 @@ export class MenuScreen {
     this.renderCards()
   }
 
-  /** Sky, treeline, ground, actors, porch light. All dressing, no state. */
+  /** The yard: ground, buildings, walkers, porch light. All dressing, no state. */
   private yard(): HTMLElement {
     const yard = el('div', { class: 'home-yard' })
-
-    const trees = el('div', { class: 'home-treeline' })
-    for (const t of TREELINE) {
-      const s = spriteEl(t, 96, 1)
-      if (s) trees.append(s)
-    }
 
     // The ground band tiles one terrain frame rather than spawning a node per
     // tile — a hundred divs to draw dirt is a hundred divs. It must be a
@@ -99,14 +138,45 @@ export class MenuScreen {
       ground.style.backgroundRepeat = 'repeat'
       ground.style.backgroundSize = '64px 64px'
     }
+    yard.append(ground)
 
-    const actors = el('div', { class: 'home-actors' })
-    for (const [sheet, dir] of [['rooster', 'right'], ['hand', 'down'], ['feralDog', 'left']] as const) {
-      const s = spriteEl(`${sheet}.idle.${dir}.0`, 128, 2)
-      if (s) actors.append(el('div', { class: 'home-actor' }, [s]))
+    for (const p of YARD) {
+      const s = spriteEl(p.sprite, 4096, p.zoom)
+      if (!s) continue
+      const wrap = el('div', { class: 'home-place' }, [s])
+      wrap.style.left = `${p.x}%`
+      wrap.style.top = `${p.y}%`
+      wrap.style.zIndex = String(p.z ?? 1)
+      wrap.style.filter =
+        `brightness(${p.dim ?? 1})${p.blur ? ` blur(${p.blur}px)` : ''}`
+      yard.append(wrap)
     }
 
-    yard.append(ground, trees, actors, el('div', { class: 'home-lamp' }))
+    for (const w of WALKERS) {
+      const strip = spriteTileUrl(w.sprite)
+      if (!strip) continue
+      const f = frameOf(w.sprite)
+      if (!f) continue
+      const cellW = f.w / w.frames
+      const el2 = el('div', { class: 'home-walker' })
+      // Pixel background-position and an explicit pixel background-size.
+      // PERCENTAGES LOOK EQUIVALENT AND ARE NOT: with a 6-frame strip, -600%
+      // lands frame 0 and then five blank offsets, so the character shows one
+      // frame and then flickers. Documented in the handoff as already shipped
+      // once into a mockup.
+      el2.style.width = `${cellW * w.zoom}px`
+      el2.style.height = `${f.h * w.zoom}px`
+      el2.style.backgroundImage = `url('${strip}')`
+      el2.style.backgroundSize = `${f.w * w.zoom}px ${f.h * w.zoom}px`
+      el2.style.setProperty('--walk-end', `-${f.w * w.zoom}px`)
+      el2.style.animation = `walk-strip ${w.cycle}s steps(${w.frames}) infinite`
+      el2.style.left = `${w.x}%`
+      el2.style.top = `${w.y}%`
+      el2.style.filter = `brightness(${w.dim ?? 1})`
+      yard.append(el2)
+    }
+
+    yard.append(el('div', { class: 'home-lamp' }))
     return yard
   }
 

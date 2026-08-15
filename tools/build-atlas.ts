@@ -70,6 +70,10 @@ interface Manifest {
   }
   singles: { _base: string; files: Record<string, string> }
   singlesExtra?: { _base: string; files: Record<string, string> }
+  /** Home-screen backdrop crops. DOM art, not field sprites; exempt from 32px. */
+  scene?: { _base: string; files: Record<string, string> }
+  /** Walk strips. Packed untrimmed so steps() lands on cell boundaries. */
+  sceneStrips?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** Generated card art. Deliberately larger than 32px; cards zoom by integers. */
   pixellab?: { _base: string; files: Record<string, string> }
   /** Generated characters, pre-cut to the game's 32x64 grid. */
@@ -496,12 +500,24 @@ interface SingleGroup {
    * pack assertion is still worth having.
    */
   cardArt?: boolean
+  /**
+   * Pack the whole image, do not trim to content bounds.
+   *
+   * A strip animated with `steps(n)` divides its width by n, so the packed
+   * width MUST be an exact multiple of the cell. Trimming a 192px six-frame
+   * strip down to its content leaves 188px, 188/6 is not an integer, and every
+   * step lands a fraction off — the character slides instead of stepping. Only
+   * strips need this; a trimmed single sprite is strictly better.
+   */
+  noTrim?: boolean
 }
 
 const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
   manifest.nodes, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
+  manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
+  manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,
 ].filter(Boolean) as SingleGroup[]
 
 for (const group of singleGroups) {
@@ -523,7 +539,9 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
       errors.push((e as Error).message)
     }
   }
-  const b = contentBounds(img, 0, 0, img.width, img.height)
+  const b = group.noTrim
+    ? { x: 0, y: 0, w: img.width, h: img.height, empty: false }
+    : contentBounds(img, 0, 0, img.width, img.height)
   if (b.empty) {
     errors.push(`${path}: entirely transparent`)
     continue

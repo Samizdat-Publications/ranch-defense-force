@@ -105,3 +105,9 @@ export function spriteTileUrl(name: string): string | null {
   tileCache.set(name, url)
   return url
 }
+
+/** The atlas rect for a name, so callers can size a strip from its real width. */
+export function frameOf(name: string): { w: number; h: number } | null {
+  const f = atlas?.get(name)
+  return f ? { w: f.w, h: f.h } : null
+}

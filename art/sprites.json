@@ -551,5 +551,37 @@
     }
    }
   }
+ },
+ "scene": {
+  "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",
+  "_base": "assets/scene/",
+  "files": {
+   "scene.barn": "barn.png",
+   "scene.chick": "chick.png",
+   "scene.coop": "coop.png",
+   "scene.doghouse": "doghouse.png",
+   "scene.fencePicket": "fence_picket.png",
+   "scene.fenceRail": "fence_rail.png",
+   "scene.hay": "hay.png",
+   "scene.house": "house.png",
+   "scene.scarecrow": "scarecrow.png",
+   "scene.silo": "silo.png",
+   "scene.tractorLeft": "tractor_left.png",
+   "scene.well": "well.png",
+   "scene.wheat": "wheat.png",
+   "scene.wheat2": "wheat2.png"
+  },
+  "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent; the yard uses the game's own rooster sprite instead."
+ },
+ "sceneStrips": {
+  "_note": "Walk-cycle strips for the home screen. Packed UNTRIMMED: a strip animated with steps(n) divides its width by n, so the packed width must be an exact multiple of the cell. Trimming a 192px six-frame strip to 188px makes 188/6 fractional and the character slides instead of stepping.",
+  "_base": "assets/scene/",
+  "noTrim": true,
+  "files": {
+   "scene.chickenPeckstrip": "chicken_peck_strip.png",
+   "scene.chickenWalkLeftstrip": "chicken_walk_left_strip.png",
+   "scene.farmerWalkstrip": "farmer_walk_strip.png",
+   "scene.farmerWalkUpstrip": "farmer_walk_up_strip.png"
+  }
  }
 }
