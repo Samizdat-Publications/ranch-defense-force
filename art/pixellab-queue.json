@@ -170,35 +170,66 @@
  "_pickNote": "npm run fetch -- <job-id> <name> pulls every candidate plus a 4-across contact sheet into assets/pixellab/sheets/<name>/. Look at the contact sheet, then npm run cut -- single <sheet>/<name>_NN.png assets/pixellab/picked/<name>.png. Keep every candidate: they are paid for, and the first cell picked has more than once not been the best one.",
  "_ranchRoster": {
   "_note": "THE OWNER'S OWN ANIMALS. These are real animals on a real ranch and the point is that the game has them in it. Side views are GENERATED AND STAGED in assets/pixellab/picked/ -- fjord_pony, arabian_horse, draft_mule, donkey, rooster_big. rooster_big is wired (the yard scene). The other four are not wired to anything yet, deliberately: a side view is a reference, not an enemy.",
-  "_whatIsMissing": "A field animal needs eight facings and a walk, not one profile. The path is: create_8_direction_object (or create_character for anything humanoid) using the staged side view as a reference image, then animate the walk, then npm run cut -- cell / strip onto the game grid. That is a different and more expensive tool than the icon recipe, and it has not been run on an animal yet.",
+  "_whatIsMissing": "THE WALK. All ten animals have eight rotations in assets/pixellab/object/<name>/ and none of them move. animate_object(mode=\"v3\") is the next step and it animates all eight directions in one call. Until then these cannot be enemies: a static sprite in a game whose renderer advances walk frames by DISTANCE TRAVELLED would slide across the ground, which reads worse than the placeholder it replaces.",
   "_sizeRule": "Field art ends at 32x32. These were generated at 64 for the candidate count; unzoom or regenerate at 32 before packing, and do NOT scale a 64px sprite down in CSS -- it breaks the pixel grid.",
   "animals": [
    {
     "name": "fjord_pony",
-    "state": "side view staged",
+    "state": "8 rotations done, NO walk yet",
     "want": "white/blonde fjord pony, thick upright mane"
    },
    {
     "name": "arabian_horse",
-    "state": "side view staged",
+    "state": "8 rotations done, NO walk yet",
     "want": "bay arabian, arched neck, high tail"
    },
    {
     "name": "draft_mule",
-    "state": "side view staged",
+    "state": "8 rotations done, NO walk yet",
     "want": "big black draft mule"
    },
    {
     "name": "donkey",
-    "state": "side view staged",
+    "state": "8 rotations done, NO walk yet",
     "want": "small grey donkey"
    },
    {
     "name": "rooster_big",
-    "state": "WIRED as scene.rooster",
+    "state": "side view only, WIRED as scene.rooster on the home screen. No rotations -- it is scenery, not an enemy.",
     "want": "a rooster that reads as a rooster and stands taller than the hens"
+   },
+   {
+    "name": "barn_dog",
+    "state": "8 rotations done, NO walk yet",
+    "want": "the Barn Dog weapon minion"
+   },
+   {
+    "name": "whitacre_bull",
+    "state": "8 rotations done, NO walk yet",
+    "want": "the Whitacre Bull legendary minion"
+   },
+   {
+    "name": "infected_hen",
+    "state": "8 rotations done, NO walk yet",
+    "want": "enemy roster"
+   },
+   {
+    "name": "infected_rooster",
+    "state": "8 rotations done, NO walk yet",
+    "want": "enemy roster"
+   },
+   {
+    "name": "infected_hog",
+    "state": "8 rotations done, NO walk yet",
+    "want": "enemy roster"
+   },
+   {
+    "name": "infected_sheep",
+    "state": "8 rotations done, NO walk yet",
+    "want": "enemy roster"
    }
-  ]
+  ],
+  "_thenWhat": "After the walk: map PixelLab compass (south, south-west, west, north-west, north, north-east, east, south-east) onto the game order. That is a FOURTH direction order in this project after the humanoids, the animals and the tractor -- measure it, do not assume it. Then pack as a directional sheet and add it to art/sprites.json."
  },
  "_horrorPlan": {
   "_note": "MAKE THE WHOLE CAST SCARY, the way the farmhand already is. The infected farmhand is the one piece of this that is finished and it is the enemy you see most in a run; everything else infected is still an ordinary animal wearing a CSS filter, and it looks like it.",
@@ -240,5 +271,21 @@
   ],
   "_doFirst": "Do NOT generate a tileset until the map descriptor exists. A tileset with nowhere to go is the most expensive kind of art to have made."
  },
- "_classifierNote": "A generation request for the Boot Knife was once refused by the CLAUDE CODE permission classifier -- the agent harness, not PixelLab. The prompt never reached the API. Retrying the identical request went straight through and returned sixteen good knives. If a generation is refused, check WHICH layer refused it before rewriting the prompt: the wording was never the problem."
+ "_classifierNote": "A generation request for the Boot Knife was once refused by the CLAUDE CODE permission classifier -- the agent harness, not PixelLab. The prompt never reached the API. Retrying the identical request went straight through and returned sixteen good knives. If a generation is refused, check WHICH layer refused it before rewriting the prompt: the wording was never the problem.",
+ "_musicTodo": {
+  "_note": "LATER, not now. Swap the three Lyria clips for real composed loops.",
+  "_candidate": "Tallbeard Studios / Abstraction \"Music Loop Bundle\" -- https://tallbeard.itch.io/music-loop-bundle. CC-0, free, 200+ loops. The only licence-clean pack surveyed: every other candidate (both horse packs, both admurin monster packs, both JDSherbert UI packs, the Echoes kit) forbids redistribution, which THIS PUBLIC REPO cannot honour if the files live in assets/.",
+  "_whatWeHaveNow": "Three Lyria clips in public/audio/, one per layer (field, combat, boss), all the same length. Generated from prompts in src/content/audio.json, which stays the source of truth.",
+  "_theWork": "Listening to 200 loops and picking three or four that fit a farm-horror bullet-heaven is taste, not mechanics. Pick first, then it is a five-minute wiring job: drop the files in public/audio/ under the existing names and the loader finds them.",
+  "_credit": "Abstraction asks for attribution by name with a link. The title screen already credits LimeZu; this would join it.",
+  "_doNotBuy": "The two JDSherbert UI packs and the Echoes kit were evaluated and rejected. We synthesise all thirteen UI blips in-browser from five numbers each in audio.json, at zero download and with no credit obligation, and the twenty-six physical effects were prompted for THIS game rather than picked from a general library."
+ },
+ "_licenceRule": "THE REPO IS PUBLIC, so committing a pack to assets/ IS redistribution -- the exact deadlock that kept this repo private through M0-M5 until LimeZu gave written permission. Almost every itch.io pack forbids redistribution while allowing use in a project. If one is ever wanted: gitignore its assets/ subfolder. The atlas and public/audio/ are already generated and gitignored, so the build output ships (which those licences allow) and nothing licensed enters the public repo. The cost is that a fresh clone cannot rebuild without the packs on disk.",
+ "_eightDirNotes": {
+  "tool": "create_8_direction_object, 20 generations, about four minutes, returns eight rotation URLs rather than a sheet. \"npm run object -- <name> <url-prefix>\" pulls them down and writes a _ring.png with all eight side by side on grey. JUDGE THE RING, never a single frame: the failure mode is one direction that does not belong to the same animal as the other seven, and that is invisible one frame at a time.",
+  "identity": "The tool warns that reference identity transfer is unreliable for CHARACTER sprites. It held perfectly for all ten ANIMALS -- every ring is recognisably the same animal as the side view it was generated from. Do not extrapolate to humanoids; the docs say use create_character (mode=v3) for those.",
+  "size": "Output size comes from the reference image and cannot be set alongside it. Ours came back 56-68px. The game's existing LimeZu animals measure 46-54px wide and 32-40px TALL, so these are noticeably taller -- they stand upright where LimeZu's are drawn at a flatter top-down angle. Stand one next to a pig before committing them to the field.",
+  "transitBug": "reference_image_base64 IS INTERMITTENTLY TRUNCATED IN TRANSIT. The error says \"broken data stream\" and reports the full byte count, so it reads like a corrupt file when it is not -- the same file opens fine in PIL locally. It is NOT size-related: 814, 1424, 1938 and 2149 byte payloads succeeded while 1365, 2098 and 3898 byte ones failed, and one file failed twice then succeeded unchanged. JUST RETRY. Re-encoding through PIL, or quantising to the LimeZu palette, shortens the payload and makes a retry likelier to land -- and quantising conforms the art on the way in as a bonus.",
+  "horrorNote": "The four infected rings came back only mildly diseased -- the hog reads as a spotted pig and the sheep as an ordinary sheep in grey. They are not frightening. The prompts carried the horror (\"diseased\", \"red eyes\", \"matted\") and the model mostly ignored it in favour of the reference. Getting a genuinely horrific cast is a direction problem, not a throughput one."
+ }
 }
