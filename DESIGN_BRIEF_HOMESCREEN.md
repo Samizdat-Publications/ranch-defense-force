@@ -1,0 +1,123 @@
+# Brief to Claude Design — the home screen scene
+
+**Read `docs/DESIGN_STATE.md` first.** This is a focused brief about one screen.
+
+Everything else from your package is in and working: the card, the rarity plate,
+the roster, the pause sheet, the results sheet, the HUD. This is the one that
+does not read right, and I want your call rather than more guessing from me.
+
+## What I built, and where I already know I went wrong
+
+`Yard Scene.dc.html` and `Field Scene.dc.html` are implemented as a **1920×1080
+stage scaled to cover the window**, with the printed matter (title, class rail,
+seed field, buttons) floating over it behind a dark vertical scrim.
+
+My first attempt placed the buildings by *percentage of the window*, which was
+wrong: on a 1129px-wide window a 480px barn became 43% of the screen instead of
+25%, and the silo grew to 896px tall. That is fixed. **Do not design around
+those screenshots if you saw them.**
+
+What is still wrong, and I think is a composition question rather than a bug:
+
+1. **The foreground is empty.** Both scenes have a large flat expanse of ground
+   or crop across the bottom third with nothing in it. The mockups fill that
+   band; my placements do not, because I chose them from a grep of your CSS
+   rather than by reading the composition.
+2. **The field's crop bands are enormous.** I have three bands at 2×, 3× and 4×
+   a 32px tile. At 4× on a 1080-tall stage the nearest band is a wall of wheat
+   taking the bottom 40% of the screen. Either my sizes are wrong or the bands
+   are meant to sit much lower and be mostly cropped.
+3. **Buildings hug the edges and get cut.** The barn, house and silo all clip
+   against the frame in a way that looks accidental rather than composed —
+   except the silo, which you explicitly wanted cropped.
+
+## What I need from you
+
+### 1. Actual placements, as numbers
+
+The most useful thing you can send is a table, in 1920×1080 stage coordinates:
+
+```
+sprite        x     y     zoom   layer
+barn          196   148   1      back
+house         430   320   1      back
+silo          1664  192   2      front
+...
+```
+
+I will use those literally. I currently have nine placements in the yard and
+four in the field that I picked by eye from the mockup's inline styles, and
+every one of them is a guess.
+
+Same for the field's crop bands: **tile, on-screen tile size in pixels, y
+position, scroll seconds per loop.** I have wheat at 64/96/128px and I am fairly
+sure that is too big.
+
+### 2. What happens on a window that is not 16:9
+
+The stage is 1920×1080 and the window is whatever the player has. Right now I
+scale to **cover**, so a taller window crops the left and right and a wider one
+crops top and bottom. On a 1129×1153 window that eats most of the sky and both
+end buildings.
+
+Pick one:
+
+- **(a) Cover and crop**, as now — and tell me a *safe rectangle* inside the
+  1920×1080 frame that must always stay visible, so I can bias the scale to
+  protect it.
+- **(b) Letterbox** — never crop, accept bars.
+- **(c) Reflow** — you give me a second set of placements for a portrait-ish
+  window and I switch at a breakpoint.
+
+If (a), the safe rectangle is the thing I most need. Everything else follows
+from it.
+
+### 3. Where the printed matter is allowed to sit
+
+The title, six class cards, seed field and two buttons currently float over the
+scene with a dark scrim behind them so the text stays legible. **The mockups
+show the scene and the class rail but never together**, so I do not know if the
+scrim is right.
+
+Is there meant to be a **clear band** in the composition — sky above, ground
+below — that the printed matter sits inside without needing to be darkened? If
+so, give me its y-range on the 1920×1080 frame and I will place the rail there
+and drop the scrim.
+
+### 4. Six class cards do not fit
+
+Below about 1300px they do not fit on one row. I made the rail scroll
+horizontally with a compact card (96px art window, blurb clamped to three
+lines), which leaves a visible scrollbar and clips the first and last card.
+
+Shrink to fit, wrap to two rows, or keep the scroll with a nicer affordance —
+your call, it is a composition decision and I should not be making it.
+
+### 5. One thing I want to check I understood
+
+You describe these as the home screen's two interchangeable backdrops. The owner
+has been calling them **loading screens**. If they are meant to be *both* — a
+backdrop behind the class picker AND a screen shown while the atlas loads — say
+so, because a loading screen has no printed matter over it and would be composed
+differently. Right now I only use them as the class-picker backdrop.
+
+## Constraints that have not changed
+
+- **32×32 art, integer zoom only.** Where the field mockup draws distant
+  buildings at half scale I placed them at 1× further up the frame instead,
+  because a 0.5× pixel sprite is a blurry pixel sprite. If you would rather have
+  smaller buildings, they need smaller crops, not a fractional zoom.
+- **Anything tiled or stepped must be packed untrimmed.** Already handled, but it
+  is why the crop bands and walk strips work at all — a trimmed 32px tile packs
+  to 26px and every repeat gaps.
+- No new runtime dependencies. CSS animation only, nothing per-frame in JS.
+
+## What is already working, so you know what not to redo
+
+- Both scenes render, with the buildings, the walkers on stepped strips, the
+  drifting cloud layers, the sun, the crop parallax and the porch-light flicker.
+- The scene picks yard or field per page load.
+- The class cards, the nailed-shut locked variant with the acre price branded on
+  the board, the deal animation and the rarity plate are all in and correct.
+
+It is the composition I need, not the mechanism.
