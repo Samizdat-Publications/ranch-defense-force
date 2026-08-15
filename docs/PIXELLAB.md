@@ -5,6 +5,11 @@ project alongside the licensed packs, not an experiment.
 
 Written for whoever picks this repo up next, including Claude Code.
 
+**If you are about to generate art, read `API_PIPELINE.md` first.** It carries the
+validated settings, what the exports actually look like, and the post-process
+that puts them on the game's grid — including `tools/pixellab-cut.ts`, which does
+the whole cut with no new dependencies.
+
 ---
 
 ## Why this exists
@@ -112,10 +117,15 @@ of the quality.
 
 ```
 handoff/pixellab/
+  API_PIPELINE.md        generation settings + the post-process. Read this first.
+  tools/pixellab-cut.ts  the post-process, runs on tools/png.ts, no new deps
   limezu_style_256.png   the style anchor — 16 LimeZu icons, 4×4 of 32px
+  limezu_character_ref.png, limezu_style_char_128.png   character anchors
   sheets/<name>.png      the full generated sheet, 256×256, 4×4 grid of 64px
   picked/<name>.png      the cell we chose, cropped and trimmed to content
+  character/farmhand/    The Hand — 8 idles + 8 walk strips, already on 32×64 cells
   MANIFEST.md            every sheet: subject, cell picked, item it serves
+  NEXT_ASSETS.md         what to generate next, in priority order
 ```
 
 Sheets are kept, not just the picks. The other fifteen cells are free variants —
@@ -126,8 +136,10 @@ change its mind without spending anything.
 ### Where these should land in the repo
 
 ```
-assets/pixellab/sheets/     ← handoff/pixellab/sheets/    (source, never deploys)
+assets/pixellab/sheets/     ← handoff/pixellab/sheets/     (source, never deploys)
 assets/pixellab/picked/     ← handoff/pixellab/picked/     (what the atlas packs)
+assets/pixellab/character/  ← handoff/pixellab/character/  (8-direction sheets)
+tools/pixellab-cut.ts       ← handoff/pixellab/tools/      (the post-process)
 ```
 
 That matches how the licensed packs are stored: source under `assets/`, and
@@ -197,147 +209,16 @@ own rig, for free, and PixelLab cannot match that rig.
   only ever appear on cards, which draw at any integer zoom, so 64px is fine and
   better. Anything that appears on the game field must be 32×32 — generate larger
   and use **Unzoom**, or generate at 32 directly.
-- **Trim before use.** Generated sprites arrive centred in a 64px box with
-  uneven margins. Every pick in `picked/` is already trimmed to content bounds;
-  do the same for new ones or they will sit off-centre in the card window.
+- **Trim before use.** Generated sprites arrive centred in a box with uneven
+  margins, and background removal leaves an alpha 1–8 fringe — trim at **alpha
+  above 8**, not above 0, or every sprite keeps a one-pixel halo and lands off
+  centre. Character frames additionally need placing on a 32×64 cell with the
+  feet on y=52, or they bob through the walk cycle. `tools/pixellab-cut.ts`
+  does both.
+- **Strips are driven by `background-position` in pixels, never percentages.**
+  A percentage offset on a 6-frame strip renders frame 0 and then five blanks.
+- **Stand a new character next to the player before accepting it.** The first
+  farmhand was better pixel art than LimeZu's farmer and unusable, because the
+  proportions belonged to a different game.
 - **The API key is not in this repo.** If you wire up the MCP server or the REST
   API, read it from the environment.
-
----
-
-## The character builder — what it changes
-
-Added after the first pass. This is the biggest capability in the subscription
-and it was not being used.
-
-The flow is **generate once, animate many**:
-
-| Step | Endpoint | What you get |
-|---|---|---|
-| Make a character | `POST /create-character-with-4-directions` (or `-8-directions`, `-pro`, `-v3`) | A character in our reference style, plus a **character id** |
-| Reuse it | `POST /create-character-state` | Another pose or variation of **the same character**, not a new one |
-| Animate it | `POST /animate-with-text` (v2/v3 are Pro) | Any animation described in words — walks, swings, backflips, casts |
-| Animate precisely | `POST /animate-with-skeleton` + `POST /estimate-skeleton` | Keyframe control when text is not exact enough |
-
-**The part that matters is the character id.** Every animation is a state of one
-character, so a walk, an attack and a death all come back as the same figure
-rather than three drawings that happen to resemble each other. That is exactly
-what an enemy sheet needs and exactly what generated art usually fails at.
-
-### What this unlocks that we could not do before
-
-1. **Infected livestock, properly.** Priority 2 in the queue. Right now the HUD
-   recolours ordinary chickens with a CSS filter and it looks like it. One
-   infected hen, generated once, then walk + attack + death as states.
-2. **Enemies with real attack animations.** Every enemy currently walks and
-   contact-damages. An animation per behaviour is now cheap.
-3. **Class abilities that look like something.** `digIn` and `bolt` are stat
-   effects with an FX clip over the top. "Plant your feet and brace" and "dash
-   with i-frames" are both animatable in words.
-4. **Weapon-specific player poses.** A farmer holding a scythe and a farmer
-   holding a scattergun are currently the same sprite with a gun drawn beside it.
-5. **Bosses.** The Duster and the Prize Bull deserve more than a walk cycle.
-
-### The constraint to solve first
-
-`art/sprites.json` has ONE humanoid rig: a 1792x704 sheet, 32x64 frames in
-stacked row pairs, four direction bands in the order `right, up, left, down`,
-with clips at fixed row pairs. Every humanoid in the game — player classes and
-zombie enemies alike — is sliced by that rig, and the atlas builder asserts the
-sheet dimensions and the band order before it will pack anything.
-
-**PixelLab output will not match that rig.** It has its own frame count, its own
-direction count and its own layout. So generated characters need a *second* rig
-definition in the builder — a `pixellabRig` block naming the sheet geometry the
-API actually returns — rather than being forced into the LimeZu one.
-
-That is a contained piece of work, but it is real, and it should be done against
-a genuine generated sheet rather than guessed from the docs. **Generate one
-character first, look at what comes back, then write the rig.** Do not write the
-importer speculatively; the last time this project assumed a sheet's geometry
-from a spec instead of measuring it, `down` drew the right-facing pose for seven
-milestones.
-
-### Do not use it for
-
-Player class *character sheets*. `npm run characters` composites those from the
-licensed generator pieces in the game's own rig, for free, and PixelLab cannot
-match that rig. Portraits are a different question and are still worth doing —
-`Portrait <-> Character (Pro)` is the recommended path there.
-
-### The character recipe — settings, anchors, prompt
-
-**Claude Design's, from generating the zombie farmer. Follow it exactly.** These
-settings are not defaults and the tool will not pick them for you.
-
-| Setting | Value | Why |
-|---|---|---|
-| Mode | **Pro** | Design is explicit: characters must use Pro. The cheap tools produce weaker silhouettes and a character is the one thing that cannot afford one. |
-| Character size | **40** — set it manually | The size box does not default to this. Our humanoids occupy 32x46 of content in a 32x64 cell; 40 is the setting that lands there. |
-| View | **low top down** | The game is a low top-down. Any other view generates a character that cannot stand in the field. |
-
-**Two images, doing two different jobs. Do not swap them.**
-
-```
-style image      ONE direction, front-facing   assets/pixellab/anchors/hand-style.png
-reference image  FOUR directions in a row      assets/pixellab/anchors/hand-reference.png
-```
-
-The **style** image carries palette, outline weight, shading and colour count.
-The **reference** image carries the rig — how a character in this game is posed,
-framed and turned. Getting them the wrong way round gives you a character that
-looks right and turns wrong, or turns right and looks like a different game.
-
-`npm run anchor` cuts both from a real packed humanoid, so they are reproducible
-and always match art that is actually in the game:
-
-```bash
-npm run anchor            # from the farmer
-npm run anchor -- kid vet # from any packed humanoid id
-```
-
-#### The prompt
-
-**This is where the character recipe differs from the icon recipe, and the
-difference is deliberate.** For icons the rule is *the subject only* — palette
-and outline notes fight the style anchor. For characters, Design's working
-prompt DOES carry palette and outline direction, because a character has far
-more surface area for the model to drift on.
-
-The zombie farmer, verbatim, as the worked example:
-
-> a farmhand who has gone wrong. brown dungarees with both shoulder straps on, a
-> dirty straw hat, a grubby cream shirt. grey-green skin, milky white eyes with
-> no pupils, both arms hanging limp and long at his sides, head level. still
-> clearly a farm worker, not a monster — someone the player would recognise as a
-> neighbour. muted earthy palette, soft dark brown outline, symmetrical
-
-Read what that prompt is actually doing, because it is a template:
-
-1. **A one-line premise.** "a farmhand who has gone wrong."
-2. **Clothing, itemised.** Every garment named, with its state. "both shoulder
-   straps on" is the kind of detail that stops the model inventing a variation.
-3. **The body, itemised.** Skin, eyes, arms, head. Pose is stated explicitly —
-   "arms hanging limp and long at his sides, head level" — because a character
-   generated in an action pose cannot be animated into a different one.
-4. **A line of authorial intent.** "still clearly a farm worker, not a monster —
-   someone the player would recognise as a neighbour." This is the line doing
-   the most work and the easiest to leave out.
-5. **Style closers.** "muted earthy palette, soft dark brown outline,
-   symmetrical."
-
-#### Then animate it
-
-The character comes back with a **character id**. Every animation after that is
-a state of that id, so they stay the same figure:
-
-- **Preset animations** for the ordinary ones — walk, idle, attack, death.
-- **Described animations** for anything else, in plain words. Design's examples
-  from the tool: a backflip, swinging a sword, throwing a fireball, *opening a
-  potion and drinking from it*. If it can be described it can be animated, which
-  means an enemy's telegraph, a class ability and a boss's wind-up are all now
-  ordinary asks rather than art commissions.
-
-This is why the character builder is worth more than the icon pipeline: the
-icons removed a constraint on what items can exist, and this removes the
-constraint on what anything in the game can *do*.

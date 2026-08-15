@@ -72,14 +72,14 @@ interface Manifest {
   singlesExtra?: { _base: string; files: Record<string, string> }
   /** Generated card art. Deliberately larger than 32px; cards zoom by integers. */
   pixellab?: { _base: string; files: Record<string, string> }
-  /** PixelLab character-builder exports. Its own rig; see the note in the JSON. */
-  pixellabCharacters?: {
+  /** Generated characters, pre-cut to the game's 32x64 grid. */
+  pixellabStrips?: {
     _base: string
     compassToDirection: Record<string, string>
     sheets: Record<string, {
-      state: string
-      frameSize: number
-      clips: Record<string, { from: 'rotations' | 'animations'; animation?: string; frames: number }>
+      cellWidth: number
+      cellHeight: number
+      clips: Record<string, { file: string; frames: number }>
     }>
   }
   /** One cell lifted out of a bigger sheet, for art that already exists. */
@@ -150,84 +150,56 @@ const clipLengths: Record<string, Record<string, number>> = {}
 // ------------------------------------------------- pixellab characters
 
 /**
- * Pack a character-builder export.
+ * Pack a generated character that has already been cut to the game's grid.
  *
- * One PNG per frame per direction, rather than one sheet — so this reads a
- * directory tree instead of slicing a grid, and there is no geometry to get
- * wrong. The only mapping is compass to the game's four directions; the four
- * diagonals are dropped because the renderer never asks for them.
+ * The raw PixelLab export needs real work first — rotations land on 40x40,
+ * animation frames on 56x56, and the feet sit at a different y in every frame,
+ * so dropped in as-is a character bobs and does not line up with LimeZu's
+ * cells. `tools/pixellab-cut.ts` is what does that; by the time a sheet gets
+ * here it is 32x64 cells with the feet on y=52 and there is no geometry left
+ * to guess.
  */
-if (manifest.pixellabCharacters) {
-  const cfg = manifest.pixellabCharacters
+if (manifest.pixellabStrips) {
+  const cfg = manifest.pixellabStrips
   for (const [id, sheet] of Object.entries(cfg.sheets)) {
     clipLengths[id] ??= {}
     for (const [clipName, clip] of Object.entries(sheet.clips)) {
       clipLengths[id][clipName] = clip.frames
-
-      const framePath = (compass: string, f: number): string =>
-        clip.from === 'rotations'
-          ? `${cfg._base}${id}/${sheet.state}/rotations/${compass}.png`
-          : `${cfg._base}${id}/${sheet.state}/animations/${clip.animation}/${compass}/`
-            + `frame_${String(f).padStart(3, '0')}.png`
-
-      // Load every frame of the clip first, because the export is NOT uniform:
-      // this character came back with seven directions at 40x40 and one at
-      // 56x56. Packing them as-is would put that direction's feet 8px off the
-      // ground, since the pivot is the cell's bottom edge. So the clip is
-      // normalised to its largest cell, each smaller frame CENTRED inside it —
-      // which reproduces exactly the padding the big frames already have.
-      const loaded: { compass: string; dir: string; f: number; img: Image }[] = []
-      let cell = 0
       for (const [compass, dir] of Object.entries(cfg.compassToDirection)) {
-        for (let f = 0; f < clip.frames; f++) {
-          const path = framePath(compass, f)
-          try {
-            const img = decodePng(readFileSync(path))
-            if (img.width !== img.height) {
-              errors.push(`${path}: expected a square frame, got ${img.width}x${img.height}`)
-              continue
-            }
-            cell = Math.max(cell, img.width)
-            loaded.push({ compass, dir, f, img })
-          } catch (e) {
-            errors.push(`${path}: ${(e as Error).message}`)
-          }
-        }
-      }
-      if (cell === 0) continue
-      if (cell !== sheet.frameSize) {
-        console.log(
-          `  ${id}.${clipName}: frames are ${cell}px, manifest says ${sheet.frameSize} — `
-          + `using ${cell}. PixelLab pads animation frames larger than the character size.`,
-        )
-      }
-
-      for (const { dir, f, img } of loaded) {
-        let src = img
-        let ox = 0
-        let oy = 0
-        if (img.width !== cell) {
-          // Centre the smaller cell inside the clip's cell.
-          ox = Math.floor((cell - img.width) / 2)
-          oy = Math.floor((cell - img.height) / 2)
-          const padded = blankImage(cell, cell)
-          blit(img, 0, 0, img.width, img.height, padded, ox, oy)
-          src = padded
-        }
-        const b = contentBounds(src, 0, 0, cell, cell)
-        if (b.empty) {
-          errors.push(`${id}.${clipName}.${dir}.${f}: entirely transparent`)
+        const path = `${cfg._base}${id}/${clip.file.replace('{compass}', compass)}`
+        let img: Image
+        try {
+          img = decodePng(readFileSync(path))
+        } catch (e) {
+          errors.push(`${path}: ${(e as Error).message}`)
           continue
         }
-        pending.push({
-          name: `${id}.${clipName}.${dir}.${f}`,
-          img: src,
-          sx: b.x, sy: b.y, sw: b.w, sh: b.h,
-          // Bottom-centre pivot, the same convention as every other sheet —
-          // which is why the renderer needs no special case for these.
-          ox: b.x - cell / 2,
-          oy: b.y - cell,
-        })
+        const need = sheet.cellWidth * clip.frames
+        if (img.width !== need || img.height !== sheet.cellHeight) {
+          errors.push(
+            `${path}: expected ${need}x${sheet.cellHeight} ` +
+            `(${clip.frames} cells of ${sheet.cellWidth}x${sheet.cellHeight}), ` +
+            `got ${img.width}x${img.height}.`,
+          )
+          continue
+        }
+        for (let f = 0; f < clip.frames; f++) {
+          const sx = f * sheet.cellWidth
+          const b = contentBounds(img, sx, 0, sheet.cellWidth, sheet.cellHeight)
+          if (b.empty) {
+            errors.push(`${path}: frame ${f} is entirely transparent`)
+            continue
+          }
+          pending.push({
+            name: `${id}.${clipName}.${dir}.${f}`,
+            img,
+            sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+            // Bottom-centre of the CELL, the same convention as every other
+            // sheet — which is why the renderer needs no special case.
+            ox: b.x - (sx + sheet.cellWidth / 2),
+            oy: b.y - sheet.cellHeight,
+          })
+        }
       }
     }
   }
@@ -255,6 +227,7 @@ if (manifest.gasMaskIcon) {
 // ---------------------------------------------------------------- humanoids
 
 for (const [id, path] of Object.entries(manifest.humanoids)) {
+  if (id.startsWith('_')) continue
   let sheet: Image
   try {
     sheet = decodePng(readFileSync(path))

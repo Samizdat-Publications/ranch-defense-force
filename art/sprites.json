@@ -36,7 +36,6 @@
  "humanoids": {
   "hand": "assets/generated/characters/farmer-01.png",
   "kid": "assets/generated/characters/farmer-female-01.png",
-  "farmhand": "assets/generated/characters/zombie-01.png",
   "acidZombie": "assets/generated/characters/zombie-acid-01.png",
   "bloatedFarmhand": "assets/generated/characters/zombie-02.png",
   "maskedSprayer": "assets/generated/characters/gas-enemy-01.png",
@@ -44,7 +43,8 @@
   "widow": "assets/generated/characters/farmer-widow-01.png",
   "vet": "assets/generated/characters/farmer-vet-01.png",
   "agronomist": "assets/generated/characters/farmer-agronomist-01.png",
-  "drifter": "assets/generated/characters/farmer-drifter-01.png"
+  "drifter": "assets/generated/characters/farmer-drifter-01.png",
+  "_replacedNote": "`farmhand` used to point at zombie-01.png. It is now generated -- see pixellabStrips -- and the LimeZu entry had to be REMOVED rather than left alongside it: both write the same frame keys, the humanoid pass runs later, and it silently won. The symptom was farmhand.walk having 6 frames instead of the generated 8, with no error anywhere. (was: assets/generated/characters/zombie-01.png)"
  },
  "animals": {
   "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it — a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
@@ -524,11 +524,11 @@
   "cellH": 64,
   "name": "item.gasMask"
  },
- "pixellabCharacters": {
-  "_note": "Characters generated with the PixelLab character builder. The export is <State>/animations/<Anim>/<compass>/frame_NNN.png plus <State>/rotations/<compass>.png, at the character size set in the tool (40 here) with EIGHT compass directions. That is a different rig from humanoidRig entirely -- LimeZu's is one 1792x704 sheet of 32x64 cells in stacked row pairs with four bands. Measured from a real export, not guessed from the docs.",
-  "_directionNote": "The game has four directions and PixelLab has eight. south->down, north->up, west->left, east->right; the four diagonals are dropped rather than averaged, because the renderer only ever asks for four and a diagonal frame would never be requested.",
-  "_pivotNote": "Frames are square and the figure stands on the bottom edge, so the pivot is bottom-centre of the cell -- same convention as every other sheet, which is why the renderer needs no special case for these.",
-  "_base": "assets/pixellab/characters/",
+ "pixellabStrips": {
+  "_note": "Generated characters, delivered ALREADY CUT to the game's grid: 32x64 cells, centred, feet on y=52, the same baseline the LimeZu farmer sheets use. So there is no trimming or re-placing to do here -- the raw PixelLab export needed all of that (rotations on 40x40, animation frames on 56x56, feet at a different y in every frame) and tools/pixellab-cut.ts is what does it. This block just names strips.",
+  "_idNote": "Keyed as `farmhand`, NOT `hand` as the delivered README says. `hand` is the PLAYER class id -- the farmer you control -- and packing an infected zombie under it would have silently replaced the player's own sprite. This is the infected farmhand ENEMY, which the content already calls farmhand.",
+  "_directionNote": "Eight compass directions generated, four used. The renderer only ever asks for four.",
+  "_base": "assets/pixellab/character/",
   "compassToDirection": {
    "south": "down",
    "north": "up",
@@ -536,17 +536,16 @@
    "east": "right"
   },
   "sheets": {
-   "zombieFarmhand": {
-    "state": "Idle",
-    "frameSize": 40,
+   "farmhand": {
+    "cellWidth": 32,
+    "cellHeight": 64,
     "clips": {
      "idle": {
-      "from": "rotations",
+      "file": "idle_{compass}.png",
       "frames": 1
      },
      "walk": {
-      "from": "animations",
-      "animation": "Scary_Walk",
+      "file": "walk_{compass}_strip.png",
       "frames": 8
      }
     }
