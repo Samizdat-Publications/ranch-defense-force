@@ -64,6 +64,27 @@ interface Walker {
   dim?: number
 }
 
+/**
+ * The field: distant buildings, then crop bands scrolling toward the viewer.
+ *
+ * The mockup draws the buildings at half scale. That would put pixel art on a
+ * half-pixel grid, so they are placed at 1x and pushed further up the frame
+ * instead — perspective from position rather than from a fractional zoom.
+ */
+const FIELD: Placement[] = [
+  { sprite: 'scene.silo', x: 82, y: 16, zoom: 1, dim: 0.62, z: 1 },
+  { sprite: 'scene.barn', x: 66, y: 34, zoom: 1, dim: 0.6, z: 1 },
+  { sprite: 'scene.house', x: 20, y: 26, zoom: 1, dim: 0.58, z: 1 },
+  { sprite: 'scene.scarecrow', x: 45, y: 44, zoom: 1, dim: 0.7, z: 2 },
+]
+
+/** Crop bands: tile, on-screen tile size, top, seconds per loop. */
+const FIELD_CROPS: { sprite: string; zoom: number; y: number; cycle: number }[] = [
+  { sprite: 'scene.wheat', zoom: 2, y: 52, cycle: 5.2 },
+  { sprite: 'scene.wheat2', zoom: 3, y: 62, cycle: 6.4 },
+  { sprite: 'scene.wheat', zoom: 4, y: 76, cycle: 4.1 },
+]
+
 const WALKERS: Walker[] = [
   { sprite: 'scene.farmerWalkstrip', frames: 6, x: 41, y: 70, zoom: 2, cycle: 0.75, dim: 0.92 },
   { sprite: 'scene.chickenWalkLeftstrip', frames: 6, x: 62, y: 76, zoom: 2, cycle: 0.6, dim: 0.9 },
@@ -81,6 +102,8 @@ export class MenuScreen {
   private unlocked = new Set<string>(CLASS_IDS.filter((id) => CLASSES[id]?.unlocked === true))
   /** id -> acre price, for the brand on a nailed packet. */
   private prices = new Map<string, number>()
+  /** Which backdrop this page load got. Fixed for the session, see `scene()`. */
+  private readonly isField = Math.random() < 0.5
 
   constructor(
     parent: HTMLElement,
@@ -98,9 +121,9 @@ export class MenuScreen {
     const head = el('button', { class: 'btn btn-primary', text: 'Head out →' })
     head.onclick = () => this.onStart(this.selected, this.seedInput.value.trim())
 
-    this.yardEl = this.yard()
+    this.yardEl = this.scene()
 
-    this.root = el('div', { class: 'screen home' }, [
+    this.root = el('div', { class: `screen home${this.isField ? ' is-field' : ''}` }, [
       this.yardEl,
       el('div', { class: 'home-inner' }, [
         el('h1', { class: 'home-title', text: 'RANCH DEFENSE FORCE' }),
@@ -120,6 +143,61 @@ export class MenuScreen {
     this.root.style.display = 'none'
     parent.appendChild(this.root)
     this.renderCards()
+  }
+
+  /**
+   * Pick a backdrop for this load.
+   *
+   * Two ship and one is chosen at random per page load rather than per open —
+   * re-rolling every time you back out of the Homestead would make the home
+   * screen feel unstable, which is the opposite of what a home screen is for.
+   */
+  private scene(): HTMLElement {
+    return this.isField ? this.field() : this.yard()
+  }
+
+  /** The field: sun, clouds, distant buildings, parallax crop bands. */
+  private field(): HTMLElement {
+    const scene = el('div', { class: 'home-yard' })
+    scene.append(el('div', { class: 'field-sun' }))
+
+    // Three cloud layers at very different speeds; the difference is the depth.
+    for (const [top, secs, opacity] of [[11, 150, 0.5], [21, 104, 0.7], [31, 76, 0.9]] as const) {
+      const c = el('div', { class: 'field-cloud' })
+      c.style.top = `${top}%`
+      c.style.opacity = String(opacity)
+      c.style.animation = `field-drift ${secs}s linear infinite`
+      scene.append(c)
+    }
+
+    for (const p of FIELD) {
+      const sp = spriteEl(p.sprite, 4096, p.zoom)
+      if (!sp) continue
+      const wrap = el('div', { class: 'home-place' }, [sp])
+      wrap.style.left = `${p.x}%`
+      wrap.style.top = `${p.y}%`
+      wrap.style.zIndex = String(p.z ?? 1)
+      wrap.style.filter = `brightness(${p.dim ?? 1})`
+      scene.append(wrap)
+    }
+
+    FIELD_CROPS.forEach((c, i) => {
+      const url = spriteTileUrl(c.sprite)
+      const f = frameOf(c.sprite)
+      if (!url || !f) return
+      const size = f.w * c.zoom
+      const band = el('div', { class: 'field-crop' })
+      band.style.top = `${c.y}%`
+      band.style.height = `${f.h * c.zoom}px`
+      band.style.backgroundImage = `url('${url}')`
+      band.style.backgroundSize = `${size}px ${f.h * c.zoom}px`
+      band.style.setProperty('--crop-end', `-${size}px`)
+      band.style.animation = `field-crop ${c.cycle}s linear infinite`
+      band.style.zIndex = String(3 + i)
+      scene.append(band)
+    })
+
+    return scene
   }
 
   /** The yard: ground, buildings, walkers, porch light. All dressing, no state. */
@@ -242,7 +320,7 @@ export class MenuScreen {
   setUnlocked(ids: readonly string[], prices?: ReadonlyMap<string, number>): void {
     this.unlocked = new Set(ids)
     if (prices) this.prices = new Map(prices)
-    const fresh = this.yard()
+    const fresh = this.scene()
     this.yardEl.replaceWith(fresh)
     this.yardEl = fresh
     this.renderCards()

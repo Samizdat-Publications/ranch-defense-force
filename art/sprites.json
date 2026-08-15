@@ -562,26 +562,26 @@
    "scene.doghouse": "doghouse.png",
    "scene.fencePicket": "fence_picket.png",
    "scene.fenceRail": "fence_rail.png",
-   "scene.hay": "hay.png",
    "scene.house": "house.png",
    "scene.scarecrow": "scarecrow.png",
    "scene.silo": "silo.png",
    "scene.tractorLeft": "tractor_left.png",
-   "scene.well": "well.png",
-   "scene.wheat": "wheat.png",
-   "scene.wheat2": "wheat2.png"
+   "scene.well": "well.png"
   },
   "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent; the yard uses the game's own rooster sprite instead."
  },
  "sceneStrips": {
-  "_note": "Walk-cycle strips for the home screen. Packed UNTRIMMED: a strip animated with steps(n) divides its width by n, so the packed width must be an exact multiple of the cell. Trimming a 192px six-frame strip to 188px makes 188/6 fractional and the character slides instead of stepping.",
+  "_note": "Anything TILED or STEPPED, packed untrimmed. A strip animated with steps(n) divides its width by n and a repeating tile repeats at its packed size, so both need the real cell rather than the content bounds. Trimming a 192px six-frame strip to 188px makes 188/6 fractional; trimming a 32px wheat tile to 26px leaves a gap in every repeat.",
   "_base": "assets/scene/",
   "noTrim": true,
   "files": {
    "scene.chickenPeckstrip": "chicken_peck_strip.png",
    "scene.chickenWalkLeftstrip": "chicken_walk_left_strip.png",
    "scene.farmerWalkstrip": "farmer_walk_strip.png",
-   "scene.farmerWalkUpstrip": "farmer_walk_up_strip.png"
+   "scene.farmerWalkUpstrip": "farmer_walk_up_strip.png",
+   "scene.wheat": "wheat.png",
+   "scene.wheat2": "wheat2.png",
+   "scene.hay": "hay.png"
   }
  }
 }
