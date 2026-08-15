@@ -496,6 +496,7 @@
    "item.coffeeThermos": "thermos.png",
    "item.culvertPipe": "culvert_pipe.png",
    "item.dogWhistle": "dog_whistle.png",
+   "item.feedSack": "feed_sack.png",
    "item.fenceStaples": "staples.png",
    "item.fourLeaf": "four_leaf.png",
    "item.grainScoop": "grain_scoop.png",
@@ -511,6 +512,7 @@
    "item.weatherVane": "weather_vane.png",
    "item.wetRag": "wet_rag.png",
    "item.whetstone": "whetstone.png",
+   "item.workBoots": "work_boots.png",
    "weapon.crowBell": "cow_bell.png",
    "weapon.seedDrill": "seed_drill.png"
   }

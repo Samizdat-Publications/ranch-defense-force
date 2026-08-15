@@ -258,5 +258,6 @@
       "style closers: palette, outline, symmetry"
     ],
     "differsFromIcons": "Icons take the SUBJECT ONLY; a style suffix fights the anchor. Characters DO carry palette and outline direction, because there is far more surface for the model to drift on."
-  }
+  },
+  "_apiNote": "VALIDATED against the live API on 2026-08-15. Two icons generated end to end and wired in (work_boots, feed_sack) at 20 generations each. Two things worth knowing that the handoff could not have: the style anchor can be passed as `style_image_url` pointing at this repo's own raw.githubusercontent URL, which avoids a 25KB base64 argument entirely -- the repo being public makes it its own asset host. And create_image_pro returns each candidate as a SEPARATE file, not the web UI's 4x4 sheet, so pixellab-cut's `icon` command does not apply; `npm run cut -- single <src> <dst>` was added for that path."
 }

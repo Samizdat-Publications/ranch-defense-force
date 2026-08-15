@@ -24,7 +24,8 @@
     "zoom": "vite-node tools/zoom-check.ts --",
     "characters": "vite-node tools/make-character.ts --",
     "pixellab": "vite-node tools/pixellab.ts --",
-    "anchor": "vite-node tools/char-anchor.ts --"
+    "anchor": "vite-node tools/char-anchor.ts --",
+    "cut": "vite-node tools/pixellab-cut.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

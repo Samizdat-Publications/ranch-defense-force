@@ -26,8 +26,7 @@
     "mods": {
       "moveSpeedPct": 8
     },
-    "cardSprite": "tool.axe.wood",
-    "_standInArt": true
+    "cardSprite": "item.workBoots"
   },
   "feedSack": {
     "name": "Feed Sack",
@@ -40,8 +39,7 @@
     "mods": {
       "maxHp": 20
     },
-    "cardSprite": "pickup.feed",
-    "_standInArt": true
+    "cardSprite": "item.feedSack"
   },
   "saltLick": {
     "name": "Salt Lick",

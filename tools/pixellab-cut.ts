@@ -184,6 +184,25 @@ if (cmd === 'grid') {
   }
   write(dst, out)
   console.log(`${dst} — ${out.width}x${out.height}`)
+} else if (cmd === 'single') {
+  /*
+    Trim ONE image to content. The `icon` command above assumes a 4x4 sheet,
+    which is what the web UI exports; the REST API returns each candidate as its
+    own file instead, so there is no grid to index into. Same alpha floor, same
+    secretly-2x check, one image.
+  */
+  const [src, dst] = args
+  const img = read(src)
+  const b = bounds(img)
+  if (b.empty) throw new Error(`${src} is entirely transparent`)
+  let out = crop(img, b)
+  const n = detectScale(out)
+  if (n > 1) {
+    console.log(`  detected ${n}x pixel scale, downscaling`)
+    out = downscale(out, n)
+  }
+  write(dst, out)
+  console.log(`${dst} — ${out.width}x${out.height}`)
 } else if (cmd === 'cell') {
   // One character frame onto the 32x64 grid.
   const [src, dst] = args
@@ -202,5 +221,5 @@ if (cmd === 'grid') {
   const b = bounds(img)
   console.log(`${args[0]} — canvas ${img.width}x${img.height}, content ${b.w}x${b.h}, pixel scale ${n}x`)
 } else {
-  console.log('commands: grid | icon | cell | strip | scale — see the header of this file')
+  console.log('commands: grid | icon | single | cell | strip | scale — see the header of this file')
 }
