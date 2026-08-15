@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0b0a09; }
+  a { color: #e0a02e; text-decoration: none; }
+  a:hover { color: #f2c05a; text-decoration: underline; }
+  img { image-rendering: pixelated; }
+  @keyframes walk6 { from { background-position: 0 0; } to { background-position: -600% 0; } }
+  @keyframes walk8 { from { background-position: 0 0; } to { background-position: -800% 0; } }
+  @keyframes chase { 0% { width: 74%; } 12% { width: 74%; } 100% { width: 58%; } }
+  @keyframes hpPulse { 0%, 100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.25); } 50% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.25), 0 0 12px rgba(200,54,42,0.55); } }
+  @keyframes readyGlow { 0%, 100% { box-shadow: 0 4px 0 #33271a; } 50% { box-shadow: 0 4px 0 #33271a, 0 0 18px rgba(240,197,97,0.6); } }
+  @keyframes wipe { 0% { transform: scaleY(1); } 100% { transform: scaleY(0); } }
+  @keyframes xpCrawl { 0% { width: 34%; } 100% { width: 62%; } }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes swayCrop { 0%, 100% { transform: skewX(-1.5deg); } 50% { transform: skewX(1.5deg); } }
+  @keyframes tracer { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--tx, 200px), var(--ty, -90px)) scale(1); } }
+  @keyframes hitFlash { 0%, 88%, 100% { opacity: 0; } 90% { opacity: 1; } }
+  @keyframes riseFade { 0% { opacity: 0; transform: translateY(6px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px); } }
+  @keyframes panelIn { 0% { opacity: 0; transform: translateY(26px) scale(0.97); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes panelInX { 0% { opacity: 0; transform: translateX(-50%) translateY(26px) scale(0.97); } 100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+  @keyframes panelInC { 0% { opacity: 0; transform: translate(-50%, -50%) translateY(26px) scale(0.97); } 100% { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(1); } }
+  @keyframes stampIn { 0% { opacity: 0; transform: scale(1.6) rotate(4deg); } 62% { opacity: 1; transform: scale(0.96) rotate(-2deg); } 100% { opacity: 1; transform: scale(1) rotate(-1.5deg); } }
+  @keyframes rowIn { 0% { opacity: 0; transform: translateX(-10px); } 100% { opacity: 1; transform: translateX(0); } }
+  @keyframes tick { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes porchGlow { 0%, 42% { opacity: 0; } 47% { opacity: 0.85; } 49% { opacity: 0.2; } 52%, 100% { opacity: 1; } }
+  @keyframes smokePuff { 0% { opacity: 0; transform: translate(0,0) scale(0.5); } 18% { opacity: 0.5; } 100% { opacity: 0; transform: translate(40px,-130px) scale(2.2); } }
+  @keyframes firefly { 0% { opacity: 0; transform: translate(0,0); } 22% { opacity: 1; } 72% { opacity: 0.9; } 100% { opacity: 0; transform: translate(var(--fx,60px), var(--fy,-80px)); } }
+  @keyframes sway { 0%, 100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg); } }
+</style>
+</helmet>
+
+<div style="width: 1920px; background: #0b0a09; font-family: 'IBM Plex Mono', ui-monospace, monospace;">
+
+  <div style="padding: 48px 80px 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE — DESIGN PASS 4 OF 4</div>
+    <h1 style="font-family: 'Rye', serif; font-size: 62px; margin: 14px 0 10px; color: #f6e6c2; font-weight: 400;">In play, and between</h1>
+    <p style="max-width: 92ch; font-size: 15px; line-height: 1.75; color: #a2957c; margin: 0 0 8px;">The four remaining screens in the Paper &amp; Pin language: the HUD you read while something is trying to kill you, the pause you opened by accident, the results you actually care about, and the Homestead at dusk. Same rules as the cards — kraft paper, stamped tin, wood type, and nothing in the centre of the field.</p>
+  </div>
+
+  <!-- ========================= 01 · HUD ========================= -->
+  <div style="padding: 44px 80px 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #e0a02e;">01 / HUD · WAVE 14, BOSS ON THE FIELD</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 10px 0 8px; color: #ecdcbc; font-weight: 400;">Everything hugs the edge</h2>
+    <p style="max-width: 92ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 22px;">The centre stays clear, so every element is pinned to a rail: health and armour top-left, the wave clock top-centre with the boss bar under it, feed top-right, the weapon ring along the bottom with the ability plate beside it, and the XP strip across the very bottom edge. Nothing floats.</p>
+  </div>
+
+  <div style="margin: 0 80px; position: relative; width: 1760px; height: 990px; overflow: hidden; border: 1px solid #3a3226; background: #2a2418;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, #6a5c3a 0%, #5c5033 26%, #4a4029 62%, #3a3220 100%);"></div>
+    <div style="position: absolute; inset: 0; opacity: 0.4; background-image: repeating-linear-gradient(94deg, rgba(0,0,0,0.26) 0 5px, transparent 5px 17px);"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 232px; height: 64px; opacity: 0.55; background-image: url('art/scene/wheat.png'); background-size: 64px 64px; background-repeat: repeat-x; animation: swayCrop 5.4s ease-in-out infinite;"></div>
+    
+    <div style="position: absolute; left: 0; right: 0; top: 700px; height: 64px; opacity: 0.45; background-image: url('art/scene/wheat2.png'); background-size: 64px 64px; background-repeat: repeat-x; animation: swayCrop 6.4s ease-in-out infinite;"></div>
+    <img src="art/scene/hay.png" width="128" height="64" alt="" style="position: absolute; left: 250px; top: 640px; opacity: 0.9;" />
+    <img src="art/scene/well.png" width="192" height="128" alt="" style="position: absolute; left: 1360px; top: 300px; opacity: 0.9;" />
+
+    <div style="position: absolute; left: 848px; top: 452px; width: 64px; height: 128px; background-image: url('art/scene/farmer_walk_strip.png'); background-size: 600% 100%; background-repeat: no-repeat; animation: walk6 0.62s steps(6) infinite;"></div>
+    <div style="position: absolute; left: 838px; top: 566px; width: 84px; height: 20px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.45), transparent);"></div>
+
+    <div style="position: absolute; left: 420px; top: 330px; width: 64px; height: 128px; background-image: url('art/enemy/hand_walk_east_strip.png'); background-size: 800% 100%; background-repeat: no-repeat; animation: walk8 0.74s steps(8) infinite;"></div>
+    <div style="position: absolute; left: 1300px; top: 620px; width: 64px; height: 128px; background-image: url('art/enemy/hand_walk_west_strip.png'); background-size: 800% 100%; background-repeat: no-repeat; animation: walk8 0.66s steps(8) infinite 180ms;"></div>
+    <div style="position: absolute; left: 1490px; top: 450px; width: 64px; height: 128px; background-image: url('art/enemy/hand_walk_west_strip.png'); background-size: 800% 100%; background-repeat: no-repeat; animation: walk8 0.82s steps(8) infinite 420ms;"></div>
+    <div style="position: absolute; left: 310px; top: 560px; width: 64px; height: 128px; background-image: url('art/enemy/hand_walk_east_strip.png'); background-size: 800% 100%; background-repeat: no-repeat; animation: walk8 0.62s steps(8) infinite 300ms;"></div>
+    <img src="art/scene/chicken_0.png" width="128" height="128" alt="" style="position: absolute; left: 1150px; top: 300px; filter: sepia(0.55) hue-rotate(52deg) saturate(1.2) brightness(0.6) contrast(1.1); animation: bob 0.9s ease-in-out infinite;" />
+    <img src="art/scene/farmer2_idle.png" width="128" height="256" alt="" style="position: absolute; left: 1150px; top: 190px; filter: sepia(0.4) hue-rotate(48deg) saturate(0.9) brightness(0.5) contrast(1.25); animation: bob 1.6s ease-in-out infinite; display: none;" />
+
+    <div style="position: absolute; left: 900px; top: 500px; width: 10px; height: 4px; background: #ffe9a0; box-shadow: 0 0 8px 2px rgba(255,214,120,0.8); --tx: 420px; --ty: -150px; animation: tracer 700ms linear infinite;"></div>
+    <div style="position: absolute; left: 900px; top: 510px; width: 10px; height: 4px; background: #ffe9a0; box-shadow: 0 0 8px 2px rgba(255,214,120,0.8); --tx: 470px; --ty: 130px; animation: tracer 700ms linear infinite 240ms;"></div>
+    <div style="position: absolute; left: 860px; top: 520px; width: 8px; height: 4px; background: #b6e39a; box-shadow: 0 0 8px 2px rgba(160,220,130,0.75); --tx: -520px; --ty: 60px; animation: tracer 900ms linear infinite 120ms;"></div>
+    <div style="position: absolute; left: 1418px; top: 508px; width: 26px; height: 26px; background: radial-gradient(circle, #fff6d2 0%, rgba(255,190,90,0.6) 40%, transparent 70%); animation: hitFlash 700ms linear infinite;"></div>
+    <div style="position: absolute; left: 1470px; top: 440px; font-family: 'Silkscreen', monospace; font-size: 15px; color: #ffe6a8; text-shadow: 0 2px 0 rgba(0,0,0,0.7); animation: riseFade 1.4s ease-out infinite;">46</div>
+    <div style="position: absolute; left: 372px; top: 300px; font-family: 'Silkscreen', monospace; font-size: 13px; color: #b6e39a; text-shadow: 0 2px 0 rgba(0,0,0,0.7); animation: riseFade 1.7s ease-out infinite 500ms;">12</div>
+
+    <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 82% at 50% 50%, transparent 44%, rgba(10,8,6,0.5) 100%);"></div>
+
+    <div style="position: absolute; left: 26px; top: 24px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="position: relative; width: 420px; height: 40px; background: linear-gradient(180deg, #d9c7a2, #c0aa82); border: 3px solid #40311f; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+        <div style="position: absolute; left: 4px; top: 4px; bottom: 4px; right: 4px; background: rgba(48,38,26,0.55); overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; background: #e8dcc4; animation: chase 900ms ease-out infinite alternate;"></div>
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 58%; background: linear-gradient(180deg, #d0483a 0%, #a32e22 100%); animation: hpPulse 2.4s ease-in-out infinite;"></div>
+          <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-size: 13px; letter-spacing: 0.08em; color: #fdf3dd; text-shadow: 0 2px 0 rgba(0,0,0,0.7);">54 / 92</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.14em; color: #cbb89a; text-shadow: 0 2px 0 rgba(0,0,0,0.8);">APRON</span>
+        <div style="display: flex; gap: 4px;">
+          <div style="width: 13px; height: 13px; transform: rotate(45deg); background: #cbb89a; border: 2px solid #40311f;"></div>
+          <div style="width: 13px; height: 13px; transform: rotate(45deg); background: #cbb89a; border: 2px solid #40311f;"></div>
+          <div style="width: 13px; height: 13px; transform: rotate(45deg); background: #cbb89a; border: 2px solid #40311f;"></div>
+          <div style="width: 13px; height: 13px; transform: rotate(45deg); background: rgba(203,184,154,0.22); border: 2px solid rgba(64,49,31,0.6);"></div>
+          <div style="width: 13px; height: 13px; transform: rotate(45deg); background: rgba(203,184,154,0.22); border: 2px solid rgba(64,49,31,0.6);"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 50%; top: 24px; transform: translateX(-50%); width: 620px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+      <div style="display: flex; align-items: stretch; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.55));">
+        <div style="background: linear-gradient(180deg, #d9c7a2, #c0aa82); border: 3px solid #40311f; padding: 6px 18px; text-align: center;">
+          <div style="font-family: 'Rye', serif; font-size: 26px; line-height: 1; color: #33261a;">Wave 14</div>
+          <div style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.18em; color: #6b5840; margin-top: 3px;">OF TWENTY-FOUR</div>
+        </div>
+        <div style="background: linear-gradient(180deg, #5d4b33, #3f3121); border: 3px solid #40311f; border-left: none; padding: 0 16px; display: grid; place-items: center;">
+          <div style="font-family: 'Silkscreen', monospace; font-size: 20px; color: #f2e2c8; animation: tick 1s steps(1) infinite;">23s</div>
+        </div>
+      </div>
+      <div style="width: 100%; position: relative; height: 30px; background: linear-gradient(180deg, #3a2b1c, #241a10); border: 3px solid #6b2c22; box-shadow: 0 4px 10px rgba(0,0,0,0.55);">
+        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 71%; background: linear-gradient(180deg, #c8362a 0%, #8e1f16 100%);"></div>
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.2em; color: #ffe0c8; text-shadow: 0 2px 0 rgba(0,0,0,0.7);">THE THING IN THE NORTH PASTURE</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; right: 26px; top: 24px; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, #d9c7a2, #c0aa82); border: 3px solid #40311f; padding: 7px 14px 7px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+      <img src="art/card/icon_feedsack.png" width="60" height="60" alt="" />
+      <div>
+        <div style="font-family: 'Rye', serif; font-size: 24px; line-height: 1; color: #33261a;">248</div>
+        <div style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.16em; color: #6b5840; margin-top: 2px;">FEED</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 26px; bottom: 62px;">
+      <div style="display: inline-block; background: linear-gradient(180deg, #e0b455, #b7862c); border: 3px solid #33271a; padding: 10px 18px; animation: readyGlow 2.2s ease-in-out infinite;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 13px; letter-spacing: 0.14em; color: #2b1d08;">DIG IN</div>
+        <div style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.16em; color: #5c3f10; margin-top: 4px;">SPACE · READY</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 50%; bottom: 62px; transform: translateX(-50%); display: flex; gap: 10px;">
+      <sc-for list="{{ slots }}" as="s" hint-placeholder-count="6">
+        <div style="position: relative; width: 128px; background: linear-gradient(180deg, #d9c7a2, #c0aa82); border: 3px solid #40311f; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+          <div style="position: relative; height: 62px; display: grid; place-items: center; background: rgba(36,29,19,0.35); overflow: hidden;">
+            <img src="{{ s.art }}" width="{{ s.w }}" height="{{ s.h }}" alt="" hint-placeholder-src="art/card/icon_bag.png" />
+            <div style="position: absolute; inset: 0; transform-origin: 50% 100%; background: rgba(24,19,12,0.62); animation: {{ s.wipe }};"></div>
+          </div>
+          <div style="position: relative; display: flex; justify-content: space-between; align-items: center; padding: 5px 7px; border-top: 2px solid rgba(64,49,31,0.5);">
+            <span style="font-family: 'Silkscreen', monospace; font-size: 7.5px; letter-spacing: 0.06em; color: #4b3a24;">{{ s.name }}</span>
+            <span style="font-family: 'Silkscreen', monospace; font-size: 8px; color: #f2e2c8; background: #5d4b33; padding: 2px 4px;">{{ s.tierText }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: linear-gradient(180deg, #2a2114, #1a150d); border-top: 3px solid #40311f;">
+      <div style="position: absolute; left: 0; top: 0; bottom: 0; background: repeating-linear-gradient(90deg, #7fb35a 0 6px, #6a9848 6px 12px); animation: xpCrawl 6s linear infinite;"></div>
+      <div style="position: absolute; left: 14px; top: 0; bottom: 0; display: flex; align-items: center; font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.14em; color: #f2e2c8; text-shadow: 0 2px 0 rgba(0,0,0,0.8);">LV 7</div>
+      <div style="position: absolute; right: 14px; top: 0; bottom: 0; display: flex; align-items: center; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.14em; color: #cbb89a;">340 / 560 XP</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; margin: 26px 80px 0;">
+    <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">THE HP CHASER, KEPT</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">The white band draining behind the red is the best thing in the current HUD and it survives untouched — same delayed CSS transition, now on a cream paper bar instead of a grey one. A big hit still reads as a big hit.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">ARMOUR AS PIPS</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Armour is five diamonds under the bar, filled to your rank, rather than a number nobody converts. It uses the same diamond as the rarity plate — the only glyph in the game, now meaning "one step" everywhere.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">COOLDOWN AS A WIPE</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Weapon tags keep the existing <b style="color: #ded0b2;">scaleY</b> shade — cheap, no layout, already wired in <b style="color: #ded0b2;">hud.ts</b>. Tier is a small stamped chip rather than a bare digit, so a T4 weapon looks like it was upgraded.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">CENTRE 70% CLEAR</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Nothing sits inside the play area. The wave clock stays above the first crop line, the boss bar is pinned under it at the top rather than floating over the boss, and the tallest bottom element is 96px, leaving the field's lower third readable.</div>
+    </div>
+  </div>
+
+  <!-- ========================= 02 · PAUSE ========================= -->
+  <div style="padding: 60px 80px 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #e0a02e;">02 / PAUSE</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 10px 0 8px; color: #ecdcbc; font-weight: 400;">A door you opened by accident</h2>
+    <p style="max-width: 92ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 22px;">The plainest screen in the game, and it should stay that way — the run at a glance, the sound controls you actually came for, and a way back out. The field freezes behind it rather than being covered.</p>
+  </div>
+
+  <div style="margin: 0 80px; position: relative; width: 1760px; height: 760px; overflow: hidden; border: 1px solid #3a3226; background: #2a2418;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, #6a5c3a 0%, #4a4029 60%, #3a3220 100%); filter: saturate(0.5) brightness(0.5);"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 180px; height: 96px; opacity: 0.5; background-image: url('art/scene/wheat.png'); background-size: 64px 64px; background-repeat: repeat-x; filter: brightness(0.5);"></div>
+    <img src="art/scene/farmer_idle.png" width="128" height="256" alt="" style="position: absolute; left: 300px; top: 380px; filter: brightness(0.45);" />
+    <img src="art/scene/rooster.png" width="128" height="128" alt="" style="position: absolute; left: 1400px; top: 300px; filter: brightness(0.4);" />
+    <div style="position: absolute; inset: 0; background: rgba(10,8,6,0.6);"></div>
+
+    <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 780px; animation: panelInC 420ms cubic-bezier(0.16, 1, 0.3, 1) both;">
+      <div style="position: relative; background: linear-gradient(178deg, #d9c7a2 0%, #cdb994 58%, #c4ae86 100%); border: 3px solid #40311f; box-shadow: 0 22px 40px rgba(0,0,0,0.6);">
+        <div style="position: absolute; inset: 5px; border: 1px solid rgba(64,49,31,0.3); pointer-events: none;"></div>
+        <div style="position: absolute; inset: 0; opacity: 0.12; pointer-events: none; background-image: radial-gradient(#5a4630 1px, transparent 1px); background-size: 4px 4px;"></div>
+
+        <div style="position: relative; padding: 26px 32px 0;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between;">
+            <h3 style="font-family: 'Rye', serif; font-size: 38px; margin: 0; color: #33261a; font-weight: 400;">Paused</h3>
+            <span style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.14em; color: #6b5840;">ESC OR P TO GET BACK TO WORK</span>
+          </div>
+          <div style="margin: 18px 0 0; height: 0; border-top: 2px dashed rgba(64,49,31,0.45);"></div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 28px; margin: 18px 0 0;">
+            <sc-for list="{{ pauseStats }}" as="r" hint-placeholder-count="6">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; animation: rowIn 300ms ease-out both; animation-delay: {{ r.delay }};">
+                <span style="font-family: 'Silkscreen', monospace; font-size: 8.5px; letter-spacing: 0.12em; color: #6b5840; white-space: nowrap;">{{ r.label }}</span>
+                <span style="flex: 1; border-bottom: 1px dotted rgba(64,49,31,0.5); margin-bottom: 4px;"></span>
+                <b style="font-family: 'Rye', serif; font-size: 19px; color: #33261a; font-weight: 400;">{{ r.value }}</b>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin: 22px 0 0; height: 0; border-top: 2px dashed rgba(64,49,31,0.45);"></div>
+
+          <div style="margin: 16px 0 0;">
+            <div style="font-family: 'Silkscreen', monospace; font-size: 8.5px; letter-spacing: 0.14em; color: #6b5840;">WHAT YOU ARE CARRYING</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;">
+              <sc-for list="{{ build }}" as="b" hint-placeholder-count="8">
+                <span style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.06em; color: #f2e2c8; background: {{ b.bg }}; border: 2px solid #2b241a; padding: 4px 7px;">{{ b.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 22px 0 0;">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-family: 'Silkscreen', monospace; font-size: 8.5px; letter-spacing: 0.12em; color: #6b5840;"><span>EFFECTS</span><span>80</span></div>
+              <div style="position: relative; height: 12px; margin-top: 7px; background: rgba(64,49,31,0.26); border: 2px solid rgba(64,49,31,0.55);">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 80%; background: repeating-linear-gradient(90deg, #6b4a28 0 3px, #8a6134 3px 6px);"></div>
+                <div style="position: absolute; left: 80%; top: -6px; width: 12px; height: 22px; margin-left: -6px; background: #5d4b33; border: 2px solid #2b241a;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-family: 'Silkscreen', monospace; font-size: 8.5px; letter-spacing: 0.12em; color: #6b5840;"><span>MUSIC</span><span>45</span></div>
+              <div style="position: relative; height: 12px; margin-top: 7px; background: rgba(64,49,31,0.26); border: 2px solid rgba(64,49,31,0.55);">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 45%; background: repeating-linear-gradient(90deg, #6b4a28 0 3px, #8a6134 3px 6px);"></div>
+                <div style="position: absolute; left: 45%; top: -6px; width: 12px; height: 22px; margin-left: -6px; background: #5d4b33; border: 2px solid #2b241a;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="position: relative; margin-top: 24px; padding: 16px 32px; border-top: 3px solid rgba(64,49,31,0.5); background: rgba(64,49,31,0.1); display: flex; gap: 12px; align-items: center;">
+          <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 0.12em; color: #2b1d08; background: linear-gradient(180deg, #e0b455, #b7862c); border: 3px solid #33271a; box-shadow: 0 4px 0 #33271a; padding: 11px 22px; cursor: pointer;" style-hover="filter: brightness(1.12);" style-active="transform: translateY(4px); box-shadow: none;">RESUME</button>
+          <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.1em; color: #f2e2c8; background: linear-gradient(180deg, #5d4b33, #3f3121); border: 3px solid #2b241a; box-shadow: 0 4px 0 #2b241a; padding: 11px 18px; cursor: pointer;" style-hover="filter: brightness(1.18);" style-active="transform: translateY(4px); box-shadow: none;">SOUND: ON</button>
+          <span style="flex: 1;"></span>
+          <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.1em; color: #f6e0d6; background: linear-gradient(180deg, #8e3229, #6b2119); border: 3px solid #2b241a; box-shadow: 0 4px 0 #2b241a; padding: 11px 18px; cursor: pointer;" style-hover="filter: brightness(1.15);" style-active="transform: translateY(4px); box-shadow: none;">GIVE UP THE FIELD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= 03 · RESULTS ========================= -->
+  <div style="padding: 60px 80px 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #e0a02e;">03 / RESULTS</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 10px 0 8px; color: #ecdcbc; font-weight: 400;">The day's sheet</h2>
+    <p style="max-width: 92ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 22px;">A filled-in form, because that is what a run is: numbers somebody wrote down at the end of the day. Acres earned gets the stamp — it is the only line that changes the next run — and Run it back is the primary action, one keystroke from dead to playing again.</p>
+  </div>
+
+  <div style="margin: 0 80px; position: relative; width: 1760px; height: 900px; overflow: hidden; border: 1px solid #3a3226; background: radial-gradient(120% 80% at 50% 0%, #2b2016 0%, #15120d 72%);">
+    <div style="position: absolute; inset: 0; opacity: 0.1; background-image: radial-gradient(#e0a02e 1px, transparent 1px); background-size: 7px 7px;"></div>
+
+    <div style="position: absolute; left: 50%; top: 44px; transform: translateX(-50%); width: 1080px; animation: panelInX 480ms cubic-bezier(0.16, 1, 0.3, 1) both;">
+      <div style="text-align: center;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.34em; color: #8a7c62;">THE WHITACRE PLACE · TIER 2 · SEED WHITACRE-4471</div>
+        <h3 style="font-family: 'Rye', serif; font-size: 66px; margin: 12px 0 0; color: #f6e6c2; font-weight: 400; text-shadow: 0 5px 0 #6b3a1c, 0 10px 24px rgba(0,0,0,0.7);">The light goes</h3>
+        <div style="font-size: 15px; color: #c2b193; margin-top: 10px;">You worked the field until it went. Wave 21 of twenty-four.</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 22px; margin-top: 30px; align-items: start;">
+        <div style="position: relative; background: linear-gradient(178deg, #d9c7a2 0%, #c4ae86 100%); border: 3px solid #40311f; padding: 22px 26px; box-shadow: 0 18px 32px rgba(0,0,0,0.55);">
+          <div style="position: absolute; inset: 5px; border: 1px solid rgba(64,49,31,0.3); pointer-events: none;"></div>
+          <div style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.16em; color: #6b5840;">THE DAY'S SHEET</div>
+          <div style="display: flex; flex-direction: column; gap: 9px; margin-top: 16px;">
+            <sc-for list="{{ resultRows }}" as="r" hint-placeholder-count="9">
+              <div style="display: flex; align-items: baseline; gap: 10px; animation: rowIn 320ms ease-out both; animation-delay: {{ r.delay }};">
+                <span style="font-size: 12.5px; color: #5c4a33; white-space: nowrap;">{{ r.label }}</span>
+                <span style="flex: 1; border-bottom: 1px dotted rgba(64,49,31,0.55); margin-bottom: 4px;"></span>
+                <b style="font-family: 'Rye', serif; font-size: 21px; color: #33261a; font-weight: 400; white-space: nowrap;">{{ r.value }}</b>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+          <div style="position: relative; background: linear-gradient(178deg, #eadcb8 0%, #d2bc8c 100%); border: 3px solid #6b4a12; padding: 20px 24px; box-shadow: 0 18px 32px rgba(0,0,0,0.55); text-align: center;">
+            <div style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.16em; color: #6b5840;">BANKED AT THE HOMESTEAD</div>
+            <div style="display: inline-block; margin-top: 12px; padding: 10px 26px; background: linear-gradient(180deg, #f0c561, #c2892a); border: 3px solid #6b4a12; box-shadow: 0 4px 10px rgba(0,0,0,0.4); animation: stampIn 460ms cubic-bezier(0.2, 1.5, 0.4, 1) both 700ms;">
+              <span style="font-family: 'Rye', serif; font-size: 44px; color: #2b1d08;">14</span>
+              <span style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 0.14em; color: #4a3208; margin-left: 8px;">ACRES</span>
+            </div>
+            <div style="font-size: 11.5px; color: #6b5840; margin-top: 12px; line-height: 1.6;">Tier 2 pays 1.5×. Nine from waves, five from the boss.</div>
+          </div>
+
+          <div style="position: relative; background: linear-gradient(178deg, #d9c7a2 0%, #c4ae86 100%); border: 3px solid #40311f; padding: 18px 22px; box-shadow: 0 18px 32px rgba(0,0,0,0.55);">
+            <div style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.16em; color: #6b5840;">THE BUILD YOU ENDED WITH</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px;">
+              <sc-for list="{{ build }}" as="b" hint-placeholder-count="8">
+                <span style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.06em; color: #f2e2c8; background: {{ b.bg }}; border: 2px solid #2b241a; padding: 4px 7px;">{{ b.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; justify-content: center; margin-top: 28px;">
+        <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 14px; letter-spacing: 0.14em; color: #2b1d08; background: linear-gradient(180deg, #e0b455, #b7862c); border: 3px solid #33271a; box-shadow: 0 5px 0 #33271a; padding: 15px 34px; cursor: pointer;" style-hover="filter: brightness(1.12);" style-active="transform: translateY(5px); box-shadow: none;">RUN IT BACK</button>
+        <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 0.1em; color: #f2e2c8; background: linear-gradient(180deg, #5d4b33, #3f3121); border: 3px solid #2b241a; box-shadow: 0 5px 0 #2b241a; padding: 15px 24px; cursor: pointer;" style-hover="filter: brightness(1.18);" style-active="transform: translateY(5px); box-shadow: none;">THE HOMESTEAD · 14</button>
+        <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 0.1em; color: #cbb89a; background: transparent; border: 3px solid #4a3c28; padding: 15px 24px; cursor: pointer;" style-hover="color: #f2e2c8; border-color: #6b5840;">MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= 04 · HOMESTEAD ========================= -->
+  <div style="padding: 60px 80px 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #e0a02e;">04 / HOMESTEAD</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 10px 0 8px; color: #ecdcbc; font-weight: 400;">Four places, not four tabs</h2>
+    <p style="max-width: 92ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 22px;">The yard at dusk with the four buildings you spend acres in standing in it, each fronted by a staked sign. The affordable rule from the current screen is kept: anything you can buy right now carries a warm outline, so the screen answers "what can I afford" without being read.</p>
+  </div>
+
+  <div style="margin: 0 80px 0; position: relative; width: 1760px; height: 940px; overflow: hidden; border: 1px solid #3a3226; background: linear-gradient(180deg, #191b36 0%, #302e4a 18%, #5d454f 34%, #a2685a 46%, #dc9f5c 54%, #c9a06a 60%, #6a6b41 66%, #3f4a2c 100%);">
+    <div style="position: absolute; left: 1020px; top: 400px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, #fff4cc 0%, #ffd47c 30%, rgba(255,176,92,0) 68%);"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 470px; height: 110px; background: linear-gradient(180deg, rgba(58,46,52,0) 0%, rgba(44,36,42,0.55) 66%, rgba(38,32,36,0.8) 100%); filter: blur(2px);"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 560px; bottom: 0; background: linear-gradient(180deg, #575c33 0%, #454c2b 20%, #333a21 50%, #23281a 78%, #191d13 100%);"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 560px; height: 16px; background: linear-gradient(180deg, rgba(244,196,126,0.45), transparent);"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 560px; bottom: 0; opacity: 0.3; background-image: repeating-linear-gradient(92deg, rgba(0,0,0,0.3) 0 4px, transparent 4px 13px);"></div>
+
+    <img src="art/scene/silo.png" width="224" height="448" alt="" style="position: absolute; left: 1436px; top: 190px;" />
+    <img src="art/scene/barn.png" width="480" height="224" alt="" style="position: absolute; left: 1000px; top: 400px;" />
+    <div style="position: absolute; left: 96px; top: 336px; width: 256px; height: 320px;">
+      <img src="art/scene/house.png" width="256" height="320" alt="" style="position: absolute; inset: 0;" />
+      <div style="position: absolute; left: 146px; top: 226px; width: 96px; height: 96px; background: radial-gradient(circle, rgba(255,214,140,0.7) 0%, rgba(255,190,110,0.2) 42%, transparent 72%); animation: porchGlow 11s ease-in-out infinite;"></div>
+      <div style="position: absolute; left: 118px; top: 48px; width: 16px; height: 16px; border-radius: 50%; background: rgba(214,206,196,0.5); filter: blur(4px); animation: smokePuff 7.5s linear infinite;"></div>
+      <div style="position: absolute; left: 118px; top: 48px; width: 18px; height: 18px; border-radius: 50%; background: rgba(214,206,196,0.42); filter: blur(5px); animation: smokePuff 7.5s linear infinite 3s;"></div>
+    </div>
+    <img src="art/scene/coop.png" width="128" height="160" alt="" style="position: absolute; left: 620px; top: 442px;" />
+    <img src="art/scene/scarecrow.png" width="96" height="96" alt="" style="position: absolute; left: 470px; top: 508px; transform-origin: 50% 92%; animation: sway 6.2s ease-in-out infinite;" />
+    <img src="art/scene/hay.png" width="64" height="32" alt="" style="position: absolute; left: 860px; top: 572px;" />
+    <img src="art/scene/well.png" width="96" height="64" alt="" style="position: absolute; left: 380px; top: 592px;" />
+
+    <div style="position: absolute; left: 250px; top: 620px; width: 64px; height: 128px; background-image: url('art/scene/farmer_walk_strip.png'); background-size: 600% 100%; background-repeat: no-repeat; animation: walk6 0.66s steps(6) infinite;"></div>
+    <img src="art/scene/chicken_0.png" width="64" height="64" alt="" style="position: absolute; left: 700px; top: 604px; animation: bob 1.5s ease-in-out infinite;" />
+    <img src="art/scene/chick.png" width="64" height="64" alt="" style="position: absolute; left: 764px; top: 620px; animation: bob 1.2s ease-in-out infinite;" />
+
+    <div style="position: absolute; left: 0; right: 0; top: 690px; height: 32px; background-image: url('art/scene/fence_picket.png'); background-size: 96px 32px; background-repeat: repeat-x; filter: brightness(0.6);"></div>
+    <div style="position: absolute; left: 540px; top: 760px; width: 5px; height: 5px; border-radius: 50%; background: #ffe9a0; box-shadow: 0 0 10px 3px rgba(255,220,130,0.7); --fx: 80px; --fy: -110px; animation: firefly 10s ease-in-out infinite;"></div>
+    <div style="position: absolute; left: 1180px; top: 730px; width: 5px; height: 5px; border-radius: 50%; background: #ffe9a0; box-shadow: 0 0 10px 3px rgba(255,220,130,0.7); --fx: -60px; --fy: -140px; animation: firefly 12s ease-in-out infinite 3s;"></div>
+
+    <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 78% at 50% 54%, transparent 42%, rgba(12,10,14,0.5) 100%);"></div>
+
+    <div style="position: absolute; left: 34px; top: 28px; display: flex; align-items: flex-end; gap: 22px;">
+      <div>
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.3em; color: #eec583; text-shadow: 0 2px 0 rgba(0,0,0,0.85);">BETWEEN RUNS</div>
+        <h3 style="font-family: 'Rye', serif; font-size: 52px; margin: 8px 0 0; color: #f8e9c6; font-weight: 400; text-shadow: 0 5px 0 #6b3a1c, 0 10px 22px rgba(0,0,0,0.75);">The Homestead</h3>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, #d9c7a2, #c0aa82); border: 3px solid #40311f; padding: 8px 16px; margin-bottom: 8px; box-shadow: 0 6px 14px rgba(0,0,0,0.5);">
+        <div style="font-family: 'Rye', serif; font-size: 30px; line-height: 1; color: #33261a;">62</div>
+        <div style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.16em; color: #6b5840;">ACRES<br />BANKED</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 0; right: 0; bottom: 150px; display: flex; justify-content: center; gap: 20px;">
+      <sc-for list="{{ places }}" as="p" hint-placeholder-count="4">
+        <div style="position: relative; width: 300px; cursor: pointer; animation: panelIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: {{ p.delay }}; transition: transform 170ms ease-out;" style-hover="transform: translateY(-9px);">
+          <div style="filter: drop-shadow(0 12px 18px rgba(0,0,0,0.6));">
+            <div style="background: linear-gradient(178deg, #d9c7a2 0%, #c4ae86 100%); border: 3px solid {{ p.edge }}; box-shadow: {{ p.glow }}; padding: 14px 16px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 56px; height: 56px; display: grid; place-items: center; background: rgba(36,29,19,0.4); border: 2px solid rgba(64,49,31,0.55);">
+                  <img src="{{ p.art }}" width="{{ p.w }}" height="{{ p.h }}" alt="" hint-placeholder-src="art/card/icon_bag.png" />
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-family: 'Rye', serif; font-size: 19px; line-height: 1.1; color: #33261a;">{{ p.name }}</div>
+                  <div style="font-family: 'Silkscreen', monospace; font-size: 7.5px; letter-spacing: 0.1em; color: #6b5840; margin-top: 4px;">{{ p.count }}</div>
+                </div>
+              </div>
+              <div style="font-size: 11.5px; line-height: 1.5; color: #5c4a33; margin-top: 11px; min-height: 34px; text-wrap: pretty;">{{ p.blurb }}</div>
+            </div>
+            <div style="height: 9px; background: {{ p.foot }}; border: 3px solid {{ p.edge }}; border-top: none;"></div>
+          </div>
+          <div style="width: 14px; height: 26px; margin: 0 auto; background: linear-gradient(90deg, #4a3a24, #6b5433 40%, #3b2d1c); border: 2px solid #2b241a; border-top: none;"></div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: rgba(10,9,8,0.8); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.12em; color: #8a7c62;">
+      <span>TIER 2 SELECTED · 1.5× ACRES · +40% ENEMY HP</span>
+      <span>ART BY LIMEZU · LIMEZU.ITCH.IO</span>
+      <span>HEAD OUT →</span>
+    </div>
+  </div>
+
+  <div style="padding: 44px 80px 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #e0a02e;">04B / INSIDE THE FEED STORE</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 26px; margin: 10px 0 8px; color: #ecdcbc; font-weight: 400;">Affordable gets the outline</h2>
+    <p style="max-width: 92ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 22px;">Purchase cards are the upgrade card cut down — same paper, same tin plate, with rank pips instead of a rarity tier and the price on the plate. Warm outline means you can afford it. Grey means come back later, and the card still tells you what it does.</p>
+  </div>
+
+  <div style="margin: 0 80px 0; padding: 30px 34px; border: 1px solid #3a3226; background: radial-gradient(120% 80% at 50% 0%, #2b2016 0%, #15120d 72%);">
+    <div style="font-size: 12px; line-height: 1.7; color: #9a8e76; max-width: 90ch; margin-bottom: 22px;">Permanent, and hard-capped near +40% overall. Now: +30 hp, +6% speed, +2 armour, +15% harvest, +1 luck.</div>
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px;">
+      <sc-for list="{{ buys }}" as="b" hint-placeholder-count="5">
+        <div style="position: relative; background: {{ b.paper }}; border: 3px solid {{ b.edge }}; box-shadow: {{ b.glow }}; padding: 0 0 14px; transition: transform 160ms ease-out;" style-hover="transform: translateY(-6px);">
+          <div style="position: relative; height: 96px; background: radial-gradient(70% 70% at 50% 40%, #3d3220 0%, #241d13 100%); border-bottom: 3px solid {{ b.edge }}; display: grid; place-items: center; overflow: hidden;">
+            <div style="position: absolute; inset: 0; opacity: 0.24; background-image: radial-gradient(rgba(224,160,46,0.4) 1px, transparent 1px); background-size: 6px 6px;"></div>
+            <img src="{{ b.art }}" width="{{ b.w }}" height="{{ b.h }}" alt="" style="position: relative;" />
+          </div>
+          <div style="padding: 13px 14px 0;">
+            <div style="font-family: 'Rye', serif; font-size: 18px; line-height: 1.1; color: #33261a; min-height: 40px;">{{ b.name }}</div>
+            <div style="font-size: 11px; line-height: 1.5; color: #5c4a33; margin-top: 4px; min-height: 46px; text-wrap: pretty;">{{ b.blurb }}</div>
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: 10px;">
+              <sc-for list="{{ b.pips }}" as="p" hint-placeholder-count="5">
+                <div style="width: 11px; height: 11px; transform: rotate(45deg); background: {{ p.fill }}; border: 2px solid {{ p.edge }};"></div>
+              </sc-for>
+              <span style="font-family: 'Silkscreen', monospace; font-size: 7.5px; letter-spacing: 0.1em; color: #6b5840; margin-left: 6px;">{{ b.rank }}</span>
+            </div>
+          </div>
+          <div style="margin: 13px 14px 0;">
+            <div style="height: 30px; background: {{ b.plate }}; border: 2px solid {{ b.plateEdge }}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3); display: grid; place-items: center;">
+              <span style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: {{ b.plateInk }}; text-shadow: 0 2px 0 rgba(0,0,0,0.4);">{{ b.cost }}</span>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding: 56px 80px 96px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px;">
+      <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">WHAT THIS REPLACES</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">All of the panel language in <b style="color: #ded0b2;">style.css</b> — the carved-wood <b style="color: #ded0b2;">border-image</b> 9-slice, wood-as-chrome, and gold-means-affordable. Said explicitly, as the brief asks: <b style="color: #ded0b2;">do not preserve it</b>. Paper &amp; Pin replaces it everywhere, and the <b style="color: #ded0b2;">fill</b> keyword hazard disappears with the border-image itself.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">WHAT IS KEPT</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Three things earned their place and stay: the HP chaser, the <b style="color: #ded0b2;">scaleY</b> cooldown wipe, and affordable-gets-an-outline on every purchase surface. Also kept: pause owning the audio sliders instead of a settings screen of its own.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">MOTION BUDGET</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Every animation here is CSS keyframes on transform, opacity or width — no library, no per-frame canvas work, nothing added to the hot loop. The HUD keeps writing to the DOM only when a value actually changes, exactly as it does today.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0,0,0,0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">STILL OPEN</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Two of the four Homestead signs use borrowed art — the Seed Catalog and the County Fair want their own icons. Enemies on the HUD are recoloured livestock standing in for real infected sprites. The shop is the level-up frame with a price plate, so it is not drawn again here.</div>
+      </div>
+    </div>
+    <div style="margin: 30px 0 0; font-size: 11.5px; color: #6f6350; line-height: 1.8;">Passes complete: <b style="color: #9a8e76;">01</b> cards and rarity · <b style="color: #9a8e76;">02</b> home screen · <b style="color: #9a8e76;">03</b> the 56-upgrade roster · <b style="color: #9a8e76;">04</b> HUD, pause, results, Homestead. Credit: <b style="color: #9a8e76;">LimeZu</b> (limezu.itch.io) stays on the title screen and in the README.</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080}}">
+const SLOTS = [
+  { name: 'PITCHFORK', art: 'art/card/t_pitchfork_wood.png', tier: 4, cd: 0.9 },
+  { name: 'SCATTERGUN', art: 'art/card/gun_scattergun.png', tier: 3, cd: 1.4 },
+  { name: 'CROW BELL', art: 'art/card/icon_drum2.png', tier: 2, cd: 2.2 },
+  { name: 'SEED DRILL', art: 'art/card/icon_grain.png', tier: 2, cd: 1.1 },
+  { name: 'TAR BOMB', art: 'art/card/icon_bucket.png', tier: 1, cd: 3.4 },
+  { name: 'CHEM SPRAYER', art: 'art/card/icon_can.png', tier: 1, cd: 1.8 }
+];
+
+const BUILD = [
+  ['PITCHFORK T4', '#5d4b33'], ['SCATTERGUN T3', '#5d4b33'], ['CROW BELL T2', '#5d4b33'],
+  ['SEED DRILL T2', '#5d4b33'], ['TAR BOMB T1', '#5d4b33'], ['CHEM SPRAYER T1', '#5d4b33'],
+  ['WHETSTONE x5', '#5f646a'], ['HAY HOOK x4', '#3f6827'], ['SECOND CUTTING x2', '#26537f'],
+  ['THRESHING FLOOR', '#801f18'], ['SALT CIRCLE', '#8f5410']
+];
+
+const PLACES = [
+  { name: 'The Seed Catalog', count: '9 OF 56 UNLOCKED', afford: true, art: 'art/card/icon_grain.png',
+    blurb: 'More of the roster turns up in every future run. Wider, not stronger.' },
+  { name: 'The Feed Store', count: 'RANK 8 OF 25', afford: true, art: 'art/card/icon_feedsack.png',
+    blurb: 'Permanent stats, hard-capped on purpose. You cannot buy past the cap.' },
+  { name: 'The Bunkhouse', count: '2 OF 6 HIRED', afford: false, art: 'art/card/icon_strawhat.png',
+    blurb: 'Who you take out there. A new hand changes how a run opens, not how it ends.' },
+  { name: 'The County Fair', count: 'TIER 2 CLEARED', afford: true, art: 'art/card/icon_star_big.png',
+    blurb: 'Harder ground, richer ground. Climbing beats farming the same acre.' }
+];
+
+const BUYS = [
+  { name: 'Full Larder', rank: 3, cost: '8 ACRES', afford: true, art: 'art/card/icon_feedsack.png',
+    blurb: 'You start every run with more to lose. +6 max hp per rank.' },
+  { name: 'Broken-In Boots', rank: 2, cost: '10 ACRES', afford: true, art: 'art/card/icon_boot.png',
+    blurb: 'You get out of the way sooner. +2% move speed per rank.' },
+  { name: 'Canvas Apron', rank: 2, cost: '14 ACRES', afford: true, art: 'art/card/icon_fabric.png',
+    blurb: 'Every hit lands a little lighter. +1 armour per rank.' },
+  { name: 'Sharp Tools', rank: 1, cost: '18 ACRES', afford: true, art: 'art/card/t_pickaxe_iron.png',
+    blurb: 'Rocks and trees give up faster. +5% harvest per rank.' },
+  { name: 'Rabbit Foot', rank: 0, cost: '80 ACRES', afford: false, art: 'art/card/icon_bone.png',
+    blurb: 'Better cards, rarer drops. +1 luck per rank.' }
+];
+
+const NAT = {
+  'art/card/t_pitchfork_wood.png': [30, 30], 'art/card/gun_scattergun.png': [20, 6],
+  'art/card/icon_drum2.png': [24, 32], 'art/card/icon_grain.png': [25, 30],
+  'art/card/icon_bucket.png': [31, 27], 'art/card/icon_can.png': [32, 30],
+  'art/card/icon_feedsack.png': [30, 30], 'art/card/icon_strawhat.png': [32, 22],
+  'art/card/icon_star_big.png': [26, 22], 'art/card/icon_boot.png': [24, 28],
+  'art/card/icon_fabric.png': [46, 48], 'art/card/t_pickaxe_iron.png': [30, 30],
+  'art/card/icon_bone.png': [26, 28]
+};
+
+class Component extends DCLogic {
+  fit(path, maxW, maxH) {
+    const n = NAT[path] || [32, 32];
+    let z = 1;
+    for (let t = 6; t >= 1; t--) { if (n[0] * t <= maxW && n[1] * t <= maxH) { z = t; break; } }
+    return { w: n[0] * z, h: n[1] * z };
+  }
+
+  renderVals() {
+    return {
+      slots: SLOTS.map(s => {
+        const f = this.fit(s.art, 100, 48);
+        return { name: s.name, art: s.art, w: f.w, h: f.h, tierText: 'T' + s.tier,
+          wipe: 'wipe ' + s.cd + 's linear infinite' };
+      }),
+
+      build: BUILD.map(b => ({ label: b[0], bg: b[1] })),
+
+      pauseStats: [['WAVE', '14'], ['LEVEL', '7'], ['KILLS', '1,284'],
+        ['HARVESTED', '96'], ['FEED', '248'], ['TIME', '9:41']]
+        .map((r, i) => ({ label: r[0], value: r[1], delay: (i * 45) + 'ms' })),
+
+      resultRows: [['Wave reached', '21'], ['Time survived', '15:08'], ['Kills', '2,617'],
+        ['Crops harvested', '141'], ['Damage dealt', '184,290'], ['Level', '12'],
+        ['Feed left', '31'], ['Acres earned', '14'], ['Seed', 'WHITACRE-4471']]
+        .map((r, i) => ({ label: r[0], value: r[1], delay: (140 + i * 55) + 'ms' })),
+
+      places: PLACES.map((p, i) => {
+        const f = this.fit(p.art, 48, 48);
+        return Object.assign({}, p, {
+          w: f.w, h: f.h,
+          delay: (200 + i * 90) + 'ms',
+          edge: p.afford ? '#6b4a12' : '#40311f',
+          foot: p.afford
+            ? 'linear-gradient(180deg, #e0b455, #b7862c)'
+            : 'linear-gradient(180deg, #5d4b33, #3f3121)',
+          glow: p.afford ? '0 0 0 3px rgba(224, 160, 46, 0.32)' : 'none'
+        });
+      }),
+
+      buys: BUYS.map(b => {
+        const f = this.fit(b.art, 76, 76);
+        return Object.assign({}, b, {
+          w: f.w, h: f.h,
+          rank: 'RANK ' + b.rank + ' / 5',
+          edge: b.afford ? '#6b4a12' : '#4a4238',
+          glow: b.afford ? '0 0 0 3px rgba(224, 160, 46, 0.3)' : 'none',
+          paper: b.afford
+            ? 'linear-gradient(178deg, #eadcb8 0%, #d2bc8c 100%)'
+            : 'linear-gradient(178deg, #c8bfa8 0%, #a89f88 100%)',
+          plate: b.afford
+            ? 'linear-gradient(180deg, #e0b455, #b7862c)'
+            : 'linear-gradient(180deg, #8e8878, #6b6558)',
+          plateEdge: b.afford ? '#6b4a12' : '#3d3830',
+          plateInk: b.afford ? '#2b1d08' : '#e6e0d2',
+          pips: Array.from({ length: 5 }, (_, n) => ({
+            fill: n < b.rank ? '#8a6134' : 'rgba(64,49,31,0.18)',
+            edge: n < b.rank ? '#40311f' : 'rgba(64,49,31,0.45)'
+          }))
+        });
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

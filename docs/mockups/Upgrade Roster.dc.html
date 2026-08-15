@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #14120f; }
+  a { color: #e0a02e; text-decoration: none; }
+  a:hover { color: #f2c05a; text-decoration: underline; }
+  img { image-rendering: pixelated; }
+  @keyframes deal {
+    0%   { opacity: 0; transform: translate3d(0, 40px, 0) scale(0.94); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  }
+  @keyframes pin {
+    0%   { opacity: 0; transform: scale(1.55) rotate(2deg); }
+    62%  { opacity: 1; transform: scale(0.965) rotate(-1.4deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-0.8deg); }
+  }
+  @keyframes foil {
+    0%   { background-position: -140% 0; }
+    100% { background-position: 240% 0; }
+  }
+  @keyframes glint { 0%, 82% { opacity: 0; } 88% { opacity: 0.85; } 100% { opacity: 0; } }
+  @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+</style>
+</helmet>
+
+<div style="width: 1920px; min-height: 100%; background: radial-gradient(120% 50% at 50% 0%, #241d15 0%, #14120f 60%, #0e0d0b 100%); font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #c9bda6; padding: 56px 78px 110px;">
+
+  <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE — DESIGN PASS 3 OF 4</div>
+  <h1 style="font-family: 'Rye', serif; font-size: 54px; line-height: 1; margin: 14px 0 10px; color: #f0e2c4; font-weight: 400;">The Upgrade Roster</h1>
+  <p style="max-width: 104ch; font-size: 14px; line-height: 1.75; color: #a2957c; margin: 0 0 8px;">Fifty-six upgrades: <b style="color: #e0d2b4;">40 items</b> and <b style="color: #e0d2b4;">16 weapons</b>, every one tiered, priced and assigned to a pool. The complaint was "the same five things over and over" — the fix is not only more cards but a shop that holds cards you cannot draw any other way. Every epic and legendary is shop-only, so the shop is where a run gets its shape.</p>
+  <p style="max-width: 104ch; font-size: 13px; line-height: 1.7; color: #7d7057; margin: 0 0 36px;">Both files are drop-in: <a href="content/items.json">content/items.json</a> replaces <b style="color: #9a8e76;">src/content/items.json</b> outright, and <a href="content/weapons-additions.json">content/weapons-additions.json</a> merges into <b style="color: #9a8e76;">src/content/weapons.json</b>. Shapes match what is already there.</p>
+
+  <!-- spread -->
+  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; max-width: 1300px; margin: 0 0 20px;">
+    <sc-for list="{{ spread }}" as="s" hint-placeholder-count="5">
+      <div style="border-top: 3px solid {{ s.colour }}; padding-top: 10px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #cbbb9c;">{{ s.upper }}</div>
+        <div style="font-family: 'Rye', serif; font-size: 30px; color: #f0e2c4; margin-top: 4px;">{{ s.count }}</div>
+        <div style="font-size: 11px; color: #8a7c62; margin-top: 2px;">weight {{ s.weight }} · {{ s.pipWord }}</div>
+        <div style="font-size: 11px; color: #6f6350; margin-top: 2px;">{{ s.sourceWord }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="height: 1px; background: linear-gradient(90deg, #3a3226, transparent); margin: 0 0 40px;"></div>
+
+  <!-- level-up pool -->
+  <div style="display: flex; align-items: baseline; gap: 16px; margin: 0 0 6px;">
+    <span style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">POOL 01</span>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 0; color: #ecdcbc; font-weight: 400;">The level-up draw</h2>
+    <span style="font-size: 13px; color: #8a7c62;">{{ levelupCount }} cards · three offered per level, four with luck</span>
+  </div>
+  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">Plain numbers, named after the object. A common is one stat and nothing else to read — the point of a common is that you take it in a second and get back to the field.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, 236px); gap: 16px 16px; justify-content: start;">
+    <sc-for list="{{ levelupCards }}" as="c" hint-placeholder-count="24">
+      <dc-import name="Upgrade Card" card="{{ c }}" hint-size="236px,420px"></dc-import>
+    </sc-for>
+  </div>
+
+  <div style="height: 1px; background: linear-gradient(90deg, #3a3226, transparent); margin: 56px 0 40px;"></div>
+
+  <!-- shop pool -->
+  <div style="display: flex; align-items: baseline; gap: 16px; margin: 0 0 6px;">
+    <span style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">POOL 02</span>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 0; color: #ecdcbc; font-weight: 400;">Shop only</h2>
+    <span style="font-size: 13px; color: #8a7c62;">{{ shopCount }} cards · four offered after waves 5, 10, 15, 20 and 24</span>
+  </div>
+  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">These are the run-definers. Five shop visits, four cards a visit, so a player sees at most twenty of these in a full run and can afford far fewer — which is what makes two runs differ. Nothing here is a percentage; every one of them changes a rule.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, 236px); gap: 16px 16px; justify-content: start;">
+    <sc-for list="{{ shopCards }}" as="c" hint-placeholder-count="12">
+      <dc-import name="Upgrade Card" card="{{ c }}" hint-size="236px,420px"></dc-import>
+    </sc-for>
+  </div>
+
+  <div style="height: 1px; background: linear-gradient(90deg, #3a3226, transparent); margin: 56px 0 40px;"></div>
+
+  <!-- weapons -->
+  <div style="display: flex; align-items: baseline; gap: 16px; margin: 0 0 6px;">
+    <span style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">POOL 03</span>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 0; color: #ecdcbc; font-weight: 400;">Sixteen weapons</h2>
+    <span style="font-size: 13px; color: #8a7c62;">twelve retuned into tiers, four new</span>
+  </div>
+  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">Weapons draw on the same tier weights as items, so a Legendary weapon is exactly as rare as a Legendary item. The four new ones reuse behaviours that already ship — the auger and the combine head are both <b style="color: #ded0b2;">arcSwing</b> retuned, the bell is <b style="color: #ded0b2;">slam</b> with the stun taken out — so none of them needs new engine work to be playable.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, 236px); gap: 16px 16px; justify-content: start;">
+    <sc-for list="{{ weaponCards }}" as="c" hint-placeholder-count="16">
+      <dc-import name="Upgrade Card" card="{{ c }}" hint-size="236px,420px"></dc-import>
+    </sc-for>
+  </div>
+
+  <div style="height: 1px; background: linear-gradient(90deg, #3a3226, transparent); margin: 56px 0 40px;"></div>
+
+  <!-- handoff -->
+  <div style="display: flex; align-items: baseline; gap: 16px; margin: 0 0 22px;">
+    <span style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">HANDOFF</span>
+    <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 0; color: #ecdcbc; font-weight: 400;">What this needs from code</h2>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; max-width: 1760px;">
+    <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #7fb35a; margin-bottom: 10px;">WORKS TODAY</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Twenty-eight of the forty items are stat mods, tool upgrades, elements or specials the code already dispatches — drop the file in and they work. Thirty once the two new mod keys are added. Same for all sixteen weapons: the new four use shipped behaviours.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">NEW MOD KEYS</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;"><b style="color: #ded0b2;">minionPct</b> and <b style="color: #ded0b2;">dodgePct</b> are the only stat keys that do not exist yet — dodge is already on The Kid's class stats, so it is a lookup, not a system. Everything else reuses existing keys.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">NEW SPECIALS</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Ten need a new branch in the <b style="color: #ded0b2;">special</b> dispatch: chainOnKill, trailGas, touchStun, gasImmune, stunMultiplier, scytheSecondBlade, pierceAllAndReswing, saltRing, bullMinion, firstHitShield. They are ordered here roughly cheapest first; the epics are all one-line hooks into existing systems, the legendaries are the real work.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">NEW FIELDS</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;"><b style="color: #ded0b2;">maxStacks</b> caps copies per run (5/4/3/2/1 by tier) so a run cannot become nine Whetstones. <b style="color: #ded0b2;">_mockArt</b> is a design-review path only — strip it on import. <b style="color: #ded0b2;">cardSprite</b>: every value the atlas cannot resolve today carries an <b style="color: #ded0b2;">_atlas</b> marker in the JSON. <b style="color: #ded0b2;">18</b> are NEW ATLAS KEY — an itemIcons entry plus art for most of them (SPRITE_REQUESTS.md lists which). <b style="color: #ded0b2;">7</b> are FRAME PICK — the clip is already packed and only needs a named frame exported as an icon, which is the cheap group.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">BALANCE, HONESTLY</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">The numbers are authored from the existing file's scale, not from play. Run them through the balance harness before you trust the epics — <b style="color: #ded0b2;">Threshing Floor</b> and <b style="color: #ded0b2;">Crop Duster</b> are the two most likely to be quietly broken with the right weapon.</div>
+    </div>
+    <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">ART</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Every card draws real owned art at integer zoom — 32px icons at 4×, guns at 6×, the dog at 2×, the tractor at 1×. Five families are pulled from places <b style="color: #ded0b2;">sprites.json</b> does not reach yet: the gas mask and the two hats cropped from character-generator accessory sheets, the gas cloud from one frame of <b style="color: #ded0b2;">fx.gas</b>, the three rounds from their own projectile sheets, and the Bull from the Cow_Big_Black walk band, darkened.</div>
+    </div>
+  </div>
+
+  <div style="margin: 40px 0 0; font-size: 11.5px; color: #6f6350; line-height: 1.8;">Next: <b style="color: #9a8e76;">04</b> the HUD, pause, results and the Homestead — the last screens still wearing the prototype's clothes. Art by <b style="color: #9a8e76;">LimeZu</b> (limezu.itch.io).</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1200}}">
+const TIERS = {
+  common:    { name: 'Common',    upper: 'COMMON',    weight: 100, rank: 1, colour: '#9aa0a6', dark: '#5f646a', ink: '#f4f6f7', foil: false },
+  uncommon:  { name: 'Uncommon',  upper: 'UNCOMMON',  weight: 55,  rank: 2, colour: '#6faa46', dark: '#3f6827', ink: '#f2fbe9', foil: false },
+  rare:      { name: 'Rare',      upper: 'RARE',      weight: 24,  rank: 3, colour: '#4a8fd4', dark: '#26537f', ink: '#eaf4ff', foil: false },
+  epic:      { name: 'Epic',      upper: 'EPIC',      weight: 9,   rank: 4, colour: '#cf4436', dark: '#801f18', ink: '#ffeceb', foil: false },
+  legendary: { name: 'Legendary', upper: 'LEGENDARY', weight: 3,   rank: 5, colour: '#e8952a', dark: '#8f5410', ink: '#fff4dd', foil: true }
+};
+const ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+
+const MOD_LABEL = {
+  damagePct: ['DAMAGE', true], moveSpeedPct: ['MOVE SPEED', true], attackSpeedPct: ['FIRE RATE', true],
+  maxHp: ['MAX HP', false], hpRegen: ['REGEN', false], armor: ['ARMOR', false],
+  pickupRadiusPct: ['PICKUP', true], critChancePct: ['CRIT', true], critDamagePct: ['CRIT DMG', true],
+  harvestPct: ['HARVEST', true], luck: ['LUCK', false], meleePct: ['MELEE', true],
+  rangedPct: ['RANGED', true], minionPct: ['MINIONS', true], dodgePct: ['DODGE', true]
+};
+
+const EFFECT = {
+  reflect: ['ON CONTACT', 'RETURNS 5'],
+  auraDamageReduction: ['CLOSE RANGE', '−15% TAKEN'],
+  gasGrace: ['IN GAS', '2s GRACE'],
+  stunMultiplier: ['SLEDGE STUN', '×2.0'],
+  chainOnKill: ['ON KILL', 'CHAINS 40%'],
+  trailGas: ['TRAIL', '12/s GAS'],
+  touchStun: ['ON TOUCH', 'STUN 0.3s'],
+  gasImmune: ['GAS', 'IMMUNE'],
+  scytheSecondBlade: ['SCYTHE', 'SECOND BLADE'],
+  pierceAllAndReswing: ['EVERY BLADE', 'PIERCE · RE-SWING'],
+  saltRing: ['RING 160px', '40 + SLOW'],
+  bullMinion: ['THE BULL', '90 ON CHARGE'],
+  firstHitShield: ['FIRST HIT', 'RETURNS 200']
+};
+
+const KIND = { fire: 'ROUNDS', acid: 'ROUNDS', frost: 'ROUNDS' };
+
+const WEAPON_ART = {
+  pitchfork: ['art/card/t_pitchfork_wood.png', 3], scythe: ['art/card/t_sickle_iron.png', 3],
+  sledge: ['art/card/t_hammer_iron.png', 4], postAuger: ['art/card/t_pickaxe_iron.png', 3],
+  combineHead: ['art/card/tractor_side.png', 1], harpoon: ['art/card/t_pitchfork_ruby.png', 3],
+  scattergun: ['art/card/gun_scattergun.png', 6], varmintRifle: ['art/card/gun_varmintRifle.png', 6],
+  drumGun: ['art/card/gun_drumGun.png', 6], grenadeLauncher: ['art/card/gun_smg.png', 6],
+  tarBomb: ['art/card/icon_bucket.png', 3], chemSprayer: ['art/card/icon_can.png', 3],
+  seedDrill: ['art/card/icon_bag.png', 3], crowBell: ['art/card/icon_drum2.png', 3],
+  baitDrum: ['art/card/icon_drum.png', 3], barnDog: ['art/card/dog_idle.png', 2],
+  combine: ['art/card/tractor_side.png', 1]
+};
+
+const WEAPONS = [
+  ['pitchfork', 'Pitchfork', 'MELEE', 'Swings where you face. Shoves them off you.', [['DAMAGE', '18'], ['EVERY', '0.70s']]],
+  ['scattergun', 'Scattergun', 'RANGED', 'Wide spray at the nearest thing. Close range, constant.', [['DAMAGE', '6'], ['EVERY', '0.22s']]],
+  ['varmintRifle', 'Varmint Rifle', 'RANGED', 'Punches through a line of them and leaves a burn.', [['DAMAGE', '8'], ['PIERCE', '2']]],
+  ['scythe', 'Scythe', 'MELEE', 'Circles you. Tightens when you stand still, widens when you run.', [['DAMAGE', '13'], ['ORBIT', 'ALWAYS']]],
+  ['postAuger', 'Post Hole Auger', 'MELEE', 'Chews a hole in whatever is directly in front of you.', [['DAMAGE', '7'], ['EVERY', '0.18s']]],
+  ['drumGun', 'Drum Gun', 'RANGED', 'Ricochets off the fences, then bursts into shards.', [['DAMAGE', '11'], ['BOUNCES', '2']]],
+  ['chemSprayer', 'Chem Sprayer', 'RANGED', 'A sweeping cone that chokes whatever it touches.', [['DAMAGE', '4'], ['SLOW', '30%']]],
+  ['sledge', 'Sledge', 'MELEE', 'Slams the ground. Stuns everything close.', [['DAMAGE', '34'], ['STUN', '0.6s']]],
+  ['tarBomb', 'Tar Bomb', 'RANGED', 'Throws a slick that halves their speed. Fire lights it.', [['DAMAGE', '20'], ['SLOW', '50%']]],
+  ['crowBell', 'Crow Bell', 'RANGED', 'Rings out and everything in earshot feels it. All reach, no stun.', [['DAMAGE', '16'], ['RADIUS', '150px']]],
+  ['grenadeLauncher', 'Grenade Launcher', 'RANGED', 'Arcs onto the crowd and blows a hole in it.', [['DAMAGE', '15'], ['SPLASH', '50px']]],
+  ['baitDrum', 'Bait Drum', 'UTILITY', 'No damage. Drags the whole crowd into one pile.', [['PULL', '260px'], ['LASTS', '4s']]],
+  ['harpoon', 'Harpoon Gun', 'RANGED', 'Hauls the furthest one to you. Opens up the back line.', [['DAMAGE', '26'], ['RANGE', '420px']]],
+  ['seedDrill', 'Seed Drill', 'RANGED', 'Sows a patch that comes up wrong and takes it out on whatever stands in it.', [['DAMAGE', '12'], ['PATCH', '6s']]],
+  ['barnDog', 'Barn Dog', 'MINION', 'Hunts on its own. Never stops.', [['BITE', '10'], ['EVERY', '0.45s']]],
+  ['combineHead', 'Combine Head', 'MELEE', 'Takes the whole front of the field at once. Slow, and it does not need to be quick.', [['DAMAGE', '46'], ['ARC', '190°']]]
+];
+
+class Component extends DCLogic {
+  state = { items: null, table: null };
+
+  componentDidMount() {
+    Promise.all([
+      fetch('content/items.json').then(r => r.json()),
+      fetch('content/weapons-additions.json').then(r => r.json())
+    ]).then(([items, weapons]) => {
+      this.setState({ items: items, table: weapons._rarityTable || {} });
+    }).catch(() => this.setState({ items: {}, table: {} }));
+  }
+
+  statRows(it) {
+    const rows = [];
+    const mods = it.mods || {};
+    Object.keys(mods).forEach(k => {
+      const def = MOD_LABEL[k];
+      if (!def) return;
+      const v = mods[k];
+      const sign = v > 0 ? '+' : '\u2212';
+      rows.push({
+        label: def[0],
+        value: sign + Math.abs(v) + (def[1] ? '%' : ''),
+        colour: v > 0 ? '#2f6b30' : '#8e3229'
+      });
+    });
+    if (it.special && EFFECT[it.special]) {
+      const e = EFFECT[it.special];
+      rows.push({ label: e[0], value: e[1], colour: '#2f6b30' });
+    }
+    if (it.element) rows.push({ label: 'ELEMENT', value: it.element.toUpperCase(), colour: '#2f6b30' });
+    if (it.toolUpgrade) rows.push({ label: 'TOOL', value: it.toolUpgrade.toUpperCase() + ' +1', colour: '#2f6b30' });
+    if (it.swingSpeedPct) rows.push({ label: 'SWING SPEED', value: '\u2212' + Math.abs(it.swingSpeedPct) + '%', colour: '#8e3229' });
+    return rows.slice(0, 4);
+  }
+
+  kindOf(it) {
+    if (it.element) return 'ROUNDS';
+    if (it.toolUpgrade) return 'TOOL';
+    if (it.special) return 'FIELD KIT';
+    return 'FIELD KIT';
+  }
+
+  card(id, it, i) {
+    const t = TIERS[it.rarity] || TIERS.common;
+    return {
+      id: id,
+      kind: this.kindOf(it),
+      name: it.name,
+      blurb: it.blurb,
+      art: it._mockArt || 'art/card/icon_bag.png',
+      zoom: it._mockZoom || 4,
+      rarityName: t.name.toUpperCase(),
+      colour: t.colour,
+      dark: t.dark,
+      plateInk: t.ink,
+      plate: 'linear-gradient(180deg, ' + t.colour + ' 0%, ' + t.dark + ' 100%)',
+      plateEdge: t.foil ? '#5d3a08' : '#2b241a',
+      pips: Array.from({ length: t.rank }, (_, n) => ({ n: n })),
+      foil: t.foil,
+      paper: t.foil
+        ? 'linear-gradient(178deg, #eadcb8 0%, #ddca9f 56%, #d2bc8c 100%)'
+        : 'linear-gradient(178deg, #d9c7a2 0%, #cdb994 58%, #c4ae86 100%)',
+      cost: it.cost,
+      footer: 'STACKS ' + (it.maxStacks || 1),
+      statRows: this.statRows(it),
+      dealAnim: 'deal 420ms cubic-bezier(.16,1,.3,1) both',
+      dealDelay: Math.min(i * 26, 900) + 'ms',
+      pinAnim: 'pin 380ms cubic-bezier(.2,1.5,.4,1) both',
+      pinDelay: (Math.min(i * 26, 900) + 220) + 'ms',
+      rest: '0deg',
+      lift: '0px'
+    };
+  }
+
+  weaponCard(row, i) {
+    const [id, name, type, blurb, stats] = row;
+    const meta = (this.state.table || {})[id] || { rarity: 'common', source: 'levelup' };
+    const t = TIERS[meta.rarity] || TIERS.common;
+    const art = WEAPON_ART[id] || ['art/card/icon_bag.png', 3];
+    return Object.assign(this.card(id, {
+      name: name, blurb: blurb, rarity: meta.rarity, mods: {}, maxStacks: 4,
+      _mockArt: art[0]
+    }, i), {
+      kind: 'WEAPON · ' + type,
+      zoom: art[1],
+      footer: meta.source === 'shop' ? 'SHOP ONLY' : (meta.source === 'both' ? 'SHOP + LEVEL' : 'LEVEL-UP'),
+      statRows: stats.map(s => ({ label: s[0], value: s[1], colour: '#4a3826' }))
+    });
+  }
+
+  renderVals() {
+    const items = this.state.items || {};
+    const ids = Object.keys(items).filter(k => k.charAt(0) !== '_');
+    const list = ids.map(k => Object.assign({ _id: k }, items[k]));
+    const byTier = a => ORDER.indexOf(a.rarity);
+    const levelup = list.filter(it => it.source !== 'shop').sort((a, b) => byTier(a) - byTier(b) || a.cost - b.cost);
+    const shop = list.filter(it => it.source === 'shop').sort((a, b) => byTier(a) - byTier(b) || a.cost - b.cost);
+
+    const counts = {};
+    ORDER.forEach(t => { counts[t] = list.filter(it => it.rarity === t).length; });
+
+    return {
+      levelupCount: levelup.length,
+      shopCount: shop.length,
+      levelupCards: levelup.map((it, i) => this.card(it._id, it, i)),
+      shopCards: shop.map((it, i) => this.card(it._id, it, i)),
+      weaponCards: WEAPONS.map((w, i) => this.weaponCard(w, i)),
+      spread: ORDER.map(k => {
+        const t = TIERS[k];
+        const shopOnly = list.filter(it => it.rarity === k && it.source === 'shop').length;
+        return {
+          upper: t.upper,
+          colour: t.colour,
+          weight: t.weight,
+          count: counts[k] || 0,
+          pipWord: t.rank + (t.rank === 1 ? ' pip' : ' pips'),
+          sourceWord: shopOnly === (counts[k] || 0) && shopOnly > 0 ? 'all shop-only' : shopOnly + ' shop-only'
+        };
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

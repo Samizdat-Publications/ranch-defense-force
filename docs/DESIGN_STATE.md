@@ -6,7 +6,10 @@ old styling, what is wearing borrowed art, and what is open.
 Kept current on every design pass. If it disagrees with a handoff, this is
 right — a handoff is a snapshot of what was asked for, this is what exists.
 
-Last updated: after the "full resend with new homescreen" package landed.
+Last updated: after the home screen was rebuilt to the mockup layout.
+
+The design mockups are IN THE REPO at `docs/mockups/` and the two reference
+scenes at `docs/reference/`. Open them in a browser; they are the target.
 
 ---
 
@@ -24,7 +27,7 @@ colour — `installRarityTheme` publishes them as CSS custom properties at boot.
 
 | Screen | File | State |
 |---|---|---|
-| Home / class select | `menu.ts`, `home.css` | **Built.** Both backdrops, one picked per load. |
+| Home / class select | `menu.ts`, `home.css`, `home-ui.css` | Rebuilt to the mockup. **NOT signed off by eye.** |
 | Level-up | `levelup.ts`, `card.css` | **Built.** The card component, dealt with the plate stamp. |
 | Pause | `pause.ts`, `sheet.css` | **Built.** Paper sheet, dotted leaders, gauges. |
 | Results | `results.ts` | **Built.** Day's sheet, acres stamped at +700ms. |

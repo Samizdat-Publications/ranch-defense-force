@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position: relative; width: 196px; cursor: pointer; animation: cardIn 640ms cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: {{ hero.delay }}; transition: transform 170ms ease-out, filter 170ms ease-out;" style-hover="transform: translateY(-12px); filter: brightness(1.07);" onClick="{{ hero.onPick }}">
+
+  <div style="position: relative; filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.62));">
+
+    <div style="position: relative; width: 92px; height: 20px; margin: 0 auto -3px; background: #cbb68d; border: 3px solid {{ hero.edge }}; border-bottom: none; clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%); display: grid; place-items: center;">
+      <div style="width: 12px; height: 12px; border-radius: 50%; background: #1b1610; box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9); margin-top: 4px;"></div>
+    </div>
+
+    <div style="position: relative; background: {{ hero.paper }}; border: 3px solid {{ hero.edge }}; padding: 9px 10px 0;">
+      <div style="position: absolute; inset: 4px; border: 1px solid rgba(64, 49, 31, 0.32); pointer-events: none;"></div>
+      <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.13; background-image: radial-gradient(#5a4630 1px, transparent 1px); background-size: 4px 4px;"></div>
+
+      <div style="position: relative; font-family: 'Silkscreen', monospace; font-size: 7.5px; letter-spacing: 0.11em; color: #4b3a24; border-bottom: 2px solid rgba(64, 49, 31, 0.5); padding-bottom: 6px; white-space: nowrap; overflow: hidden;">{{ hero.tag }}</div>
+
+      <!-- figure window -->
+      <div style="position: relative; margin: 9px 0 0; height: 120px; background: radial-gradient(70% 74% at 50% 30%, #4a3d26 0%, #241d13 100%); border: 3px solid {{ hero.edge }}; box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.7); overflow: hidden;">
+        <div style="position: absolute; inset: 0; opacity: 0.22; background-image: radial-gradient(rgba(224, 160, 46, 0.4) 1px, transparent 1px); background-size: 6px 6px;"></div>
+        <div style="position: absolute; left: 8px; right: 8px; bottom: 14px; height: 1px; background: rgba(224, 160, 46, 0.2);"></div>
+        <img src="{{ hero.art }}" width="96" height="192" alt="" style="position: absolute; left: 50%; margin-left: -48px; top: -38px; filter: {{ hero.figureFilter }};" />
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55));"></div>
+
+        <sc-if value="{{ hero.locked }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0;">
+            <div style="position: absolute; left: -12px; right: -12px; top: 20px; height: 26px; background: linear-gradient(180deg, #8a6a42 0%, #5f472a 100%); border-top: 2px solid #3b2b18; border-bottom: 2px solid #241a0e; transform: rotate(-4deg); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); display: grid; place-items: center;">
+              <span style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.12em; color: #f2dcae; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);">{{ hero.priceText }}</span>
+            </div>
+            <div style="position: absolute; left: -12px; right: -12px; top: 78px; height: 22px; background: linear-gradient(180deg, #7e6039 0%, #543f26 100%); border-top: 2px solid #3b2b18; border-bottom: 2px solid #241a0e; transform: rotate(3deg); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);"></div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="position: relative; font-family: 'Rye', serif; font-size: 19px; line-height: 1.05; color: #33261a; margin: 9px 0 0; white-space: nowrap;">{{ hero.name }}</div>
+
+      <div style="position: relative; margin: 8px 0 0; height: 0; border-top: 2px dashed rgba(64, 49, 31, 0.45);"></div>
+
+      <div style="position: relative; display: flex; flex-direction: column; gap: 4px; margin: 8px 0 0;">
+        <sc-for list="{{ hero.barRows }}" as="b" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 7px;">
+            <span style="font-family: 'Silkscreen', monospace; font-size: 7px; letter-spacing: 0.08em; color: #6b5840;">{{ b.label }}</span>
+            <div style="position: relative; height: 8px; background: rgba(64, 49, 31, 0.28); border: 1px solid rgba(64, 49, 31, 0.55);">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{ b.pct }}; background: repeating-linear-gradient(90deg, #6b4a28 0 3px, #8a6134 3px 6px);"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="position: relative; margin: 9px -10px 0; padding: 6px 10px; border-top: 2px solid rgba(64, 49, 31, 0.5); background: rgba(64, 49, 31, 0.09); display: flex; justify-content: space-between; font-family: 'Silkscreen', monospace; font-size: 7.5px; letter-spacing: 0.09em; color: #5b4830;">
+        <span>{{ hero.ability }}</span>
+        <span style="opacity: 0.8;">{{ hero.weapon }}</span>
+      </div>
+    </div>
+
+    <sc-if value="{{ hero.selected }}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: -8px; right: -8px; bottom: -12px; padding: 5px 0; text-align: center; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.16em; color: #2b1d08; background: linear-gradient(180deg, #f0c561 0%, #c2892a 100%); border-top: 2px solid #6b4a12; border-bottom: 2px solid #6b4a12; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);">TAKING THE FIELD</div>
+    </sc-if>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:220,&quot;height&quot;:330},&quot;hero&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;HeroClass&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const h = this.props.hero || {};
+    const locked = h.unlocked === false;
+    return {
+      hero: Object.assign({}, h, {
+        locked: locked,
+        edge: h.selected ? '#6b4a12' : '#40311f',
+        paper: locked
+          ? 'linear-gradient(178deg, #c8bfa8 0%, #b6ad96 58%, #a89f88 100%)'
+          : (h.selected
+            ? 'linear-gradient(178deg, #eadcb8 0%, #ddca9f 56%, #d2bc8c 100%)'
+            : 'linear-gradient(178deg, #d9c7a2 0%, #cdb994 58%, #c4ae86 100%)'),
+        figureFilter: locked ? 'brightness(0.34) contrast(1.1)' : 'none'
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

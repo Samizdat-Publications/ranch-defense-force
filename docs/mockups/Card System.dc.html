@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #14120f; }
+  a { color: #e0a02e; text-decoration: none; }
+  a:hover { color: #f2c05a; text-decoration: underline; }
+  img { image-rendering: pixelated; }
+  @keyframes deal {
+    0%   { opacity: 0; transform: translate3d(var(--dx, 0px), 300px, 0) rotate(-14deg) scale(0.74); }
+    60%  { opacity: 1; }
+    78%  { transform: translate3d(0, -10px, 0) rotate(1.2deg) scale(1.03); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(var(--rest, 0deg)) scale(1); }
+  }
+  @keyframes deal2 {
+    0%   { opacity: 0; transform: translate3d(var(--dx, 0px), 300px, 0) rotate(-14deg) scale(0.74); }
+    60%  { opacity: 1; }
+    78%  { transform: translate3d(0, -10px, 0) rotate(1.2deg) scale(1.03); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(var(--rest, 0deg)) scale(1); }
+  }
+  @keyframes pin {
+    0%   { opacity: 0; transform: scale(1.55) rotate(2deg); }
+    62%  { opacity: 1; transform: scale(0.965) rotate(-1.4deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-0.8deg); }
+  }
+  @keyframes pin2 {
+    0%   { opacity: 0; transform: scale(1.55) rotate(2deg); }
+    62%  { opacity: 1; transform: scale(0.965) rotate(-1.4deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-0.8deg); }
+  }
+  @keyframes foil {
+    0%   { background-position: -140% 0; }
+    100% { background-position: 240% 0; }
+  }
+  @keyframes glint { 0%, 82% { opacity: 0; } 88% { opacity: 0.85; } 100% { opacity: 0; } }
+  @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+  @keyframes deckshuffle { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-3px) rotate(var(--r, 0deg)); } }
+  @keyframes dust { 0% { opacity: 0; transform: translateY(0) scale(0.4); } 30% { opacity: 0.5; } 100% { opacity: 0; transform: translateY(-46px) scale(1.6); } }
+</style>
+</helmet>
+
+<div style="min-height: 100%; background: radial-gradient(120% 80% at 50% 0%, #241d15 0%, #14120f 62%, #0d0c0a 100%); font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #c9bda6; padding: 56px 48px 96px;">
+
+  <div style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE — DESIGN PASS 1 OF 4</div>
+    <h1 style="font-family: 'Rye', serif; font-size: 54px; line-height: 0.98; margin: 0; color: #f0e2c4; font-weight: 400;">The Card System</h1>
+    <p style="max-width: 74ch; font-size: 14px; line-height: 1.7; color: #a2957c; margin: 4px 0 0;">Upgrade cards are the main thing the player touches. This pass replaces the carved-wood panel language with <b style="color: #e0d2b4;">Paper &amp; Pin</b>: every card is a printed seed packet, and rarity is a colour-coded tin plate riveted across it. Five named tiers, a redundant non-colour channel, and a deal animation. Content is placeholder — the full roster lands in pass 3.</p>
+  </div>
+
+  <div style="max-width: 1240px; margin: 44px auto 0; height: 1px; background: linear-gradient(90deg, #3a3226, transparent);"></div>
+
+  <!-- ============================ ANATOMY ============================ -->
+  <div style="max-width: 1240px; margin: 40px auto 0; display: grid; grid-template-columns: 300px 1fr; gap: 56px; align-items: start;">
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">01 / ANATOMY</div>
+      <h2 style="font-family: 'Rye', serif; font-size: 26px; margin: 0; color: #ecdcbc; font-weight: 400;">The seed packet</h2>
+      <p style="font-size: 13px; line-height: 1.65; color: #9a8e76; margin: 0 0 10px;">One silhouette for every card in the game — level-up, shop, Homestead, class select. A kraft packet with a punched hang tab, a window cut for the art, and a perforation across the middle.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 9px; font-size: 12px; line-height: 1.5; color: #a5987e;">
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">A</span><span><b style="color: #ded0b2;">Hang tab &amp; punch hole.</b> Reads as a real packet, and gives the deck a shape you recognise face-down.</span></div>
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">B</span><span><b style="color: #ded0b2;">Kind band.</b> WEAPON / FIELD KIT / ROUNDS / MINION. Sorts the draw at a glance.</span></div>
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">C</span><span><b style="color: #ded0b2;">Art window.</b> Recessed dark field, 32px sprite at 4× — integer zoom, never 2.5×.</span></div>
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">D</span><span><b style="color: #ded0b2;">Rarity plate.</b> Stamped tin riveted over the window's lower edge. Tier named, flanked by 1–5 pips.</span></div>
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">E</span><span><b style="color: #ded0b2;">Name in wood type.</b> Two lines maximum. The one place the game gets to be loud.</span></div>
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">F</span><span><b style="color: #ded0b2;">Perforation.</b> Divides the sell from the numbers.</span></div>
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">G</span><span><b style="color: #ded0b2;">Stat block.</b> Signed deltas, mono, right-aligned. Green is better, red is the cost.</span></div>
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; color: #e0a02e;">H</span><span><b style="color: #ded0b2;">Footer.</b> Lot number on a level-up, feed price in the shop, tier repeated in small caps.</span></div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
+
+      <!-- hero card, hand-built, 1.5x scale -->
+      <div style="position: relative; width: 348px; padding-top: 26px;">
+        <div style="position: relative; filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.55));">
+
+          <!-- hang tab -->
+          <div style="position: relative; width: 136px; height: 34px; margin: 0 auto -3px; background: #cbb68d; border: 3px solid #40311f; border-bottom: none; clip-path: polygon(9% 0, 91% 0, 100% 100%, 0 100%); display: grid; place-items: center;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #1b1610; box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9), 0 1px 0 #d9c6a0; margin-top: 6px;"></div>
+          </div>
+
+          <!-- body -->
+          <div style="position: relative; background: linear-gradient(178deg, #d9c7a2 0%, #cdb994 58%, #c4ae86 100%); border: 3px solid #40311f; padding: 16px 16px 0;">
+
+            <div style="position: absolute; inset: 5px; border: 1px solid rgba(64, 49, 31, 0.35); pointer-events: none;"></div>
+            <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.16; background-image: radial-gradient(#5a4630 1px, transparent 1px); background-size: 4px 4px;"></div>
+
+            <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.14em; color: #4b3a24; border-bottom: 2px solid rgba(64, 49, 31, 0.5); padding-bottom: 8px;">
+              <span>FIELD KIT</span>
+              <span style="opacity: 0.6;">WHITACRE CO.</span>
+            </div>
+
+            <!-- art window -->
+            <div style="position: relative; margin: 14px 0 0; height: 168px; background: radial-gradient(70% 70% at 50% 40%, #3d3220 0%, #241d13 100%); border: 3px solid #40311f; box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.7); display: grid; place-items: center; overflow: hidden;">
+              <div style="position: absolute; inset: 0; opacity: 0.3; background-image: radial-gradient(rgba(224, 160, 46, 0.45) 1px, transparent 1px); background-size: 6px 6px;"></div>
+              <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55));"></div>
+              <img src="art/card/tool_sickle_iron.png" width="128" height="128" alt="scythe" style="position: relative; animation: breathe 3.4s ease-in-out infinite;" />
+            </div>
+
+            <div style="position: relative; z-index: 3; margin: -19px -8px 0; animation: pin 380ms cubic-bezier(0.2, 1.5, 0.4, 1) both;">
+              <div style="position: relative; height: 34px; background: linear-gradient(180deg, #6faa46 0%, #3f6827 100%); border: 2px solid #2b241a; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -2px 4px rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 11px;">
+                <div style="position: absolute; left: 6px; top: 6px; width: 4px; height: 4px; border-radius: 50%; background: rgba(0, 0, 0, 0.35); box-shadow: 0 7px 0 rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.25);"></div>
+                <div style="position: absolute; right: 6px; top: 6px; width: 4px; height: 4px; border-radius: 50%; background: rgba(0, 0, 0, 0.35); box-shadow: 0 7px 0 rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.25);"></div>
+                <div style="display: flex; gap: 4px;">
+                  <div style="width: 6px; height: 6px; transform: rotate(45deg); background: #f2fbe9;"></div>
+                  <div style="width: 6px; height: 6px; transform: rotate(45deg); background: #f2fbe9;"></div>
+                </div>
+                <span style="font-family: 'Silkscreen', monospace; font-size: 13px; letter-spacing: 0.17em; color: #f2fbe9; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);">UNCOMMON</span>
+                <div style="display: flex; gap: 4px;">
+                  <div style="width: 6px; height: 6px; transform: rotate(45deg); background: #f2fbe9;"></div>
+                  <div style="width: 6px; height: 6px; transform: rotate(45deg); background: #f2fbe9;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="position: relative; font-family: 'Rye', serif; font-size: 27px; line-height: 1.06; color: #33261a; margin: 14px 0 0;">Hay Hook</div>
+            <div style="position: relative; font-size: 12.5px; line-height: 1.5; color: #5c4a33; margin: 6px 0 0;">Your melee weapons bite deeper.</div>
+
+            <div style="position: relative; margin: 13px 0 0; height: 0; border-top: 2px dashed rgba(64, 49, 31, 0.45);"></div>
+
+            <div style="position: relative; display: flex; flex-direction: column; gap: 3px; margin: 11px 0 0; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between;"><span style="color: #6b5840; letter-spacing: 0.04em;">MELEE DAMAGE</span><b style="color: #2f6b30;">+18%</b></div>
+              <div style="display: flex; justify-content: space-between;"><span style="color: #6b5840; letter-spacing: 0.04em;">STACKS</span><b style="color: #4a3826;">4</b></div>
+            </div>
+
+            <div style="position: relative; margin: 14px -16px 0; padding: 8px 16px; border-top: 2px solid rgba(64, 49, 31, 0.5); background: rgba(64, 49, 31, 0.09); display: flex; justify-content: space-between; font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.12em; color: #5b4830;">
+              <span>LOT 04</span>
+              <span>SOURCE · LEVEL-UP</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- callout letters -->
+        <div style="position: absolute; top: 30px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">A</div>
+        <div style="position: absolute; top: 78px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">B</div>
+        <div style="position: absolute; top: 150px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">C</div>
+        <div style="position: absolute; top: 268px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">D</div>
+        <div style="position: absolute; top: 316px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">E</div>
+        <div style="position: absolute; top: 374px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">F</div>
+        <div style="position: absolute; top: 402px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">G</div>
+        <div style="position: absolute; top: 458px; left: -16px; font-family: 'Silkscreen', monospace; font-size: 11px; color: #e0a02e;">H</div>
+      </div>
+
+      <div style="width: 250px; display: flex; flex-direction: column; gap: 18px; padding-top: 30px;">
+        <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 14px;">
+          <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.16em; color: #e0a02e; margin-bottom: 8px;">DELETE FROM style.css</div>
+          <div style="font-size: 11.5px; line-height: 1.75; color: #9a8e76;">The whole <b style="color: #ded0b2;">PANEL LANGUAGE</b> block, <b style="color: #ded0b2;">.panel</b>, every <b style="color: #ded0b2;">border-image</b> rule, <b style="color: #ded0b2;">--wood-*</b>, and the <b style="color: #ded0b2;">RARITY</b> block's border/glow rules. Wood chrome is gone. The <b style="color: #ded0b2;">fill</b> keyword hazard goes with it — there is no border-image left to get wrong.</div>
+        </div>
+        <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 14px;">
+          <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.16em; color: #7fb35a; margin-bottom: 8px;">KEEP</div>
+          <div style="font-size: 11.5px; line-height: 1.75; color: #9a8e76;">Rarity colours still publish from <b style="color: #ded0b2;">rarity.json</b> as <b style="color: #ded0b2;">--rarity-&lt;tier&gt;</b>. The plate adds <b style="color: #ded0b2;">dark</b>, <b style="color: #ded0b2;">ink</b> and <b style="color: #ded0b2;">rank</b> — so the non-colour channel is tunable in content too.</div>
+        </div>
+        <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 14px;">
+          <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.16em; color: #8fb3d6; margin-bottom: 8px;">TYPE</div>
+          <div style="font-size: 11.5px; line-height: 1.75; color: #9a8e76;"><b style="color: #ded0b2;">Rye</b> for names, <b style="color: #ded0b2;">Silkscreen</b> for labels, <b style="color: #ded0b2;">IBM Plex Mono</b> for numbers. Three self-hosted woff2 files, no npm dependency.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1240px; margin: 64px auto 0; height: 1px; background: linear-gradient(90deg, #3a3226, transparent);"></div>
+
+  <!-- ============================ TIERS ============================ -->
+  <div style="max-width: 1240px; margin: 40px auto 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">02 / RARITY</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 26px; margin: 8px 0 6px; color: #ecdcbc; font-weight: 400;">Five badges</h2>
+    <p style="max-width: 84ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 6px;">Rarity is a stamped tin plate riveted across the bottom of the art window — the standard colour ladder, <b style="color: #ded0b2;">grey, green, blue, red, orange</b>, with the tier <b style="color: #ded0b2;">named on the plate</b>. It sits in the same place on every card, so the eye learns one spot.</p>
+    <p style="max-width: 84ch; font-size: 12px; line-height: 1.7; color: #7d7057; margin: 0 0 26px;">The redundant non-colour channels are the word itself and the <b style="color: #9a8e76;">pip count</b> flanking it — one to five. Greyscale the row and all five still separate. Legendary adds a foil sweep across the plate; nothing else animates, so the sweep means one thing.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(5, 236px); gap: 16px; justify-content: space-between;">
+      <sc-for list="{{ tierCards }}" as="c" hint-placeholder-count="5">
+        <dc-import name="Upgrade Card" card="{{ c }}" hint-size="232px,392px"></dc-import>
+      </sc-for>
+    </div>
+
+    <div style="margin: 30px 0 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 26px; max-width: 1240px;">
+      <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="5">
+        <div style="border-top: 2px solid #3a3226; padding-top: 10px; font-size: 11.5px; line-height: 1.6; color: #8a7c62;">
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <div style="width: 12px; height: 12px; background: {{ t.swatch }}; border: 1px solid #2b241a;"></div>
+            <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #cbbb9c;">{{ t.upper }}</div>
+          </div>
+          <div style="margin-top: 6px;">weight {{ t.weight }} · {{ t.pipWord }}</div>
+          <div style="margin-top: 4px; color: #6f6350;">{{ t.colour }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="max-width: 1240px; margin: 64px auto 0; height: 1px; background: linear-gradient(90deg, #3a3226, transparent);"></div>
+
+  <!-- ============================ LEVEL-UP ============================ -->
+  <div style="max-width: 1240px; margin: 40px auto 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">03 / LEVEL-UP, IN SITU</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 26px; margin: 8px 0 6px; color: #ecdcbc; font-weight: 400;">Dealt from the deck</h2>
+    <p style="max-width: 84ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 22px;">Cards arc up out of a deck at the bottom of the screen, 110ms apart, and land with a small overshoot. The rarity plate stamps down after the card settles — a separate beat, so the tier is the last thing you read. A Legendary sits a little higher than its neighbours and gold keeps sweeping across the plate.</p>
+  </div>
+
+  <div style="max-width: 1240px; margin: 0 auto; position: relative; height: 680px; border: 1px solid #3a3226; overflow: hidden; background: radial-gradient(80% 70% at 50% 76%, #4a4327 0%, #2c2a1a 46%, #17160f 100%);">
+    <div style="position: absolute; inset: 0; opacity: 0.5; background-image: repeating-linear-gradient(92deg, rgba(0, 0, 0, 0.28) 0 3px, transparent 3px 9px);"></div>
+    <div style="position: absolute; inset: 0; background: rgba(9, 8, 6, 0.62); backdrop-filter: blur(3px);"></div>
+
+    <div style="position: absolute; top: 26px; left: 0; right: 0; text-align: center;">
+      <div style="font-family: 'Rye', serif; font-size: 30px; color: #f0dcb0; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.7);">Level 7</div>
+      <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.2em; color: #a3937a; margin-top: 6px;">TAKE ONE</div>
+    </div>
+
+    <div style="position: absolute; left: 0; right: 0; top: 108px; display: flex; gap: 34px; justify-content: center;">
+      <sc-for list="{{ dealCards }}" as="c" hint-placeholder-count="3">
+        <dc-import name="Upgrade Card" card="{{ c }}" deal-key="{{ dealKey }}" hint-size="232px,392px"></dc-import>
+      </sc-for>
+    </div>
+
+    <!-- deck -->
+    <div style="position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); display: grid; place-items: center; width: 120px; height: 84px;">
+      <div style="position: absolute; --r: -6deg; width: 78px; height: 62px; background: #a8916a; border: 2px solid #33271a; animation: deckshuffle 3.6s ease-in-out infinite;"></div>
+      <div style="position: absolute; --r: 3deg; width: 78px; height: 62px; background: #bda67c; border: 2px solid #33271a; animation: deckshuffle 3.6s ease-in-out infinite 0.4s;"></div>
+      <div style="position: absolute; --r: -1deg; width: 78px; height: 62px; background: linear-gradient(160deg, #d0ba90, #b39f76); border: 2px solid #33271a; display: grid; place-items: center; animation: deckshuffle 3.6s ease-in-out infinite 0.8s;">
+        <div style="width: 46px; height: 34px; border: 2px dashed rgba(51, 39, 26, 0.5);"></div>
+      </div>
+    </div>
+
+    <div style="position: absolute; top: 24px; right: 24px; display: flex; gap: 10px; align-items: center;">
+      <span style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.14em; color: #6f6350;">STAGGER {{ stagger }}MS</span>
+      <button type="button" onClick="{{ redeal }}" style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.12em; color: #241c10; background: linear-gradient(180deg, #e0b455 0%, #b7862c 100%); border: 2px solid #33271a; box-shadow: 0 3px 0 #33271a; padding: 9px 16px; cursor: pointer;" style-active="transform: translateY(3px); box-shadow: none;">DEAL AGAIN</button>
+    </div>
+  </div>
+
+  <div style="max-width: 1240px; margin: 64px auto 0; height: 1px; background: linear-gradient(90deg, #3a3226, transparent);"></div>
+
+  <!-- ============================ SHOP ============================ -->
+  <div style="max-width: 1240px; margin: 40px auto 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">04 / THE SHOP</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 26px; margin: 8px 0 6px; color: #ecdcbc; font-weight: 400;">Same packet, priced</h2>
+    <p style="max-width: 84ch; font-size: 13px; line-height: 1.7; color: #9a8e76; margin: 0 0 22px;">The shop is the same card with two additions: a feed price in the footer, and a bulldog clip when you lock a card for the next visit. Shop-exclusive run-definers need no overprint — the price is the tell, and the roster in pass 3 will make the split by tier. Unaffordable cards go to pulpboard grey and the plate loses its emboss and drop shadow — they read as unprinted stock, not as disabled UI.</p>
+
+    <div style="display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-start;">
+      <sc-for list="{{ shopCards }}" as="c" hint-placeholder-count="4">
+        <dc-import name="Upgrade Card" card="{{ c }}" hint-size="232px,392px"></dc-import>
+      </sc-for>
+
+      <div style="width: 236px; border: 3px solid #40311f; background: linear-gradient(178deg, #d9c7a2, #c4ae86); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #4b3a24; border-bottom: 2px solid rgba(64, 49, 31, 0.5); padding-bottom: 8px;">THE HAND · WAVE 10</div>
+        <div style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #5c4a33;">
+          <div style="display: flex; justify-content: space-between;"><span>DAMAGE</span><b style="color: #33261a;">+42%</b></div>
+          <div style="display: flex; justify-content: space-between;"><span>FIRE RATE</span><b style="color: #33261a;">+18%</b></div>
+          <div style="display: flex; justify-content: space-between;"><span>MAX HP</span><b style="color: #33261a;">160</b></div>
+          <div style="display: flex; justify-content: space-between;"><span>ARMOR</span><b style="color: #33261a;">10</b></div>
+          <div style="display: flex; justify-content: space-between;"><span>LUCK</span><b style="color: #2f6b30;">+10</b></div>
+        </div>
+        <div style="height: 0; border-top: 2px dashed rgba(64, 49, 31, 0.45);"></div>
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.12em; color: #5b4830;">FEED 78</div>
+        <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.1em; color: #241c10; background: linear-gradient(180deg, #e0b455, #b7862c); border: 2px solid #33271a; box-shadow: 0 3px 0 #33271a; padding: 9px 12px; cursor: pointer;" style-active="transform: translateY(3px); box-shadow: none;">REROLL · 12</button>
+        <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.1em; color: #f0e2c4; background: linear-gradient(180deg, #5d4b33, #3f3121); border: 2px solid #33271a; box-shadow: 0 3px 0 #241c10; padding: 9px 12px; cursor: pointer;" style-active="transform: translateY(3px); box-shadow: none;">BACK TO THE FIELD</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1240px; margin: 64px auto 0; height: 1px; background: linear-gradient(90deg, #3a3226, transparent);"></div>
+
+  <!-- ============================ SPEC ============================ -->
+  <div style="max-width: 1240px; margin: 40px auto 0;">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.2em; color: #7d7057;">05 / HANDOFF</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 26px; margin: 8px 0 22px; color: #ecdcbc; font-weight: 400;">What to change</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px;">
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 16px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">rarity.json</div>
+        <div style="font-size: 11.5px; line-height: 1.8; color: #9a8e76;">Replace <b style="color: #ded0b2;">colour</b>, drop <b style="color: #ded0b2;">glow</b> and <b style="color: #ded0b2;">badge</b>. Add <b style="color: #ded0b2;">dark</b> (the plate's lower stop), <b style="color: #ded0b2;">ink</b> (plate text), <b style="color: #ded0b2;">rank</b> (pip count) and <b style="color: #ded0b2;">foil</b>. Weights and luckScaling unchanged.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 16px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">MOTION</div>
+        <div style="font-size: 11.5px; line-height: 1.8; color: #9a8e76;">Deal 560ms <b style="color: #ded0b2;">cubic-bezier(.16,1,.3,1)</b>, stagger 110ms. The plate stamps down at +340ms, 380ms with a 1.55× overshoot and a 0.8° rest tilt. Legendary foil 2.6s loop. All CSS keyframes — no library, no per-frame canvas work.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 16px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">ART WINDOW</div>
+        <div style="font-size: 11.5px; line-height: 1.8; color: #9a8e76;">One 32px sprite at 4× = 128px, centred. Guns are 20×6 in the pack; they take 6× and sit on the window's horizon line. Never a fractional zoom.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 16px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">ACCESSIBILITY</div>
+        <div style="font-size: 11.5px; line-height: 1.8; color: #9a8e76;">The tier is spelled out on the plate and flanked by 1–5 pips, so colour is never the only channel. Epic ships red per the standard ladder; a <b style="color: #ded0b2;">violet</b> option is a tweak away if red reads too close to the damage red already in the HUD.</div>
+      </div>
+    </div>
+
+    <div style="margin: 34px 0 0; font-size: 11.5px; color: #6f6350; line-height: 1.8;">Next passes: <b style="color: #9a8e76;">02</b> the home screen as a farmyard at dusk · <b style="color: #9a8e76;">03</b> the 40–60 upgrade roster as drop-in JSON · <b style="color: #9a8e76;">04</b> HUD, pause, results and the Homestead. Art on these cards is real LimeZu and Pixcuit source at integer zoom. Credit: <b style="color: #9a8e76;">LimeZu</b> (limezu.itch.io) stays on the title screen.</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1340,&quot;height&quot;:900},&quot;paperTone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;kraft&quot;,&quot;linen&quot;,&quot;pulpboard&quot;],&quot;default&quot;:&quot;kraft&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Card&quot;},&quot;epicColour&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;red&quot;,&quot;violet&quot;],&quot;default&quot;:&quot;red&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Card&quot;},&quot;dealStagger&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:110,&quot;min&quot;:0,&quot;max&quot;:400,&quot;step&quot;:10,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;legendaryFoil&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+const TIERS = {
+  common:    { name: 'Common',    upper: 'COMMON',    weight: 100, rank: 1, colour: '#9aa0a6', dark: '#5f646a', ink: '#f4f6f7', foil: false },
+  uncommon:  { name: 'Uncommon',  upper: 'UNCOMMON',  weight: 55,  rank: 2, colour: '#6faa46', dark: '#3f6827', ink: '#f2fbe9', foil: false },
+  rare:      { name: 'Rare',      upper: 'RARE',      weight: 24,  rank: 3, colour: '#4a8fd4', dark: '#26537f', ink: '#eaf4ff', foil: false },
+  epic:      { name: 'Epic',      upper: 'EPIC',      weight: 9,   rank: 4, colour: '#cf4436', dark: '#801f18', ink: '#ffeceb', foil: false },
+  legendary: { name: 'Legendary', upper: 'LEGENDARY', weight: 3,   rank: 5, colour: '#e8952a', dark: '#8f5410', ink: '#fff4dd', foil: true }
+};
+const EPIC_VIOLET = { colour: '#9b6bc8', dark: '#563579', ink: '#f6ecff' };
+
+const TIER_ROW = [
+  { id: 'whetstone', tier: 'common', kind: 'FIELD KIT', name: 'Whetstone', blurb: 'Everything you own hits harder.', art: 'art/card/tool_knife_iron.png', zoom: 4, stats: [['DAMAGE', '+10%', 'good'], ['STACKS', '5', '']], footer: 'LOT 01' },
+  { id: 'hayHook', tier: 'uncommon', kind: 'FIELD KIT', name: 'Hay Hook', blurb: 'Your melee weapons bite deeper.', art: 'art/card/tool_sickle_iron.png', zoom: 4, stats: [['MELEE DAMAGE', '+18%', 'good'], ['STACKS', '4', '']], footer: 'LOT 04' },
+  { id: 'postDriver', tier: 'rare', kind: 'WEAPON MOD', name: 'Post Driver', blurb: 'The sledge goes in twice as far.', art: 'art/card/tool_hammer_iron.png', zoom: 4, stats: [['STUN', '×2.0', 'good'], ['SWING SPEED', '−12%', 'bad']], footer: 'LOT 09' },
+  { id: 'secondCutting', tier: 'epic', kind: 'WEAPON MOD', name: 'Second Cutting', blurb: 'The scythe grows a second blade.', art: 'art/card/tool_sickle_gold.png', zoom: 4, stats: [['BLADES', '2', 'good'], ['SWEEP', '+25%', 'good']], footer: 'LOT 17' },
+  { id: 'reapersOwn', tier: 'legendary', kind: 'WEAPON', name: "Reaper's Own", blurb: 'Every blade you own cuts clean through. What it kills, it keeps cutting.', art: 'art/card/tool_sickle_ruby.png', zoom: 4, stats: [['PIERCE', 'ALL', 'good'], ['ON KILL', 'RE-SWING', 'good']], footer: 'LOT 24' }
+];
+
+const DEAL_ROW = [
+  { id: 'feedSack', tier: 'common', kind: 'FIELD KIT', name: 'Feed Sack', blurb: 'More of you to lose before the field takes you.', art: 'art/card/icon_feedsack.png', zoom: 4, stats: [['MAX HP', '+20', 'good']], footer: 'LOT 02' },
+  { id: 'thermos', tier: 'uncommon', kind: 'FIELD KIT', name: 'Coffee Thermos', blurb: 'Still hot. You will not be sitting down again.', art: 'art/card/icon_coffee.png', zoom: 4, stats: [['MOVE SPEED', '+6%', 'good'], ['FIRE RATE', '+6%', 'good'], ['MAX HP', '−10', 'bad']], footer: 'LOT 06' },
+  { id: 'longSunday', tier: 'legendary', kind: 'WEAPON', name: 'The Long Sunday', blurb: 'The rifle carries the burn to whatever the last one was standing next to.', art: 'art/card/gun_varmintRifle.png', zoom: 6, stats: [['PIERCE', '4', 'good'], ['BURN SPREAD', 'ON KILL', 'good'], ['COOLDOWN', '+0.1s', 'bad']], footer: 'LOT 23' }
+];
+
+const SHOP_ROW = [
+  { id: 'tracer', tier: 'rare', kind: 'ROUNDS', name: 'Tracer Rounds', blurb: 'Every gun you own fires fire. Lights the tar.', art: 'art/card/icon_can.png', zoom: 4, stats: [['ELEMENT', 'FIRE', 'good'], ['BURN', '4/s · 3s', 'good']], cost: 34, shopOnly: true },
+  { id: 'baleSpike', tier: 'epic', kind: 'WEAPON', name: 'Bale Spike', blurb: 'Three tines, one direction, no give in it.', art: 'art/card/tool_pitchfork_gold.png', zoom: 4, stats: [['DAMAGE', '46', 'good'], ['KNOCKBACK', '+120%', 'good']], cost: 46, shopOnly: true },
+  { id: 'saltCircle', tier: 'legendary', kind: 'FIELD KIT', name: 'Salt Circle', blurb: 'Nothing crosses it twice. Whatever tries, comes apart at the line.', art: 'art/card/tool_hoe_iron.png', zoom: 4, stats: [['RADIUS', '160px', 'good'], ['ON CROSS', '40 + SLOW', 'good']], cost: 62, shopOnly: true, locked: true },
+  { id: 'whetstone2', tier: 'common', kind: 'FIELD KIT', name: 'Whetstone', blurb: 'Everything you own hits harder.', art: 'art/card/tool_knife_iron.png', zoom: 4, stats: [['DAMAGE', '+10%', 'good']], cost: 18, unaffordable: true }
+];
+
+class Component extends DCLogic {
+  state = { dealKey: 1 };
+
+  tier(key) {
+    const t = TIERS[key];
+    if (key === 'epic' && (this.props.epicColour || 'red') === 'violet') return Object.assign({}, t, EPIC_VIOLET);
+    return t;
+  }
+
+  hydrate(list, opts) {
+    const stagger = this.props.dealStagger ?? 110;
+    return list.map((c, i) => {
+      const t = this.tier(c.tier);
+      return Object.assign({}, c, {
+        rarity: t,
+        rarityName: t.name.toUpperCase(),
+        colour: t.colour,
+        dark: t.dark,
+        plateInk: t.ink,
+        plate: 'linear-gradient(180deg, ' + t.colour + ' 0%, ' + t.dark + ' 100%)',
+        plateEdge: t.foil ? '#5d3a08' : '#2b241a',
+        pips: Array.from({ length: t.rank }, (_, n) => ({ n: n, on: true })),
+        foil: t.foil && (this.props.legendaryFoil ?? true),
+        paper: this.paper(t),
+        paperEdge: t.foil ? '#6b4a12' : '#40311f',
+        dealDelay: opts && opts.deal ? (i * stagger) + 'ms' : '0ms',
+        pinDelay: opts && opts.deal ? (i * stagger + 340) + 'ms' : '260ms',
+        dealAnim: opts && opts.deal
+          ? (this.state.dealKey % 2 ? 'deal' : 'deal2') + ' 560ms cubic-bezier(.16,1,.3,1) both'
+          : 'none',
+        pinAnim: (opts && opts.deal && this.state.dealKey % 2 === 0 ? 'pin2' : 'pin') + ' 420ms cubic-bezier(.2,1.4,.4,1) both',
+        driftX: opts && opts.deal ? ((i - 1) * -46) + 'px' : '0px',
+        rest: t.foil ? '0deg' : (i % 2 ? '0.7deg' : '-0.7deg'),
+        lift: t.foil ? '-10px' : '0px',
+        statRows: c.stats.map(s => ({
+          label: s[0],
+          value: s[1],
+          colour: s[2] === 'good' ? '#2f6b30' : s[2] === 'bad' ? '#8e3229' : '#4a3826'
+        }))
+      });
+    });
+  }
+
+  paper(t) {
+    const tone = this.props.paperTone || 'kraft';
+    if (t.foil) return 'linear-gradient(178deg, #eadcb8 0%, #ddca9f 56%, #d2bc8c 100%)';
+    const tones = {
+      kraft: 'linear-gradient(178deg, #d9c7a2 0%, #cdb994 58%, #c4ae86 100%)',
+      linen: 'linear-gradient(178deg, #e6dcc4 0%, #dbd0b3 58%, #cec2a2 100%)',
+      pulpboard: 'linear-gradient(178deg, #c8bfa8 0%, #bab19a 58%, #ada48c 100%)'
+    };
+    return tones[tone] || tones.kraft;
+  }
+
+  renderVals() {
+    const stagger = this.props.dealStagger ?? 110;
+    return {
+      tiers: Object.keys(TIERS).map(k => {
+        const t = this.tier(k);
+        return Object.assign({}, t, {
+          pipWord: t.rank + (t.rank === 1 ? ' pip' : ' pips'),
+          swatch: 'linear-gradient(180deg, ' + t.colour + ', ' + t.dark + ')'
+        });
+      }),
+      tierCards: this.hydrate(TIER_ROW, {}),
+      dealCards: this.hydrate(DEAL_ROW, { deal: true }),
+      shopCards: this.hydrate(SHOP_ROW, {}),
+      dealKey: this.state.dealKey,
+      stagger: stagger,
+      redeal: () => this.setState(s => ({ dealKey: s.dealKey + 1 }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>

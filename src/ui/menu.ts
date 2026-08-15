@@ -52,17 +52,17 @@ interface Place {
   blur?: number
 }
 
+// NOTE: the oaks are OUT until real art exists. `scene.treeOak` is a modular
+// LimeZu piece composited by Design, and at this scale it reads as three
+// identical shrubs rather than a treeline. It is queued in
+// art/pixellab-queue.json; a wrong tree is louder than no tree.
 const YARD: Place[] = [
-  { sprite: 'scene.treeOak', x: 1150, y: 300 },
-  { sprite: 'scene.treeOak', x: 1420, y: 282 },
-  { sprite: 'scene.treeOak', x: 596, y: 268 },
   { sprite: 'scene.silo', x: 1664, y: 192 },
   { sprite: 'scene.coop', x: 800, y: 478 },
   { sprite: 'scene.nest', x: 936, y: 542 },
   { sprite: 'scene.scarecrow', x: 968, y: 546, anim: 'y-sway 7.4s ease-in-out infinite' },
   { sprite: 'scene.well', x: 1112, y: 596 },
   { sprite: 'scene.hay', x: 646, y: 616 },
-  { sprite: 'scene.treeOak', x: 1742, y: 414 },
   { sprite: 'scene.doghouse', x: 722, y: 552 },
   { sprite: 'scene.penV', x: -2, y: 20 },
   { sprite: 'scene.cow', x: 1628, y: 658, anim: 'y-bob 5.4s ease-in-out infinite' },
@@ -80,8 +80,6 @@ const YARD: Place[] = [
 ]
 
 const FIELD: Place[] = [
-  { sprite: 'scene.treeOak', x: 900, y: 352 },
-  { sprite: 'scene.treeOak', x: 1560, y: 352 },
   { sprite: 'scene.silo', x: 1672, y: 116 },
   { sprite: 'scene.barn', x: 1208, y: 340 },
   { sprite: 'scene.house', x: 560, y: 244 },

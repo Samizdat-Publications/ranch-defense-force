@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0b0a09; }
+  a { color: #e0a02e; text-decoration: none; }
+  a:hover { color: #f2c05a; text-decoration: underline; }
+  img { image-rendering: pixelated; }
+  @keyframes rdfStrip6 { from { background-position: 0 0; } to { background-position: -384px 0; } }
+  @keyframes rdfStrip4 { from { background-position: 0 0; } to { background-position: -256px 0; } }
+  @keyframes rdfWalkRight { from { transform: translateX(0); } to { transform: translateX(700px); } }
+  @keyframes rdfWalkLeft { from { transform: translateX(0); } to { transform: translateX(-660px); } }
+  @keyframes rdfWalkUp { from { transform: translate(0, 0); } to { transform: translate(150px, -76px); } }
+  @keyframes rdfCloud { from { transform: translateX(0); } to { transform: translateX(-560px); } }
+  @keyframes rdfPorch { 0%, 44% { opacity: 0; } 48% { opacity: 0.9; } 50% { opacity: 0.25; } 54%, 100% { opacity: 1; } }
+  @keyframes rdfFlicker { 0%, 100% { opacity: 1; } 46% { opacity: 0.84; } 52% { opacity: 1; } 78% { opacity: 0.92; } }
+  @keyframes rdfSmoke {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
+    20%  { opacity: 0.5; }
+    100% { opacity: 0; transform: translate(52px, -170px) scale(2.4); }
+  }
+  @keyframes rdfExhaust {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+    20%  { opacity: 0.42; }
+    100% { opacity: 0; transform: translate(-70px, -160px) scale(2.2); }
+  }
+  @keyframes rdfFirefly {
+    0%   { opacity: 0; transform: translate(0, 0); }
+    22%  { opacity: 1; }
+    72%  { opacity: 0.9; }
+    100% { opacity: 0; transform: translate(var(--fx, 60px), var(--fy, -80px)); }
+  }
+  @keyframes rdfSway { 0%, 100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg); } }
+  @keyframes rdfHop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes rdfCrop { 0%, 100% { transform: skewX(-2.2deg); } 50% { transform: skewX(2.2deg); } }
+  @keyframes rdfCropFar { 0%, 100% { transform: skewX(-1.2deg); } 50% { transform: skewX(1.2deg); } }
+  @keyframes rdfIdle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
+  @keyframes rdfDrift { from { transform: translate(0, 0); } to { transform: translate(240px, -60px); } }
+  @keyframes cardIn { 0% { opacity: 0; transform: translateY(34px) scale(0.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes titleIn { 0% { opacity: 0; transform: translateY(-18px); letter-spacing: 0.3em; } 100% { opacity: 1; transform: translateY(0); letter-spacing: 0.02em; } }
+  @keyframes doorPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+  @keyframes caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+</style>
+</helmet>
+
+<div style="width: 1920px; background: #0b0a09; font-family: 'IBM Plex Mono', ui-monospace, monospace;">
+
+  <div style="position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #14120f;">
+
+    <!-- the scene: one of two, alternating each load -->
+    <sc-if value="{{ isYard }}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Yard Scene" hint-size="100%,100%"></dc-import>
+    </sc-if>
+    <sc-if value="{{ isField }}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Field Scene" hint-size="100%,100%"></dc-import>
+    </sc-if>
+
+    <!-- ============================== UI ============================== -->
+
+    <div style="position: absolute; left: 80px; top: 64px; animation: titleIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both;">
+      <div style="font-family: 'Silkscreen', monospace; font-size: 14px; letter-spacing: 0.4em; color: #eec583; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85); white-space: nowrap;">THE WHITACRE PLACE · 1987</div>
+      <h1 style="font-family: 'Rye', serif; font-size: 92px; line-height: 0.9; margin: 10px 0 0; color: #f8e9c6; font-weight: 400; text-shadow: 0 6px 0 #6b3a1c, 0 12px 28px rgba(0, 0, 0, 0.8);">Ranch<br />Defense<br />Force</h1>
+      <div style="margin-top: 18px; display: flex; align-items: center; gap: 12px; white-space: nowrap;">
+        <div style="width: 48px; height: 3px; background: #e0a02e;"></div>
+        <span style="font-size: 16px; color: #ecd8ac; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);">Work the field until the light goes.</span>
+      </div>
+    </div>
+
+    <!-- who you are playing -->
+    <div style="position: absolute; left: 80px; top: 388px; width: 336px; animation: cardIn 700ms cubic-bezier(0.16, 1, 0.3, 1) both 420ms;">
+      <div style="background: rgba(14, 12, 10, 0.78); border: 2px solid #4a3c28; padding: 12px 16px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.18em; color: #e0a02e;">YOU ARE PLAYING</div>
+        <div style="font-family: 'Rye', serif; font-size: 30px; color: #f6e6c2; margin: 8px 0 0;">{{ chosen.name }}</div>
+        <div style="font-size: 13px; line-height: 1.6; color: #c2b193; margin: 8px 0 0; text-wrap: pretty;">{{ chosen.blurb }}</div>
+        <div style="margin: 14px 0 0; height: 0; border-top: 1px dashed #4a3c28;"></div>
+        <div style="display: flex; flex-direction: column; gap: 7px; margin: 12px 0 0; font-size: 11.5px; line-height: 1.5;">
+          <div style="display: grid; grid-template-columns: 62px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.1em; color: #8a7c62;">PASSIVE</span><span style="color: #d6c6a6;">{{ chosen.passive }}</span></div>
+          <div style="display: grid; grid-template-columns: 62px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.1em; color: #8a7c62;">ABILITY</span><span style="color: #d6c6a6;">{{ chosen.ability }}</span></div>
+          <div style="display: grid; grid-template-columns: 62px 1fr; gap: 10px;"><span style="font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.1em; color: #8a7c62;">STARTS</span><span style="color: #d6c6a6;">{{ chosen.weapon }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- seed box -->
+    <div style="position: absolute; left: 80px; top: 662px; animation: cardIn 700ms cubic-bezier(0.16, 1, 0.3, 1) both 520ms;">
+      <div style="display: flex; align-items: stretch; filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.6));">
+        <div style="background: linear-gradient(178deg, #d9c7a2, #c4ae86); border: 3px solid #40311f; padding: 6px 14px;">
+          <div style="font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.16em; color: #5b4830;">SEED</div>
+          <div style="display: flex; align-items: center; gap: 3px; margin-top: 4px;">
+            <span style="font-family: 'Rye', serif; font-size: 20px; color: #33261a;">WHITACRE-4471</span>
+            <span style="width: 3px; height: 20px; background: #33261a; animation: caret 1.1s steps(1) infinite;"></span>
+          </div>
+        </div>
+        <button type="button" style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.1em; color: #f2e2c8; background: linear-gradient(180deg, #5d4b33, #3f3121); border: 3px solid #40311f; border-left: none; padding: 0 15px; cursor: pointer;" style-hover="filter: brightness(1.2);" style-active="transform: translateY(2px);">NEW</button>
+      </div>
+    </div>
+
+    <!-- the Homestead: the barn doors in the yard, the barn on the skyline in the field -->
+    <div style="position: absolute; left: {{ doorX }}; top: {{ doorY }}; text-align: center; animation: cardIn 700ms cubic-bezier(0.16, 1, 0.3, 1) both 860ms;">
+      <div style="display: inline-block; background: linear-gradient(180deg, #e0b455, #b7862c); border: 3px solid #33271a; box-shadow: 0 4px 0 #33271a; padding: 9px 18px; cursor: pointer;" style-hover="filter: brightness(1.14);" style-active="transform: translateY(4px); box-shadow: none;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 0.14em; color: #2b1d08;">THE HOMESTEAD</div>
+      </div>
+      <div style="margin-top: 7px; font-size: 12px; color: #e6d2ab; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.9);">14 acres banked</div>
+    </div>
+
+    <!-- class rail -->
+    <div style="position: absolute; left: 0; right: 0; bottom: 52px; display: flex; align-items: flex-end; justify-content: center; gap: 16px;">
+      <sc-for list="{{ classes }}" as="c" hint-placeholder-count="6">
+        <dc-import name="Class Card" hero="{{ c }}" hint-size="196px,300px"></dc-import>
+      </sc-for>
+    </div>
+
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: rgba(10, 9, 8, 0.8); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.12em; color: #8a7c62;">
+      <span>24 WAVES · TWO BOSSES · WEAPONS FIRE THEMSELVES</span>
+      <span>ART BY LIMEZU · LIMEZU.ITCH.IO</span>
+      <span>V0.6.2</span>
+    </div>
+
+    <!-- reviewer control: not shipped, just so you can flip scenes without reloading -->
+    <button type="button" onClick="{{ flipScene }}" style="position: absolute; right: 22px; top: 22px; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.12em; color: #cbbb9c; background: rgba(10, 9, 8, 0.7); border: 1px solid #4a3c28; padding: 7px 11px; cursor: pointer;" style-hover="color: #f0e2c4; border-color: #8a7c62;">SCENE: {{ sceneLabel }}</button>
+  </div>
+
+  <!-- ============================== NOTES ============================== -->
+  <div style="padding: 56px 80px 96px; color: #c9bda6; background: radial-gradient(120% 60% at 50% 0%, #241d15 0%, #14120f 70%);">
+    <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE — DESIGN PASS 2 OF 4</div>
+    <h2 style="font-family: 'Rye', serif; font-size: 42px; margin: 14px 0 8px; color: #f0e2c4; font-weight: 400;">Home screen</h2>
+    <p style="max-width: 90ch; font-size: 14px; line-height: 1.75; color: #a2957c; margin: 0 0 34px;">Not a title and a list — a place you are standing in. Two places, in fact: the scene alternates every load, so the game does not open the same way twice. Every object is real 32px LimeZu art at 2× integer zoom, composited in DOM and animated in CSS only. The UI layer never changes between scenes; only the Homestead call-out moves, because the barn is in a different spot.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; max-width: 1640px;">
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">THE ROTATION</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">On boot, read the last scene from local storage and mount the other one. Two files today — <b style="color: #ded0b2;">Yard Scene</b> and <b style="color: #ded0b2;">Field Scene</b> — and adding a third is one more entry in the list, no change to <b style="color: #ded0b2;">menu.ts</b>. The button top-right is a reviewer control, not shipped.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">SPRITE MOTION</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">One strip PNG per actor plus <b style="color: #ded0b2;">background-position in pixels</b> with <b style="color: #ded0b2;">steps(n)</b>. Left-facing and right-facing walks are separate strips — never a mirrored sprite, so nothing ever walks backwards. Travel is a second animation on the parent, so cadence and speed tune independently.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">SCALE AND THE UI SAFE BAND</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Scale carries the depth, and every step is integer: distant buildings at <b style="color: #ded0b2;">1×</b>, actors at <b style="color: #ded0b2;">2×</b>, and a foreground building at <b style="color: #ded0b2;">2×</b> cropped by the frame edge — the yard silo is the one that sells it. Everything that moves lives in the band the UI leaves clear: <b style="color: #ded0b2;">y 600–726</b> across the middle, plus the bottom-left corner below the seed box. The right margin is the silo's now, so nothing animates there.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">DEPTH IN THE FIELD SCENE</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Four crop rows, each one taller, slower and blurrier than the row behind it — the front row carries a 3px blur, the second 1.2px, and the skyline buildings 0.6px. That is the whole depth trick, and it is what lets a flat DOM stack read as a field going away from you. The tractor works the middle distance on a 46-second pass with two offset exhaust puffs.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">LOCKED CLASSES</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">A locked class is not a black silhouette with a price. It is a packet somebody nailed shut: two boards across the window, the figure still visible in the gap, and the acre price branded on the top board. You can see there is somebody in there.</div>
+      </div>
+      <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
+        <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">ONE THING TO FLAG</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Four of the six classes reuse the two shipped farmer sheets here, because their generated sheets do not exist in the repo yet — <b style="color: #ded0b2;">npm run characters</b> builds them from <b style="color: #ded0b2;">art/characters.json</b>. The Portrait Generator <b style="color: #ded0b2;">does</b> ship at 32×32 (<b style="color: #ded0b2;">assets/modern-ui/32x32/Portrait_Generator_32x32/</b>, 85 accessories alone), so bust portraits are available for these cards whenever you want them — I corrected an earlier note that said otherwise.</div>
+      </div>
+    </div>
+
+    <div style="margin: 34px 0 0; font-size: 11.5px; color: #6f6350; line-height: 1.8;">Next: <b style="color: #9a8e76;">03</b> the 40–60 upgrade roster with the shop-exclusive split, as drop-in <b style="color: #9a8e76;">items.json</b> / <b style="color: #9a8e76;">weapons.json</b> · <b style="color: #9a8e76;">04</b> HUD, pause, results and the Homestead.</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080}}">
+const CLASSES = [
+  { id: 'hand', name: 'The Hand', unlocked: true, art: 'art/scene/farmer_idle.png',
+    tag: 'SLOW · ARMOURED · IMMOVABLE',
+    blurb: 'Thirty years on this ground. Slow, hard to move, and not especially worried.',
+    bars: [['BODY', 92], ['SPEED', 24], ['REACH', 46]],
+    passive: 'Braced — standing still stacks damage reduction to 30%.',
+    ability: 'Dig In', weapon: 'Pitchfork' },
+  { id: 'kid', name: 'The Kid', unlocked: true, art: 'art/scene/farmer2_idle.png',
+    tag: 'FAST · FRAGILE · MOMENTUM',
+    blurb: 'Home from school for the summer. Only ever safe at speed; stopping is the mistake.',
+    bars: [['BODY', 38], ['SPEED', 94], ['REACH', 52]],
+    passive: 'Momentum — up to +50% damage at full speed, nothing standing.',
+    ability: 'Bolt', weapon: 'Scattergun' },
+  { id: 'widow', name: 'The Widow', unlocked: false, price: 12, art: 'art/scene/farmer_idle.png',
+    tag: 'STEADY · MENDS · UNMOVED',
+    blurb: 'Buried a husband and a harvest the same autumn. Nothing out here frightens her.',
+    bars: [['BODY', 78], ['SPEED', 40], ['REACH', 70]],
+    passive: 'Braced — a shorter fuse than the Hand, a lower ceiling.',
+    ability: 'Hold the Line', weapon: 'Varmint Rifle' },
+  { id: 'vet', name: 'The Veteran', unlocked: false, price: 16, art: 'art/scene/farmer2_idle.png',
+    tag: 'EVEN · PRECISE · WATCHFUL',
+    blurb: 'Came home, took the back forty, and kept the habit of watching treelines.',
+    bars: [['BODY', 64], ['SPEED', 58], ['REACH', 80]],
+    passive: 'Braced — crit-leaning, holds ground well enough.',
+    ability: 'Break Contact', weapon: 'Drum Gun' },
+  { id: 'agronomist', name: 'The Agronomist', unlocked: false, price: 20, art: 'art/scene/farmer_idle.png',
+    tag: 'CHEMICAL · LUCKY · CURIOUS',
+    blurb: 'Sent out to test the soil. Stayed once she worked out what was in it.',
+    bars: [['BODY', 46], ['SPEED', 66], ['REACH', 88]],
+    passive: 'Momentum — modest, and +35% off every node she works.',
+    ability: 'Field Sample', weapon: 'Chem Sprayer' },
+  { id: 'drifter', name: 'The Drifter', unlocked: false, price: 24, art: 'art/scene/farmer2_idle.png',
+    tag: 'QUICK · GLASS · MEAN',
+    blurb: 'Works a season, moves on. This season he did not get out in time.',
+    bars: [['BODY', 30], ['SPEED', 98], ['REACH', 64]],
+    passive: 'Momentum — up to +60%, and nothing at all when standing.',
+    ability: 'Light Out', weapon: 'Harpoon Gun' }
+];
+
+const SCENES = ['yard', 'field'];
+const KEY = 'rdf.homeScene';
+
+class Component extends DCLogic {
+  state = { selected: 'hand', scene: 'yard' };
+
+  componentDidMount() {
+    let next = 'yard';
+    try {
+      const last = window.localStorage.getItem(KEY);
+      next = SCENES[(SCENES.indexOf(last) + 1) % SCENES.length];
+      window.localStorage.setItem(KEY, next);
+    } catch (e) {
+      next = SCENES[Math.floor(Math.random() * SCENES.length)];
+    }
+    this.setState({ scene: next });
+  }
+
+  renderVals() {
+    const sel = this.state.selected;
+    const scene = this.state.scene;
+    const chosen = CLASSES.find(c => c.id === sel) || CLASSES[0];
+    return {
+      chosen: chosen,
+      isYard: scene === 'yard',
+      isField: scene === 'field',
+      sceneLabel: scene === 'yard' ? 'YARD' : 'FIELD',
+      doorX: scene === 'yard' ? '832px' : '822px',
+      doorY: scene === 'yard' ? '624px' : '618px',
+      flipScene: () => {
+        const next = this.state.scene === 'yard' ? 'field' : 'yard';
+        try { window.localStorage.setItem(KEY, next); } catch (e) { /* private mode */ }
+        this.setState({ scene: next });
+      },
+      classes: CLASSES.map((c, i) => Object.assign({}, c, {
+        selected: c.id === sel,
+        delay: (620 + i * 90) + 'ms',
+        priceText: c.price != null ? c.price + ' ACRES' : '',
+        barRows: c.bars.map(b => ({ label: b[0], pct: b[1] + '%' })),
+        onPick: () => { if (c.unlocked) this.setState({ selected: c.id }); }
+      }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>

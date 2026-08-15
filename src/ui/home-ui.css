@@ -476,8 +476,10 @@
    ship it; it is gated on import.meta.env.DEV in menu.ts. */
 .home-scene-toggle {
   position: absolute;
+  /* Bottom-right: the top-right corner is the dev overlay's (spawn / kill all),
+     and this was sitting on top of it. Down here is empty grass. */
   right: 22px;
-  top: 22px;
+  bottom: 44px;
   font-family: var(--label);
   font-size: 9px;
   letter-spacing: 0.12em;

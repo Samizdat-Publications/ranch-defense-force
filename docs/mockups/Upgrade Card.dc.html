@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position: relative; width: 236px; padding-top: 22px; margin-top: {{ card.lift }}; cursor: pointer; transition: transform 160ms ease-out, filter 160ms ease-out;" style-hover="transform: translateY(-9px); filter: brightness(1.05);">
+
+  <div style="position: relative; animation: {{ card.dealAnim }}; animation-delay: {{ card.dealDelay }}; --dx: {{ card.driftX }}; --rest: {{ card.rest }};">
+    <div style="position: relative; filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.5));">
+
+      <!-- hang tab + punch hole -->
+      <div style="position: relative; width: 108px; height: 26px; margin: 0 auto -3px; background: #cbb68d; border: 3px solid {{ card.paperEdge }}; border-bottom: none; clip-path: polygon(9% 0, 91% 0, 100% 100%, 0 100%); display: grid; place-items: center;">
+        <div style="width: 15px; height: 15px; border-radius: 50%; background: #1b1610; box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9); margin-top: 5px;"></div>
+      </div>
+
+      <!-- paper body -->
+      <div style="position: relative; background: {{ card.paper }}; border: 3px solid {{ card.paperEdge }}; padding: 12px 12px 0;">
+
+        <div style="position: absolute; inset: 4px; border: 1px solid rgba(64, 49, 31, 0.32); pointer-events: none;"></div>
+        <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.14; background-image: radial-gradient(#5a4630 1px, transparent 1px); background-size: 4px 4px;"></div>
+
+        <sc-if value="{{ card.foil }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0; pointer-events: none; background: linear-gradient(104deg, transparent 34%, rgba(255, 236, 176, 0.72) 48%, rgba(255, 255, 255, 0.5) 52%, transparent 66%); background-size: 220% 100%; animation: foil 2.6s linear infinite; mix-blend-mode: screen;"></div>
+        </sc-if>
+
+        <!-- kind band -->
+        <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 6px; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.13em; color: #4b3a24; border-bottom: 2px solid rgba(64, 49, 31, 0.5); padding-bottom: 7px;">
+          <span>{{ card.kind }}</span>
+        </div>
+
+        <!-- art window -->
+        <div style="position: relative; margin: 11px 0 0; height: 132px; background: radial-gradient(70% 70% at 50% 40%, #3d3220 0%, #241d13 100%); border: 3px solid {{ card.paperEdge }}; box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.7); display: grid; place-items: center; overflow: hidden;">
+          <div style="position: absolute; inset: 0; opacity: 0.26; background-image: radial-gradient(rgba(224, 160, 46, 0.4) 1px, transparent 1px); background-size: 6px 6px;"></div>
+          <div style="position: absolute; left: 8px; right: 8px; bottom: 22px; height: 1px; background: rgba(224, 160, 46, 0.18);"></div>
+          <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.6));"></div>
+          <img src="{{ card.art }}" alt="" style="position: relative; top: -2px; image-rendering: pixelated; zoom: {{ card.zoom }}; animation: breathe 3.4s ease-in-out infinite;" />
+          <sc-if value="{{ card.foil }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: radial-gradient(40% 40% at 50% 46%, rgba(255, 232, 168, 0.55), transparent 70%); animation: glint 2.6s linear infinite;"></div>
+          </sc-if>
+
+        </div>
+
+        <!-- rarity plate: stamped tin, riveted across the window's lower edge -->
+        <div style="position: relative; z-index: 3; margin: -17px -7px 0; animation: {{ card.pinAnim }}; animation-delay: {{ card.pinDelay }};">
+          <div style="position: relative; height: 30px; background: {{ card.plate }}; border: 2px solid {{ card.plateEdge }}; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -2px 4px rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 9px; overflow: hidden;">
+            <sc-if value="{{ card.foil }}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; inset: 0; background: linear-gradient(104deg, transparent 36%, rgba(255, 245, 205, 0.85) 49%, transparent 62%); background-size: 240% 100%; animation: foil 2.6s linear infinite;"></div>
+            </sc-if>
+            <div style="position: absolute; left: 5px; top: 5px; width: 4px; height: 4px; border-radius: 50%; background: rgba(0, 0, 0, 0.35); box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.25);"></div>
+            <div style="position: absolute; right: 5px; top: 5px; width: 4px; height: 4px; border-radius: 50%; background: rgba(0, 0, 0, 0.35); box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.25);"></div>
+            <div style="position: relative; display: flex; gap: 3px;">
+              <sc-for list="{{ card.pips }}" as="p" hint-placeholder-count="2">
+                <div style="width: 5px; height: 5px; transform: rotate(45deg); background: {{ card.plateInk }}; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);"></div>
+              </sc-for>
+            </div>
+            <span style="position: relative; font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.17em; color: {{ card.plateInk }}; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);">{{ card.rarityName }}</span>
+            <div style="position: relative; display: flex; gap: 3px;">
+              <sc-for list="{{ card.pips }}" as="p" hint-placeholder-count="2">
+                <div style="width: 5px; height: 5px; transform: rotate(45deg); background: {{ card.plateInk }}; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);"></div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- name + blurb -->
+        <div style="position: relative; font-family: 'Rye', serif; font-size: 20px; line-height: 1.08; color: #33261a; margin: 11px 0 0; min-height: 44px;">{{ card.name }}</div>
+        <div style="position: relative; font-size: 11.5px; line-height: 1.5; color: #5c4a33; margin: 4px 0 0; min-height: 52px; text-wrap: pretty;">{{ card.blurb }}</div>
+
+        <div style="position: relative; margin: 8px 0 0; height: 0; border-top: 2px dashed rgba(64, 49, 31, 0.45);"></div>
+
+        <!-- stats -->
+        <div style="position: relative; display: flex; flex-direction: column; gap: 2px; margin: 9px 0 0; font-size: 11px; min-height: 46px;">
+          <sc-for list="{{ card.statRows }}" as="s" hint-placeholder-count="2">
+            <div style="display: flex; justify-content: space-between; gap: 8px;">
+              <span style="color: #6b5840; letter-spacing: 0.03em;">{{ s.label }}</span>
+              <b style="color: {{ s.colour }};">{{ s.value }}</b>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- footer -->
+        <div style="position: relative; margin: 10px -12px 0; padding: 7px 12px; border-top: 2px solid rgba(64, 49, 31, 0.5); background: rgba(64, 49, 31, 0.09); display: flex; justify-content: space-between; align-items: center; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.11em; color: #5b4830;">
+          <span>{{ card.footerText }}</span>
+          <span style="opacity: 0.75;">{{ card.rarityName }}</span>
+        </div>
+
+        <!-- locked: bulldog clip -->
+        <sc-if value="{{ card.locked }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; top: -14px; left: 14px; width: 44px; height: 26px; background: linear-gradient(180deg, #b9bcc0 0%, #7d8288 55%, #5a5f65 100%); border: 2px solid #2c2f33; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);">
+            <div style="position: absolute; left: 6px; right: 6px; top: 7px; height: 3px; background: #4a4e53;"></div>
+            <div style="position: absolute; left: 6px; right: 6px; top: 14px; height: 3px; background: #4a4e53;"></div>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- unaffordable wash -->
+      <sc-if value="{{ card.unaffordable }}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; inset: 0; background: rgba(28, 26, 22, 0.42); mix-blend-mode: saturation;"></div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:260,&quot;height&quot;:420},&quot;card&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;UpgradeCard&quot;},&quot;dealKey&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const c = this.props.card || {};
+    const cost = c.cost;
+    return {
+      card: Object.assign({}, c, {
+        footerText: cost != null ? 'FEED ' + cost : (c.footer || 'LOT 00'),
+        pinAnim: c.pinAnim || 'pin 380ms cubic-bezier(.2,1.5,.4,1) both'
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

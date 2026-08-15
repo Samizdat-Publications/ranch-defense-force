@@ -5,6 +5,12 @@
   "_next": "For directional field art the pipeline is: generate one side view here, then 'Generate 8 rotations', then 'Animate with text' for the walk. Those are separate tools and are not automated by this script yet.",
   "subjects": [
     {
+      "_priority": "0 — BLOCKING THE HOME SCREEN. The oaks are removed from both scenes until these exist.",
+      "name": "oak_tree_dusk",
+      "description": "a large green oak tree with a thick trunk, seen from a low angle",
+      "serves": "the home screen treeline in both scenes; the LimeZu modular oak reads as three identical shrubs at this scale"
+    },
+    {
       "_priority": "1 — the five borrowed field families. These are flagged `_standInArt` in items.json and are currently wearing sprites that mean something else.",
       "name": "barn_dog",
       "description": "a scruffy brown farm dog standing in profile",
