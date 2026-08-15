@@ -26,21 +26,44 @@
     linear-gradient(180deg, #1a1622 0%, #3b2b2e 34%, #6b4630 58%, #8a5a33 72%, #2f2a1c 86%, #17150f 100%);
 }
 
-/* Dusk haze sitting on the horizon, so the treeline has air in front of it. */
+/* Dusk haze on the horizon, and a vertical scrim so the printed matter
+   at the top of the screen always has something to sit on. */
 .home::before {
   content: '';
   position: absolute;
-  left: 0; right: 0; top: 46%; height: 26%;
-  background: radial-gradient(60% 100% at 50% 100%, rgba(224, 160, 64, 0.28), transparent 70%);
+  inset: 0;
+  z-index: 8;
   pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(8, 7, 6, 0.82) 0%, rgba(8, 7, 6, 0.62) 38%, rgba(8, 7, 6, 0.12) 58%, transparent 74%),
+    radial-gradient(60% 40% at 50% 62%, rgba(224, 160, 64, 0.22), transparent 70%);
 }
 
 /* --- the yard --- */
 /*
-   Full height, not a strip: the buildings sit against the sky and the
-   scale ladder (1x distant, 2x actors, 2x cropped silo) is what makes
-   it depth. A band across the bottom cannot do that.
+   THE SCENE IS A FIXED STAGE, SCALED AS ONE UNIT.
+
+   Design composes on 1920x1080, where the barn is 480px — a quarter of
+   the width. Positioning those same sprites by percentage of an
+   arbitrary viewport does not reproduce that: on a 1129px window the
+   barn becomes 43% of the width and the silo grows to 896px on a
+   1153px screen, so the yard reads as a close-up of a barn instead of
+   a farmyard. The stage is therefore 1920x1080 always, and `--scene`
+   scales the whole thing to cover the window. Every placement inside
+   is then stable, and the scale ladder the design depends on survives.
 */
+.home-scene {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1920px;
+  height: 1080px;
+  margin: -540px 0 0 -960px;
+  transform: scale(var(--scene, 1));
+  transform-origin: center center;
+  pointer-events: none;
+}
+
 .home-yard {
   position: absolute;
   inset: 0;
@@ -69,7 +92,7 @@
    one node per tile — a hundred divs to draw dirt is a hundred divs. */
 .home-ground {
   position: absolute;
-  left: 0; right: 0; bottom: 0; height: 42%;
+  left: 0; right: 0; bottom: 0; height: 46%;
   image-rendering: pixelated;
   filter: brightness(0.62) saturate(0.85);
 }
@@ -99,9 +122,14 @@
 }
 
 /* --- the printed matter on top --- */
+/*
+   The printed matter sits above the stage with a scrim behind it. Without
+   the scrim the class cards land on top of a barn and neither reads —
+   the yard is a backdrop, not a competitor.
+*/
 .home-inner {
   position: relative;
-  z-index: 2;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -157,6 +185,8 @@
 }
 
 .home-foot {
+  position: relative;
+  z-index: 10;
   font-family: var(--label);
   font-size: 8px;
   letter-spacing: 0.2em;

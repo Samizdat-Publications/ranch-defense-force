@@ -96,7 +96,7 @@ export class MenuScreen {
   private readonly seedInput: HTMLInputElement
   private readonly homesteadBtn: HTMLButtonElement
   private cardsEl!: HTMLElement
-  private yardEl!: HTMLElement
+  private stageEl!: HTMLElement
   private selected = CLASS_IDS[0]
   /** Which classes the save has paid for. Set by main before every open(). */
   private unlocked = new Set<string>(CLASS_IDS.filter((id) => CLASSES[id]?.unlocked === true))
@@ -121,10 +121,10 @@ export class MenuScreen {
     const head = el('button', { class: 'btn btn-primary', text: 'Head out →' })
     head.onclick = () => this.onStart(this.selected, this.seedInput.value.trim())
 
-    this.yardEl = this.scene()
+    this.stageEl = el('div', { class: 'home-scene' }, [this.scene()])
 
     this.root = el('div', { class: `screen home${this.isField ? ' is-field' : ''}` }, [
-      this.yardEl,
+      this.stageEl,
       el('div', { class: 'home-inner' }, [
         el('h1', { class: 'home-title', text: 'RANCH DEFENSE FORCE' }),
         el('p', {
@@ -143,6 +143,8 @@ export class MenuScreen {
     this.root.style.display = 'none'
     parent.appendChild(this.root)
     this.renderCards()
+    this.fitScene()
+    window.addEventListener('resize', () => this.fitScene())
   }
 
   /**
@@ -320,9 +322,7 @@ export class MenuScreen {
   setUnlocked(ids: readonly string[], prices?: ReadonlyMap<string, number>): void {
     this.unlocked = new Set(ids)
     if (prices) this.prices = new Map(prices)
-    const fresh = this.scene()
-    this.yardEl.replaceWith(fresh)
-    this.yardEl = fresh
+    this.stageEl.replaceChildren(this.scene())
     this.renderCards()
   }
 
@@ -334,6 +334,19 @@ export class MenuScreen {
 
   open(): void {
     this.root.style.display = ''
+    this.fitScene()
+  }
+
+  /**
+   * Scale the 1920x1080 stage to cover the window.
+   *
+   * `cover`, not `contain`: a letterboxed farmyard with bars down the sides
+   * would look like a bug. The overflow is hidden by `.home`, and the design
+   * already expects the silo to run off the right edge.
+   */
+  private fitScene(): void {
+    const s = Math.max(window.innerWidth / 1920, window.innerHeight / 1080)
+    this.root.style.setProperty('--scene', String(s))
   }
 
   close(): void {
