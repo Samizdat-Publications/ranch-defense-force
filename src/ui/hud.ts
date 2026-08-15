@@ -15,6 +15,9 @@ export class Hud {
   private readonly hpFill: HTMLElement
   private readonly hpChase: HTMLElement
   private readonly hpText: HTMLElement
+  private readonly armour: HTMLElement
+  /** Last armour value rendered; the pips are only rebuilt when it changes. */
+  private armourShown = -1
   private readonly waveN: HTMLElement
   private readonly waveTimer: HTMLElement
   private readonly feed: HTMLElement
@@ -37,6 +40,7 @@ export class Hud {
     this.hpChase = el('div', { class: 'hud-hp-chase' })
     this.hpFill = el('div', { class: 'hud-hp-fill' })
     this.hpText = el('div', { class: 'hud-hp-text' })
+    this.armour = el('div', { class: 'hud-armour' })
     this.waveN = el('div', { class: 'hud-wave-n' })
     this.waveTimer = el('div', { class: 'hud-wave-timer' })
     this.feed = el('div', { class: 'hud-feed' })
@@ -54,6 +58,7 @@ export class Hud {
 
     this.root = el('div', { class: 'hud' }, [
       el('div', { class: 'hud-hp' }, [this.hpChase, this.hpFill, this.hpText]),
+      this.armour,
       el('div', { class: 'hud-wave' }, [this.waveN, this.waveTimer]),
       this.feed,
       this.weapons,
@@ -66,6 +71,18 @@ export class Hud {
   }
 
   update(world: World): void {
+    // Armour, as the same diamond the rarity plate uses for a pip. Rebuilt only
+    // when the number changes — the HUD writes to the DOM on change, never per
+    // frame, and eight divs a frame would be eight divs a frame.
+    const armour = Math.max(0, Math.round(world.player.stats.armor))
+    if (armour !== this.armourShown) {
+      this.armourShown = armour
+      this.armour.replaceChildren(
+        ...Array.from({ length: Math.min(12, armour) }, () =>
+          el('span', { class: 'hud-armour-pip' })),
+      )
+    }
+
     const boss = world.findBoss()
     if (boss) {
       const pct = Math.max(0, Math.min(1, boss.hp / boss.maxHp))

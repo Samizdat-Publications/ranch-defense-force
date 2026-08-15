@@ -210,3 +210,119 @@
 }
 
 .psheet-foot .spacer { flex: 1; }
+
+/* ===================================================================
+   RESULTS — the day's sheet
+   ===================================================================
+   Two columns: the tally on the left, the acres stamp and the build
+   on the right. The stamp lands 700ms after the sheet, so it reads as
+   a separate beat — the number you were waiting for arrives last.
+   =================================================================== */
+
+.results-wrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  background: rgba(10, 8, 6, 0.72);
+  z-index: 6;
+}
+
+.results {
+  width: min(1080px, 94vw);
+  padding: 3vh 0;
+  animation: psheet-in 480ms var(--ease-out) both;
+}
+
+.results-head { text-align: center; margin-bottom: 18px; }
+
+.results-title {
+  font-family: var(--display);
+  font-size: clamp(38px, 5vw, 66px);
+  color: var(--cream);
+  margin: 0;
+  font-weight: 400;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+.results-sub {
+  font-size: 15px;
+  color: #c2b193;
+  font-family: var(--body);
+  margin: 6px 0 0;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .results-grid { grid-template-columns: 1fr; }
+}
+
+/* The acres stamp: brighter stock, gold edge — this is the good news. */
+.results-acres {
+  position: relative;
+  background: var(--paper-bright);
+  border: 3px solid var(--paper-edge-gold);
+  padding: 20px 24px;
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.results-stamp {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 26px;
+  background: var(--gold-brand);
+  border: 3px solid var(--paper-edge-gold);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  animation: stamp-in 460ms cubic-bezier(0.2, 1.5, 0.4, 1) both 700ms;
+}
+
+@keyframes stamp-in {
+  from { opacity: 0; transform: scale(0.5) rotate(-8deg); }
+  to { opacity: 1; transform: none; }
+}
+
+.results-stamp-n {
+  font-family: var(--display);
+  font-size: 44px;
+  color: #2b1d08;
+}
+
+.results-stamp-unit {
+  font-family: var(--label);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #4a3208;
+  margin-left: 8px;
+}
+
+.results-acres-note {
+  font-family: var(--body);
+  font-size: 11.5px;
+  color: var(--ink-label);
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.results-panel {
+  position: relative;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+  padding: 18px 22px;
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.55);
+}
+
+.results-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
