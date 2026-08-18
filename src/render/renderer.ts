@@ -71,6 +71,19 @@ const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
 interface DrawItem {
   x: number
   y: number
+  /**
+   * Pixels to lift this item when DRAWING, without moving where it SORTS.
+   *
+   * y is both the drawn position and the depth key for everything that stands
+   * on the ground, which is nearly everything, and 0 here keeps that true. The
+   * weapon ring is the exception: a carried weapon is lifted to torso height,
+   * and that lift was going into the sort as well — a weapon at the character's
+   * side sat at `p.y - 14` and therefore drew BEHIND him. That is most of why
+   * the ring read as an orbit passing around the body instead of gear held
+   * against it. Lift is a picture; depth is a position; they are not the same
+   * number.
+   */
+  liftY: number
   frame: AtlasFrame | null
   /** Fallback square, used when the atlas has no art for this entity. */
   colour: string
@@ -151,7 +164,7 @@ export class Renderer {
     const cap = TUNING.pools.enemies + TUNING.pools.projectiles + TUNING.pools.props + 64
     for (let i = 0; i < cap; i++) {
       this.items.push({
-        x: 0, y: 0, frame: null, colour: '', w: 0, h: 0, flash: false,
+        x: 0, y: 0, liftY: 0, frame: null, colour: '', w: 0, h: 0, flash: false,
         scaleX: 1, scaleY: 1, rotation: 0, outline: null, alpha: 1,
       })
     }
@@ -433,6 +446,7 @@ export class Renderer {
     const it = this.items[this.itemCount++]
     it.frame = null
     it.flash = false
+    it.liftY = 0
     it.scaleX = 1
     it.scaleY = 1
     it.rotation = 0
@@ -648,10 +662,10 @@ export class Renderer {
         const src = it.flash && flashImg ? flashImg : atlasImg
         if (plain) {
           // The hot path: one drawImage, no state changes.
-          ctx.drawImage(src, f.x, f.y, f.w, f.h, it.x + f.ox, it.y + f.oy, f.w, f.h)
+          ctx.drawImage(src, f.x, f.y, f.w, f.h, it.x + f.ox, it.y - it.liftY + f.oy, f.w, f.h)
         } else {
           ctx.save()
-          ctx.translate(it.x, it.y)
+          ctx.translate(it.x, it.y - it.liftY)
           if (it.rotation !== 0) ctx.rotate(it.rotation)
           if (it.scaleX !== 1 || it.scaleY !== 1) ctx.scale(it.scaleX, it.scaleY)
           if (it.alpha !== 1) ctx.globalAlpha = it.alpha
@@ -661,9 +675,10 @@ export class Renderer {
       } else {
         const w = it.w * it.scaleX
         const h = it.h * it.scaleY
+        const dy = it.y - it.liftY
         if (it.rotation !== 0) {
           ctx.save()
-          ctx.translate(it.x, it.y)
+          ctx.translate(it.x, dy)
           ctx.rotate(it.rotation)
           ctx.globalAlpha = it.alpha
           ctx.fillStyle = it.flash ? '#ffffff' : it.colour
@@ -672,11 +687,11 @@ export class Renderer {
         } else {
           if (it.alpha !== 1) ctx.globalAlpha = it.alpha
           ctx.fillStyle = it.flash ? '#ffffff' : it.colour
-          ctx.fillRect(it.x - w / 2, it.y - h / 2, w, h)
+          ctx.fillRect(it.x - w / 2, dy - h / 2, w, h)
           if (it.outline) {
             ctx.strokeStyle = it.outline
             ctx.lineWidth = 1
-            ctx.strokeRect(it.x - w / 2, it.y - h / 2, w, h)
+            ctx.strokeRect(it.x - w / 2, dy - h / 2, w, h)
           }
           if (it.alpha !== 1) ctx.globalAlpha = 1
         }
@@ -917,7 +932,11 @@ export class Renderer {
         : 0
       const r = cfg.weaponRingRadius + push
       it.x = p.x + Math.cos(slot.ringAngle) * r - Math.cos(slot.aimAngle) * kick
-      it.y = p.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick - 14 + lift
+      // Depth: where on the ground this weapon is, so one at his front draws
+      // over him and one behind his shoulder draws under him.
+      it.y = p.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick
+      // Picture: carried at torso height. Never folded into y — see `liftY`.
+      it.liftY = 14 - lift
       it.frame = frame
       it.colour = PALETTE.melee
       it.w = 10

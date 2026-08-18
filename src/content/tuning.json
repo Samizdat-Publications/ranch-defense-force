@@ -89,7 +89,7 @@
     "hitSparkChance": 0.35,
     "muzzleChance": 0.5,
     "_ring": "The weapon ring drawn around the player. radius is how far the icons sit from the player's centre, scale shrinks the 32px source art to something that reads beside a 32px character, and recoil is how far a weapon kicks back along its aim when it fires.",
-    "weaponRingRadius": 30,
+    "weaponRingRadius": 24,
     "weaponRingScale": 0.45,
     "weaponRecoilSeconds": 0.12,
     "weaponRecoilPixels": 6,
@@ -107,7 +107,9 @@
       "scale": 0.8
     },
     "_ringScaleNote": "Ring icons are normalised to weaponRingTargetWidth rather than scaled by a flat factor, because the sources differ: a 32px tool icon and a ~20px gun drawn to be held need different multipliers to end up the same size on screen.",
-    "weaponRingTargetWidth": 15
+    "weaponRingTargetWidth": 15,
+    "weaponRingSpreadDegrees": 250,
+    "_weaponRingSpreadNote": "The ARC the weapons fan across, centred on the direction the character faces (down/front). 360 puts them on a perfect circle at even spacing, which reads as an ORBIT — a thing going around him — rather than as gear carried at his sides. Leaving a gap behind the head is most of the difference, and it costs nothing."
   },
   "arena": {
     "edgePadding": 24

@@ -9,6 +9,8 @@ import { emptyDerived, resolveStats, type DerivedStats } from './stats'
 import { xpToNext } from './formulas'
 
 const P = TUNING.player
+/** The arc the carried weapons fan across. See `layOutWeaponRing`. */
+const RING_SPREAD_DEGREES = (TUNING.fx as unknown as Record<string, number>).weaponRingSpreadDegrees
 
 export interface OwnedItem {
   id: string
@@ -264,11 +266,30 @@ export class Player {
   /** Seconds of "this one is new" highlight left on each ring slot. */
   weaponFlash = new Map<string, number>()
 
+  /**
+   * Where each weapon is CARRIED, as an angle from the player's centre.
+   *
+   * They used to be spaced evenly around a full circle, and that is what made
+   * the ring read as an ORBIT — a thing travelling around the character — where
+   * the reference (Brotato) reads as gear held at his sides. A circle of evenly
+   * spaced objects is the visual signature of orbiting, and no amount of art
+   * fixes it.
+   *
+   * So they fan across an ARC centred on the way he faces, leaving a gap behind
+   * his head. Same weapons, same radius, same aiming; the emptiness at the top
+   * is what tells you these are being carried rather than circling.
+   *
+   * Angles only. Whether a weapon then draws in front of him or behind him is
+   * the renderer's `liftY`/depth split, not this.
+   */
   private layOutWeaponRing(): void {
     const n = this.weapons.length
+    const spread = ((RING_SPREAD_DEGREES ?? 250) * Math.PI) / 180
+    // PI/2 is down in screen space: in front of the character.
+    const centre = Math.PI / 2
     for (let i = 0; i < n; i++) {
-      // Start at the top and go clockwise; -PI/2 is up in screen space.
-      this.weapons[i].ringAngle = -Math.PI / 2 + (i / n) * Math.PI * 2
+      const t = n === 1 ? 0.5 : i / (n - 1)
+      this.weapons[i].ringAngle = centre - spread / 2 + t * spread
     }
   }
 

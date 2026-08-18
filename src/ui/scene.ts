@@ -428,26 +428,33 @@ function yard(): (HTMLElement | null)[] {
   // It is a trimmed frame, hence the box: the reference's slot is 64x64 and the
   // bird stands on its floor.
   /*
-     THE ROOSTER PECKS, AND EVERY TWENTY-ONE SECONDS HE CROWS.
+     THE ROOSTER WALKS A BEAT, PECKS, AND CROWS — one 24s cycle, four layers.
 
-     Two strips stacked on one spot, cut between by a single long cycle: the
-     crow is opaque for the last ~2.5s of each period and the peck is hidden for
-     exactly that window. The stops are 0.1% apart rather than shared, so it is
-     a CUT and not a dissolve — a rooster does not fade into crowing.
+     A wrapper carries the PATH and the three strips sit inside it at 0,0, each
+     cut in and out by a keyframe sharing that period. Splitting movement from
+     appearance is what keeps this tractable: the wrapper only ever translates,
+     and a strip only ever decides whether it is the one on screen.
 
-     Placed 763,642 rather than the old box's 758,640: `spriteInBox` bottom-
-     centred a trimmed frame in a 64x64 slot, and these strips are a 54x62 cell
-     drawn from their top-left. 758 + (64-54)/2 and 640 + 64 - 62 put his feet
-     back exactly where they were standing.
+     He walks out and BACK rather than in a circle, because the sprite has one
+     facing. A circle would have him moonwalking through half of it; the return
+     leg flips `scaleX` instead, which is why the path keyframe carries both
+     transforms in every stop — writing only one silently drops the other.
 
-     A missing strip falls back to the static bird rather than an empty yard.
+     Placed at 763,642 so his feet land where the old still frame's did; see the
+     note on `spriteInBox` for that arithmetic. A missing strip falls back to
+     the static bird rather than an empty yard.
   */
-  const roosterPeck = actor('scene.roosterPeckStrip', 763, 642, 54, 62, 9, '2.4s')
-  const roosterCrow = actor('scene.roosterCrowStrip', 763, 642, 54, 62, 9, '1.4s')
-  if (roosterPeck && roosterCrow) {
-    roosterPeck.style.animation += ', y-crow-hide 21s infinite'
-    roosterCrow.style.animation += ', y-crow-show 21s infinite'
-    L.push(roosterPeck, roosterCrow)
+  const roosterWalk = actor('scene.roosterWalkStrip', 0, 0, 54, 62, 9, '0.9s')
+  const roosterPeck = actor('scene.roosterPeckStrip', 0, 0, 54, 62, 9, '2.4s')
+  const roosterCrow = actor('scene.roosterCrowStrip', 0, 0, 54, 62, 9, '1.4s')
+  if (roosterWalk && roosterPeck && roosterCrow) {
+    const beat = '24s'
+    roosterWalk.style.animation += `, y-rooster-walk ${beat} infinite`
+    roosterPeck.style.animation += `, y-rooster-peck ${beat} infinite`
+    roosterCrow.style.animation += `, y-rooster-crow ${beat} infinite`
+    const yard = box(`left:763px;top:642px;width:54px;height:62px;animation:y-rooster-path ${beat} infinite`)
+    yard.append(roosterWalk, roosterPeck, roosterCrow)
+    L.push(yard)
   } else {
     L.push(spriteInBox('scene.rooster', 758, 640, 64, 64, 1))
   }

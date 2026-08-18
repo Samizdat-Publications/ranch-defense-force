@@ -138,18 +138,41 @@
   to { background-position: calc(var(--strip-w) * -1) 0; }
 }
 
-/* The rooster's twenty-one-second cycle: pecking, then ~2.5s of crowing.
-   The stops sit 0.1% apart rather than sharing a keyframe so the swap is a
-   hard cut — two birds dissolving through each other reads as a ghost. */
-@keyframes y-crow-show {
-  0%, 87.9% { opacity: 0; }
-  88%, 99.9% { opacity: 1; }
-  100% { opacity: 0; }
+/*
+   THE ROOSTER'S TWENTY-FOUR SECOND BEAT: walk out, walk back, peck, crow.
+
+   The wrapper owns the PATH and each strip owns only whether it is the one on
+   screen, which is what keeps four moving parts readable. All four share the
+   period, so the windows below are the score.
+
+   `translateX` and `scaleX` are written together in EVERY stop of the path.
+   They are one property — a keyframe naming only the translate silently drops
+   the flip and he moonwalks the return leg.
+
+   Visibility stops sit 0.1% apart rather than sharing a value so each swap is a
+   cut: two birds dissolving through each other reads as a ghost.
+*/
+@keyframes y-rooster-path {
+  0% { transform: translateX(0) scaleX(1); }
+  30% { transform: translateX(46px) scaleX(1); }
+  32% { transform: translateX(46px) scaleX(-1); }
+  62% { transform: translateX(0) scaleX(-1); }
+  64% { transform: translateX(0) scaleX(1); }
+  100% { transform: translateX(0) scaleX(1); }
 }
-@keyframes y-crow-hide {
-  0%, 87.9% { opacity: 1; }
-  88%, 99.9% { opacity: 0; }
-  100% { opacity: 1; }
+@keyframes y-rooster-walk {
+  0%, 63.9% { opacity: 1; }
+  64%, 100% { opacity: 0; }
+}
+@keyframes y-rooster-peck {
+  0%, 65.9% { opacity: 0; }
+  66%, 84.9% { opacity: 1; }
+  85%, 100% { opacity: 0; }
+}
+@keyframes y-rooster-crow {
+  0%, 85.9% { opacity: 0; }
+  86%, 99.4% { opacity: 1; }
+  99.5%, 100% { opacity: 0; }
 }
 
 @keyframes y-cross { 0% { transform: translateX(0); } 100% { transform: translateX(-2260px); } }
