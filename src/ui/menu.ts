@@ -182,9 +182,14 @@ export class MenuScreen {
        names. Falling back keeps the screen working when the atlas has no
        portrait — a missing one costs the plate, not the menu.
     */
-    const sprite = spriteEl(`portrait.${id}`, 4096, 2) ?? spriteEl(`${id}.idle.down.0`, 4096, 3)
+    const portrait = spriteEl(`portrait.${id}`, 4096, 2)
+    const sprite = portrait ?? spriteEl(`${id}.idle.down.0`, 4096, 3)
     if (sprite) {
       sprite.classList.add('hero-figure')
+      // A portrait is bottom-anchored; a full-body sprite is pulled up so its
+      // legs crop out of the window. Different art, different rule — see the
+      // note on `.hero-figure` in home-ui.css.
+      if (portrait) sprite.classList.add('is-portrait')
       figure.append(sprite)
     }
     figure.append(el('div', { class: 'hero-horizon' }), el('div', { class: 'hero-shade' }))

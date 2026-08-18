@@ -333,7 +333,27 @@
   overflow: hidden;
 }
 
+/*
+   TWO KINDS OF ART GO IN THIS WINDOW AND THEY DO NOT SIT THE SAME WAY.
+
+   The base rule is for a FULL-BODY sprite: 96px wide at 3x, hence the -48px
+   half-width, and pulled up 38px so the legs crop off the bottom of a 120px
+   window and you get a torso rather than a whole little person standing in a
+   box.
+
+   A PORTRAIT is already a bust — cropping it from the top is exactly wrong, and
+   inheriting the -38px pull leaves it floating with a gap beneath. It bottom-
+   anchors instead, and centres by transform rather than a hard-coded half-width
+   so it does not need retuning when a portrait comes back a few pixels wider.
+*/
 .hero-figure { position: absolute; left: 50%; margin-left: -48px; top: -38px; }
+
+.hero-figure.is-portrait {
+  margin-left: 0;
+  transform: translateX(-50%);
+  top: auto;
+  bottom: 0;
+}
 
 .hero-horizon {
   position: absolute;

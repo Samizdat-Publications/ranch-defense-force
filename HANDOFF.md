@@ -151,50 +151,55 @@ without grinding to it.
 
 ## Outstanding, roughly in order
 
-1. **A human playtest.** Still nobody has held the controls since the art
-   landed, and the last time one did they found a blocking bug no test caught.
-   This is also M8's acceptance criterion — "a competent player clears Tier 1 in
-   about six runs" — and it is the only milestone left.
-2. **Two staged sprites want a renderer change, not a card slot.** The gas cloud
-   and the salt-ring decal are trimmed in `assets/pixellab/picked/` and wired to
-   nothing, because the FX they would replace are animated clips rather than
-   static frames. Threshing Floor is the one item still on borrowed art and has
-   nothing generated for it at all.
-3. **Ten animals are finished as art and not packed.** Eight rotations and a
-   nine-frame walk in each of eight directions, in
-   `assets/pixellab/object/<name>/`: the fjord pony, arabian, draft mule and
-   donkey; the Barn Dog and the Whitacre Bull; and the four infected livestock.
-   Nothing references any of it. **This is the single biggest ready-to-go item
-   on the list**, and what remains is engineering rather than generation.
+**Everything below is current as of session 12. `NOTES.md` session 12 is the
+detail; `docs/ART_STYLE.md` is what to generate against.**
 
-   **Three of the four blocking decisions are now measured** — run
-   `npm run animal` to reproduce, and see `_howToWireIt` in the queue:
-   - *Direction mapping:* `south→down, north→up, west→left, east→right`. Not a
-     new order at all; it is what `compassToDirection` already ships.
-   - *Frames:* 8 directions × 9 frames, against LimeZu's 6. A manifest entry,
-     not a renderer change.
-   - *Size:* the widths already agree within ~13%. The heights do not, because
-     **LimeZu draws its animals from a high top-down and these are nearly
-     side-on.** That is a camera mismatch and a scale factor will not fix it.
+1. **A human playtest of the new art.** The whole cast, the ground and the
+   palette changed in one session. It has been looked at on screen but not
+   PLAYED. This is still M8's acceptance criterion and still the only milestone
+   left.
+2. **The balance session.** The owner reported the waves as far too slow and the
+   harness agreed — 19 enemies alive at the average death. Raising the budget or
+   the spawn rate BOTH fail `run.test.ts`, on the identical budget, so the game
+   has no headroom: density and player power are coupled. The fix is more
+   enemies that are individually weaker across `enemies.json`, and it wants a
+   deliberate session. Numbers are in `formulas.ts` above `threatBudget`.
+   Also parked for that session: base move speed 160, crop density and feed
+   value, damage-% items vs "merging IS the offensive game", late shops thinning
+   to items only, elites being spawn-time only, and global hitstop.
+3. **Sixteen animals, generated and still unpacked.** Ten healthy plus six
+   cursed, in `assets/pixellab/object/<name>/`. FOUR DIRECTIONS was decided, so
+   what remains is a manifest entry and a renderer bucket, not a judgement.
+   `npm run animal` re-derives the measurements. Note the cursed pony and dog
+   are `*_cursed2` — the first attempts did not take, see the colour lesson.
+4. **The remaining LimeZu art.** Every CHARACTER is ours now. Props, buildings,
+   weapons, FX, crops and the boss vehicles are not. Nothing forces a big-bang
+   swap: atlas keys are stable, art swaps one manifest line at a time, and a
+   missing sprite already degrades to a coloured square.
+5. **Save export/import.** Saves die when browser data is cleared and no browser
+   storage survives that. ~30 lines, no backend. Do it before anyone else plays.
+6. **Two staged sprites want a renderer change.** The gas cloud and salt-ring
+   decal are trimmed in `assets/pixellab/picked/` and wired to nothing, because
+   the FX they would replace are animated clips rather than static frames.
+7. **Listen to the music in a real run.** Chosen from pack metadata, never by
+   ear.
 
-   **Start with `barn_dog`** — +7% wide and +5% tall against the `feralDog`
-   already on the field, and a weapon minion rather than an enemy, so a wrong
-   call is cheap. One dog in a real run decides whether the other nine want
-   re-generating at LimeZu's camera height.
+### Wired and done this session, so you do not redo it
 
-   *Still open, and it is a judgement rather than a measurement:* four
-   directions or eight. The renderer buckets velocity into four; eight is a
-   change there, not in the art.
-4. **Listen to the new music in a real run.** The three CC-0 tracks were chosen
-   from the pack's metadata — tags, energy, duration, the author's own score —
-   which means they were chosen by reading, not by ear.
-5. **M7 meta progression is built and untested by real play** — save, acres,
-   four Homestead buildings, six classes, County Fair tiers.
+- **The ground autotiles** from Wang sets, six of them, chained off one grass.
+- **The palette is authored** and every generated group conforms to it.
+- **The whole cast is generated** — 6 classes, the infected farmhand and 4
+  enemies — at size 64, cut to a 32x64 cell with feet on **y58**.
+- **Class plates are portraits**, derived from each class's own sprite.
+- **The rooster** walks a 24s beat, pecks and crows, with real east/west art.
+- **Eighteen scene actors animate** instead of bobbing.
+- **The weapon ring** fans across an arc and sorts its depth separately from its
+  lift.
 
-**If a generation comes back refused, check WHICH layer refused it.** One did,
-once, and it was the Claude Code permission classifier rather than PixelLab —
-the prompt never reached the API. Retrying the identical request went straight
-through. Rewriting the wording would have been solving the wrong problem.
+### The rollback point
+
+`git reset --hard pre-cast-swap` returns to the last commit where the game ran
+entirely on LimeZu characters. Everything since is the art swap.
 
 ## The next phase, from the first real playtest
 
