@@ -537,7 +537,9 @@
    "item.workBoots": "work_boots.png",
    "weapon.crowBell": "cow_bell.png",
    "weapon.seedDrill": "seed_drill.png"
-  }
+  },
+  "conform": true,
+  "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one — the yard rooster popped against a muted scene because he was never quantised to it."
  },
  "gasMaskIcon": {
   "_note": "The gas mask cropped from the generator accessory sheet rather than generated. docs/PIXELLAB.md: 'A gas mask already exists ... crop it from that sheet rather than generating one.' Uses the idle down cell, which is the only front-on view.",
@@ -625,7 +627,6 @@
    "scene.fencePicket": "fence_picket.png",
    "scene.wheat": "wheat.png",
    "scene.wheat2": "wheat2.png",
-
    "scene.roosterWalkStrip": "rooster_walk_strip.png",
    "scene.roosterPeckStrip": "rooster_peck_strip.png",
    "scene.roosterCrowStrip": "rooster_crow_strip.png",
@@ -637,6 +638,7 @@
    "scene.calfGrazeStrip": "calf_graze_strip.png",
    "scene.farmer2IdleBreatheStrip": "farmer2_idle_breathe_strip.png",
    "scene.scarecrowSwayStrip": "scarecrow_sway_strip.png"
-  }
+  },
+  "conform": true
  }
 }

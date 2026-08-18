@@ -160,19 +160,30 @@
   64% { transform: translateX(0) scaleX(1); }
   100% { transform: translateX(0) scaleX(1); }
 }
+/*
+   THE HANDOFFS MUST ABUT EXACTLY, and mine did not.
+
+   Each layer switched OFF a couple of percent before the next switched ON —
+   walk ended at 64% and peck did not begin until 66%. Two percent of a 24s
+   cycle is 0.48s with NO LAYER VISIBLE, three times a loop, so the rooster
+   blinked out of existence and back. Reported as "the animation resets and
+   there's a gap in between".
+
+   Every "off" stop is now the same number as the next layer's "on" stop, so one
+   bird replaces another on the same frame and there is never a hole.
+*/
 @keyframes y-rooster-walk {
-  0%, 63.9% { opacity: 1; }
-  64%, 100% { opacity: 0; }
+  0%, 65.9% { opacity: 1; }
+  66%, 100% { opacity: 0; }
 }
 @keyframes y-rooster-peck {
   0%, 65.9% { opacity: 0; }
-  66%, 84.9% { opacity: 1; }
-  85%, 100% { opacity: 0; }
+  66%, 85.9% { opacity: 1; }
+  86%, 100% { opacity: 0; }
 }
 @keyframes y-rooster-crow {
   0%, 85.9% { opacity: 0; }
-  86%, 99.4% { opacity: 1; }
-  99.5%, 100% { opacity: 0; }
+  86%, 100% { opacity: 1; }
 }
 
 @keyframes y-cross { 0% { transform: translateX(0); } 100% { transform: translateX(-2260px); } }

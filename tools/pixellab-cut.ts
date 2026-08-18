@@ -31,10 +31,25 @@ import { decodePng, encodePng, blankImage, blit, type Image } from './png.js'
  */
 const ALPHA_FLOOR = 8
 
-/** The game's character cell, and where the feet sit in it. LimeZu's grid. */
+/**
+ * The game's character cell, and where the feet sit in it.
+ *
+ * BASELINE MOVED 52 -> 58, and the reason is the new cast.
+ *
+ * 52 was LimeZu's, and it fit LimeZu: their characters are 46px tall, so feet
+ * at 52 left six pixels of headroom in the 64px cell. The generated cast is
+ * 51-55 tall — a 55px Kid placed feet-at-52 would start at y=-3 and lose the
+ * top of his cap, silently, because a cut that overflows just clips.
+ *
+ * 58 clears the tallest of them with room to spare. It is safe ONLY because
+ * every character is being regenerated: the atlas derives each sprite's pivot
+ * from where its feet sit in the cell, so a cast cut consistently at 58 aligns
+ * with itself. Mixing old-at-52 with new-at-58 is what would break, and that is
+ * why this changes once, for all of them, rather than per character.
+ */
 const CELL_W = 32
 const CELL_H = 64
-const BASELINE_Y = 52
+const BASELINE_Y = 58
 
 interface Box { x: number; y: number; w: number; h: number; empty: boolean }
 
