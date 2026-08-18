@@ -79,8 +79,24 @@
   --paper-bright-flat: #ddca9f;
   --paper-dead-flat: #b6ad96;
 
-  /* The dotted stock, as a layer rather than a whole background. */
-  --paper-dots: radial-gradient(#5a4630 1px, transparent 1px);
+  /*
+     The dotted stock, as a layer rather than a whole background.
+
+     THE ALPHA IS PART OF THE TOKEN, and that is the point of it.
+     DESIGN_LANGUAGE.md specifies "dotted stock, 0.12 opacity". `.psheet::before`
+     and `.hero-body::after` honour that by hanging the dots off a pseudo-element
+     and setting `opacity` on it — but `.pcard` and `.stock` apply this token
+     directly as a background-image, where there is nothing to carry an opacity,
+     so they were painting a solid #5a4630 dot every 4px. Eight times the
+     intended strength, over every blurb on every card.
+
+     That is the tail of the session-9 fix: making the card opaque again moved
+     the dots from a pseudo-element into the background shorthand and quietly
+     left their opacity behind. Baking the alpha into the colour means the token
+     is correct wherever it is used, with or without a pseudo-element to dim it.
+     Anything using it must NOT also set `opacity` — that multiplies to 0.014.
+  */
+  --paper-dots: radial-gradient(rgba(90, 70, 48, 0.12) 1px, transparent 1px);
   --paper-edge: #40311f;
   --paper-edge-gold: #6b4a12;
 
@@ -146,7 +162,7 @@
    element, because it is a background-image and paper elements already
    own their background gradient. */
 .stock {
-  background-image: radial-gradient(#5a4630 1px, transparent 1px);
+  background-image: var(--paper-dots);
   background-size: 4px 4px;
 }
 

@@ -4,6 +4,435 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 11 — the first real playtest since the art landed, and one token behind three of the bugs
+
+The owner played it and took notes. Everything below came out of that, which is
+the whole argument for the playtest: **131 tests and a clean typecheck were green
+through every one of these.**
+
+## Three separate complaints, one redefined token
+
+Reported as three things — the pause screen's white-on-cream text, the level-up
+cards being unreadable, and "the homestead cards look incorrect". One cause.
+
+`--ink` was defined **three times**: `#33261a` in tokens.css, then `#241f1a` and
+then `#f0e4d2` in style.css. `@import` is only legal at the top of a stylesheet,
+so tokens.css is always FIRST in the cascade and any `:root` written further down
+outranks it. The last definition won, and it was the cream from the old dark-field
+panel language.
+
+Every surface in the game is paper now. So that one token turned the level-up card
+names, the pause sheet's title and tallies, the Homestead sign names, the class
+hero names and the HUD feed counter into cream text on cream paper.
+
+Proved rather than reasoned, in the live DOM: `--ink-body` and `--ink-band`
+computed correctly (#5c4a33, #4b3a24) while `--ink` computed #f0e4d2 — which is
+what pointed at a redefinition rather than at any of the rules that consume it.
+
+Both legacy `:root` blocks are deleted. They redefined **fourteen** names between
+them, all of which tokens.css already carries as deliberate aliases — it says so,
+under "Legacy aliases", precisely so those blocks could go. The only rule that
+genuinely wanted cream is `.btn`, which is dark wood rather than paper, and it
+asks for `--cream` by name now.
+
+**This is HANDOFF rule 3 for the seventh time: adding to a namespace someone
+already owns fails silently. Grep the name before you choose it.**
+
+## The dots were eight times too strong
+
+Separately reported: "the cards still have this messed up background, it's all
+dotted." DESIGN_LANGUAGE.md specifies *"dotted stock, 0.12 opacity"*.
+
+`.psheet::before` and `.hero-body::after` honour that by hanging the dots off a
+pseudo-element and setting `opacity` on it. But `.pcard` and `.stock` apply the
+token **directly as a background-image**, where there is nothing to carry an
+opacity — so they painted a solid `#5a4630` dot every 4px, at full strength,
+underneath every blurb on every card.
+
+That is the tail of the session-9 fix. Making the card opaque again moved the dots
+out of a pseudo-element and into the background shorthand, and quietly left their
+opacity behind. The alpha is baked into `--paper-dots` now, so the token is right
+wherever it is used, and the two pseudo-elements dropped their own `opacity`
+because 0.12 × 0.12 is 0.014 and invisible.
+
+**Worth keeping:** when a value is only correct because of something on the
+element that uses it, moving it costs the correction. Put the alpha in the token.
+
+## The trees floated because the table and the ground disagree
+
+`scene.oak` packs at 59x54 and is drawn at 4x, so it is 216 tall. PLACEMENTS.md
+puts the four yard oaks at y 268/300/282/414, which lands their BASES at 484, 516,
+498 and 630 — against a ground layer that starts at **620**. Three of the four hung
+104–136px up in the sky. The fourth was fine, which is why it read as "some trees
+float" rather than as a systematic error.
+
+There is no reference to copy for this one: **`tree_oak` does not appear in
+`docs/reference/` at all.** Design's final yard drops the oaks; they are in the
+game because the owner wants them. So the table is the only source, and the table
+disagrees with a ground layer the table never contained. Ground wins — it is in
+the reference and the table is not.
+
+Placed by their base instead, varied a few pixels either side of the line so four
+identical trees do not stand on a ruler. Verified in the DOM: bases now sit 6–14px
+below 620.
+
+**Same lesson as session 9, from the other end.** There it was a table that was
+missing two thirds of the picture. Here it is a table whose numbers are internally
+consistent and disagree with the scene they are placed into.
+
+## The weapon slots showed names where the design asked for art
+
+§12: *"bottom-centre weapon ring, 128px slots, cooldown wipe + tier chip"*. They
+were 78px text chips carrying the weapon's NAME, so six weapons read as six words,
+and the cooldown wipe — the one thing that shows a weapon firing — drained down a
+word.
+
+They are seed packets now: art window over a stamped name, tier chip, wipe across
+the whole card. 128px, six of them plus gaps is 808px, which fits.
+
+**The key comes from content, and getting that wrong would have been silent.**
+`weapon.<id>` is the obvious guess and resolves for only five of the sixteen: the
+atlas still carries the pre-rename ids (`axe`, `chiliShot`, `eggToss`) and every
+ranged weapon draws a gun from a different family entirely (`gun.shotgun.0`).
+Eleven slots would have fallen back to a text caption — the exact thing the change
+exists to remove.
+
+`weapons.json` already answers it. Every weapon carries `sprite` and a
+`tierSprites` array giving its icon at each tier, **authored for all sixteen at
+all four tiers and, until now, read by nothing at all.** Merging is supposed to
+visibly change the weapon and the art for it was sitting there. Verified: all 64
+weapon-tier icons resolve in the packed atlas.
+
+## The results screen was terminal, and that is three screens now
+
+Reported as a blocker: *"All the buttons become unclickable so the user can't
+proceed past that point."* Exactly right, and it made every finished run a dead
+end — there is no keyboard escape from results.
+
+`#ui` is `pointer-events: none` and each layer opts back in. The rule is
+`#ui > .screen`. The results root is **`.results-wrap`**, so it never matched.
+`.pause-wrap` is the same shape and survives only because it happens to set
+`pointer-events: auto` in its own rule; results never did.
+
+Proved with `elementFromPoint` at each button's centre, which returned
+**`CANVAS`** — the click was landing on the game behind the sheet.
+
+**This is the third screen in this project to ship unreachable**: the shop and
+level-up cards in session 2 (a blanket `#ui > *` rule outranked `.hud`), the
+pause screen in session 6 (caught only because someone thought to hit-test it),
+and now results. Every one passed types and tests, because a dead button is a
+computed style rather than an error.
+
+So there is a guard now rather than another comment. `assertUiLayersClickable`
+in main.ts runs off a MutationObserver on `#ui` and logs a named error when a
+layer that contains controls computes `pointer-events: none`. Dev only, never
+throws. Verified both ways: silent in normal play, and it names `.results-wrap`
+within a frame of the bug being reintroduced deliberately.
+
+It observes on mutation rather than running once at boot **because screens are
+built empty and filled on open** — at boot the results layer has no buttons to
+count, and a single startup check would have missed this exact bug.
+
+## Two scroll boxes, one of them clipping the other
+
+Also reported: the end screen needed manual scrollbar dragging and cut off the
+banked-acres panel.
+
+`.results` is `min(1080px, 94vw)`. It was sitting inside `.screen-inner`, which
+is the level-up screen's scroll box: `max-width: min(1000px, 92vw)` with
+`overflow: auto`. A 1080px child in a 1000px clipping parent.
+
+Measured: overflowing by **103px**, with the acres panel's right edge 84px past
+the clip — which is why "BANKED AT THE HOMEST…" and a halved acre count were on
+screen. `.results-wrap` is already the scroll container (`place-items: center`,
+`overflow-y: auto`), so the inner box is neutralised back to a plain div.
+
+**Worth keeping:** `overflow-y: auto` alone computes `overflow-x` to `auto` as
+well. A container that only means to scroll vertically will still grow a
+horizontal scrollbar and clip, and it looks like a layout bug rather than an
+overflow one.
+
+## The field shook forever because trauma decays in the sim
+
+*"The background also starts vibrating crazy."*
+
+`world.shake` decays inside `world.step` — `shake -= traumaDecayPerSecond * dt`.
+It is CONSUMED in `renderer.draw`, every frame, as a fresh random offset of
+`trauma² × maxShakePixels`.
+
+Dying is a hit, so the fatal blow spikes trauma; `finishRun` then sets
+`world.paused` and the step stops. The decay stops with it. **The draw does not.**
+So the camera kept re-randomising a full-magnitude offset every frame, forever.
+Measured before the fix: ±17px of jitter per frame with the sim frozen.
+
+The renderer asks for no shake while paused. That was chosen over teaching the
+sim to decay cosmetics on a stopped clock, and it fixes level-up, shop and pause
+in the same line — all three set `paused` and all three had a milder version of
+this. Verified: 0 across every frame when paused, still shaking when playing.
+
+**The shape worth keeping:** a value that decays on one clock and is consumed on
+another is a bug waiting for the two clocks to diverge. Pausing is exactly that
+divergence.
+
+## The rest of the screens, swept
+
+Every screen opened in isolation and audited for the same three defects —
+unreachable controls, controls off-screen, and unintended horizontal scroll.
+Level-up, shop, pause, Homestead and results are all clean. One earlier reading
+that flagged the shop's "Back to the field" was an artifact of the audit stacking
+two screens that never stack in play; opened properly it hit-tests fine.
+
+## The yard is alive now, and it cost eighteen generations
+
+The owner: *"I like the rooster and its placement, but we need animations so it
+walks and pecks at the ground and crows — every character needs a full
+animation."* Fair: the yard had two hens and two farmhands on real strips, and
+everything else — rooster, cow, calf, sheep, dog, chick, both idle hands, both
+scarecrows — was a still frame floating on a CSS `y-bob`.
+
+**`animate_image` is the tool, and it is startlingly cheap.** It animates a LOOSE
+sprite — no PixelLab object id required — so it works on art that already exists
+in this repo, which is all of it. Cost scales with total pixels: a 64x64 8-frame
+animation is **one generation**. Sixteen animations across every frozen actor in
+both scenes cost sixteen. Compare `create_8_direction_object` at 20.
+
+Two things about it worth knowing:
+
+1. **It keeps your input as frame 0**, so `frame_count: 8` returns NINE frames.
+   Every strip in `sceneStrips` now carries its real count and the note says so;
+   assuming six is how a stepped strip slides.
+2. **Feed it a URL, not base64.** The repo is public, so it is its own asset
+   host — `raw.githubusercontent.com/<owner>/<repo>/<sha>/<path>` — and that
+   sidesteps the base64 truncation documented in `_eightDirNotes` entirely.
+
+`npm run anim -- <job-id> <name> [frames]` pulls a job down and assembles the
+strip. It composites every frame **bottom-centred on a uniform cell**, which is
+the load-bearing part: `stripActor` steps by dividing the strip's width, so an
+uneven cell slides, and a top-left composite lets a taller frame lift the bird
+off the ground between steps. It also writes a contact sheet on grey, because
+**the failure mode of a generated animation is one frame that belongs to a
+different animal** — invisible one frame at a time, obvious in a row.
+
+### One keyframe instead of six
+
+The existing pattern is `@keyframes y-strip-384`, one block per strip width. The
+new actors arrive at 224, 288, 364, 378, 468, 486, 540, 630, 672 and 810 — ten
+more blocks that all say the same thing, each a chance to typo a number that
+fails *silently* by sliding instead of stepping. `stripActor` publishes
+`--strip-w` and one generic `y-strip` keyframe reads it. The named ones still
+work; nothing was migrated.
+
+### The rooster
+
+He pecks on a 2.4s loop, and every twenty-one seconds he crows. Two strips
+stacked on one spot with `y-crow-show` / `y-crow-hide` cutting between them —
+stops 0.1% apart rather than shared, so it is a cut and not a dissolve, because
+two birds cross-fading through each other reads as a ghost.
+
+He also has a **walk** strip, generated and packed and not mounted: walking means
+choosing a path with `travelling()`, which is a placement decision rather than an
+art one. `rooster_idle`, `dog_walk`, `sheep_idle`, `cow_idle` and `calf_walk` are
+generated and deliberately unpacked for the same reason.
+
+### `_`-prefixed notes do not go inside `files`
+
+The atlas builder reads every key in a group's `files` map as a sprite name and
+every value as a path, so a `"_generatedNote"` in there made it try to open a
+paragraph of prose as a PNG. It failed loudly, naming the file, which is the
+1792x704 assertion's spirit working exactly as intended. Notes belong at the
+GROUP level.
+
+Verified: atlas 1309 frames (was 1298), all eighteen strip actors mounted in the
+live DOM with real image data and no fallbacks, 131 tests pass, typecheck clean.
+
+## The cursed cast, and the edit that actually bites
+
+The owner's direction: *"a ranch where crop dusters have turned everyone
+zombies/cursed"*, and lean harder into it. `_horrorPlan` already said the horror
+version has to be made FROM the healthy animal or the pair does not read as one
+animal before and after. **`create_object_state` is that tool** — it takes an
+existing object, applies an edit, and returns a new object **with all eight
+rotations intact**. Six went through in one batch.
+
+Four landed hard: the **bull** (mottled sick green over black, hide sloughing),
+the **donkey** (green-grey striping over the ribs, gaunt), the **arabian** and
+the **draft mule**. Judged as rings, all eight directions agree.
+
+Two did nothing. The **fjord pony** came back an unchanged clean white, and the
+**barn dog** got a faint green tint and stayed a friendly brown dog. That is the
+same complaint session 9 logged about the four infected livestock — *"the hog
+reads as a spotted pig and the sheep as an ordinary sheep in grey"* — and the
+cause is now clear:
+
+**Name the colour transformation, not the symptoms.** "matted patchy coat, ribs
+showing, green staining" describes what is wrong with the animal and leaves its
+palette alone, so a pale coat stays pale. "**the whole white coat turned filthy
+grey-green and diseased**, fur sloughing away in bald patches showing raw grey
+skin beneath" moves the palette, and the retry on both came back properly sick.
+
+The rule: **an edit that only adds detail is resisted by the base image; an edit
+that restates the base colour replaces it.** Dark animals curse easily because
+the disease palette is already near their coat. Pale ones need to be told.
+
+## Tilesets: the recipe matters more than the prompt
+
+The owner wants the ground to stop being blocky before any more maps get made.
+`create_topdown_tileset` returns a 16-tile Wang set with corner autotiling —
+which is the right shape for the problem, because what stops ground looking
+blocky is the TRANSITIONS.
+
+**The first three were unusable, and the settings were why.** Asked for "dry
+cracked dirt with small stones and tyre ruts" at `highly detailed` +
+`detailed shading` + `selective outline`, it returned tan **paving with a purple
+grid**; "blighted ash-grey dead earth" came back as grey **dungeon cobblestone**.
+At 32px, `highly detailed` does not mean more texture, it means more STRUCTURE —
+and structure on a ground tile is a repeating pattern you can count.
+
+Re-run as a four-way settings experiment on one terrain pair, the recipe is:
+
+    detail: 'low detail'   shading: 'flat shading'
+    outline: 'lineless'    text_guidance_scale: 15
+
+Lineless matters most: a `selective outline` puts a hard dark rule around every
+terrain edge, which is precisely the blockiness being complained about. Guidance
+15 over the default 8 is what makes it draw the terrain you asked for instead of
+a generic one. Short concrete descriptions beat long evocative ones.
+
+Six sets are in `assets/tilesets/`, PNG plus metadata, **chained**: pass a
+finished set's `upper` base tile id as the next one's `lower_base_tile_id` and
+the two share that terrain exactly. Everything below hangs off one grass, so
+grass→soil, grass→ash and grass→water all meet the same field:
+
+    dirt_to_grass · grass_to_soil · grass_to_ash · grass_to_water
+    dirt_to_gravel · ash_to_dyinggrass
+
+**None of it is wired, deliberately.** The terrain bake draws one sprite per
+cell; using a Wang set means picking a tile from its four corner values, which
+is a real change in `renderer.ts` and wants doing awake and with the owner
+looking. The metadata's `bounding_box` is the sheet rect to slice — the
+tileset API's own note warns that `wang_N` and `original_position` are NOT sheet
+positions and using them is what produces horizontal banding.
+
+## What the browser pane could and could not prove
+
+Computed styles, token values, element geometry and atlas resolution were all
+checked live. **No screenshot was possible again** — the pane does not composite,
+and because `document.visibilityState` is `hidden` that also means
+`requestAnimationFrame` never fires, so the HUD does not tick and the weapon
+slots could not be observed populating themselves. The slot DOM was built by hand
+against the real atlas to measure the CSS instead.
+
+So: the CSS, the geometry and the art keys are verified. **The weapon slots want
+a human to confirm they populate in a real run**, and that is a two-second check
+next time someone plays.
+
+---
+
+# Session 10 — the animals measured, and the wrong thing was being worried about
+
+Nothing was wired. This session answered three of the four questions blocking the
+ten generated animals, and found that the fourth problem is not the one the queue
+had written down. `npm run animal` (`tools/animal-check.ts`) is how, and it should
+be re-run rather than believed.
+
+## The direction mapping was never a fourth direction order
+
+The queue said, in capitals, that the compass→game mapping would be **a fourth
+distinct direction order** after the humanoids, the animals and the tractor, and
+that it had to be measured rather than assumed. That warning conflated two
+different problems, and only one of them exists here.
+
+The three sheet families pack their directions as **anonymous bands**. Which band
+is which genuinely has to be proved — the `humanoidRig._directionNote` in
+`art/sprites.json` is the record of doing it, by pixel-mirroring bands and
+counting skin centroids, after a player reported that walking right drew the
+down sprite.
+
+A PixelLab object is not that. It comes back as **eight files named for their
+compass points**. There is no order to infer; there are only names to check. And
+the mapping they imply was already shipped in this repo — `compassToDirection`
+under `pixellabStrips`, for the infected farmhand, generated by the same service.
+
+Checked rather than assumed, on all ten, by silhouette IoU against a mirror:
+
+- **south and north are self-symmetric** (0.68–1.00) — a front view and a rear
+  view of an animal are bilaterally symmetric
+- **east and west are not** (0.26–0.75) — a profile is not
+- **east matches a mirrored west** (0.88–1.00) — the two profiles are the same
+  animal facing opposite ways
+
+That pins all four axes without anyone judging a picture. `south → down,
+north → up, west → left, east → right`, which is what was already in the file.
+
+**Worth keeping:** "measure it, do not assume it" is right, but it is worth
+asking *what kind* of unknown you have. Anonymous indices must be proved. Named
+files only need verifying, and the verification is cheap enough that there is no
+excuse for guessing either way.
+
+## Frame counts
+
+Eight directions × nine frames, confirmed on all ten, against LimeZu's six.
+`atlas.json` already emits per-sheet clip lengths for exactly this reason, so
+this is a manifest entry rather than a renderer change. This one was already
+right in the queue.
+
+## The size problem is a camera problem
+
+The queue framed this as scale: 56–68px sprites against LimeZu animals at 46–54
+wide and 32–40 tall. Those LimeZu numbers are correct — but only for the
+**profile**, and the profile is the only view where the difference actually
+lives. Measured profile against profile:
+
+| | LimeZu | PixelLab | Δw | Δh |
+|---|---|---|---|---|
+| dog | 46×40 | 49×42 | +7% | +5% |
+| hog | 54×32 | 61×39 | +13% | +22% |
+| sheep | 52×36 | 58×54 | +12% | **+50%** |
+| bull | 92×26 | 64×43 | **−30%** | **+65%** |
+
+**The widths already agree.** It is the heights that do not, and the bull inverts
+the sign — LimeZu's `prizeBull` profile is 92 wide by 26 tall, a cow
+foreshortened from a high top-down, against a bull standing at 64×43.
+
+So this is not a scale mismatch that a multiplier fixes. **LimeZu draws its
+animals from a high top-down and PixelLab drew these nearly side-on.** Scaling
+them down to match height would leave them too narrow, and would make the
+foreshortening disagree rather than agree. Session 9's note that these "stand
+upright where LimeZu draws flatter" was the right observation filed under the
+wrong heading.
+
+Worth noticing: the game's own humanoids do not have this problem, because the
+LimeZu *characters* are drawn upright too. It is specifically the LimeZu
+**animals** that are flat.
+
+## What that makes the next move
+
+**Wire `barn_dog` first, alone.** At +7% wide and +5% tall against the `feralDog`
+already on the field it is the one animal that is close to a drop-in, and it is a
+weapon minion rather than an enemy — so a wrong call costs one summon rather than
+the enemy roster. Whether the other nine need re-generating at LimeZu's camera
+height is a question one dog in a real run can answer and no amount of further
+measuring can.
+
+## Still a judgement, and deliberately left open
+
+**Four directions or eight.** The renderer buckets an enemy's velocity into four;
+going to eight is a change there, not in the art. Four ships sooner and wastes
+half of what was generated. Nothing measured here decides it, so nothing here
+pretends to.
+
+## Verified
+
+- 131 tests pass; typecheck clean on game and tools.
+- `npm run animal` reports all ten and writes a contact sheet at the game's 2×
+  zoom on the real `terrain.grass` tile, every animal on a shared baseline.
+- The LimeZu animals pack **all four directions**, not the two that session 1
+  described — the up/down-alias-onto-side workaround from that session is no
+  longer what the atlas contains, and the sheet shows genuine front and rear
+  views. That entry below is stale; this is the state.
+
+---
+
 # Session 9 — the two scenes, and a card you could see through
 
 ## The scenes were built from an index of the scenes

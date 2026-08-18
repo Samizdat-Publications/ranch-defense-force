@@ -11,16 +11,28 @@
    border-image on these same elements, so the structure here is the structure
    then. Everything hugs the edges — the centre 70% stays clear (§12). */
 
-:root {
-  --straw: #d9c9a3;
-  --ink: #241f1a;
-  --panel: rgba(28, 24, 20, 0.92);
-  --edge: #6b5a3e;
-  --gold: #e0b040;
-  --green: #7fb069;
-  --red: #a02c2c;
-  --xp: #5fd0c6;
-}
+/*
+   THE M0-M3 :root BLOCK IS GONE, AND SO IS THE PANEL LANGUAGE ONE BELOW IT.
+
+   `@import` is only legal at the top of a stylesheet, so tokens.css is always
+   the FIRST thing in the cascade and any `:root` written further down this file
+   silently outranks it. Both legacy blocks redefined names tokens.css owns —
+   fourteen of them, including `--ink`, which they flipped from #33261a (dark ink
+   for paper) to #f0e4d2 (cream, for the dark field that Paper & Pin replaced).
+
+   Every surface in the game is paper now, so that one token turned the level-up
+   card names, the pause sheet's title and tallies, the Homestead sign names, the
+   class-select hero names and the HUD feed counter into cream text on cream
+   paper. Nothing errored. Every rule that consumed it named the right token.
+
+   tokens.css already carries the legacy names as deliberate aliases — see
+   "Legacy aliases" there — precisely so these blocks could be deleted rather
+   than maintained. The one rule that genuinely wanted cream is `.btn`, which is
+   a dark wood button rather than paper, and it asks for `--cream` by name now.
+
+   Rule 3 in HANDOFF.md: adding to a namespace someone already owns fails
+   silently. This is the seventh time. GREP THE NAME BEFORE YOU CHOOSE IT.
+*/
 
 * { box-sizing: border-box; }
 
@@ -177,16 +189,8 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
    the colour underneath carries it — chrome degrades, the game does not.
    =================================================================== */
 
-:root {
-  --wood-dark: #3a2a1c;
-  --wood-mid: #6b4a28;
-  --wood-lit: #c98a3c;
-  --field: rgba(18, 16, 20, 0.94);
-  --ink: #f0e4d2;
-  --ink-dim: #a99b88;
-  --gold: #e0b040;
-  --danger: #d7574a;
-}
+/* The PANEL LANGUAGE :root block is deleted; see the note at the top of this
+   file. tokens.css owns all eight of these names. */
 
 .panel {
   background: var(--field);
@@ -202,7 +206,10 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
   font: inherit;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink);
+  /* Cream, not `--ink`. This is the one live surface in the game that is dark
+     wood rather than paper, and it is why `--ink` got redefined in the first
+     place. Asking for the colour it actually wants means paper can keep its. */
+  color: var(--cream);
   background: linear-gradient(180deg, #7d5730 0%, #5c3f22 100%);
   border: 2px solid var(--wood-dark);
   border-top-color: var(--wood-lit);

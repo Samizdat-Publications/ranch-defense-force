@@ -312,6 +312,53 @@ const loop = new Loop(
   },
 )
 
+/**
+ * Shout if a UI layer that has controls cannot receive a click.
+ *
+ * `#ui` is `pointer-events: none` and every layer opts back in. Three screens
+ * have now shipped unreachable behind that: the shop and level-up cards (a
+ * blanket `#ui > *` rule beat `.hud`), the pause screen (found by hit-testing
+ * only because someone thought to), and the results screen, whose root is
+ * `.results-wrap` and so never matched `#ui > .screen` at all. A finished run
+ * could not be left.
+ *
+ * Types and tests pass through all of it, because a dead button is a computed
+ * style rather than an error. This is the cheap check that is not.
+ *
+ * Dev only, and it never throws: a false positive must not cost the game.
+ */
+function assertUiLayersClickable(): void {
+  if (!import.meta.env.DEV) return
+  for (const layer of Array.from(uiRoot.children)) {
+    const controls = layer.querySelectorAll('button, input, select, [role="button"]').length
+    if (controls === 0) continue
+    if (getComputedStyle(layer).pointerEvents !== 'none') continue
+    console.error(
+      `[rdf] UI layer .${String((layer as HTMLElement).className).split(' ').join('.')} has ` +
+      `${controls} control(s) but computes pointer-events:none — every click on it will fall ` +
+      `through to the canvas. Give the layer \`pointer-events: auto\`.`,
+    )
+  }
+}
+
+/*
+   Run it when a layer actually appears, not just at boot.
+
+   Screens are built empty and filled on open, so at boot the results layer has
+   no buttons to count — checking once would have missed the exact bug this
+   exists for. A MutationObserver on `#ui` fires when a screen is shown or
+   populated, which is precisely the moment the question is worth asking, and it
+   costs nothing in a build where it does not run.
+*/
+if (import.meta.env.DEV) {
+  let queued = false
+  new MutationObserver(() => {
+    if (queued) return
+    queued = true
+    queueMicrotask(() => { queued = false; assertUiLayersClickable() })
+  }).observe(uiRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] })
+}
+
 installRarityTheme(RARITY)
 resize()
 // The boot menu must reflect the save too, or the very first screen of a

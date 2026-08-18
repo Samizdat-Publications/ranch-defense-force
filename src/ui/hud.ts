@@ -9,6 +9,30 @@
 import { ENEMIES, WEAPONS } from '../content'
 import type { World } from '../sim/world'
 import { clear, el } from './dom'
+import { frameOf, spriteEl } from './sprite'
+
+/**
+ * Which art a weapon slot draws.
+ *
+ * THE KEY COMES FROM CONTENT, NEVER FROM THE ID. `weapon.<id>` looks like it
+ * would work and resolves for only five of the sixteen — the atlas still carries
+ * the pre-rename ids (`axe`, `chiliShot`, `eggToss`), and every ranged weapon
+ * draws a gun from a different family entirely (`gun.shotgun.0`). Eleven slots
+ * would have quietly fallen back to a text caption, which is the thing this
+ * change exists to remove.
+ *
+ * `tierSprites` is the weapon's icon at each tier, and merging is supposed to
+ * visibly change the weapon. It was authored in `weapons.json` for all sixteen
+ * at all four tiers and, until now, read by nothing at all.
+ *
+ * Verified: all 64 weapon-tier icons resolve in the packed atlas.
+ */
+function weaponArtKey(id: string, tier: number): string | null {
+  const def = WEAPONS[id]
+  if (!def) return null
+  const key = def.tierSprites?.[tier - 1] ?? def.sprite
+  return key && frameOf(key) ? key : null
+}
 
 export class Hud {
   private readonly root: HTMLElement
@@ -127,15 +151,34 @@ export class Hud {
       this.lastLevel = p.level
     }
 
-    const sig = p.weapons.map((w) => `${w.id}${w.tier}`).join(',')
+    /*
+       The slots carry the weapon's ART, per §12: "bottom-centre weapon ring,
+       128px slots, cooldown wipe + tier chip". They used to carry its NAME, so
+       six weapons read as six words and the wipe — the one thing that shows a
+       weapon firing — drained down a text chip.
+       The art key is part of the signature, not just id and tier. Screens are
+       built before the atlas resolves (HANDOFF rule 4), so a slot built early
+       would draw an empty window and, keyed on id alone, would never rebuild
+       when the art landed. Keying on what actually resolved means it does.
+    */
+    const sig = p.weapons.map((w) => `${w.id}${w.tier}${weaponArtKey(w.id, w.tier) ?? '-'}`).join(',')
     if (sig !== this.lastSlotSig) {
       clear(this.weapons)
       for (const slot of p.weapons) {
+        const key = weaponArtKey(slot.id, slot.tier)
+        const art = key ? spriteEl(key, 60) : null
+        const name = WEAPONS[slot.id]?.name ?? slot.id
+        const window_ = el('div', { class: 'hud-slot-art' })
+        // No art is a caption in the window rather than an empty box.
+        if (art) window_.appendChild(art)
+        else window_.appendChild(el('span', { class: 'hud-slot-art-fallback', text: name }))
+
         this.weapons.appendChild(
           el('div', { class: 'hud-slot', data: { id: slot.id } }, [
+            window_,
+            el('span', { class: 'hud-slot-name', text: name }),
             el('span', { class: 'hud-slot-cd' }),
             el('span', { class: 'hud-slot-tier', text: String(slot.tier) }),
-            el('span', { text: WEAPONS[slot.id]?.name ?? slot.id }),
           ]),
         )
       }

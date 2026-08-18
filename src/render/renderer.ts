@@ -242,7 +242,24 @@ export class Renderer {
 
     const pxi = p.px + (p.x - p.px) * alpha
     const pyi = p.py + (p.y - p.py) * alpha
-    this.camera.update(pxi, pyi, p.vx, p.vy, w.shake, rand)
+    /*
+       NO SHAKE WHILE THE SIM IS FROZEN.
+
+       Trauma decays in `world.step` (`shake -= traumaDecayPerSecond * dt`) but
+       is CONSUMED here, every frame, as a fresh random offset. The moment the
+       step stops the decay stops with it — while the draw does not — so the
+       value sticks at whatever the last hit set it to and the camera jitters at
+       full magnitude forever.
+
+       You saw it on the results screen, because dying is a hit: the field
+       behind the sheet shook until the tab was closed. Level-up, shop and pause
+       all set `paused` too and all had a milder version of it.
+
+       Shake is a reaction to a live hit. A frozen frame should be still, so the
+       renderer asks for none rather than the sim being taught to decay while
+       paused — which would be the sim doing cosmetic work on a stopped clock.
+    */
+    this.camera.update(pxi, pyi, p.vx, p.vy, w.paused ? 0 : w.shake, rand)
 
     const ox = Math.round(this.camera.offsetX * this.zoom) / this.zoom
     const oy = Math.round(this.camera.offsetY * this.zoom) / this.zoom

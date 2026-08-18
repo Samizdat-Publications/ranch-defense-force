@@ -199,13 +199,24 @@
   gap: 8px;
 }
 
+/*
+   A slot is a small seed packet: an art window over a stamped name, the same
+   anatomy as `.pcard` at HUD scale. §12 asks for 128px slots; six of them plus
+   gaps is 808px, which sits inside the bottom edge without touching the ability
+   plate on the left or the XP strip below.
+
+   Paper is painted as colour + dots + gradient in ONE declaration, the same way
+   `.pcard` does it. A `background:` shorthand here would put the gradient in the
+   image slot and reset the colour to transparent — see `--paper-dots`.
+*/
 .hud-slot {
   position: relative;
-  width: 78px;
-  padding: 7px 6px;
+  width: 128px;
   overflow: hidden;
   text-align: center;
-  background: var(--paper);
+  background-color: var(--paper-flat);
+  background-image: var(--paper-dots), var(--paper);
+  background-size: 4px 4px, 100% 100%;
   border: 3px solid var(--paper-edge);
   font-family: var(--label);
   font-size: 7.5px;
@@ -213,6 +224,30 @@
   line-height: 1.4;
   color: var(--ink-band);
   text-transform: uppercase;
+}
+
+/* The art window: the same dark recess the level-up card uses, so a weapon
+   looks like the same object in the shop, on the card and in the HUD. */
+.hud-slot-art {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--window);
+  box-shadow: var(--window-in);
+  border-bottom: 2px solid var(--paper-edge);
+}
+
+.hud-slot-art-fallback {
+  color: var(--cream-2);
+  font-size: 7px;
+  padding: 0 4px;
+}
+
+.hud-slot-name {
+  display: block;
+  padding: 5px 4px;
+  color: var(--ink-band);
 }
 
 /* The cooldown wipe: scaleY on a pseudo-element, no layout, already wired. */

@@ -120,6 +120,38 @@
 @keyframes y-strip-384 { from { background-position: 0 0; } to { background-position: -384px 0; } }
 @keyframes y-strip-256 { from { background-position: 0 0; } to { background-position: -256px 0; } }
 
+/*
+   ONE keyframe for every strip, whatever its width.
+
+   The named `y-strip-<width>` pattern needs a new block per strip width, and the
+   generated actors arrive at 224, 288, 468, 486, 540 and 810 — six more blocks
+   that all say the same thing, each a chance to typo a number that fails
+   silently by sliding the animation instead of stepping it. Reading a custom
+   property inside the keyframe collapses them to this: `stripActor` publishes
+   `--strip-w` and the animation scrolls exactly that far.
+
+   PIXELS, NEVER PERCENT. `-100%` on a six-frame strip lands frame 0 and then
+   five blanks — HANDOFF rule 2, and it has cost this project real time twice.
+*/
+@keyframes y-strip {
+  from { background-position: 0 0; }
+  to { background-position: calc(var(--strip-w) * -1) 0; }
+}
+
+/* The rooster's twenty-one-second cycle: pecking, then ~2.5s of crowing.
+   The stops sit 0.1% apart rather than sharing a keyframe so the swap is a
+   hard cut — two birds dissolving through each other reads as a ghost. */
+@keyframes y-crow-show {
+  0%, 87.9% { opacity: 0; }
+  88%, 99.9% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes y-crow-hide {
+  0%, 87.9% { opacity: 1; }
+  88%, 99.9% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 @keyframes y-cross { 0% { transform: translateX(0); } 100% { transform: translateX(-2260px); } }
 @keyframes y-up { 0% { transform: translateY(0); } 100% { transform: translateY(-460px); } }
 @keyframes y-across { 0% { transform: translateX(0); } 100% { transform: translateX(830px); } }

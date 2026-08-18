@@ -93,6 +93,13 @@ export interface WeaponDef {
   name: string
   type: WeaponType
   sprite: string
+  /**
+   * The icon at each tier, T1 first. Merging changes the weapon — guns step up
+   * their category, melee steps up its material — and this is where that is
+   * recorded. Authored in `weapons.json` for all sixteen weapons at all four
+   * tiers and read by the HUD's weapon slots; `sprite` is the T1 fallback.
+   */
+  tierSprites?: string[]
   base: number
   cooldown: number
   behaviour: string

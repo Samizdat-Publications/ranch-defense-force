@@ -156,6 +156,9 @@ function stripActor(
   d.style.cssText =
     `width:${opts.w}px;height:${opts.h}px;background-image:url('${url}');` +
     `background-size:${opts.sheetW}px ${opts.sheetH}px;background-repeat:no-repeat;` +
+    // Published for the generic `y-strip` keyframe, which scrolls by exactly
+    // this much. Set unconditionally so any strip can use either keyframe.
+    `--strip-w:${opts.sheetW}px;` +
     `image-rendering:pixelated;` +
     `animation:${opts.keyframe} ${opts.dur} steps(${opts.frames}) infinite${opts.delay ? ` ${opts.delay}` : ''}`
   return d
@@ -167,6 +170,33 @@ function travelling(x: number, y: number, anim: string, child: HTMLElement | nul
   const wrap = box(`left:${x}px;top:${y}px;animation:${anim}`)
   wrap.append(child)
   return wrap
+}
+
+/**
+ * A generated actor strip, placed by its top-left like every other scene sprite.
+ *
+ * `npm run anim` writes one cell per frame at the SOURCE SPRITE'S OWN SIZE, so
+ * the only numbers needed here are the cell and the frame count — and that tool
+ * prints both when it assembles the strip. Everything else derives, which is
+ * the point: a sheet width typed by hand is a number that fails silently by
+ * sliding the animation instead of stepping it.
+ *
+ * These replaced `y-bob`, a CSS float that made a frozen sprite hover. A bob is
+ * what you do when the art cannot move; it should not survive art that can.
+ */
+function actor(
+  name: string, x: number, y: number,
+  cellW: number, cellH: number, frames: number,
+  dur: string, zoom = 1, delay?: string,
+): HTMLElement | null {
+  const s = stripActor(name, {
+    w: cellW * zoom, h: cellH * zoom,
+    sheetW: cellW * frames * zoom, sheetH: cellH * zoom,
+    frames, dur, keyframe: 'y-strip', delay,
+  })
+  if (!s) return null
+  s.style.cssText += `position:absolute;left:${x}px;top:${y}px`
+  return s
 }
 
 /** One firefly. Four in the yard, two in the field; the last thing still awake. */
@@ -269,7 +299,26 @@ function yard(): (HTMLElement | null)[] {
   // is drawn at full daylight saturation and read as pasted on until it was
   // brought down to meet the rest. The fence does the same thing harder
   // (brightness 0.62) because it is nearer the camera and more in shadow.
-  for (const [x, y] of [[596, 268], [1150, 300], [1420, 282], [1742, 414]] as const) {
+  //
+  // THE Y VALUES ARE NOT THE TABLE'S, AND THEY CANNOT BE.
+  //
+  // PLACEMENTS.md puts these four at y 268/300/282/414 in a 250x212 box. The
+  // oak packs at 59x54, so at 4x it is 236x216 and those tops put its BASE at
+  // 484, 516, 498 and 630 — against a ground that starts at 620. Three of the
+  // four hung 104-136px up in the sky, which is exactly how it looked.
+  //
+  // There is no reference to copy for this one: `tree_oak` does not appear in
+  // `docs/reference/` at all, because Design's final yard drops the oaks and
+  // they are here because the owner wants them. So the table is the only source
+  // and the table disagrees with the ground layer, which is a CSS layer the
+  // table never had. Ground wins — it is in the reference and the table is not.
+  //
+  // Placed by their base instead: 620 minus the 216 the sprite actually
+  // measures, varied a few pixels either side so four identical trees do not
+  // line up on a ruler. They are pushed before the buildings, so DOM order —
+  // which is paint order — tucks the trunks behind the barn and the house and
+  // the row reads as a treeline rather than four props.
+  for (const [x, y] of [[596, 410], [1150, 418], [1420, 412], [1742, 414]] as const) {
     L.push(sprite('scene.oak', x, y, 4, 'opacity:0.9;filter:brightness(0.78) saturate(0.82)'))
   }
 
@@ -318,8 +367,11 @@ function yard(): (HTMLElement | null)[] {
   // -- the yard's own furniture
   L.push(sprite('scene.coop', 800, 478))
   L.push(sprite('scene.nest', 936, 542))
-  L.push(sprite('scene.scarecrow', 968, 546,
-    1, 'transform-origin:50% 92%;animation:y-sway 7.4s ease-in-out infinite'))
+  // A real sway rather than `y-sway`, which rotated the whole sprite about its
+  // base — a scarecrow tips, its straw does not stay rigid while the post leans.
+  L.push(actor('scene.scarecrowSwayStrip', 968, 546, 96, 96, 7, '7.4s')
+    ?? sprite('scene.scarecrow', 968, 546,
+      1, 'transform-origin:50% 92%;animation:y-sway 7.4s ease-in-out infinite'))
   L.push(sprite('scene.well', 1112, 596))
   L.push(sprite('scene.hay', 646, 616))
   L.push(sprite('scene.doghouse', 722, 552))
@@ -347,9 +399,14 @@ function yard(): (HTMLElement | null)[] {
   }
   L.push(pen)
 
-  L.push(sprite('scene.cow', 1628, 658, 1, 'animation:y-bob 5.4s ease-in-out infinite'))
-  L.push(sprite('scene.calf', 1746, 672, 1, 'animation:y-bob 3.1s ease-in-out infinite 0.6s'))
-  L.push(sprite('scene.sheep', 1826, 678, 1, 'animation:y-bob 4.2s ease-in-out infinite 1.4s'))
+  // The pen: grazing rather than bobbing. Durations are deliberately coprime so
+  // three animals in one pen never fall into step and read as one machine.
+  L.push(actor('scene.cowGrazeStrip', 1628, 658, 90, 54, 9, '5.4s')
+    ?? sprite('scene.cow', 1628, 658))
+  L.push(actor('scene.calfGrazeStrip', 1746, 672, 52, 40, 9, '3.1s', 1, '0.6s')
+    ?? sprite('scene.calf', 1746, 672))
+  L.push(actor('scene.sheepGrazeStrip', 1826, 678, 52, 34, 9, '4.3s', 1, '1.4s')
+    ?? sprite('scene.sheep', 1826, 678))
   L.push(sprite('scene.trough', 1600, 700))
 
   // -- actors at 2x. Two hens cross the whole yard, right to left.
@@ -363,14 +420,37 @@ function yard(): (HTMLElement | null)[] {
   }
 
   L.push(peck(856, 676, '2s'))
-  L.push(sprite('scene.chick', 920, 678, 2, 'animation:y-bob 2.2s ease-in-out infinite'))
+  L.push(actor('scene.chickPeckStrip', 920, 678, 32, 32, 9, '2.2s', 2)
+    ?? sprite('scene.chick', 920, 678, 2))
   // The scene pack's own rooster crop is entirely transparent. This is
   // generated art rather than the game's 32px field rooster, so he is a head
   // taller than the hens pecking beside him — which is the point of a rooster.
   // It is a trimmed frame, hence the box: the reference's slot is 64x64 and the
   // bird stands on its floor.
-  L.push(spriteInBox('scene.rooster', 758, 640, 64, 64, 1,
-    'animation:y-bob 3.6s ease-in-out infinite'))
+  /*
+     THE ROOSTER PECKS, AND EVERY TWENTY-ONE SECONDS HE CROWS.
+
+     Two strips stacked on one spot, cut between by a single long cycle: the
+     crow is opaque for the last ~2.5s of each period and the peck is hidden for
+     exactly that window. The stops are 0.1% apart rather than shared, so it is
+     a CUT and not a dissolve — a rooster does not fade into crowing.
+
+     Placed 763,642 rather than the old box's 758,640: `spriteInBox` bottom-
+     centred a trimmed frame in a 64x64 slot, and these strips are a 54x62 cell
+     drawn from their top-left. 758 + (64-54)/2 and 640 + 64 - 62 put his feet
+     back exactly where they were standing.
+
+     A missing strip falls back to the static bird rather than an empty yard.
+  */
+  const roosterPeck = actor('scene.roosterPeckStrip', 763, 642, 54, 62, 9, '2.4s')
+  const roosterCrow = actor('scene.roosterCrowStrip', 763, 642, 54, 62, 9, '1.4s')
+  if (roosterPeck && roosterCrow) {
+    roosterPeck.style.animation += ', y-crow-hide 21s infinite'
+    roosterCrow.style.animation += ', y-crow-show 21s infinite'
+    L.push(roosterPeck, roosterCrow)
+  } else {
+    L.push(spriteInBox('scene.rooster', 758, 640, 64, 64, 1))
+  }
   L.push(peck(992, 660, '2.6s', '0.8s'))
   L.push(peck(1064, 674, '3.1s', '1.9s'))
 
@@ -389,7 +469,8 @@ function yard(): (HTMLElement | null)[] {
     'left:-20px;right:-20px;top:742px;height:32px;filter:brightness(0.62)', 96, 32))
 
   // -- the nearest ground, in front of the fence, at 2x
-  L.push(sprite('scene.dogLab', 132, 818, 2, 'animation:y-bob 2.4s ease-in-out infinite'))
+  L.push(actor('scene.dogIdleStrip', 132, 818, 60, 42, 9, '2.9s', 2)
+    ?? sprite('scene.dogLab', 132, 818, 2))
   L.push(sprite('scene.milkcan', 24, 872, 2))
   L.push(sprite('scene.milkcan', 66, 890, 2))
 
@@ -512,8 +593,12 @@ function field(): (HTMLElement | null)[] {
   ))
 
   // -- the far end still working: two hands standing, two walking
-  L.push(sprite('scene.farmerIdle', 1392, 508))
-  L.push(sprite('scene.farmer2Idle', 1436, 512))
+  // Two hands standing by the field. Breathing, at different rates, because two
+  // people idling in lockstep is the one thing worse than two people frozen.
+  L.push(actor('scene.farmerIdleBreatheStrip', 1392, 508, 32, 64, 7, '3.4s')
+    ?? sprite('scene.farmerIdle', 1392, 508))
+  L.push(actor('scene.farmer2IdleBreatheStrip', 1436, 512, 32, 64, 7, '4.1s', 1, '0.7s')
+    ?? sprite('scene.farmer2Idle', 1436, 512))
   L.push(travelling(1660, 508, 'f-horizon 92s linear infinite',
     stripActor('scene.farmerWalkStrip', {
       w: 32, h: 64, sheetW: 192, sheetH: 64, frames: 6, dur: '1.2s', keyframe: 'f-strip-192',
@@ -597,8 +682,9 @@ function field(): (HTMLElement | null)[] {
   )
   L.push(tractor)
 
-  L.push(sprite('scene.scarecrow', 640, 522,
-    1, 'transform-origin:50% 92%;animation:f-sway 6.6s ease-in-out infinite'))
+  L.push(actor('scene.scarecrowSwayStrip', 640, 522, 96, 96, 7, '6.6s')
+    ?? sprite('scene.scarecrow', 640, 522,
+      1, 'transform-origin:50% 92%;animation:f-sway 6.6s ease-in-out infinite'))
   L.push(sprite('scene.hay', 700, 606))
 
   // -- somebody walking the row, left to right, at 2x

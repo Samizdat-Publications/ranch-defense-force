@@ -301,13 +301,13 @@
   pointer-events: none;
 }
 
+/* See `--paper-dots`: the alpha is in the token, so no `opacity` here. */
 .hero-body::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.13;
-  background-image: radial-gradient(#5a4630 1px, transparent 1px);
+  background-image: var(--paper-dots);
   background-size: 4px 4px;
 }
 

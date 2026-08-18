@@ -43,13 +43,14 @@
 }
 
 /* Dotted stock and the inner hairline — paper without them is flat tan. */
+/* No `opacity` here: `--paper-dots` carries the design's 0.12 itself now, and
+   dimming it a second time would land on 0.014 — invisible. */
 .psheet::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.12;
   pointer-events: none;
-  background-image: radial-gradient(#5a4630 1px, transparent 1px);
+  background-image: var(--paper-dots);
   background-size: 4px 4px;
 }
 
@@ -219,6 +220,23 @@
    a separate beat — the number you were waiting for arrives last.
    =================================================================== */
 
+/*
+   `pointer-events: auto` IS LOAD-BEARING AND ITS ABSENCE WAS TERMINAL.
+
+   `#ui` is `pointer-events: none` and each layer opts back in; the rule in
+   style.css is `#ui > .screen`, and this root is `.results-wrap`. So every
+   button on the results screen — Run it back, The Homestead, Menu — took its
+   click on the CANVAS behind it. Proved with `elementFromPoint` at each
+   button's centre: it returned the canvas, never the button.
+
+   The results screen has no keyboard escape, so a finished run could not be
+   left at all. `.pause-wrap` sets this on itself and is the reason pause was
+   survivable; results simply never did.
+
+   This is the third screen in this project to ship unreachable. If you add a
+   screen, hit-test a control before calling it done — `assertUiLayersClickable`
+   in main.ts now shouts about it in dev, which is the cheaper version.
+*/
 .results-wrap {
   position: absolute;
   inset: 0;
@@ -227,6 +245,26 @@
   overflow-y: auto;
   background: rgba(10, 8, 6, 0.72);
   z-index: 6;
+  pointer-events: auto;
+}
+
+/*
+   THE RESULTS SCREEN OWNS ITS OWN SCROLLING, so the generic `.screen-inner`
+   box must not also try.
+
+   `.screen-inner` is the level-up screen's scroll box: `max-width: min(1000px,
+   92vw)` with `overflow: auto`. `.results` is 1080px wide. Nesting one in the
+   other gave a 1080px child in a 1000px clipping parent — a horizontal
+   scrollbar you had to drag by hand, and the "Banked at the Homestead" panel
+   cut off 84px past the right edge with the acres count sliced in half.
+
+   `.results-wrap` is already `place-items: center` with `overflow-y: auto`, so
+   it is the scroll container. This turns the inner one back into a plain box.
+*/
+.results-wrap .screen-inner {
+  max-width: none;
+  max-height: none;
+  overflow: visible;
 }
 
 .results {
