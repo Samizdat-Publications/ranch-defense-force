@@ -832,6 +832,23 @@ if (existsSync(TILESET_DIR)) {
         tiles?: { corners: Record<string, string>; bounding_box: { x: number; y: number; width: number; height: number } }[]
       }
     }
+    /*
+       NOT CONFORMED, and the attempt is worth recording.
+
+       `create_topdown_tileset` has a strong prior for bright saturated green and
+       will not be talked out of it — "dry muted sage green, dusty, desaturated"
+       still came back arcade. Quantising through `art/palette.json` was the
+       obvious next move, since that is how the FX pack was brought into line.
+
+       It made the grass WORSE: flatter and more saturated. Conform matches a
+       palette, it cannot shift one, and that palette is sampled from the LimeZu
+       sheets — which contain plenty of saturated green, so the nearest entry to
+       a bright green is a bright green.
+
+       The house style is muted daylight (docs/ART_STYLE.md). Getting there needs
+       a palette we AUTHOR rather than one sampled from the pack we are retiring.
+       That is a real piece of work and it is logged, not guessed at here.
+    */
     const tiles = meta.tileset_data?.tiles ?? []
     const got = new Set<string>()
     for (const t of tiles) {

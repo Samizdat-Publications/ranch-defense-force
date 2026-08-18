@@ -140,11 +140,26 @@
 
 .phome-sign-drop { filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.6)); }
 
+/*
+   A SIGN IS A PAINTED BOARD, NOT A SEED PACKET, and it was wearing the packet's
+   stock. `--paper` is a 178deg gradient authored for a TALL card, where it
+   reads as a gentle wash down the length of it. This board is 300x130, so the
+   same gradient compresses into a visible light-to-dark band across a short
+   surface and reads as bad lighting rather than as paper. The 4px dot grid has
+   the same problem from the other end: about 2,400 repeats on a board this
+   size, which stops being fibre and becomes halftone.
+
+   So the board gets its own stock — flat colour, a whisper of grain, and a
+   single soft top-light instead of a full-height gradient. The seed-packet
+   stock stays exactly as it is on the things that ARE seed packets.
+*/
 .phome-sign-board {
   padding: 14px 16px;
   background-color: var(--paper-flat);
-  background-image: var(--paper-dots), var(--paper);
-  background-size: 4px 4px, 100% 100%;
+  background-image:
+    radial-gradient(rgba(90, 70, 48, 0.07) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 245, 220, 0.10) 0%, rgba(255, 245, 220, 0) 34%);
+  background-size: 7px 7px, 100% 100%;
   border: 3px solid var(--paper-edge);
 }
 

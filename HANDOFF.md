@@ -9,9 +9,12 @@ TypeScript + Vite + Canvas 2D, no engine. The repo is public.
    loop, seeded RNG, content-not-code for every tunable, 32×32 art only.
 2. `NOTES.md` — what was built, session by session, and every bug that cost real
    time. Long, and worth it.
-3. `docs/DESIGN_STATE.md` — **the current state of the UI.** If a handoff
+3. `docs/ART_STYLE.md` — **the house style, and what every asset is generated
+   against.** Camera, scale, palette, and the per-tool recipes that work. The
+   art is ours now; the LimeZu packs were a starting point, not a commitment.
+4. `docs/DESIGN_STATE.md` — **the current state of the UI.** If a handoff
    document ever disagrees with this file, this file is right.
-4. `docs/DESIGN_LANGUAGE.md` — the Paper & Pin spec the UI is built to.
+5. `docs/DESIGN_LANGUAGE.md` — the Paper & Pin spec the UI is built to.
 
 `docs/archive/` is superseded briefs. **It is not the state of anything.**
 
