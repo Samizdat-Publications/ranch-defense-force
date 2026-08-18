@@ -131,7 +131,7 @@
   "terrain": {
     "_note": "Which Wang tilesets the ground bakes from. Names match assets/tilesets/<name>.png+json, packed into the atlas as wang.<name>.<NW><NE><SW><SE>. Here rather than in the renderer because choosing a ground is content, and because a map descriptor will eventually want to pick its own pair.",
     "groundSet": "dirt_to_grass_plain",
-    "soilSet": "grass_to_soil",
+    "soilSet": "grass_to_soil_v2",
     "soilEdgeCols": 4,
     "_chosenNote": "dirt_to_grass_plain over dirt_to_grass and _flat. The first carried an obvious repeating motif at 32px that read as wallpaper; _flat replaced it with a regular grid weave, subtler but still a repeat. _plain has none, and the argument for it is not only that: the ground is what two hundred enemies and their bullets are read AGAINST, so a busy floor costs legibility exactly when the screen is fullest. Interest belongs in the props and decals on top of it."
   }

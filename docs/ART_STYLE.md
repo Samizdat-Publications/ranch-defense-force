@@ -119,6 +119,38 @@ reference or you will measure nothing. That mistake cost one inconclusive test.
 is a payload size that has now failed twice. Prefer `style_object_id`; if a real
 reference image is needed, expect to retry.
 
+### Characters — `create_character`
+
+    mode: 'pro'          size: 64
+    view: 'low top-down' style_character_id: <the anchor>
+
+**`size` IS THE CANVAS, NOT THE CHARACTER, and getting that wrong is what made
+the infected farmhand too small.** PixelLab leaves motion room around the
+figure, so the sprite occupies roughly **76% of the canvas height**:
+
+    size 46  ->  19x35 content   (what the old farmhand was: visibly a child
+                                  next to a 32x46 LimeZu character)
+    size 64  ->  30x52 content   (the house setting)
+
+At 64 the figure is 30x52 against LimeZu's 32x46 — near-identical width, a
+little taller, and it still fits the 32x64 cell with feet on the y=52 baseline
+that `pixellab-cut.ts` places to. **Every character is generated at 64.**
+
+**One anchor, then `style_character_id` for everyone else.** `pro` is the only
+mode that accepts it, and it is what keeps six classes and the enemies looking
+like one artist drew them. Generate the anchor first, look at it, and only then
+batch the rest — a bad anchor is six bad characters.
+
+`create_character` also exposes a large library of TEMPLATE animations (`walk`,
+`walking-6-frames`, `breathing-idle`, `scary-walk`, `falling-back-death`…), so a
+walk cycle is a named template rather than a described motion.
+
+### Portraits — `create_portrait_character`
+
+`direction: 'character_to_portrait'` turns a finished character sprite into a
+bust portrait. The class cards get portraits that match their sprite **by
+construction** rather than by prompting twice and hoping.
+
 ### Cursed variants — `create_object_state`
 
 Takes a finished object, applies an edit, and returns a new object **with all
