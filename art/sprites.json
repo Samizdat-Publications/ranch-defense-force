@@ -34,17 +34,11 @@
   "_directionNote": "SOURCE band order, which is NOT the canonical order in `directions`. The bands run right, up, left, down. Proved, not guessed: band 0 is a pixel-exact horizontal mirror of band 2, and the skin centroid sits +2px in band 0 and -2px in band 2 (a face is at the FRONT of a profile), while band 1 has no skin at all (back of the head) and band 3 has the most (front, two eyes). Assuming the bands matched `directions` meant `down` drew the right-facing sprite and `right` drew the front-facing one - which is exactly what a player reported: walking right showed the down sprite."
  },
  "humanoids": {
-  "hand": "assets/generated/characters/farmer-01.png",
-  "kid": "assets/generated/characters/farmer-female-01.png",
   "acidZombie": "assets/generated/characters/zombie-acid-01.png",
   "bloatedFarmhand": "assets/generated/characters/zombie-02.png",
   "maskedSprayer": "assets/generated/characters/gas-enemy-01.png",
   "maskedHauler": "assets/generated/characters/gas-enemy-02.png",
-  "widow": "assets/generated/characters/farmer-widow-01.png",
-  "vet": "assets/generated/characters/farmer-vet-01.png",
-  "agronomist": "assets/generated/characters/farmer-agronomist-01.png",
-  "drifter": "assets/generated/characters/farmer-drifter-01.png",
-  "_replacedNote": "`farmhand` used to point at zombie-01.png. It is now generated -- see pixellabStrips -- and the LimeZu entry had to be REMOVED rather than left alongside it: both write the same frame keys, the humanoid pass runs later, and it silently won. The symptom was farmhand.walk having 6 frames instead of the generated 8, with no error anywhere. (was: assets/generated/characters/zombie-01.png)"
+  "_replacedNote": "The whole player cast is generated now and every LimeZu entry for it has been REMOVED rather than left alongside. That is not tidiness: both groups write the SAME frame keys, the humanoid pass runs later, and it silently wins. The symptom last time was farmhand.walk having 6 frames instead of 8, with no error anywhere. Still LimeZu, still listed: acidZombie, bloatedFarmhand, maskedSprayer, maskedHauler. Removed here: hand (assets/generated/characters/farmer-01.png), kid (assets/generated/characters/farmer-female-01.png), widow (assets/generated/characters/farmer-widow-01.png), vet (assets/generated/characters/farmer-vet-01.png), agronomist (assets/generated/characters/farmer-agronomist-01.png), drifter (assets/generated/characters/farmer-drifter-01.png)."
  },
  "animals": {
   "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it — a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
@@ -575,8 +569,93 @@
       "frames": 8
      }
     }
+   },
+   "hand": {
+    "cellWidth": 32,
+    "cellHeight": 64,
+    "clips": {
+     "idle": {
+      "file": "idle_{compass}.png",
+      "frames": 1
+     },
+     "walk": {
+      "file": "walk_{compass}_strip.png",
+      "frames": 8
+     }
+    }
+   },
+   "kid": {
+    "cellWidth": 32,
+    "cellHeight": 64,
+    "clips": {
+     "idle": {
+      "file": "idle_{compass}.png",
+      "frames": 1
+     },
+     "walk": {
+      "file": "walk_{compass}_strip.png",
+      "frames": 8
+     }
+    }
+   },
+   "widow": {
+    "cellWidth": 32,
+    "cellHeight": 64,
+    "clips": {
+     "idle": {
+      "file": "idle_{compass}.png",
+      "frames": 1
+     },
+     "walk": {
+      "file": "walk_{compass}_strip.png",
+      "frames": 8
+     }
+    }
+   },
+   "vet": {
+    "cellWidth": 32,
+    "cellHeight": 64,
+    "clips": {
+     "idle": {
+      "file": "idle_{compass}.png",
+      "frames": 1
+     },
+     "walk": {
+      "file": "walk_{compass}_strip.png",
+      "frames": 8
+     }
+    }
+   },
+   "agronomist": {
+    "cellWidth": 32,
+    "cellHeight": 64,
+    "clips": {
+     "idle": {
+      "file": "idle_{compass}.png",
+      "frames": 1
+     },
+     "walk": {
+      "file": "walk_{compass}_strip.png",
+      "frames": 8
+     }
+    }
+   },
+   "drifter": {
+    "cellWidth": 32,
+    "cellHeight": 64,
+    "clips": {
+     "idle": {
+      "file": "idle_{compass}.png",
+      "frames": 1
+     },
+     "walk": {
+      "file": "walk_{compass}_strip.png",
+      "frames": 8
+     }
+    }
    }
-  }
+  },
+  "_castNote": "The six player classes and the infected farmhand, all generated at size 64 (see docs/ART_STYLE.md — size is the CANVAS, and the figure fills about 76% of it) and cut by npm run character to a 32x64 cell with feet on y58. Four cardinals only: the renderer buckets facing into four, so the diagonals are generated and deliberately unused."
  },
  "scene": {
   "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",

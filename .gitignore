@@ -45,3 +45,4 @@ desktop.ini
 
 # Holds a live PixelLab key. .mcp.json.example is the committed template.
 .mcp.json
+.tmp/
