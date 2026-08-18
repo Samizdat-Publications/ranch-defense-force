@@ -73,6 +73,7 @@ interface Manifest {
   singlesExtra?: { _base: string; files: Record<string, string> }
   /** Home-screen backdrop crops. DOM art, not field sprites; exempt from 32px. */
   scene?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  portraits?: SingleGroup
   /** Walk strips. Packed untrimmed so steps() lands on cell boundaries. */
   sceneStrips?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** Generated card art. Deliberately larger than 32px; cards zoom by integers. */
@@ -519,6 +520,7 @@ const singleGroups = [
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
   manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
   manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,
+  manifest.portraits,
 ].filter(Boolean) as SingleGroup[]
 
 for (const group of singleGroups) {

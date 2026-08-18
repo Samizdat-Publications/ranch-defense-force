@@ -169,7 +169,20 @@ export class MenuScreen {
     const selected = id === this.selected
 
     const figure = el('div', { class: 'hero-window' })
-    const sprite = spriteEl(`${id}.idle.down.0`, 4096, 3)
+    /*
+       A PORTRAIT IF THERE IS ONE, the walking sprite if not.
+
+       The class plates used to show `<id>.idle.down.0` at 3x — the same 32px
+       figure that walks around the field, enlarged. It reads as a game sprite
+       standing in a box rather than as a picture OF someone, which is what a
+       class card wants.
+
+       The portraits are derived from each class's own finished sprite via
+       `character_to_portrait`, so a plate cannot drift from the character it
+       names. Falling back keeps the screen working when the atlas has no
+       portrait — a missing one costs the plate, not the menu.
+    */
+    const sprite = spriteEl(`portrait.${id}`, 4096, 2) ?? spriteEl(`${id}.idle.down.0`, 4096, 3)
     if (sprite) {
       sprite.classList.add('hero-figure')
       figure.append(sprite)

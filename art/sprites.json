@@ -719,5 +719,19 @@
    "scene.scarecrowSwayStrip": "scarecrow_sway_strip.png"
   },
   "conform": true
+ },
+ "portraits": {
+  "_note": "Class card portraits, made by create_portrait_character from each class's own finished south sprite (direction: character_to_portrait). Derived rather than prompted, so a plate matches its character BY CONSTRUCTION — prompting a portrait and a sprite separately gives you two people who merely dress alike.",
+  "_base": "assets/pixellab/portrait/",
+  "cardArt": true,
+  "conform": true,
+  "files": {
+   "portrait.hand": "hand.png",
+   "portrait.kid": "kid.png",
+   "portrait.widow": "widow.png",
+   "portrait.vet": "vet.png",
+   "portrait.agronomist": "agronomist.png",
+   "portrait.drifter": "drifter.png"
+  }
  }
 }

@@ -4,6 +4,181 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 12 — the art becomes ours
+
+The owner: *"I'm not tied to ANY of the original artwork. I just needed something
+to start and used an asset pack because they were $5 each. Now that we can
+generate our own art it changes the game."*
+
+That is the largest decision this project has taken, and it dissolves three
+constraints that had been shaping everything:
+
+- **The camera mismatch stops mattering.** Sessions were spent trying to make
+  PixelLab animals match LimeZu's high top-down. We pick the camera now.
+- **The palette mismatch stops mattering.** Same.
+- **The licence deadlock goes away.** LimeZu forbids redistribution, which is why
+  `assets/` is a careful special case and why several sound packs were rejected
+  outright. Our own art has no such constraint.
+
+**`docs/ART_STYLE.md` is the output, and it is now third in the HANDOFF reading
+order.** Read it before generating anything. The three decisions, made
+deliberately rather than inherited:
+
+| | | why |
+|---|---|---|
+| camera | low top-down | horror needs a face; a high top-down looks at the top of its head |
+| scale | 32px grid, character 32×64 | the atlas, the hash, the bake and the integer zoom all rest on 32 |
+| palette | muted daylight → sick green when cursed | the horror works because it is a DEPARTURE |
+
+## The ground autotiles, and the blockiness was geometry
+
+`create_topdown_tileset` returns a 16-tile Wang set. The bake samples terrain at
+**vertices, not cells**: a cell asks what sits at its four corners and draws the
+tile matching that combination, so a boundary runs THROUGH tiles rather than
+around them.
+
+**That is the whole fix.** The staircase was in the geometry, and no amount of
+extra tile detail was ever going to remove it — worth remembering, because the
+instinct was to ask for better tiles.
+
+- `src/render/wang.ts` owns the key convention and BOTH the packer and the
+  renderer import it. Six bugs here have been a name built one way and read
+  another; this one cannot be.
+- The build FAILS if a set is missing any of its 16 corner combinations, rather
+  than drawing a hole in the ground.
+- `draw-world.ts` bakes the same way, so `npm run shot` pictures the ground the
+  game draws rather than a second one that resembles it.
+- Which sets are used is content (`tuning.json` → `terrain`), so a map descriptor
+  can eventually pick its own pair.
+
+## The palette had to be authored, because conform cannot shift one
+
+`create_topdown_tileset` has a hard prior for bright saturated green. "Dry muted
+sage green, dusty, desaturated" still came back arcade.
+
+Quantising was the obvious answer and **it made the grass worse the first time**
+— flatter and MORE saturated. The reason is the keeper: **conform matches a
+palette, it cannot shift one.** `art/palette.json` was 32 colours k-means'd out
+of the LimeZu sheets, which are full of saturated green, so the nearest entry to
+a bright green was a bright green.
+
+The palette is **authored** now. With muted daylight actually in it, conform
+delivers the house look whatever the model returns — the only reliable way to get
+consistency out of a generator with its own opinions.
+
+**Coverage beats taste when editing that file.** A quantiser sends every pixel to
+its nearest entry, so a missing region lands somewhere absurd — session 3 lost a
+day to an explosion turning magenta with no saturated red between hue 20 and 40.
+The cursed greens are kept distinct from the pasture greens on purpose, or a
+diseased animal quantises straight back into a healthy one.
+
+## The whole cast is generated now
+
+Seven characters — six player classes and the infected farmhand — from ONE anchor
+via `style_character_id`, walked with the template animator at one generation per
+direction, and cut to the 32×64 cell.
+
+**`size` is the CANVAS, not the character.** This is what made the old farmhand
+look like a child among adults, and it was measured rather than guessed:
+
+    player classes, and every LimeZu enemy   32x46
+    farmhand (the one PixelLab character)    26x38
+
+PixelLab leaves motion room, so the figure fills about 76% of the canvas. `size:
+46` gives 19×35 of content; `size: 64` gives 30×52. **64 is the house setting.**
+After the swap the farmhand is 28×52 against the player's 30×52.
+
+**The baseline moved 52 → 58.** 52 was LimeZu's and fit their 46px characters;
+the generated cast is 51–55 tall, so a 55px Kid placed feet-at-52 would start at
+y=−3 and lose the top of his cap — silently, because a cut that overflows just
+clips. Safe only because every character is being replaced: the atlas takes each
+sprite's pivot from where its feet sit, so a cast cut consistently at 58 aligns
+with itself. **Mixing 52 and 58 is what would break.**
+
+**One baseline per STRIP, not per frame.** Cutting each walk frame to its own
+content bounds and concatenating gives a character who bobs, because a mid-stride
+pose is shorter than a standing one. `tools/pixellab-character.ts` takes the
+baseline from the tallest frame in the strip and offsets the rest against it.
+
+**The LimeZu entries had to be REMOVED, not left alongside.** Both groups write
+the same frame keys and the humanoid pass runs later, so it silently wins. The
+symptom last time was a walk with 6 frames instead of 8 and no error anywhere.
+
+## The weapon ring was two bugs wearing one coat
+
+The owner: *"I don't like the weapons just attached to a circle surrounding
+him."*
+
+1. **Evenly spaced around a full circle IS the visual signature of orbiting**,
+   and no art fixes it. They fan across a 250° arc centred on his facing now,
+   leaving a gap behind his head. Same weapons, same aiming; the emptiness at the
+   top is what says *carried*.
+2. **The lift was going into the depth sort.** `it.y` was both the drawn position
+   AND the sort key, so the 14px torso lift also pushed weapons 14px toward the
+   back — a weapon at his SIDE drew behind him. `liftY` separates them,
+   defaulting to 0 so everything standing on the ground is unaffected.
+
+**Lift is a picture, depth is a position, and they are not the same number.**
+
+## The rooster, and a gap I put there myself
+
+Three complaints, three causes:
+
+1. **"There's a gap in between it reloading."** Mine. The three visibility
+   windows did not abut — walk switched off at 64% and peck did not switch on
+   until 66%. Two percent of a 24s cycle is 0.48s with NO layer visible, three
+   times a loop. Every off stop is now the same number as the next layer's on
+   stop; verified by sampling the whole cycle at 0.1%, zero holes.
+2. **"It pops — generated on a different palette."** `conform: false` on the
+   `pixellab` and `sceneStrips` groups. The tilesets went through the house
+   palette and the sprites did not. Both conform now.
+3. **"You can see the flip."** `scaleX(-1)` mirrors every asymmetric detail at
+   once, which is exactly what the eye catches. He is regenerated as a proper
+   8-direction object with REAL east and west rotations.
+
+## Wave density: measured, attempted, reverted
+
+The owner reported the waves as far too slow. The harness agreed — **19 enemies
+alive at the average death**, ~76 kills a wave, one every half-second, which is
+the rate they arrive at. The field never builds.
+
+Raising it was tried three ways and every one failed the acceptance test:
+
+    budget x2.3 + faster groups -> 46-65 alive, kills 1898 -> 4093, clears 88->25%
+    budget x1.3 + faster groups -> still under the bar
+    budget UNCHANGED, groups alone at 1.8x -> still under it
+
+**That last line is the finding: the game has no headroom at all.** Spawn rate
+alone, on the identical budget, drops `run.test.ts` below "clears 25 waves on
+most seeds". Density and player power are coupled, and the fix is not a bigger
+number — it is **more enemies that are individually weaker**, across
+`enemies.json`. Values are reverted; the numbers are recorded in `formulas.ts` so
+nobody re-tries it blind.
+
+Kept from the attempt: the group interval is CONTENT now rather than
+`rng.range(0.5, 1.5)` buried in the spawner, and two tests stopped restating
+constants they should have been reading.
+
+## The browser pane, finally explained
+
+It composites when the Claude Code window is **displayed and focused**. Reporting
+`visibilityState: hidden` with `hasFocus: false` means the app is backgrounded or
+the panel is collapsed — and when it is, `requestAnimationFrame` never fires, so
+the game loop does not tick and screenshots time out.
+
+Most of the pipeline does not need it: `npm run shot`, `npm run range` and the
+tests are all headless. It is needed for judging COLOUR and for watching anything
+animate.
+
+## Verified
+
+- 131 tests and a clean typecheck on game and tools, at every commit.
+- Atlas 1581 frames. Every Wang set complete; the build fails if one is not.
+- The cast measured in the atlas: 26–32 wide, 51–55 tall, 8 walk frames each.
+- Ground, cast and props looked at on screen rather than inferred.
+
+---
+
 # Session 11 — the first real playtest since the art landed, and one token behind three of the bugs
 
 The owner played it and took notes. Everything below came out of that, which is
