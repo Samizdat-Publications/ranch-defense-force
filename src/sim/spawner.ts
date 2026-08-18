@@ -95,8 +95,13 @@ export class Spawner {
 
     this.pending.push({ typeId, count, eliteEligible })
     this.spent += cost
-    // Groups arrive on a rhythm that tightens as the wave escalates.
-    this.nextIn = this.rng.range(0.5, 1.5) / bias
+    // Groups arrive on a rhythm that tightens as the wave escalates. The
+    // interval is CONTENT, not code: it was `rng.range(0.5, 1.5)` here, which
+    // made it both a balance constant in the wrong place and the director's
+    // real throughput cap — one group a second is all it could emit however
+    // much budget it had left.
+    const gap = spawnCfg.groupInterval
+    this.nextIn = this.rng.range(gap.min, gap.max) / bias
   }
 
   /** Everything unlocked at this wave, weighted so cheap chaff stays common. */

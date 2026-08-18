@@ -21,7 +21,31 @@ export function waveIncome(wave: number): number {
   return 6 + 3 * wave
 }
 
-/** Threat points the spawn director may spend across wave n. */
+/**
+ * Threat points the spawn director may spend across wave n.
+ *
+ * UNCHANGED, AND THE ATTEMPT TO CHANGE IT IS THE POINT. The owner reported the
+ * waves as far too slow — "I have to generate 100+ over and over" — and the
+ * harness agreed: **19 enemies alive at the average death**, ~76 kills a wave,
+ * which is one every half-second, the same rate they arrive at. The field never
+ * builds.
+ *
+ * Raising it works and costs more than it buys. Measured over 8-run sweeps:
+ *
+ *   budget x2.3 + faster groups -> 46-65 alive, kills 1898 -> 4093,
+ *                                  clear rate 88% -> 25-63%
+ *   budget x1.3 + faster groups -> still under the acceptance bar
+ *   budget UNCHANGED, groups alone at 1.8x -> still under it
+ *
+ * That last line is the finding: **the game has no headroom at all.** Spawn
+ * rate alone, with the identical budget, drops `run.test.ts` below "clears 25
+ * waves on most seeds". Density and player power are coupled, and the honest
+ * fix is not a bigger number here — it is more enemies that are individually
+ * weaker, which is a design change to enemies.json (HP, contact damage,
+ * threatCost together) and wants the balance session it was deferred to.
+ *
+ * Do not raise this on its own. It has been tried; the numbers are above.
+ */
 export function threatBudget(wave: number): number {
   return 30 + 22 * wave + 1.4 * wave * wave
 }

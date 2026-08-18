@@ -8,7 +8,7 @@ import { Player } from '../src/sim/player'
 import { Spawner } from '../src/sim/spawner'
 import { OfferPool } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
-import { ITEMS, TUNING, RARITY_ORDER } from '../src/content'
+import { ITEMS, TUNING, RARITY_ORDER, WAVES } from '../src/content'
 
 describe('stat resolution', () => {
   it('sums percentages additively, never multiplicatively', () => {
@@ -83,10 +83,26 @@ describe('formulas', () => {
   })
 
   it('waveIncome and threatBudget match the spec strings', () => {
+    /*
+       This used to pin the coefficients as literals, which meant the test knew
+       the formula rather than checking it: retuning the budget broke the test
+       for the right reason but told you nothing, and updating it was a second
+       place to type the same numbers.
+
+       formulas.ts says the JSON strings are documentation and the code is the
+       truth, "if you change one, change both". So evaluate the STRING and
+       compare it to the function — now the pair cannot drift silently, which is
+       what the test was always named for.
+    */
+    const evalSpec = (formula: string, n: number): number =>
+      Number(new Function('n', `return ${formula}`)(n))
+
+    for (const n of [1, 2, 7, 13, 24, 25]) {
+      expect(threatBudget(n)).toBeCloseTo(evalSpec(WAVES.threatBudget.formula, n), 6)
+      expect(waveIncome(n)).toBeCloseTo(evalSpec(WAVES.economy.waveIncome, n), 6)
+    }
     expect(waveIncome(1)).toBe(9)
     expect(waveIncome(24)).toBe(78)
-    expect(threatBudget(1)).toBeCloseTo(53.4, 6)
-    expect(threatBudget(24)).toBeCloseTo(30 + 528 + 806.4, 6)
   })
 
   it('waveScalar starts at 1 on wave 1', () => {
@@ -323,8 +339,12 @@ describe('OfferPool', () => {
 describe('Spawner', () => {
   it('withholds spawns at the pressure ceiling', () => {
     const s = new Spawner(new Rng(1))
-    s.update(1, 400)
+    // Read the ceiling rather than restating it: pinned at 400 this passed only
+    // while the ceiling happened to be below it, and went quiet when it rose.
+    s.update(1, WAVES.pressureCeiling)
     expect(s.pending).toHaveLength(0)
+    s.update(1, WAVES.pressureCeiling - 1)
+    expect(s.pending.length).toBeGreaterThan(0)
   })
 
   it('only offers enemies unlocked at the current wave', () => {
