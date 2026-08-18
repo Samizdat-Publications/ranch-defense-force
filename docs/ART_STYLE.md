@@ -57,6 +57,29 @@ day, the infected version at night.*
     healthy   dusty sage green, pale brown earth, warm straw, weathered timber
     cursed    grey-green rot, ashen soil, raw grey skin, sickly yellow eyes
 
+**`art/palette.json` is that palette, and it is AUTHORED — not extracted.** It
+used to be 32 colours k-means'd out of the LimeZu sheets, which was right while
+LimeZu was the art and is wrong now.
+
+This matters more than it sounds, because **the generator will not give you a
+muted palette by asking.** `create_topdown_tileset` has a hard prior for bright
+saturated green; "dry muted sage green, dusty, desaturated" still comes back
+arcade. Quantising is the answer, and quantising through the OLD palette made it
+worse — conform matches a palette, it cannot shift one, and a palette sampled
+from LimeZu is full of saturated green, so the nearest entry to a bright green
+was a bright green.
+
+With an authored palette, conform delivers the house look whatever the model
+returns. That is the only reliable way to get consistency out of a generator
+with its own opinions, and every generated tileset now goes through it.
+
+**Coverage beats taste when editing that file.** A quantiser sends every pixel
+to its nearest entry, so a missing region lands somewhere absurd — session 3
+lost a day to an explosion turning magenta because nothing in the palette sat
+between hue 20 and 40. The cursed greens in particular must stay distinct from
+the healthy pasture greens, or a diseased animal quantises back into a healthy
+one.
+
 ---
 
 ## Recipes that work

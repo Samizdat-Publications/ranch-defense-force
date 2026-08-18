@@ -833,22 +833,26 @@ if (existsSync(TILESET_DIR)) {
       }
     }
     /*
-       NOT CONFORMED, and the attempt is worth recording.
+       CONFORMED TO THE HOUSE PALETTE, and the palette is why it works now.
 
-       `create_topdown_tileset` has a strong prior for bright saturated green and
+       `create_topdown_tileset` has a hard prior for bright saturated green and
        will not be talked out of it — "dry muted sage green, dusty, desaturated"
-       still came back arcade. Quantising through `art/palette.json` was the
-       obvious next move, since that is how the FX pack was brought into line.
+       still came back arcade. Quantising was the obvious answer and it FAILED
+       the first time, making the grass flatter and more saturated: conform
+       matches a palette, it cannot shift one, and the palette was sampled from
+       the LimeZu sheets, which are full of saturated green.
 
-       It made the grass WORSE: flatter and more saturated. Conform matches a
-       palette, it cannot shift one, and that palette is sampled from the LimeZu
-       sheets — which contain plenty of saturated green, so the nearest entry to
-       a bright green is a bright green.
-
-       The house style is muted daylight (docs/ART_STYLE.md). Getting there needs
-       a palette we AUTHOR rather than one sampled from the pack we are retiring.
-       That is a real piece of work and it is logged, not guessed at here.
+       `art/palette.json` is authored now (see its own note). Muted daylight is
+       in the palette, so conform delivers it whatever the model returns — which
+       is the only way to get a consistent look out of a generator that has its
+       own opinions.
     */
+    try {
+      makeQuantiser(loadPalette()).conform(img)
+    } catch (e) {
+      errors.push(`${png}: ${(e as Error).message}`)
+    }
+
     const tiles = meta.tileset_data?.tiles ?? []
     const got = new Set<string>()
     for (const t of tiles) {
