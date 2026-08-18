@@ -9,12 +9,15 @@ TypeScript + Vite + Canvas 2D, no engine. The repo is public.
    loop, seeded RNG, content-not-code for every tunable, 32×32 art only.
 2. `NOTES.md` — what was built, session by session, and every bug that cost real
    time. Long, and worth it.
-3. `docs/ART_STYLE.md` — **the house style, and what every asset is generated
+3. `docs/NEXT_SESSION.md` — **what to do next and in what order.** Start here if
+   you are picking this up cold; it names the brief, the traps this particular
+   work will hit, and what not to redo.
+4. `docs/ART_STYLE.md` — **the house style, and what every asset is generated
    against.** Camera, scale, palette, and the per-tool recipes that work. The
    art is ours now; the LimeZu packs were a starting point, not a commitment.
-4. `docs/DESIGN_STATE.md` — **the current state of the UI.** If a handoff
+5. `docs/DESIGN_STATE.md` — **the current state of the UI.** If a handoff
    document ever disagrees with this file, this file is right.
-5. `docs/DESIGN_LANGUAGE.md` — the Paper & Pin spec the UI is built to.
+6. `docs/DESIGN_LANGUAGE.md` — the Paper & Pin spec the UI is built to.
 
 `docs/archive/` is superseded briefs. **It is not the state of anything.**
 
@@ -183,6 +186,40 @@ detail; `docs/ART_STYLE.md` is what to generate against.**
    the FX they would replace are animated clips rather than static frames.
 7. **Listen to the music in a real run.** Chosen from pack metadata, never by
    ear.
+
+### What is generated vs what is still LimeZu — the exact table
+
+Audited from the packed atlas, not from memory:
+
+| | source | size | walk |
+|---|---|---|---|
+| all 6 player classes | **GENERATED** | 26-32 x 51-55 | 8 |
+| farmhand, acidZombie, bloatedFarmhand, maskedSprayer, maskedHauler | **GENERATED** | 28-32 x 51-58 | 8 |
+| rooster, feralDog, duckFlight, blownSheep, sickHog, prizeBull, duster | LimeZu | 22-38 x 30-52 | 6 |
+
+**Every HUMANOID is ours. No ANIMAL is.** That is why the feral dogs "barely look
+infected" — they are still LimeZu's basenji, untouched. It is not that the
+regeneration failed; the animals were never in that batch.
+
+**Sixteen cursed animals are already generated and sitting unpacked** in
+`assets/pixellab/object/`: bull, donkey, arabian, draft mule, fjord pony and
+barn dog as `*_cursed*`, plus the four infected livestock and their harder
+`*_rotten` retries. Wiring them is outstanding item 3, and it is the shortest
+path to a scarier field.
+
+### The rooster enemy is drawing a HEN
+
+Found by extracting the frame and looking at it. `rooster.idle.down.0` is a
+round orange hen with a tiny comb; the bird with the tail and wattle is
+`scene.rooster`, which only the yard scene uses.
+
+The sheet is `Rooster_Brown_32x32.png` at `walkRow: 3`, and row 3 is a hen row.
+**Same class of bug as the cow**, whose walk band turned out to be at row 6 on a
+96px pitch when every other animal is 64 at rows 2-4 — measure with
+`npm run pitch`, never infer from the last sheet.
+
+Not fixed, because the animals are being replaced wholesale anyway. Fix it there
+rather than re-deriving a LimeZu row that is about to be deleted.
 
 ### Wired and done this session, so you do not redo it
 
