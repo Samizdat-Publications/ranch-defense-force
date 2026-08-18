@@ -14,11 +14,12 @@
  * design says this has already gone wrong once. Thirty seconds of code removes
  * the entire category.
  */
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs'
 import {
   decodePng, encodePng, blankImage, blit, contentBounds, dominantBandBounds, type Image,
 } from './png.ts'
 import { loadPalette, makeQuantiser } from './conform-fx.ts'
+import { wangKey, wangKeysFor, type Corner } from '../src/render/wang.ts'
 
 interface Frame {
   /** Position in the atlas. */
@@ -798,6 +799,61 @@ if (errors.length > 0) {
 if (pending.length === 0) {
   console.error('atlas build failed: nothing to pack')
   process.exit(1)
+}
+
+// ------------------------------------------------------------------ tilesets
+//
+// Wang tilesets from `create_topdown_tileset`, packed straight out of their own
+// metadata rather than from coordinates typed here.
+//
+// TWO FIELDS IN THAT METADATA LOOK LIKE SHEET POSITIONS AND ARE NOT: `wang_N`
+// is a NAME, and `original_position` is the generation grid, whose row can
+// exceed this sheet entirely. The API's own note says using either is what
+// produces horizontal banding. `bounding_box` is the rect, and it is the only
+// one that is.
+//
+// Packed untrimmed for the reason every tile is: a 32px tile trimmed to its
+// content is no longer 32px, and every repeat of it gaps.
+const TILESET_DIR = 'assets/tilesets'
+if (existsSync(TILESET_DIR)) {
+  const cornerBit = (v: string): Corner => (v === 'upper' ? 1 : 0)
+  for (const file of readdirSync(TILESET_DIR).filter((f) => f.endsWith('.json')).sort()) {
+    const set = file.replace(/\.json$/, '')
+    const png = `${TILESET_DIR}/${set}.png`
+    let img: Image
+    try {
+      img = decodePng(readFileSync(png))
+    } catch (e) {
+      errors.push(`${png}: ${(e as Error).message}`)
+      continue
+    }
+    const meta = JSON.parse(readFileSync(`${TILESET_DIR}/${file}`, 'utf8')) as {
+      tileset_data?: {
+        tiles?: { corners: Record<string, string>; bounding_box: { x: number; y: number; width: number; height: number } }[]
+      }
+    }
+    const tiles = meta.tileset_data?.tiles ?? []
+    const got = new Set<string>()
+    for (const t of tiles) {
+      const c = t.corners
+      const b = t.bounding_box
+      const name = wangKey(set, cornerBit(c.NW), cornerBit(c.NE), cornerBit(c.SW), cornerBit(c.SE))
+      got.add(name)
+      pending.push({
+        name,
+        img,
+        sx: b.x, sy: b.y, sw: b.width, sh: b.height,
+        // A tile is drawn from its BOX, never from a pivot.
+        ox: 0, oy: 0,
+      })
+    }
+    // All sixteen corner combinations or the bake has a hole it will draw as a
+    // missing sprite in the middle of the ground. Better to fail the build.
+    const missing = wangKeysFor(set).filter((k) => !got.has(k))
+    if (missing.length) {
+      errors.push(`${png}: tileset is incomplete — missing ${missing.length} of 16 corner combinations (${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ', …' : ''})`)
+    }
+  }
 }
 
 // -------------------------------------------------------------------- pack

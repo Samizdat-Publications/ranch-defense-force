@@ -96,7 +96,7 @@
     "_newClips": "Clips from the unTied projectile packs. shockwave replaces the conformed FX-pack ring for ground pulses; arrowImpact and bigImpact are the dedicated impact animations those packs ship, which the FX pack had no equivalent of.",
     "shockwave": {
       "life": 0.3,
-      "scale": 1.0
+      "scale": 1
     },
     "arrowImpact": {
       "life": 0.28,
@@ -117,13 +117,19 @@
     "radius": 46,
     "workingSeconds": 0.18,
     "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running — sweeping twenty nodes at base rate beats working one — which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
-    "dwellSeconds": 2.0,
-    "dwellMultiplier": 3.0,
+    "dwellSeconds": 2,
+    "dwellMultiplier": 3,
     "dwellDecayRate": 2.5
   },
   "offers": {
     "_note": "How the draw is composed, as opposed to what is in it.",
     "weaponOfferWeight": 1.6,
     "_weaponWeightNote": "Weapons are weighted up against items so merge pressure survives a big item roster. Once weapon slots are full only OWNED weapons can be offered, so a draw is six weapons against forty items; at 22 items that was six against twenty-two. The roster growing from 22 to 40 therefore cut merge opportunities by about a third without anything being rebalanced, and cleared runs stopped reaching tier 4 at all. 1.6 restores the old weapon share. This is the knob to turn when the item count changes again."
+  },
+  "terrain": {
+    "_note": "Which Wang tilesets the ground bakes from. Names match assets/tilesets/<name>.png+json, packed into the atlas as wang.<name>.<NW><NE><SW><SE>. Here rather than in the renderer because choosing a ground is content, and because a map descriptor will eventually want to pick its own pair.",
+    "groundSet": "dirt_to_grass",
+    "soilSet": "grass_to_soil",
+    "soilEdgeCols": 4
   }
 }

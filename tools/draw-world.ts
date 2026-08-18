@@ -16,9 +16,16 @@ import { readFileSync } from 'node:fs'
 import { Rng } from '../src/core/rng.ts'
 import { TUNING, WEAPONS, projectileScaleFor } from '../src/content/index.ts'
 import type { World } from '../src/sim/world.ts'
+import { wangKey, type Corner } from '../src/render/wang.ts'
 
 /** Default zoom. The game derives its own; see `zoomFor` in the renderer. */
 export const ZOOM = 2
+const TERRAIN = (TUNING as unknown as {
+  terrain?: { groundSet?: string; soilSet?: string; soilEdgeCols?: number }
+}).terrain ?? {}
+const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
+const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
+const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
 const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROJECTILE_SCALE` in the renderer; per-weapon multiplier on top. */
 const PROJECTILE_SCALE = 0.55
@@ -280,10 +287,12 @@ export class WorldPainter {
   }
 
   private terrain(world: World): void {
+    fillRect(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0x479757)
+    if (this.wangTerrain(world)) return
+
     const grass = frames['terrain.grass']
     const dirt = frames['terrain.dirt']
     const soil = frames['terrain.soil']
-    fillRect(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0x479757)
 
     const tile = 32
     const startTx = Math.floor(this.camX / tile) - 1
@@ -312,6 +321,70 @@ export class WorldPainter {
         if (f) this.drawFrame(f, tx * tile + tile / 2, ty * tile + tile)
       }
     }
+  }
+
+  /**
+   * The renderer's Wang ground, restated so a headless shot shows the ground the
+   * GAME draws rather than a second one that merely resembles it.
+   *
+   * This is a duplicate of `Renderer.bakeWangGround` and it has to stay in step
+   * with it — the same RNG stream in the same order, or the shot is of a
+   * different field than the run it claims to picture. The tile KEY is the one
+   * thing not restated: `wangKey` is imported from the renderer's own module, so
+   * the naming cannot drift even if the field generation does.
+   */
+  private wangTerrain(world: World): boolean {
+    const probe = frames[wangKey(GROUND_SET, 0, 0, 0, 0)]
+    if (!probe) return false
+
+    const tile = 32
+    const cols = Math.ceil(world.arenaW / tile)
+    const rows = Math.ceil(world.arenaH / tile)
+    const vw = cols + 1
+    const vh = rows + 1
+    const rng = new Rng(world.seed ^ 0x7e44a1)
+    const field = new Uint8Array(vw * vh).fill(1)
+    for (let i = 0; i < 26; i++) {
+      const cx = rng.int(2, cols - 3)
+      const cy = rng.int(2, rows - 3)
+      const r = rng.int(1, 3)
+      for (let y = -r; y <= r; y++) {
+        for (let x = -r; x <= r; x++) {
+          if (x * x + y * y > r * r) continue
+          const vx = cx + x
+          const vy = cy + y
+          if (vx < 0 || vy < 0 || vx >= vw || vy >= vh) continue
+          field[vy * vw + vx] = 0
+        }
+      }
+    }
+    const soil = new Uint8Array(vw * vh)
+    for (let vy = 0; vy < vh; vy++) {
+      for (let vx = 0; vx < vw; vx++) {
+        if (vx < SOIL_EDGE_COLS || vx >= vw - SOIL_EDGE_COLS) soil[vy * vw + vx] = 1
+      }
+    }
+
+    const startTx = Math.max(0, Math.floor(this.camX / tile) - 1)
+    const startTy = Math.max(0, Math.floor(this.camY / tile) - 1)
+    const endTx = Math.min(cols, startTx + Math.ceil(this.viewW / tile) + 3)
+    const endTy = Math.min(rows, startTy + Math.ceil(this.viewH / tile) + 3)
+    const corners = (at: Uint8Array, x: number, y: number): [Corner, Corner, Corner, Corner] => [
+      at[y * vw + x] as Corner, at[y * vw + x + 1] as Corner,
+      at[(y + 1) * vw + x] as Corner, at[(y + 1) * vw + x + 1] as Corner,
+    ]
+    for (let ty = startTy; ty < endTy; ty++) {
+      for (let tx = startTx; tx < endTx; tx++) {
+        const g = frames[wangKey(GROUND_SET, ...corners(field, tx, ty))]
+        if (g) this.drawFrame(g, tx * tile, ty * tile)
+        const sc = corners(soil, tx, ty)
+        if (sc[0] || sc[1] || sc[2] || sc[3]) {
+          const sf = frames[wangKey(SOIL_SET, ...sc)]
+          if (sf) this.drawFrame(sf, tx * tile, ty * tile)
+        }
+      }
+    }
+    return true
   }
 
   /** Paint everything, camera centred on the player. */

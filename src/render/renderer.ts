@@ -18,6 +18,7 @@ import { Camera } from './camera'
 import { ENEMIES, NODES, TUNING, WEAPONS, projectileScaleFor } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
+import { wangKey, type Corner } from './wang'
 
 const BUCKET = 8
 
@@ -55,6 +56,17 @@ const PIXELS_PER_WALK_FRAME = 11
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile clips are authored at 15fps. */
 const PROJECTILE_FPS = 15
+
+/**
+ * Which Wang sets the ground bakes from. Content, not code — choosing a ground
+ * is a content decision, and a map descriptor will want to pick its own pair.
+ */
+const TERRAIN = (TUNING as unknown as {
+  terrain?: { groundSet?: string; soilSet?: string; soilEdgeCols?: number }
+}).terrain ?? {}
+const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
+const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
+const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
 
 interface DrawItem {
   x: number
@@ -203,6 +215,13 @@ export class Renderer {
       for (let x = 0; x < cols; x++) put(grass, x * tile, y * tile)
     }
 
+    // Wang ground if the tilesets are packed; the stamped version below if not.
+    if (this.bakeWangGround(g, cols, rows, tile)) {
+      this.paintFence(g, c)
+      this.terrain = c
+      return
+    }
+
     // Worn dirt patches where a farm gets walked on.
     if (dirt) {
       for (let i = 0; i < 26; i++) {
@@ -226,12 +245,109 @@ export class Renderer {
       }
     }
 
-    // Fence line, drawn flat until the fence tiles are in the atlas.
+    this.paintFence(g, c)
+    this.terrain = c
+  }
+
+  /** Fence line, drawn flat until the fence tiles are in the atlas. */
+  private paintFence(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
     g.strokeStyle = '#6b5027'
     g.lineWidth = 6
     g.strokeRect(3, 3, c.width - 6, c.height - 6)
+  }
 
-    this.terrain = c
+  /**
+   * Ground from a Wang tileset: corner autotiling instead of stamped squares.
+   *
+   * THE FIELD IS SAMPLED AT VERTICES, NOT CELLS, and that is the whole trick. A
+   * cell asks what terrain sits at its four CORNERS and draws the tile matching
+   * that combination, so a boundary between grass and dirt runs through tiles
+   * rather than around them. Stamping whole tiles is what made the ground look
+   * blocky; there is no amount of extra tile detail that fixes it, because the
+   * staircase is in the geometry and not in the art.
+   *
+   * Two passes, because a Wang set is a PAIR of terrains and not a palette:
+   * worn dirt through the pasture, then tilled soil down the two corn edges the
+   * spawner uses. The second is drawn over the first and its own lower terrain
+   * is grass, which is what the edges are.
+   *
+   * Returns false if the tilesets are not packed, and the caller falls back to
+   * the stamped bake — a missing tileset costs the ground, not the game.
+   */
+  private bakeWangGround(
+    g: CanvasRenderingContext2D, cols: number, rows: number, tile: number,
+  ): boolean {
+    const atlas = this.atlas
+    if (!atlas || !atlas.get(wangKey(GROUND_SET, 0, 0, 0, 0))) return false
+
+    const img = atlas.image
+    // Its own RNG stream: the ground must not move a single later spawn, and
+    // the seed guarantee is what every replay test rests on.
+    const rng = new Rng(this.world.seed ^ 0x7e44a1)
+
+    const vw = cols + 1
+    const vh = rows + 1
+    /** 1 is the set's upper terrain, 0 its lower. Vertices, so (cols+1)^2. */
+    const field = new Uint8Array(vw * vh).fill(1)
+
+    // Worn patches, blobbed at vertices so their edges land between tiles.
+    for (let i = 0; i < 26; i++) {
+      const cx = rng.int(2, cols - 3)
+      const cy = rng.int(2, rows - 3)
+      const r = rng.int(1, 3)
+      for (let y = -r; y <= r; y++) {
+        for (let x = -r; x <= r; x++) {
+          if (x * x + y * y > r * r) continue
+          const vx = cx + x
+          const vy = cy + y
+          if (vx < 0 || vy < 0 || vx >= vw || vy >= vh) continue
+          field[vy * vw + vx] = 0
+        }
+      }
+    }
+
+    const paint = (set: string, at: Uint8Array): void => {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const nw = at[y * vw + x] as Corner
+          const ne = at[y * vw + x + 1] as Corner
+          const sw = at[(y + 1) * vw + x] as Corner
+          const se = at[(y + 1) * vw + x + 1] as Corner
+          const f = atlas.get(wangKey(set, nw, ne, sw, se))
+          if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
+        }
+      }
+    }
+
+    paint(GROUND_SET, field)
+
+    // The tilled edges the spawner calls `cornTile`. Upper is soil here, so the
+    // field is inverted relative to the pass above: 0 everywhere, 1 at the ends.
+    if (atlas.get(wangKey(SOIL_SET, 1, 1, 1, 1))) {
+      const soil = new Uint8Array(vw * vh)
+      let any = false
+      for (let vy = 0; vy < vh; vy++) {
+        for (let vx = 0; vx < vw; vx++) {
+          if (vx < SOIL_EDGE_COLS || vx >= vw - SOIL_EDGE_COLS) { soil[vy * vw + vx] = 1; any = true }
+        }
+      }
+      if (any) {
+        // Only cells that touch soil, so the pass does not repaint the pasture
+        // with this set's own (identical) grass and double the draw cost.
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const nw = soil[y * vw + x] as Corner
+            const ne = soil[y * vw + x + 1] as Corner
+            const sw = soil[(y + 1) * vw + x] as Corner
+            const se = soil[(y + 1) * vw + x + 1] as Corner
+            if (!(nw || ne || sw || se)) continue
+            const f = atlas.get(wangKey(SOIL_SET, nw, ne, sw, se))
+            if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
+          }
+        }
+      }
+    }
+    return true
   }
 
   draw(alpha: number, rand: () => number): void {
