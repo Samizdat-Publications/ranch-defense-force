@@ -4,6 +4,114 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 14 — the art goes in
+
+Session 13 bought raw material and wired none of it, deliberately. This
+session wired it. The subscription is still being cancelled; balance went
+322 -> 277, and every generation spent here was spent fixing something the
+wiring exposed rather than buying anything new.
+
+## The camera question, settled
+
+The owner asked whether `high top-down` was an option, since the handoff
+kept warning about camera mismatch. **It is** — `low top-down`,
+`high top-down` and `side` on objects, characters and tilesets alike, and
+`create-1-direction-object` takes `top-down` or `sidescroller`. Verified
+against the live OpenAPI schema, not from memory.
+
+But the project already chose, deliberately, in `docs/ART_STYLE.md`: low
+top-down, "because **horror needs a face** — a high top-down view looks at
+the top of its head". Someone had already run the experiment too;
+`assets/pixellab/object/barn_dog_hightopdown/` is a full ring, and the
+difference for an animal is marginal.
+
+**And the warning it was raised against has dissolved.** `_howToWireIt`
+said "the mismatch is CAMERA ANGLE, NOT SCALE" about PixelLab animals
+against *LimeZu's* animals. LimeZu's animals are deleted now. What matters
+is that the animals match the PLAYER, and both are low top-down.
+`npm run scale` puts them on one baseline and they agree.
+
+## The enemy roster
+
+feralDog, rooster, sickHog, blownSheep and prizeBull are the cursed
+animals, with walk, attack and death in eight directions. The rooster swap
+also fixed a wrong-species bug — its LimeZu sheet was drawing a hen.
+
+**Eight directions needed a second rig family, not a manifest entry.**
+`atlas.json` carried ONE global rig, `[down, up, left, right]`, and
+`directionIndex` indexed straight into it. Sheets now declare their own
+list (`dirSets`); a sheet absent from it uses the rig's four, so the six
+classes and five humanoid enemies were untouched. Four keeps its
+comparison — that list is not angle-sorted and the comparison is what
+biases toward the side views — while eight is a single rounded division.
+
+**The atlas needed a shape change, not a size one.** At `width = 1024` the
+animals take it to 1024x16384. The area is fine; the dimension is not.
+Widened to 2048: same pixels, `2048x8192`, both dimensions inside limits
+everywhere.
+
+## Three silent traps, all caught by looking rather than by a test
+
+1. **The frame key is the enemy TYPE ID, not the `sheet` field.** The first
+   swap changed `sheet` in enemies.json, which is read by nothing. The art
+   packed, the game drew the old sprite, nothing errored. Caught by taking
+   a screenshot.
+2. **`src/content/index.ts` destructures `_bosses` by name and treats every
+   other key as an enemy.** A one-line `_artNote` in enemies.json was
+   spawned as a monster and took out seven tests.
+3. **`scale-check` ignored `drawScale`** and reported the boss at trash-mob
+   size, producing the confident and wrong claim that "the bull is about
+   player height". It is 2x and dwarfs the player. A comparison tool that
+   omits a transform the renderer applies is wrong with authority.
+
+## What the corpse timer is coupled to
+
+Death clips play now, but only the boss lingers, and the reason is worth
+keeping: **`s.update(dt, this.enemies.live)` feeds the spawner the enemy
+count INCLUDING corpses inside their `dying` window.** Holding bodies half
+a second instead of 0.2 throttles spawning, and the "merging beats taking
+whatever came up" balance test caught it at 16 waves against 26. So trash
+mobs play the clip inside the existing 0.2s and only prizeBull gets
+`deathSeconds: 0.8` — one corpse, no pool pressure.
+
+## Picking 1,900 candidates
+
+The median silhouette: take every candidate's content bounds, take the
+median area, pick the closest. Both failure modes sit at the extremes.
+
+**The grid of all picks earned itself immediately** — it showed three props
+on opaque white cards, which no area heuristic can see because a card is a
+perfectly ordinary area. The corner test catches them: a cut-out prop has
+transparent corners on its content box, a carded one has opaque ones.
+Where *every* candidate was carded the fix was `remove-background`, not a
+better pick. (Measured: that utility costs 1 generation, despite the docs
+calling utilities free.)
+
+**Nothing hand-picked was overwritten.** A prop with art in `picked/` and
+no entry in `art/prop-picks.json` is left alone. One ordering mistake
+worth remembering: `--write` re-cut a repaired prop from its carded
+candidate before I protected it. Protect, then write.
+
+## The ground
+
+`tuning.terrain.blight` bands the ground by wave — pasture, then withered
+grass at 9, rot at 15, cold ash at 21. Bands rather than a blend because a
+Wang set is a whole terrain pair; you swap and re-bake. Safe because the
+bake already had **its own RNG stream**, separate precisely so "the ground
+must not move a single later spawn".
+
+## Still not wired
+
+- **The attack clips.** Ten exist. The charge behaviours own the `t0`/`s0`
+  scratch and their wind-up state is not exposed, so binding an attack
+  pose is a deeper change into behaviour internals than it looked.
+- **The FX set** — muzzle flash, impact, dust, sparks, gas. `gasImmune`,
+  `trailGas` and `gasGrace` are still in the sim with nothing rendering
+  gas.
+- **Scenery props.** 76 props are picked and unpacked; the field scatters
+  harvest nodes only, so a non-interactive prop layer has to exist first.
+- **The UI plates** and the two class ability poses.
+
 # Session 13 — spending the subscription down
 
 The owner is cancelling PixelLab. The brief was to burn the remaining
