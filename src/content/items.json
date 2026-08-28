@@ -1,538 +1,537 @@
 {
-  "_note": "Every upgrade the player can be offered. `source` decides which pool it enters: \"levelup\" is the ordinary in-run draw, \"shop\" is feed-priced and run-defining, \"both\" appears in either. `maxStacks` caps how many copies one run can hold. `cardSprite` is the atlas key the card art window draws; `_mockArt` is the design-review path only and can be stripped on import.",
-  "_designNote": "Rarity spread is 11 common / 11 uncommon / 9 rare / 5 epic / 4 legendary. Commons are one plain number and are named after the object; legendaries change how a run plays and are named like they are spoken about. Every epic and legendary is shop-only, so the shop is where a run gets its shape.",
-  "_authored": "Design pass 3, 2026-08-14.",
-  "whetstone": {
-    "name": "Whetstone",
-    "icon": "whetstone",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 12,
-    "maxStacks": 5,
-    "blurb": "Everything you own hits harder.",
-    "mods": {
-      "damagePct": 10
-    },
-    "cardSprite": "item.whetstone"
+ "_note": "Every upgrade the player can be offered. `source` decides which pool it enters: \"levelup\" is the ordinary in-run draw, \"shop\" is feed-priced and run-defining, \"both\" appears in either. `maxStacks` caps how many copies one run can hold. `cardSprite` is the atlas key the card art window draws; `_mockArt` is the design-review path only and can be stripped on import.",
+ "_designNote": "Rarity spread is 11 common / 11 uncommon / 9 rare / 5 epic / 4 legendary. Commons are one plain number and are named after the object; legendaries change how a run plays and are named like they are spoken about. Every epic and legendary is shop-only, so the shop is where a run gets its shape.",
+ "_authored": "Design pass 3, 2026-08-14.",
+ "whetstone": {
+  "name": "Whetstone",
+  "icon": "whetstone",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 12,
+  "maxStacks": 5,
+  "blurb": "Everything you own hits harder.",
+  "mods": {
+   "damagePct": 10
   },
-  "workBoots": {
-    "name": "Work Boots",
-    "icon": "workBoots",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 12,
-    "maxStacks": 5,
-    "blurb": "Cover the ground faster.",
-    "mods": {
-      "moveSpeedPct": 8
-    },
-    "cardSprite": "item.workBoots"
+  "cardSprite": "item.whetstone"
+ },
+ "workBoots": {
+  "name": "Work Boots",
+  "icon": "workBoots",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 12,
+  "maxStacks": 5,
+  "blurb": "Cover the ground faster.",
+  "mods": {
+   "moveSpeedPct": 8
   },
-  "feedSack": {
-    "name": "Feed Sack",
-    "icon": "feedSack",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 12,
-    "maxStacks": 5,
-    "blurb": "More of you to lose before the field takes you.",
-    "mods": {
-      "maxHp": 20
-    },
-    "cardSprite": "item.feedSack"
+  "cardSprite": "item.workBoots"
+ },
+ "feedSack": {
+  "name": "Feed Sack",
+  "icon": "feedSack",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 12,
+  "maxStacks": 5,
+  "blurb": "More of you to lose before the field takes you.",
+  "mods": {
+   "maxHp": 20
   },
-  "saltLick": {
-    "name": "Salt Lick",
-    "icon": "saltLick",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 14,
-    "maxStacks": 5,
-    "blurb": "You knit back together slowly, on your own.",
-    "mods": {
-      "hpRegen": 1
-    },
-    "cardSprite": "node.rockSmall"
+  "cardSprite": "item.feedSack"
+ },
+ "saltLick": {
+  "name": "Salt Lick",
+  "icon": "saltLick",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 14,
+  "maxStacks": 5,
+  "blurb": "You knit back together slowly, on your own.",
+  "mods": {
+   "hpRegen": 1
   },
-  "roosterAlarm": {
-    "name": "Rooster Alarm",
-    "icon": "roosterAlarm",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 10,
-    "maxStacks": 5,
-    "blurb": "Sweep up gems and feed from further out.",
-    "mods": {
-      "pickupRadiusPct": 25
-    },
-    "cardSprite": "rooster.idle.down.0"
+  "cardSprite": "node.rockSmall"
+ },
+ "roosterAlarm": {
+  "name": "Rooster Alarm",
+  "icon": "roosterAlarm",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 10,
+  "maxStacks": 5,
+  "blurb": "Sweep up gems and feed from further out.",
+  "mods": {
+   "pickupRadiusPct": 25
   },
-  "balingTwine": {
-    "name": "Baling Twine",
-    "icon": "balingTwine",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 13,
-    "maxStacks": 5,
-    "blurb": "Everything you own cycles a little quicker.",
-    "mods": {
-      "attackSpeedPct": 6
-    },
-    "cardSprite": "item.balingTwine"
+  "cardSprite": "rooster.idle.down.0"
+ },
+ "balingTwine": {
+  "name": "Baling Twine",
+  "icon": "balingTwine",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 13,
+  "maxStacks": 5,
+  "blurb": "Everything you own cycles a little quicker.",
+  "mods": {
+   "attackSpeedPct": 6
   },
-  "fenceStaples": {
-    "name": "Fence Staples",
-    "icon": "fenceStaples",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 14,
-    "maxStacks": 5,
-    "blurb": "Blows land a little softer.",
-    "mods": {
-      "armor": 2
-    },
-    "cardSprite": "item.fenceStaples"
+  "cardSprite": "item.balingTwine"
+ },
+ "fenceStaples": {
+  "name": "Fence Staples",
+  "icon": "fenceStaples",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 14,
+  "maxStacks": 5,
+  "blurb": "Blows land a little softer.",
+  "mods": {
+   "armor": 2
   },
-  "chalkLine": {
-    "name": "Chalk Line",
-    "icon": "chalkLine",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 15,
-    "maxStacks": 5,
-    "blurb": "You find the weak spot more often.",
-    "mods": {
-      "critChancePct": 5
-    },
-    "cardSprite": "item.chalkLine"
+  "cardSprite": "item.fenceStaples"
+ },
+ "chalkLine": {
+  "name": "Chalk Line",
+  "icon": "chalkLine",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 15,
+  "maxStacks": 5,
+  "blurb": "You find the weak spot more often.",
+  "mods": {
+   "critChancePct": 5
   },
-  "grainScoop": {
-    "name": "Grain Scoop",
-    "icon": "grainScoop",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 13,
-    "maxStacks": 5,
-    "blurb": "Get more out of every node you work.",
-    "mods": {
-      "harvestPct": 15
-    },
-    "cardSprite": "item.grainScoop"
+  "cardSprite": "item.chalkLine"
+ },
+ "grainScoop": {
+  "name": "Grain Scoop",
+  "icon": "grainScoop",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 13,
+  "maxStacks": 5,
+  "blurb": "Get more out of every node you work.",
+  "mods": {
+   "harvestPct": 15
   },
-  "lampOil": {
-    "name": "Lamp Oil",
-    "icon": "lampOil",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 14,
-    "maxStacks": 5,
-    "blurb": "Better cards turn up a little more often.",
-    "mods": {
-      "luck": 5
-    },
-    "cardSprite": "item.lampOil"
+  "cardSprite": "item.grainScoop"
+ },
+ "lampOil": {
+  "name": "Lamp Oil",
+  "icon": "lampOil",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 14,
+  "maxStacks": 5,
+  "blurb": "Better cards turn up a little more often.",
+  "mods": {
+   "luck": 5
   },
-  "splitRail": {
-    "name": "Split Rail",
-    "icon": "splitRail",
-    "rarity": "common",
-    "source": "levelup",
-    "cost": 15,
-    "maxStacks": 5,
-    "blurb": "A length of fence swings better than you would think.",
-    "mods": {
-      "meleePct": 12
-    },
-    "cardSprite": "item.splitRail"
+  "cardSprite": "item.lampOil"
+ },
+ "splitRail": {
+  "name": "Split Rail",
+  "icon": "splitRail",
+  "rarity": "common",
+  "source": "levelup",
+  "cost": 15,
+  "maxStacks": 5,
+  "blurb": "A length of fence swings better than you would think.",
+  "mods": {
+   "meleePct": 12
   },
-  "hayHook": {
-    "name": "Hay Hook",
-    "icon": "hayHook",
-    "rarity": "uncommon",
-    "source": "levelup",
-    "cost": 17,
-    "maxStacks": 4,
-    "blurb": "Your melee weapons bite deeper.",
-    "mods": {
-      "meleePct": 18
-    },
-    "cardSprite": "weapon.pitchfork.t2"
+  "cardSprite": "item.splitRail"
+ },
+ "hayHook": {
+  "name": "Hay Hook",
+  "icon": "hayHook",
+  "rarity": "uncommon",
+  "source": "levelup",
+  "cost": 17,
+  "maxStacks": 4,
+  "blurb": "Your melee weapons bite deeper.",
+  "mods": {
+   "meleePct": 18
   },
-  "slingBands": {
-    "name": "Sling Bands",
-    "icon": "slingBands",
-    "rarity": "uncommon",
-    "source": "levelup",
-    "cost": 17,
-    "maxStacks": 4,
-    "blurb": "Your guns hit harder.",
-    "mods": {
-      "rangedPct": 18
-    },
-    "cardSprite": "weapon.seedSpitter"
+  "cardSprite": "weapon.pitchfork.t2"
+ },
+ "slingBands": {
+  "name": "Sling Bands",
+  "icon": "slingBands",
+  "rarity": "uncommon",
+  "source": "levelup",
+  "cost": 17,
+  "maxStacks": 4,
+  "blurb": "Your guns hit harder.",
+  "mods": {
+   "rangedPct": 18
   },
-  "weatherVane": {
-    "name": "Weather Vane",
-    "icon": "weatherVane",
-    "rarity": "uncommon",
-    "source": "both",
-    "cost": 18,
-    "maxStacks": 4,
-    "blurb": "Everything you own fires faster.",
-    "mods": {
-      "attackSpeedPct": 12
-    },
-    "cardSprite": "weapon.rake"
+  "cardSprite": "weapon.seedSpitter"
+ },
+ "weatherVane": {
+  "name": "Weather Vane",
+  "icon": "weatherVane",
+  "rarity": "uncommon",
+  "source": "both",
+  "cost": 18,
+  "maxStacks": 4,
+  "blurb": "Everything you own fires faster.",
+  "mods": {
+   "attackSpeedPct": 12
   },
-  "tractorPlate": {
-    "name": "Tractor Plate",
-    "icon": "tractorPlate",
-    "rarity": "uncommon",
-    "source": "both",
-    "cost": 22,
-    "maxStacks": 4,
-    "blurb": "Blows land softer, but you move heavier.",
-    "mods": {
-      "armor": 4,
-      "moveSpeedPct": -5
-    },
-    "cardSprite": "node.rockBig"
+  "cardSprite": "weapon.rake"
+ },
+ "tractorPlate": {
+  "name": "Tractor Plate",
+  "icon": "tractorPlate",
+  "rarity": "uncommon",
+  "source": "both",
+  "cost": 22,
+  "maxStacks": 4,
+  "blurb": "Blows land softer, but you move heavier.",
+  "mods": {
+   "armor": 4,
+   "moveSpeedPct": -5
   },
-  "coffeeThermos": {
-    "name": "Coffee Thermos",
-    "icon": "coffeeThermos",
-    "rarity": "uncommon",
-    "source": "levelup",
-    "cost": 16,
-    "maxStacks": 4,
-    "blurb": "Still hot. You will not be sitting down again.",
-    "mods": {
-      "moveSpeedPct": 6,
-      "attackSpeedPct": 6,
-      "maxHp": -10
-    },
-    "cardSprite": "item.coffeeThermos"
+  "cardSprite": "node.rockBig"
+ },
+ "coffeeThermos": {
+  "name": "Coffee Thermos",
+  "icon": "coffeeThermos",
+  "rarity": "uncommon",
+  "source": "levelup",
+  "cost": 16,
+  "maxStacks": 4,
+  "blurb": "Still hot. You will not be sitting down again.",
+  "mods": {
+   "moveSpeedPct": 6,
+   "attackSpeedPct": 6,
+   "maxHp": -10
   },
-  "fourLeaf": {
-    "name": "Four-Leaf",
-    "icon": "fourLeaf",
-    "rarity": "uncommon",
-    "source": "both",
-    "cost": 18,
-    "maxStacks": 4,
-    "blurb": "Better cards and rarer drops turn up more often.",
-    "mods": {
-      "luck": 10
-    },
-    "cardSprite": "item.fourLeaf"
+  "cardSprite": "item.coffeeThermos"
+ },
+ "fourLeaf": {
+  "name": "Four-Leaf",
+  "icon": "fourLeaf",
+  "rarity": "uncommon",
+  "source": "both",
+  "cost": 18,
+  "maxStacks": 4,
+  "blurb": "Better cards and rarer drops turn up more often.",
+  "mods": {
+   "luck": 10
   },
-  "bootKnife": {
-    "name": "Boot Knife",
-    "icon": "bootKnife",
-    "rarity": "uncommon",
-    "source": "levelup",
-    "cost": 19,
-    "maxStacks": 4,
-    "blurb": "You know where to put it.",
-    "mods": {
-      "critChancePct": 8,
-      "critDamagePct": 12
-    },
-    "cardSprite": "item.bootKnife"
+  "cardSprite": "item.fourLeaf"
+ },
+ "bootKnife": {
+  "name": "Boot Knife",
+  "icon": "bootKnife",
+  "rarity": "uncommon",
+  "source": "levelup",
+  "cost": 19,
+  "maxStacks": 4,
+  "blurb": "You know where to put it.",
+  "mods": {
+   "critChancePct": 8,
+   "critDamagePct": 12
   },
-  "dogWhistle": {
-    "name": "Dog Whistle",
-    "icon": "dogWhistle",
-    "rarity": "uncommon",
-    "source": "both",
-    "cost": 20,
-    "maxStacks": 4,
-    "blurb": "Whatever is hunting for you hunts harder.",
-    "mods": {
-      "minionPct": 25
-    },
-    "cardSprite": "item.dogWhistle"
+  "cardSprite": "item.bootKnife"
+ },
+ "dogWhistle": {
+  "name": "Dog Whistle",
+  "icon": "dogWhistle",
+  "rarity": "uncommon",
+  "source": "both",
+  "cost": 20,
+  "maxStacks": 4,
+  "blurb": "Whatever is hunting for you hunts harder.",
+  "mods": {
+   "minionPct": 25
   },
-  "pickaxeHead": {
-    "name": "Better Pickaxe Head",
-    "icon": "pickaxeHead",
-    "rarity": "uncommon",
-    "source": "both",
-    "cost": 26,
-    "maxStacks": 4,
-    "blurb": "Next pickaxe tier. Mine rock noticeably faster.",
-    "mods": {},
-    "toolUpgrade": "pickaxe",
-    "cardSprite": "tool.pickaxe.iron"
+  "cardSprite": "item.dogWhistle"
+ },
+ "pickaxeHead": {
+  "name": "Better Pickaxe Head",
+  "icon": "pickaxeHead",
+  "rarity": "uncommon",
+  "source": "both",
+  "cost": 26,
+  "maxStacks": 4,
+  "blurb": "Next pickaxe tier. Mine rock noticeably faster.",
+  "mods": {},
+  "toolUpgrade": "pickaxe",
+  "cardSprite": "tool.pickaxe.iron"
+ },
+ "axeHead": {
+  "name": "Better Axe Head",
+  "icon": "axeHead",
+  "rarity": "uncommon",
+  "source": "both",
+  "cost": 26,
+  "maxStacks": 4,
+  "blurb": "Next axe tier. Fell trees and clear crops faster.",
+  "mods": {},
+  "toolUpgrade": "axe",
+  "cardSprite": "tool.axe.iron"
+ },
+ "barbedWire": {
+  "name": "Barbed Wire",
+  "icon": "barbedWire",
+  "rarity": "uncommon",
+  "source": "both",
+  "cost": 20,
+  "maxStacks": 4,
+  "blurb": "Anything that touches you takes some back.",
+  "mods": {},
+  "special": "reflect",
+  "reflectDamage": 5,
+  "cardSprite": "node.oreSilver"
+ },
+ "keroseneCan": {
+  "name": "Kerosene Can",
+  "icon": "keroseneCan",
+  "rarity": "rare",
+  "source": "both",
+  "cost": 26,
+  "maxStacks": 3,
+  "blurb": "A lot more damage, and less of you to lose it with.",
+  "mods": {
+   "damagePct": 25,
+   "maxHp": -15
   },
-  "axeHead": {
-    "name": "Better Axe Head",
-    "icon": "axeHead",
-    "rarity": "uncommon",
-    "source": "both",
-    "cost": 26,
-    "maxStacks": 4,
-    "blurb": "Next axe tier. Fell trees and clear crops faster.",
-    "mods": {},
-    "toolUpgrade": "axe",
-    "cardSprite": "tool.axe.iron"
+  "cardSprite": "weapon.slopBucket"
+ },
+ "strawHat": {
+  "name": "Straw Hat",
+  "icon": "strawHat",
+  "rarity": "rare",
+  "source": "both",
+  "cost": 24,
+  "maxStacks": 3,
+  "blurb": "Enemies pressing close do less to you.",
+  "mods": {},
+  "special": "auraDamageReduction",
+  "radius": 60,
+  "reductionPct": 15,
+  "cardSprite": "item.strawHat"
+ },
+ "wetRag": {
+  "name": "Wet Rag",
+  "icon": "wetRag",
+  "rarity": "rare",
+  "source": "both",
+  "cost": 24,
+  "maxStacks": 3,
+  "blurb": "Buys you a moment inside gas before it starts to hurt.",
+  "mods": {},
+  "special": "gasGrace",
+  "graceSeconds": 2,
+  "cardSprite": "item.wetRag"
+ },
+ "tracerRounds": {
+  "name": "Tracer Rounds",
+  "icon": "tracerRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "cost": 34,
+  "maxStacks": 3,
+  "blurb": "Every gun you own fires fire. Burns on hit, and lights tar.",
+  "mods": {},
+  "element": "fire",
+  "cardSprite": "proj.pellet.fire.2"
+ },
+ "etchedRounds": {
+  "name": "Etched Rounds",
+  "icon": "etchedRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "cost": 34,
+  "maxStacks": 3,
+  "blurb": "Every gun you own fires acid. Corrodes for longer than fire burns.",
+  "mods": {},
+  "element": "acid",
+  "cardSprite": "proj.glob.acid.2"
+ },
+ "coldRounds": {
+  "name": "Cold Rounds",
+  "icon": "coldRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "cost": 34,
+  "maxStacks": 3,
+  "blurb": "Every gun you own fires ice. Slows hard instead of damaging.",
+  "mods": {},
+  "element": "frost",
+  "cardSprite": "proj.spear.frost.2"
+ },
+ "postDriver": {
+  "name": "Post Driver",
+  "icon": "postDriver",
+  "rarity": "rare",
+  "source": "both",
+  "cost": 30,
+  "maxStacks": 3,
+  "blurb": "The sledge goes in twice as far.",
+  "mods": {},
+  "special": "stunMultiplier",
+  "stunMultiplier": 2,
+  "swingSpeedPct": -12,
+  "cardSprite": "item.postDriver"
+ },
+ "culvertPipe": {
+  "name": "Culvert Pipe",
+  "icon": "culvertPipe",
+  "rarity": "rare",
+  "source": "both",
+  "cost": 28,
+  "maxStacks": 3,
+  "blurb": "You have learned which way to move first.",
+  "mods": {
+   "dodgePct": 12
   },
-  "barbedWire": {
-    "name": "Barbed Wire",
-    "icon": "barbedWire",
-    "rarity": "uncommon",
-    "source": "both",
-    "cost": 20,
-    "maxStacks": 4,
-    "blurb": "Anything that touches you takes some back.",
-    "mods": {},
-    "special": "reflect",
-    "reflectDamage": 5,
-    "cardSprite": "node.oreSilver"
+  "cardSprite": "item.culvertPipe"
+ },
+ "ditchLight": {
+  "name": "Ditch Light",
+  "icon": "ditchLight",
+  "rarity": "rare",
+  "source": "both",
+  "cost": 29,
+  "maxStacks": 3,
+  "blurb": "Reach further, and see what is worth reaching for.",
+  "mods": {
+   "luck": 12,
+   "pickupRadiusPct": 40
   },
-  "keroseneCan": {
-    "name": "Kerosene Can",
-    "icon": "keroseneCan",
-    "rarity": "rare",
-    "source": "both",
-    "cost": 26,
-    "maxStacks": 3,
-    "blurb": "A lot more damage, and less of you to lose it with.",
-    "mods": {
-      "damagePct": 25,
-      "maxHp": -15
-    },
-    "cardSprite": "weapon.slopBucket"
+  "cardSprite": "item.ditchLight"
+ },
+ "secondCutting": {
+  "name": "Second Cutting",
+  "icon": "secondCutting",
+  "rarity": "epic",
+  "source": "shop",
+  "cost": 44,
+  "maxStacks": 2,
+  "blurb": "The scythe grows a second blade.",
+  "mods": {},
+  "special": "scytheSecondBlade",
+  "bladeDamageMultiplier": 0.7,
+  "cardSprite": "weapon.scythe.t3"
+ },
+ "threshingFloor": {
+  "name": "Threshing Floor",
+  "icon": "threshingFloor",
+  "rarity": "epic",
+  "source": "shop",
+  "cost": 46,
+  "maxStacks": 2,
+  "blurb": "What dies in reach takes the next one with it.",
+  "mods": {},
+  "special": "chainOnKill",
+  "chainRadius": 90,
+  "chainDamageMultiplier": 0.4,
+  "cardSprite": "item.threshingFloor"
+ },
+ "cropDuster": {
+  "name": "Crop Duster",
+  "icon": "cropDuster",
+  "rarity": "epic",
+  "source": "shop",
+  "cost": 48,
+  "maxStacks": 2,
+  "blurb": "You trail the stuff that started this.",
+  "mods": {},
+  "special": "trailGas",
+  "dps": 12,
+  "radius": 70,
+  "cardSprite": "item.cropDuster"
+ },
+ "cattleProd": {
+  "name": "Cattle Prod",
+  "icon": "cattleProd",
+  "rarity": "epic",
+  "source": "shop",
+  "cost": 42,
+  "maxStacks": 2,
+  "blurb": "Everything you touch forgets what it was doing.",
+  "mods": {},
+  "special": "touchStun",
+  "stunSeconds": 0.3,
+  "perEnemyCooldown": 8,
+  "cardSprite": "item.cattleProd"
+ },
+ "ironLung": {
+  "name": "Iron Lung",
+  "icon": "ironLung",
+  "rarity": "epic",
+  "source": "shop",
+  "cost": 40,
+  "maxStacks": 2,
+  "blurb": "Gas is just weather now.",
+  "mods": {
+   "maxHp": 20
   },
-  "strawHat": {
-    "name": "Straw Hat",
-    "icon": "strawHat",
-    "rarity": "rare",
-    "source": "both",
-    "cost": 24,
-    "maxStacks": 3,
-    "blurb": "Enemies pressing close do less to you.",
-    "mods": {},
-    "special": "auraDamageReduction",
-    "radius": 60,
-    "reductionPct": 15,
-    "cardSprite": "item.strawHat"
-  },
-  "wetRag": {
-    "name": "Wet Rag",
-    "icon": "wetRag",
-    "rarity": "rare",
-    "source": "both",
-    "cost": 24,
-    "maxStacks": 3,
-    "blurb": "Buys you a moment inside gas before it starts to hurt.",
-    "mods": {},
-    "special": "gasGrace",
-    "graceSeconds": 2,
-    "cardSprite": "item.wetRag"
-  },
-  "tracerRounds": {
-    "name": "Tracer Rounds",
-    "icon": "tracerRounds",
-    "rarity": "rare",
-    "source": "shop",
-    "cost": 34,
-    "maxStacks": 3,
-    "blurb": "Every gun you own fires fire. Burns on hit, and lights tar.",
-    "mods": {},
-    "element": "fire",
-    "cardSprite": "proj.pellet.fire.2"
-  },
-  "etchedRounds": {
-    "name": "Etched Rounds",
-    "icon": "etchedRounds",
-    "rarity": "rare",
-    "source": "shop",
-    "cost": 34,
-    "maxStacks": 3,
-    "blurb": "Every gun you own fires acid. Corrodes for longer than fire burns.",
-    "mods": {},
-    "element": "acid",
-    "cardSprite": "proj.glob.acid.2"
-  },
-  "coldRounds": {
-    "name": "Cold Rounds",
-    "icon": "coldRounds",
-    "rarity": "rare",
-    "source": "shop",
-    "cost": 34,
-    "maxStacks": 3,
-    "blurb": "Every gun you own fires ice. Slows hard instead of damaging.",
-    "mods": {},
-    "element": "frost",
-    "cardSprite": "proj.spear.frost.2"
-  },
-  "postDriver": {
-    "name": "Post Driver",
-    "icon": "postDriver",
-    "rarity": "rare",
-    "source": "both",
-    "cost": 30,
-    "maxStacks": 3,
-    "blurb": "The sledge goes in twice as far.",
-    "mods": {},
-    "special": "stunMultiplier",
-    "stunMultiplier": 2,
-    "swingSpeedPct": -12,
-    "cardSprite": "item.postDriver"
-  },
-  "culvertPipe": {
-    "name": "Culvert Pipe",
-    "icon": "culvertPipe",
-    "rarity": "rare",
-    "source": "both",
-    "cost": 28,
-    "maxStacks": 3,
-    "blurb": "You have learned which way to move first.",
-    "mods": {
-      "dodgePct": 12
-    },
-    "cardSprite": "item.culvertPipe"
-  },
-  "ditchLight": {
-    "name": "Ditch Light",
-    "icon": "ditchLight",
-    "rarity": "rare",
-    "source": "both",
-    "cost": 29,
-    "maxStacks": 3,
-    "blurb": "Reach further, and see what is worth reaching for.",
-    "mods": {
-      "luck": 12,
-      "pickupRadiusPct": 40
-    },
-    "cardSprite": "item.ditchLight"
-  },
-  "secondCutting": {
-    "name": "Second Cutting",
-    "icon": "secondCutting",
-    "rarity": "epic",
-    "source": "shop",
-    "cost": 44,
-    "maxStacks": 2,
-    "blurb": "The scythe grows a second blade.",
-    "mods": {},
-    "special": "scytheSecondBlade",
-    "bladeDamageMultiplier": 0.7,
-    "cardSprite": "weapon.scythe.t3"
-  },
-  "threshingFloor": {
-    "name": "Threshing Floor",
-    "icon": "threshingFloor",
-    "rarity": "epic",
-    "source": "shop",
-    "cost": 46,
-    "maxStacks": 2,
-    "blurb": "What dies in reach takes the next one with it.",
-    "mods": {},
-    "special": "chainOnKill",
-    "chainRadius": 90,
-    "chainDamageMultiplier": 0.4,
-    "cardSprite": "fx.shockwave.4",
-    "_standInArt": true
-  },
-  "cropDuster": {
-    "name": "Crop Duster",
-    "icon": "cropDuster",
-    "rarity": "epic",
-    "source": "shop",
-    "cost": 48,
-    "maxStacks": 2,
-    "blurb": "You trail the stuff that started this.",
-    "mods": {},
-    "special": "trailGas",
-    "dps": 12,
-    "radius": 70,
-    "cardSprite": "item.cropDuster"
-  },
-  "cattleProd": {
-    "name": "Cattle Prod",
-    "icon": "cattleProd",
-    "rarity": "epic",
-    "source": "shop",
-    "cost": 42,
-    "maxStacks": 2,
-    "blurb": "Everything you touch forgets what it was doing.",
-    "mods": {},
-    "special": "touchStun",
-    "stunSeconds": 0.3,
-    "perEnemyCooldown": 8,
-    "cardSprite": "item.cattleProd"
-  },
-  "ironLung": {
-    "name": "Iron Lung",
-    "icon": "ironLung",
-    "rarity": "epic",
-    "source": "shop",
-    "cost": 40,
-    "maxStacks": 2,
-    "blurb": "Gas is just weather now.",
-    "mods": {
-      "maxHp": 20
-    },
-    "special": "gasImmune",
-    "cardSprite": "item.gasMask"
-  },
-  "reapersOwn": {
-    "name": "The Reaper's Own",
-    "icon": "reapersOwn",
-    "rarity": "legendary",
-    "source": "shop",
-    "cost": 68,
-    "maxStacks": 1,
-    "blurb": "Every blade you own cuts clean through. What it kills, it keeps cutting.",
-    "mods": {},
-    "special": "pierceAllAndReswing",
-    "reswingDamageMultiplier": 0.8,
-    "cardSprite": "weapon.scythe.t4"
-  },
-  "saltCircle": {
-    "name": "Salt Circle",
-    "icon": "saltCircle",
-    "rarity": "legendary",
-    "source": "shop",
-    "cost": 62,
-    "maxStacks": 1,
-    "blurb": "Nothing crosses it twice. Whatever tries comes apart at the line.",
-    "mods": {},
-    "special": "saltRing",
-    "radius": 160,
-    "damage": 40,
-    "slowPct": 50,
-    "cardSprite": "node.rockSmall"
-  },
-  "whitacreBull": {
-    "name": "The Whitacre Bull",
-    "icon": "whitacreBull",
-    "rarity": "legendary",
-    "source": "shop",
-    "cost": 74,
-    "maxStacks": 1,
-    "blurb": "He was in the north pasture when it happened. He is on your side now.",
-    "mods": {},
-    "special": "bullMinion",
-    "chargeDamage": 90,
-    "chargeCooldown": 9,
-    "cardSprite": "item.whitacreBull"
-  },
-  "sundayBest": {
-    "name": "Sunday Best",
-    "icon": "sundayBest",
-    "rarity": "legendary",
-    "source": "shop",
-    "cost": 58,
-    "maxStacks": 1,
-    "blurb": "The first thing to reach you each wave gets buried in it.",
-    "mods": {},
-    "special": "firstHitShield",
-    "returnDamage": 200,
-    "cardSprite": "item.sundayBest"
-  },
-  "_atlasNote": "_atlas marks the cardSprite values art/sprites.json cannot resolve today. NEW ATLAS KEY (18): needs an itemIcons entry and, for most, new art — see SPRITE_REQUESTS.md. FRAME PICK (7): the clip is already packed and only needs a named frame exported as an icon. Everything unmarked resolves against sprites.json as it stands.",
-  "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns."
+  "special": "gasImmune",
+  "cardSprite": "item.gasMask"
+ },
+ "reapersOwn": {
+  "name": "The Reaper's Own",
+  "icon": "reapersOwn",
+  "rarity": "legendary",
+  "source": "shop",
+  "cost": 68,
+  "maxStacks": 1,
+  "blurb": "Every blade you own cuts clean through. What it kills, it keeps cutting.",
+  "mods": {},
+  "special": "pierceAllAndReswing",
+  "reswingDamageMultiplier": 0.8,
+  "cardSprite": "weapon.scythe.t4"
+ },
+ "saltCircle": {
+  "name": "Salt Circle",
+  "icon": "saltCircle",
+  "rarity": "legendary",
+  "source": "shop",
+  "cost": 62,
+  "maxStacks": 1,
+  "blurb": "Nothing crosses it twice. Whatever tries comes apart at the line.",
+  "mods": {},
+  "special": "saltRing",
+  "radius": 160,
+  "damage": 40,
+  "slowPct": 50,
+  "cardSprite": "node.rockSmall"
+ },
+ "whitacreBull": {
+  "name": "The Whitacre Bull",
+  "icon": "whitacreBull",
+  "rarity": "legendary",
+  "source": "shop",
+  "cost": 74,
+  "maxStacks": 1,
+  "blurb": "He was in the north pasture when it happened. He is on your side now.",
+  "mods": {},
+  "special": "bullMinion",
+  "chargeDamage": 90,
+  "chargeCooldown": 9,
+  "cardSprite": "item.whitacreBull"
+ },
+ "sundayBest": {
+  "name": "Sunday Best",
+  "icon": "sundayBest",
+  "rarity": "legendary",
+  "source": "shop",
+  "cost": 58,
+  "maxStacks": 1,
+  "blurb": "The first thing to reach you each wave gets buried in it.",
+  "mods": {},
+  "special": "firstHitShield",
+  "returnDamage": 200,
+  "cardSprite": "item.sundayBest"
+ },
+ "_atlasNote": "_atlas marks the cardSprite values art/sprites.json cannot resolve today. NEW ATLAS KEY (18): needs an itemIcons entry and, for most, new art — see SPRITE_REQUESTS.md. FRAME PICK (7): the clip is already packed and only needs a named frame exported as an icon. Everything unmarked resolves against sprites.json as it stands.",
+ "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns."
 }
