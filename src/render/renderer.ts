@@ -476,6 +476,22 @@ export class Renderer {
     return this.atlas.get(`${sheet}.walk.${dir}.${f}`)
   }
 
+  /**
+   * A frame of the death clip, or undefined if this sheet has none.
+   *
+   * `progress` is 0 at the killing blow and 1 when the slot is freed. The clip
+   * is clamped rather than wrapped: the last frame holds if the timing is a
+   * fraction off, where a wrap would snap the corpse back onto its feet.
+   */
+  private deathFrame(sheet: string, facing: number, progress: number): AtlasFrame | undefined {
+    if (!this.atlas) return undefined
+    const len = this.atlas.clipLengths[sheet]?.death
+    if (!len) return undefined
+    const dir = this.atlas.directionFor(sheet, facing)
+    const f = Math.min(len - 1, Math.max(0, Math.floor(progress * len)))
+    return this.atlas.get(`${sheet}.death.${dir}.${f}`)
+  }
+
   private collectSprites(alpha: number): void {
     const w = this.world
     const cam = this.camera
@@ -543,11 +559,27 @@ export class Renderer {
       it.scaleY = eliteScale
 
       if (e.dying > 0) {
-        // No death frames needed: spin and scale to zero over 200ms (§10).
-        const t = e.dying / TUNING.combat.deathSpinSeconds
-        it.scaleX = eliteScale * t
-        it.scaleY = eliteScale * t
-        it.rotation = (1 - t) * 6
+        /*
+           A real death clip where the species has one, the spin where it does
+           not.
+
+           The spin-and-scale-to-zero was always a stand-in for art that did not
+           exist (§10 step 4). The generated animals have nine death frames per
+           direction now, so they play them: the clip runs ONCE, forward, over
+           the enemy's own `deathSeconds` — never looping, because a corpse that
+           loops back to standing is worse than no animation at all.
+        */
+        const total = (ENEMIES[e.typeId] as { deathSeconds?: number } | undefined)?.deathSeconds
+          ?? TUNING.combat.deathSpinSeconds
+        const t = e.dying / total
+        const dead = this.deathFrame(e.typeId, e.facing, 1 - t)
+        if (dead) {
+          it.frame = dead
+        } else {
+          it.scaleX = eliteScale * t
+          it.scaleY = eliteScale * t
+          it.rotation = (1 - t) * 6
+        }
       } else if (!frame) {
         // No art for this species yet — bob and lean stand in for the animation
         // it does not have (§10 step 4).
