@@ -34,7 +34,8 @@
     "tileset": "vite-node tools/pixellab-tileset.ts --",
     "frames": "vite-node tools/pixellab-frames.ts --",
     "objman": "vite-node tools/object-manifest.ts --",
-    "contact": "vite-node tools/atlas-contact.ts --"
+    "contact": "vite-node tools/atlas-contact.ts --",
+    "scale": "vite-node tools/scale-check.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
