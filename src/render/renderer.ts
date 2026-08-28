@@ -517,6 +517,23 @@ export class Renderer {
   }
 
   /**
+   * A frame of the attack clip, or undefined if this sheet has none.
+   *
+   * Clamped to the last frame rather than wrapped, for the same reason the
+   * death clip is: the world ends the clip on a timer, and a wrap would restart
+   * the lunge for whatever fraction of a frame the two disagree by.
+   */
+  private attackFrame(sheet: string, facing: number, elapsed: number): AtlasFrame | undefined {
+    if (!this.atlas) return undefined
+    const len = this.atlas.clipLengths[sheet]?.attack
+    if (!len) return undefined
+    const dir = this.atlas.directionFor(sheet, facing)
+    const total = TUNING.combat.attackClipSeconds as number
+    const f = Math.min(len - 1, Math.max(0, Math.floor((elapsed / total) * len)))
+    return this.atlas.get(`${sheet}.attack.${dir}.${f}`)
+  }
+
+  /**
    * A frame of the death clip, or undefined if this sheet has none.
    *
    * `progress` is 0 at the killing blow and 1 when the slot is freed. The clip
@@ -579,7 +596,12 @@ export class Renderer {
       if (!it) break
 
       const moving = e.stun <= 0 && e.dying <= 0 && (e.vx !== 0 || e.vy !== 0)
-      const frame = this.humanoidFrame(e.typeId, e.facing, e.travelled, moving)
+      // An attack pose outranks the walk: the wind-up is the thing the player
+      // has to read, and a charging bull that keeps trotting reads as a bug.
+      const frame = (e.attackT > 0 && e.dying <= 0
+        ? this.attackFrame(e.typeId, e.facing, e.attackT)
+        : undefined)
+        ?? this.humanoidFrame(e.typeId, e.facing, e.travelled, moving)
 
       it.x = x
       it.y = y

@@ -433,6 +433,18 @@ export class World {
 
       if (e.flash > 0) e.flash -= dt
       if (e.touchCd > 0) e.touchCd -= dt
+      /*
+         Advance the attack pose, and end it.
+
+         One place, so a behaviour only ever has to say "attack starts now" and
+         never has to know the clip length. It runs ONCE and stops rather than
+         looping: an enemy stuck in a repeating lunge reads as broken, and the
+         walk is the right thing to fall back to.
+      */
+      if (e.attackT > 0) {
+        e.attackT += dt
+        if (e.attackT >= C.attackClipSeconds) e.attackT = 0
+      }
 
       // Hazard effects on movement, applied before integration.
       let slow = 0
@@ -1022,6 +1034,9 @@ export class World {
 
       this.damagePlayer(e.damage * waveScalar(this.spawner.wave))
       e.touchCd = P.contactDamageInterval
+      // The chasers have no attack STATE — they damage by touching. The hit is
+      // the only attack moment they have, so it is what plays the pose.
+      if (e.attackT <= 0) e.attackT = 1e-6
 
       // Barbed Wire reflects onto whatever touched you.
       if (sp.reflect > 0) this.damageEnemy(j, sp.reflect, 'melee', false)
@@ -1521,6 +1536,7 @@ export class World {
     e.touchCd = 0
     e.knockbackImmune = def.knockbackImmune === true
     e.dying = 0
+    e.attackT = 0
     e.hpBuffPct = 0
     e.burnDps = 0
     e.burnLife = 0
