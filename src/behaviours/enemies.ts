@@ -12,6 +12,9 @@ import type { Enemy } from '../sim/entities'
 import { ENEMIES } from '../content'
 import type { World } from '../sim/world'
 
+/** Smallest positive `attackT`: "the attack starts now", not "no attack". */
+const EPSILON = 1e-6
+
 export interface SteerContext {
   world: World
   e: Enemy
@@ -165,6 +168,11 @@ const charge: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
       e.s0 = 1
       e.t0 = 1
       e.facing = Math.atan2(dy, dx)
+      // Start the attack pose on the TELL, which is the moment the player has
+      // to read. Triggered here rather than inferred from `s0` outside, so the
+      // state numbering stays private to this behaviour; the world advances and
+      // ends the clip.
+      e.attackT = EPSILON
     }
   } else if (e.s0 === 1) {
     e.vx = 0

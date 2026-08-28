@@ -45,6 +45,18 @@ export interface Enemy {
   knockbackImmune: boolean
   /** Set on death, counted down by the vfx pass before the slot is freed. */
   dying: number
+  /**
+   * Seconds elapsed in the current attack, 0 when not attacking. Drives the
+   * attack clip.
+   *
+   * A RENDER-FACING flag on purpose. The behaviours encode their own state in
+   * the `t0`/`s0` scratch — `charge` uses `s0` for "0 approach, 1 winding up,
+   * 2 charging, 3 staggered" — and that encoding is private to each behaviour.
+   * A renderer that decoded it would break the moment a behaviour renumbered
+   * its states, silently and only in the art. So the behaviour says "I am
+   * attacking" and the renderer never learns why.
+   */
+  attackT: number
   hpBuffPct: number
   /** Seconds since spawn, for animation phase. Kept out of the t0/s0 scratch
    *  because behaviours own those and would clobber it. */
@@ -90,7 +102,7 @@ export function makeEnemy(): Enemy {
     active: false, typeId: '', x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0,
     kx: 0, ky: 0, hp: 1, maxHp: 1, speed: 0, damage: 0, radius: 10, xp: 1,
     behaviour: 'chase', elite: false, flash: 0, stun: 0, facing: 0,
-    t0: 0, t1: 0, s0: 0, s1: 0, touchCd: 0, knockbackImmune: false,
+    t0: 0, t1: 0, s0: 0, s1: 0, touchCd: 0, knockbackImmune: false, attackT: 0,
     dying: 0, hpBuffPct: 0, anim: 0, travelled: 0,
     burnDps: 0, burnLife: 0, burnAcc: 0, burnGen: 0,
     bleedDps: 0, bleedLife: 0, bleedAcc: 0,

@@ -20,7 +20,8 @@
   "knockbackDecay": 8,
   "hitstopSecondsOnCrit": 0.04,
   "hitFlashSeconds": 0.06,
-  "deathSpinSeconds": 0.2
+  "deathSpinSeconds": 0.2,
+  "attackClipSeconds": 0.6
  },
  "camera": {
   "deadZoneRadius": 40,

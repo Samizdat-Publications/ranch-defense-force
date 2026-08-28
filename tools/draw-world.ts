@@ -45,6 +45,8 @@ const PIXELS_PER_WALK_FRAME = 11
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile and FX clips are authored at 15fps. */
 const CLIP_FPS = 15
+/** Matches `tuning.combat.attackClipSeconds`, which the renderer reads. */
+const ATTACK_SECONDS = ((TUNING as unknown as { combat?: { attackClipSeconds?: number } }).combat?.attackClipSeconds) ?? 0.6
 
 export interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
 interface AtlasJson {
@@ -303,6 +305,16 @@ export class WorldPainter {
     return s > 0 ? 0 : 1
   }
 
+  /** One clip frame by progress 0..1, clamped. Mirrors the renderer. */
+  private clipFrame(sheet: string, facing: number, clip: string, progress: number): Frame | undefined {
+    const len = clipLengths[sheet]?.[clip]
+    if (!len) return undefined
+    const dirs = atlas.dirSets?.[sheet] ?? atlas.rig.directions
+    const dir = dirs[this.directionIndex(facing, dirs.length)] ?? dirs[0] ?? 'down'
+    const f = Math.min(len - 1, Math.max(0, Math.floor(progress * len)))
+    return frames[`${sheet}.${clip}.${dir}.${f}`]
+  }
+
   private sheetFrame(sheet: string, facing: number, travelled: number, moving: boolean): Frame | undefined {
     const dirs = atlas.dirSets?.[sheet] ?? atlas.rig.directions
     const dir = dirs[this.directionIndex(facing, dirs.length)] ?? dirs[0] ?? 'down'
@@ -430,7 +442,10 @@ export class WorldPainter {
     for (let i = 0; i < world.enemies.live; i++) {
       const e = world.enemies.items[i]
       const moving = e.stun <= 0 && e.dying <= 0 && (e.vx !== 0 || e.vy !== 0)
-      const f = this.sheetFrame(e.typeId, e.facing, e.travelled, moving)
+      const f = (e.attackT > 0 && e.dying <= 0
+        ? this.clipFrame(e.typeId, e.facing, 'attack', e.attackT / ATTACK_SECONDS)
+        : undefined)
+        ?? this.sheetFrame(e.typeId, e.facing, e.travelled, moving)
       if (f) drawList.push({ y: e.y, x: e.x, f })
     }
     {
