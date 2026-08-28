@@ -1,6 +1,6 @@
 {
  "_note": "What to generate next, in priority order. `npm run pixellab -- --list` prices a run without spending anything; a run generates every subject that has no sheet yet. Descriptions are THE SUBJECT ONLY — the style anchor carries palette, outline weight, shading and colour count, and a long style suffix actively fights it.",
- "_budget": "Pro tools cost 20 generations each against 2,000/month. Check the live figure with get_balance before a batch rather than trusting this line. THE CONCURRENCY LIMIT IS 8 JOBS, not a time window: fire eight, they finish in about nine minutes, fire eight more. There is no cooldown to wait out.",
+ "_budget": "THE SUBSCRIPTION IS BEING CANCELLED. Tier 2 (Pixel Artisan), cap 4,710 generations/month, 10 concurrent jobs, 512px max. Session 13 opened at 2,096 remaining and spent about 1,760. Check the live figure with GET /v2/balance -> subscription.generations; do not trust this line. MEASURED COSTS: animate_object(mode=v3) is 1 PER DIRECTION (8 for a full ring, the best value on the price list); create-1-direction-object and create_image_pro are 20; create_8_direction_object 20; create_character(pro) 20; the utilities (unzoom, reduce colors, pixel art correction, remove background) are free. SIZE DECIDES CANDIDATE COUNT AND THE PRICE DOES NOT CHANGE: 32px returns 64 candidates, 64px returns 16, 96-128px returns 4, all for the same 20. Generate small and draw at an integer zoom unless the subject needs the pixels.",
  "_fieldRule": "Anything that reaches the game FIELD must end up 32x32; generate larger and use PixelLab's Unzoom, or generate at 32 directly. Card icons are exempt and 64px is better — a card window zooms by integers and wants the detail.",
  "_next": "For directional field art the pipeline is: generate one side view here, then 'Generate 8 rotations', then 'Animate with text' for the walk. Those are separate tools and are not automated by this script yet.",
  "subjects": [
@@ -595,5 +595,7 @@
    "rdf-hand-anchor": "71960a9f-e8b2-4c4d-92b1-5f19302669e8",
    "a farmhand who has gone wrong. brown dungarees with both shoulder straps on, a dirty straw hat, a grubby cream shirt. grey-green skin, milky white eyes with no pupils, both arms hanging limp and long at his sides, head level. still clearly a farm worker, not a monster — someone the player would recognise as a neighbour. muted earthy palette, soft dark brown outline, symmetrical\n\n": "9bcb41fd-4abc-497b-b0c0-3922d239519e"
   }
- }
+ },
+ "_concurrency": "10 jobs on Tier 2. An animate_object call queues one job PER DIRECTION and so consumes 8 of the 10 by itself — animals animate one at a time, about four minutes each. Map objects batch 8 at a time comfortably.",
+ "_reviewState": "A 1-DIRECTION OBJECT NEVER REACHES status=completed. It parks in `review` holding its candidates in frame_urls until a frame is selected. Anything polling for completed waits forever on work that is already finished and paid for. npm run frames -- <object-id> <name> pulls every candidate plus a contact sheet."
 }
