@@ -288,7 +288,14 @@
    "use": "detail='low detail', shading='flat shading', outline='lineless', text_guidance_scale=15, tile_size 32.",
    "_why": "At 32px 'highly detailed' does not mean more texture, it means more STRUCTURE, and structure on a ground tile is a repeating pattern you can count -- it returned tan paving with a purple grid for 'dry cracked dirt', and grey dungeon cobblestone for 'blighted ash-grey dead earth'. 'selective outline' puts a hard dark rule around every terrain edge, which IS the blockiness being complained about; lineless is the single most important setting. Guidance 15 over the default 8 is what makes it draw the terrain asked for rather than a generic one. Short concrete descriptions beat long evocative ones.",
    "_chaining": "Pass a finished set's `upper` base tile id as the next set's `lower_base_tile_id` and the two share that terrain EXACTLY. All the staged sets hang off one grass (6e1d7fea-bdf8-4bc7-b1ac-5bae783bf694), so grass->soil, grass->ash and grass->water all meet the same field.",
-   "staged": ["dirt_to_grass", "grass_to_soil", "grass_to_ash", "grass_to_water", "dirt_to_gravel", "ash_to_dyinggrass"],
+   "staged": [
+    "dirt_to_grass",
+    "grass_to_soil",
+    "grass_to_ash",
+    "grass_to_water",
+    "dirt_to_gravel",
+    "ash_to_dyinggrass"
+   ],
    "_toWireIt": "The bake draws one sprite per cell; a Wang set means choosing a tile from its FOUR CORNER VALUES. That is a real change in renderer.ts. Slice with each tile's `bounding_box` from the metadata -- the API warns that `wang_N` and `original_position` are NOT sheet positions and using them produces horizontal banding."
   }
  },
@@ -308,5 +315,285 @@
   "horrorNote": "The four infected rings came back only mildly diseased -- the hog reads as a spotted pig and the sheep as an ordinary sheep in grey. They are not frightening. The prompts carried the horror (\"diseased\", \"red eyes\", \"matted\") and the model mostly ignored it in favour of the reference. Getting a genuinely horrific cast is a direction problem, not a throughput one.",
   "animation": "animate_object(mode=\"v3\") costs ONE generation per direction -- eight for a full ring, against 160-320 for mode=\"pro\". Measured, not read: balance went 451 to 443 across one animal. It queues one job per direction, so a single call consumes the whole 8-job concurrency limit and animals have to be animated one at a time, about four minutes each.",
   "download": "\"npm run object -- <object-id> <name>\" pulls the whole object as a zip from /mcp/objects/<id>/download -- rotations and every animation frame in named folders -- and writes _ring.png plus a _walk_<dir>.png strip per direction. The zip is read in-process rather than shelled out: this machine's tar is GNU tar, which does not read zips at all, and whether `unzip` exists varies. Zip's central directory is forty lines to walk and the entries are raw-deflated, which Node's zlib already does for the PNG codec."
+ },
+ "_accountLedger": {
+  "_note": "THE OBJECT IDS ARE THE PERISHABLE ASSET, not the credit balance. A downloaded PNG is ours forever; deriving a NEW state, rotation or animation from a finished object needs the live account, because create_object_state and animate_object take an id that lives on PixelLab servers. Recorded here so a later session can see what was derivable and what it cost. After cancellation these ids are dead and this block is history, not a menu.",
+  "_recoveredOn": "2026-08-28",
+  "_apiNotes": {
+   "balance": "GET /v2/balance -> subscription.generations is the remaining figure.",
+   "listing": "GET /v2/objects, /v2/tilesets, /v2/characters all enumerate the account. limit is capped at 100. There is no /v2/images.",
+   "objectDownload": "GET /mcp/objects/<id>/download returns a ZIP for a multi-direction object and a BARE PNG for a 1-direction one. tools/pixellab-object.ts assumes the zip and dies on the png; 1-direction objects are saved straight to assets/pixellab/env/.",
+   "tilesetRecovery": "GET /v2/tilesets/<id> does NOT return a spritesheet or bounding boxes — only 16 loose base64 tiles. tools/pixellab-tileset.ts composes the sheet and synthesises the boxes. That is the only way to recover a set generated in an earlier session."
+  },
+  "objects": {
+   "env/dead_tree_snapped_96": {
+    "id": "5637d19c-c6dc-4563-b37b-ad4287499fc2",
+    "state": "base",
+    "directions": 1,
+    "size": "96x96"
+   },
+   "env/dying_tree_split_a": {
+    "id": "e29d7386-b52c-46a4-ac73-b918d7a2d58c",
+    "state": "base",
+    "directions": 1,
+    "size": "160x160"
+   },
+   "env/boulder_obsidian_shards": {
+    "id": "ea5d11c2-48d0-40dd-8ec7-359af4507d3a",
+    "state": "base",
+    "directions": 1,
+    "size": "64x64"
+   },
+   "env/boulder_slate_crystal": {
+    "id": "6770d056-894b-489b-a021-14f1d8a60918",
+    "state": "base",
+    "directions": 1,
+    "size": "64x64"
+   },
+   "env/dead_tree_snapped_128": {
+    "id": "472011fd-623f-4de4-97a8-d922138bc6d1",
+    "state": "base",
+    "directions": 1,
+    "size": "128x128"
+   },
+   "env/dead_oak_huge": {
+    "id": "6cbe2f5a-f2c7-41cd-b840-9fbc01fed29e",
+    "state": "base",
+    "directions": 1,
+    "size": "192x192"
+   },
+   "env/boulder_flesh": {
+    "id": "c834e04f-687c-4964-8feb-1025eb336507",
+    "state": "base",
+    "directions": 1,
+    "size": "64x64"
+   },
+   "env/boulder_pale_blue_crystal": {
+    "id": "66ee8202-9d49-4f09-9026-86efaa3305ef",
+    "state": "base",
+    "directions": 1,
+    "size": "64x64"
+   },
+   "env/rock_bonewhite_crystal": {
+    "id": "542f37e8-3ad1-4876-95e6-9dfa7e5a3bea",
+    "state": "base",
+    "directions": 1,
+    "size": "56x56"
+   },
+   "env/stone_rust_ore": {
+    "id": "814342ea-a9bf-43fc-a5fe-01d9b09bf547",
+    "state": "base",
+    "directions": 1,
+    "size": "48x48"
+   },
+   "env/rock_damp_stained": {
+    "id": "529cb400-73dd-4695-9534-91e66753a656",
+    "state": "base",
+    "directions": 1,
+    "size": "56x56"
+   },
+   "env/stone_rust_corrosion": {
+    "id": "e877fb25-5302-4abb-a7ba-7c6bae7cef97",
+    "state": "base",
+    "directions": 1,
+    "size": "48x48"
+   },
+   "env/dying_tree_split_b": {
+    "id": "d1581bad-6127-4a2e-8b9b-da68e827467c",
+    "state": "base",
+    "directions": 1,
+    "size": "160x160"
+   },
+   "env/dead_sapling": {
+    "id": "bb7e613c-c105-4c0a-abec-695e58a18c98",
+    "state": "base",
+    "directions": 1,
+    "size": "128x128"
+   },
+   "env/boulder_yellowgreen_crystal": {
+    "id": "f3883edf-5b87-4d07-941a-617fb069d4b7",
+    "state": "base",
+    "directions": 1,
+    "size": "64x64"
+   },
+   "env/boulder_rot_stained": {
+    "id": "79a0cea0-0044-4817-8e03-5d58b64d4ded",
+    "state": "base",
+    "directions": 1,
+    "size": "64x64"
+   },
+   "env/dead_oak_huge_blighted": {
+    "id": "5d7c5b66-659e-4e12-9c7a-871a7e33edbd",
+    "state": "base",
+    "directions": 1,
+    "size": "192x192"
+   },
+   "object/rooster_big_ring": {
+    "id": "c77c8732-0d67-45a0-a26b-17eaf897c37c",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/infected_rooster_rotten": {
+    "id": "aad2c988-f487-45a3-b0fe-ff14834a11e5",
+    "state": "rotten",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/infected_hen_rotten": {
+    "id": "e629e90c-b0db-4b93-a03d-13aa5df3673a",
+    "state": "rotten",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/barn_dog_68_a": {
+    "id": "e0749792-4436-4f06-8a62-f6a9bc725d62",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/barn_dog_68_b": {
+    "id": "22baed83-f497-456f-b0ff-1acd53ac7d87",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/infected_sheep_rotten": {
+    "id": "00748dd5-e86c-450f-9263-792b626b6c91",
+    "state": "rotten",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/infected_hog_rotten": {
+    "id": "0823371c-069d-4a35-be39-f472742f7740",
+    "state": "rotten",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/barn_dog_cursed2": {
+    "id": "cd182b0a-7ff8-4bbc-833c-627426717b51",
+    "state": "cursed2",
+    "directions": 8,
+    "size": "56x56"
+   },
+   "object/fjord_pony_cursed2": {
+    "id": "738de9fd-927d-4421-bfef-2ff2799009af",
+    "state": "cursed2",
+    "directions": 8,
+    "size": "56x56"
+   },
+   "object/bull_cursed": {
+    "id": "2f2f3690-255c-4ee0-84c0-0a4bd2a0ebf8",
+    "state": "cursed",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/barn_dog_cursed": {
+    "id": "21411c91-713c-484c-acc8-a200f7a077aa",
+    "state": "cursed",
+    "directions": 8,
+    "size": "56x56"
+   },
+   "object/donkey_cursed": {
+    "id": "1c8e3945-b688-49fb-be1c-29c4c5077e22",
+    "state": "cursed",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/draft_mule_cursed": {
+    "id": "b96223a4-a508-4aee-96bf-8bdee07a7f68",
+    "state": "cursed",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/arabian_cursed": {
+    "id": "6dab45d6-9453-41fa-92b1-42898ebb2bcd",
+    "state": "cursed",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/fjord_pony_cursed": {
+    "id": "7016852d-5cb0-4395-931f-178b5b9530e7",
+    "state": "cursed",
+    "directions": 8,
+    "size": "56x56"
+   },
+   "object/infected_hen": {
+    "id": "8bbb2082-e55e-425d-afbc-9de9a66de868",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/infected_sheep": {
+    "id": "2e81de63-4ec8-4414-90de-b7440858c43d",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/infected_rooster": {
+    "id": "21c4472e-d1a5-43aa-9d41-7b3bd524f000",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/infected_hog": {
+    "id": "0bc4260e-9493-4aeb-8a0e-543877f2ae65",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/whitacre_bull": {
+    "id": "718b94aa-1e8f-40e9-98d3-e8181eec5078",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/barn_dog": {
+    "id": "025c6571-6ed7-48fe-b845-26837a500626",
+    "state": "base",
+    "directions": 8,
+    "size": "56x56"
+   },
+   "object/donkey": {
+    "id": "e3f02ec8-3d81-4bdd-818d-f543a0d0d58c",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/draft_mule": {
+    "id": "65adbd84-1808-48d4-96cf-c0356b570698",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/arabian_horse": {
+    "id": "9f984bdc-51fa-443c-9109-f8656fa20f68",
+    "state": "base",
+    "directions": 8,
+    "size": "68x68"
+   },
+   "object/fjord_pony": {
+    "id": "411566a0-8ab3-49cf-acb0-ba77ba441f68",
+    "state": "base",
+    "directions": 8,
+    "size": "56x56"
+   }
+  },
+  "tilesets": 29,
+  "characters": {
+   "rdf-maskedHauler": "8425b0a3-9527-4ea2-be55-50ca81965367",
+   "rdf-maskedSprayer": "e8de8e6a-3077-4116-bec8-cb9df7a9c952",
+   "rdf-bloatedFarmhand": "f6e8c1fb-9970-4cdf-985e-ccf93837f011",
+   "rdf-acidZombie": "371055e3-fa3e-417b-8377-734ab72efabf",
+   "rdf-farmhand-infected": "7418d20d-c4c0-4eb8-b936-af98f6d57979",
+   "rdf-drifter": "4f409b44-e3f4-473c-bbea-64880985291e",
+   "rdf-agronomist": "8607a7c4-eed5-4a58-b966-6f8a72d23661",
+   "rdf-vet": "d134b36e-3f85-4b10-aead-aa5dbd0710fe",
+   "rdf-widow": "e90bf371-db31-47f0-9b96-8536384eae27",
+   "rdf-kid": "e3a297ab-f2d8-4a5a-8f66-113e22d0d0c2",
+   "rdf-hand-anchor-64": "60e8b5d1-5322-482c-b48d-f719a9e09e4c",
+   "rdf-hand-anchor": "71960a9f-e8b2-4c4d-92b1-5f19302669e8",
+   "a farmhand who has gone wrong. brown dungarees with both shoulder straps on, a dirty straw hat, a grubby cream shirt. grey-green skin, milky white eyes with no pupils, both arms hanging limp and long at his sides, head level. still clearly a farm worker, not a monster — someone the player would recognise as a neighbour. muted earthy palette, soft dark brown outline, symmetrical\n\n": "9bcb41fd-4abc-497b-b0c0-3922d239519e"
+  }
  }
 }
