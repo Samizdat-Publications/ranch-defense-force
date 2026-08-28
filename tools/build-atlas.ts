@@ -88,6 +88,29 @@ interface Manifest {
       clips: Record<string, { file: string; frames: number }>
     }>
   }
+  /**
+   * Generated 8-direction ANIMALS, straight out of a PixelLab object download.
+   *
+   * Different shape from `pixellabStrips` on purpose. A character arrives
+   * pre-cut to 32x64 strips; an object arrives as one PNG per frame under
+   * `animations/<slug>/<compass>/frame_NNN.png`, on a square cell whose size
+   * is per-animal (56 for the dog, 68 for the bull) rather than the shared
+   * humanoid grid.
+   *
+   * `slug` is PixelLab's own folder name, which is the animation DESCRIPTION
+   * slugified and truncated — "walking_with_a_heavy_dragging_stagger_head_swingi".
+   * It is per-animal and unguessable, so it is declared here rather than
+   * derived. The game-facing clip name (walk/attack/death) is the key.
+   */
+  pixellabObjects?: {
+    _base: string
+    compassToDirection: Record<string, string>
+    sheets: Record<string, {
+      dir: string
+      cell: number
+      clips: Record<string, { slug: string; frames: number }>
+    }>
+  }
   /** One cell lifted out of a bigger sheet, for art that already exists. */
   gasMaskIcon?: {
     path: string; cellX: number; cellY: number; cellW: number; cellH: number; name: string
@@ -204,6 +227,55 @@ if (manifest.pixellabStrips) {
             // sheet — which is why the renderer needs no special case.
             ox: b.x - (sx + sheet.cellWidth / 2),
             oy: b.y - sheet.cellHeight,
+          })
+        }
+      }
+    }
+  }
+}
+
+// -------------------------------------------------------- pixellab objects
+//
+// The animals. Same frame-key convention as every other sheet
+// (`id.clip.direction.frame`) and the same bottom-centre offset, so the
+// renderer needs no special case for them — only a direction list with eight
+// entries instead of four.
+//
+// Trimmed to content, deliberately: an animal is drawn from a pivot, not from
+// a box, and these frames are mostly transparent margin (a 56px cell holding a
+// dog that never fills it). Trimming is what keeps 2,500 frames affordable.
+if (manifest.pixellabObjects) {
+  const cfg = manifest.pixellabObjects
+  for (const [id, sheet] of Object.entries(cfg.sheets)) {
+    clipLengths[id] ??= {}
+    for (const [clipName, clip] of Object.entries(sheet.clips)) {
+      clipLengths[id][clipName] = clip.frames
+      for (const [compass, dir] of Object.entries(cfg.compassToDirection)) {
+        for (let f = 0; f < clip.frames; f++) {
+          const path = `${cfg._base}${sheet.dir}/animations/${clip.slug}/${compass}/`
+            + `frame_${String(f).padStart(3, '0')}.png`
+          let img: Image
+          try {
+            img = decodePng(readFileSync(path))
+          } catch (e) {
+            errors.push(`${path}: ${(e as Error).message}`)
+            continue
+          }
+          if (img.width !== sheet.cell || img.height !== sheet.cell) {
+            errors.push(`${path}: expected ${sheet.cell}x${sheet.cell}, got ${img.width}x${img.height}.`)
+            continue
+          }
+          const b = contentBounds(img, 0, 0, sheet.cell, sheet.cell)
+          if (b.empty) {
+            errors.push(`${path}: frame is entirely transparent`)
+            continue
+          }
+          pending.push({
+            name: `${id}.${clipName}.${dir}.${f}`,
+            img,
+            sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+            ox: b.x - sheet.cell / 2,
+            oy: b.y - sheet.cell,
           })
         }
       }
@@ -886,7 +958,22 @@ if (existsSync(TILESET_DIR)) {
 // would not pay for itself.
 pending.sort((a, b) => b.sh - a.sh || b.sw - a.sw)
 
-const width = 1024
+/*
+   2048, not 1024, and the reason is shape rather than size.
+
+   The eight-direction animals add ~2,400 frames to ~1,860, and at 1024 wide
+   that packs to 1024x16384 — measured, not estimated. The AREA is fine either
+   way; a 16384 dimension is not. It is past the max texture size a lot of
+   hardware will take, and iOS Safari caps a canvas by area at around the same
+   number, so the tall page is the one that risks failing to allocate on a
+   machine that would happily hold the pixels in a different shape.
+
+   Widening halves the height for the same pixels: 2048x8192, both dimensions
+   inside limits everywhere. Nothing reads the width as a constant — the
+   renderer takes it from atlas.json and every frame carries absolute coords —
+   so this is safe to change again if the atlas keeps growing.
+*/
+const width = 2048
 let x = PAD
 let y = PAD
 let shelfHeight = 0

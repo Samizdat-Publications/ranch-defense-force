@@ -785,5 +785,230 @@
    "portrait.agronomist": "agronomist.png",
    "portrait.drifter": "drifter.png"
   }
+ },
+ "pixellabObjects": {
+  "_note": "Generated 8-direction animals — enemies and the two summons. Frame keys are id.clip.direction.frame, the same convention as every other sheet.",
+  "_generatedBy": "tools/object-manifest.ts — run `npm run objman -- --write` after downloading or regenerating an animal. The clip slugs are PixelLab folder names (the description, slugified and truncated) and must never be typed by hand.",
+  "_base": "assets/pixellab/object/",
+  "compassToDirection": {
+   "south": "down",
+   "south-west": "downLeft",
+   "west": "left",
+   "north-west": "upLeft",
+   "north": "up",
+   "north-east": "upRight",
+   "east": "right",
+   "south-east": "downRight"
+  },
+  "sheets": {
+   "bullCursed": {
+    "dir": "bull_cursed",
+    "cell": 68,
+    "clips": {
+     "death": {
+      "slug": "buckling_at_the_knees_and_collapsing_heavily_onto",
+      "frames": 9
+     },
+     "attack": {
+      "slug": "lowering_its_head_and_charging_forward_horns_firs",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_heavy_dragging_stagger_head_swingi",
+      "frames": 9
+     }
+    }
+   },
+   "barnDogCursed": {
+    "dir": "barn_dog_cursed2",
+    "cell": 56,
+    "clips": {
+     "death": {
+      "slug": "dropping_to_the_ground_and_going_limp",
+      "frames": 9
+     },
+     "attack": {
+      "slug": "lunging_forward_and_snapping_its_jaws",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_low_skulking_prowl_head_hanging_do",
+      "frames": 9
+     }
+    }
+   },
+   "arabianCursed": {
+    "dir": "arabian_cursed",
+    "cell": 68,
+    "clips": {
+     "attack": {
+      "slug": "rearing_up_and_striking_down_with_its_front_hooves",
+      "frames": 9
+     },
+     "death": {
+      "slug": "stumbling_buckling_at_the_front_legs_and_falling",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_stiff_lurching_limp_head_hanging_l",
+      "frames": 9
+     }
+    }
+   },
+   "donkeyCursed": {
+    "dir": "donkey_cursed",
+    "cell": 68,
+    "clips": {
+     "death": {
+      "slug": "folding_at_the_legs_and_slumping_to_the_ground",
+      "frames": 9
+     },
+     "attack": {
+      "slug": "lunging_forward_and_biting",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_stiff_jerky_shamble",
+      "frames": 9
+     }
+    }
+   },
+   "draftMuleCursed": {
+    "dir": "draft_mule_cursed",
+    "cell": 68,
+    "clips": {
+     "death": {
+      "slug": "buckling_and_collapsing_onto_its_side_going_still",
+      "frames": 9
+     },
+     "attack": {
+      "slug": "kicking_out_hard_with_its_hind_legs",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_slow_laboured_plod_head_swinging",
+      "frames": 9
+     }
+    }
+   },
+   "fjordPonyCursed": {
+    "dir": "fjord_pony_cursed2",
+    "cell": 56,
+    "clips": {
+     "attack": {
+      "slug": "rearing_up_and_stamping_down",
+      "frames": 9
+     },
+     "death": {
+      "slug": "stumbling_and_collapsing_onto_its_side_going_stil",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_an_unsteady_lurching_stagger",
+      "frames": 9
+     }
+    }
+   },
+   "infectedHen": {
+    "dir": "infected_hen_rotten",
+    "cell": 68,
+    "clips": {
+     "attack": {
+      "slug": "darting_forward_and_pecking_hard",
+      "frames": 9
+     },
+     "death": {
+      "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_twitching_jerky_scuttle",
+      "frames": 9
+     }
+    }
+   },
+   "infectedRooster": {
+    "dir": "infected_rooster_rotten",
+    "cell": 68,
+    "clips": {
+     "attack": {
+      "slug": "flaring_its_wings_and_lashing_out_with_its_spurs",
+      "frames": 9
+     },
+     "death": {
+      "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_jerky_twitching_strut",
+      "frames": 9
+     }
+    }
+   },
+   "infectedSheep": {
+    "dir": "infected_sheep_rotten",
+    "cell": 68,
+    "clips": {
+     "death": {
+      "slug": "folding_at_the_legs_and_slumping_to_the_ground",
+      "frames": 9
+     },
+     "attack": {
+      "slug": "lowering_its_head_and_ramming_forward",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_slow_bloated_waddle",
+      "frames": 9
+     }
+    }
+   },
+   "infectedHog": {
+    "dir": "infected_hog_rotten",
+    "cell": 68,
+    "clips": {
+     "attack": {
+      "slug": "charging_forward_and_swiping_with_its_tusks",
+      "frames": 9
+     },
+     "death": {
+      "slug": "collapsing_forward_and_rolling_onto_its_side_goin",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_laboured_stagger",
+      "frames": 9
+     }
+    }
+   },
+   "whitacreBull": {
+    "dir": "whitacre_bull",
+    "cell": 68,
+    "clips": {
+     "attack": {
+      "slug": "lowering_its_head_and_charging_forward_horns_firs",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_at_a_steady_pace",
+      "frames": 9
+     }
+    }
+   },
+   "barnDog": {
+    "dir": "barn_dog",
+    "cell": 56,
+    "clips": {
+     "attack": {
+      "slug": "lunging_forward_and_snapping_its_jaws",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_at_a_steady_pace",
+      "frames": 9
+     }
+    }
+   }
+  }
  }
 }

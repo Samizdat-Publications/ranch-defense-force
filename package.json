@@ -32,7 +32,8 @@
     "anim": "vite-node tools/pixellab-anim.ts --",
     "character": "vite-node tools/pixellab-character.ts --",
     "tileset": "vite-node tools/pixellab-tileset.ts --",
-    "frames": "vite-node tools/pixellab-frames.ts --"
+    "frames": "vite-node tools/pixellab-frames.ts --",
+    "objman": "vite-node tools/object-manifest.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
