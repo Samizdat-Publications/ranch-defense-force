@@ -33,7 +33,8 @@
     "character": "vite-node tools/pixellab-character.ts --",
     "tileset": "vite-node tools/pixellab-tileset.ts --",
     "frames": "vite-node tools/pixellab-frames.ts --",
-    "objman": "vite-node tools/object-manifest.ts --"
+    "objman": "vite-node tools/object-manifest.ts --",
+    "contact": "vite-node tools/atlas-contact.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

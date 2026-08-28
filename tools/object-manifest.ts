@@ -33,18 +33,37 @@ import { decodePng } from './png.ts'
 const ROOT = 'assets/pixellab/object'
 const DIRS = ['south', 'south-west', 'west', 'north-west', 'north', 'north-east', 'east', 'south-east']
 
-/** The animals that are enemies or summons. Scenery animals are not packed. */
+/**
+ * Downloaded object directory -> the atlas sheet id it packs under.
+ *
+ * **The id must be the ENEMY TYPE ID for anything replacing an enemy**, because
+ * that is what the frame key is built from. Both renderers ask for
+ * `${e.typeId}.${clip}.${dir}.${frame}` — `src/render/renderer.ts` and, with a
+ * second copy of the same rules, `tools/draw-world.ts`. The `sheet` field in
+ * `src/content/enemies.json` is NOT read by either of them; the `animals` group
+ * in this manifest is likewise keyed by enemy type id, not by species.
+ *
+ * Getting this wrong is silent: the art packs perfectly, the game keeps drawing
+ * the old sprite, and nothing errors. It cost one screenshot to catch.
+ *
+ * Where a generated animal takes an enemy's id, **the LimeZu entry for that id
+ * must be deleted from the `animals` group** — two groups writing one key means
+ * the later pass wins and which one that is depends on file order.
+ */
 const WANTED: Record<string, string> = {
-  bull_cursed: 'bullCursed',
-  barn_dog_cursed2: 'barnDogCursed',
+  // Replacing an enemy: id is the enemy type id.
+  barn_dog_cursed2: 'feralDog',
+  infected_rooster_rotten: 'rooster',
+  infected_hog_rotten: 'sickHog',
+  infected_sheep_rotten: 'blownSheep',
+  bull_cursed: 'prizeBull',
+  // Not yet bound to an enemy or summon; packed under their own names so they
+  // are available without claiming a key anything else draws.
   arabian_cursed: 'arabianCursed',
   donkey_cursed: 'donkeyCursed',
   draft_mule_cursed: 'draftMuleCursed',
   fjord_pony_cursed2: 'fjordPonyCursed',
   infected_hen_rotten: 'infectedHen',
-  infected_rooster_rotten: 'infectedRooster',
-  infected_sheep_rotten: 'infectedSheep',
-  infected_hog_rotten: 'infectedHog',
   whitacre_bull: 'whitacreBull',
   barn_dog: 'barnDog',
 }
