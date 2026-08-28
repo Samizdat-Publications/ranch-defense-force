@@ -62,11 +62,31 @@ const PROJECTILE_FPS = 15
  * is a content decision, and a map descriptor will want to pick its own pair.
  */
 const TERRAIN = (TUNING as unknown as {
-  terrain?: { groundSet?: string; soilSet?: string; soilEdgeCols?: number }
+  terrain?: {
+    groundSet?: string; soilSet?: string; soilEdgeCols?: number
+    blight?: { fromWave: number; groundSet: string }[]
+  }
 }).terrain ?? {}
 const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
 const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
 const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
+/**
+ * Ground that gets worse as the run goes on: pasture giving way to withered
+ * grass, then rot, then ash.
+ *
+ * Content, not code, and bands rather than a blend because a Wang set is a
+ * whole terrain pair — you cannot cross-fade between two of them, you swap and
+ * re-bake. Empty or absent means the ground never changes, which is what every
+ * run did before this.
+ */
+const BLIGHT = (TERRAIN.blight ?? []).slice().sort((a, b) => a.fromWave - b.fromWave)
+
+/** The ground set for a wave: the last band whose `fromWave` has been reached. */
+function groundSetFor(wave: number): string {
+  let set = GROUND_SET
+  for (const b of BLIGHT) if (wave >= b.fromWave) set = b.groundSet
+  return set
+}
 
 interface DrawItem {
   x: number
@@ -128,6 +148,9 @@ export class Renderer {
   private decals: HTMLCanvasElement
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
+  /** Which ground set the baked terrain currently holds, so it re-bakes once
+   *  per band rather than once per frame. */
+  private bakedSet: string = GROUND_SET
 
   /** Melee sweeps and auras, collected during the sprite pass and stroked as
    *  arcs afterwards. Fixed length, reused; never reallocated per frame. */
@@ -190,7 +213,8 @@ export class Renderer {
    * frame — never per-tile draws (§13). Deterministic from the run seed, so a
    * replayed run gets the same field.
    */
-  private bakeTerrain(): void {
+  private bakeTerrain(groundSet: string = GROUND_SET): void {
+    this.bakedSet = groundSet
     const c = document.createElement('canvas')
     c.width = this.world.arenaW
     c.height = this.world.arenaH
@@ -229,7 +253,7 @@ export class Renderer {
     }
 
     // Wang ground if the tilesets are packed; the stamped version below if not.
-    if (this.bakeWangGround(g, cols, rows, tile)) {
+    if (this.bakeWangGround(g, cols, rows, tile, groundSet)) {
       this.paintFence(g, c)
       this.terrain = c
       return
@@ -289,9 +313,17 @@ export class Renderer {
    */
   private bakeWangGround(
     g: CanvasRenderingContext2D, cols: number, rows: number, tile: number,
+    groundSet: string = GROUND_SET,
   ): boolean {
     const atlas = this.atlas
-    if (!atlas || !atlas.get(wangKey(GROUND_SET, 0, 0, 0, 0))) return false
+    // A band naming a set that is not packed falls back rather than failing:
+    // a missing tileset costs the ground, not the game.
+    if (!atlas || !atlas.get(wangKey(groundSet, 0, 0, 0, 0))) {
+      if (groundSet !== GROUND_SET && atlas?.get(wangKey(GROUND_SET, 0, 0, 0, 0))) {
+        return this.bakeWangGround(g, cols, rows, tile, GROUND_SET)
+      }
+      return false
+    }
 
     const img = atlas.image
     // Its own RNG stream: the ground must not move a single later spawn, and
@@ -332,7 +364,7 @@ export class Renderer {
       }
     }
 
-    paint(GROUND_SET, field)
+    paint(groundSet, field)
 
     // The tilled edges the spawner calls `cornTile`. Upper is soil here, so the
     // field is inverted relative to the pass above: 0 everywhere, 1 at the ends.
@@ -368,6 +400,14 @@ export class Renderer {
     const p = w.player
     const ctx = this.ctx
     this.drawCalls = 0
+
+    // The ground degrades with the wave. Re-baking is a full-arena paint, so it
+    // happens only when the band actually changes — three times in a long run,
+    // never per frame. §13's "never per-tile draws" is about the frame loop.
+    if (BLIGHT.length) {
+      const want = groundSetFor(w.spawner.wave)
+      if (want !== this.bakedSet) this.bakeTerrain(want)
+    }
 
     const pxi = p.px + (p.x - p.px) * alpha
     const pyi = p.py + (p.y - p.py) * alpha

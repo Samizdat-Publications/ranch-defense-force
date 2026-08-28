@@ -1,138 +1,153 @@
 {
-  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
-  "player": {
-    "baseMoveSpeed": 160,
-    "basePickupRadius": 70,
-    "baseRadius": 12,
-    "baseCritChancePct": 5,
-    "baseCritDamagePct": 0,
-    "invulnSecondsAfterHit": 0.5,
-    "contactDamageInterval": 0.5
+ "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
+ "player": {
+  "baseMoveSpeed": 160,
+  "basePickupRadius": 70,
+  "baseRadius": 12,
+  "baseCritChancePct": 5,
+  "baseCritDamagePct": 0,
+  "invulnSecondsAfterHit": 0.5,
+  "contactDamageInterval": 0.5
+ },
+ "caps": {
+  "dodgePct": 60,
+  "attackSpeedPct": 300,
+  "damageNumbers": 40
+ },
+ "combat": {
+  "critMultiplierBase": 1.5,
+  "armorConstant": 40,
+  "knockbackDecay": 8,
+  "hitstopSecondsOnCrit": 0.04,
+  "hitFlashSeconds": 0.06,
+  "deathSpinSeconds": 0.2
+ },
+ "camera": {
+  "deadZoneRadius": 40,
+  "lerp": 0.12,
+  "leadDistance": 30,
+  "traumaPlayerHit": 0.4,
+  "traumaBossCharge": 0.7,
+  "traumaDecayPerSecond": 1.2,
+  "maxShakePixels": 18,
+  "targetWorldHeight": 560,
+  "minZoom": 2,
+  "maxZoom": 16,
+  "_zoomNote": "Zoom is derived, not fixed: round(canvasHeight / targetWorldHeight), integer only, clamped. A fixed zoom made screen size and DPI control HOW MUCH WORLD you see - at 1920x1080 dpr 1.5 the view was 810 world px tall, so the farmer was 2% of screen width and every round a speck. 560 lands on ~540 world px on every screen from 1080p to 4K, which is the SAME view a 1080p dpr-1 screen always had: the framing that was already right, now independent of monitor and DPI. It is deliberately NOT tighter - the rounds were made legible by packing bigger art, not by cropping the field, and cropping costs you the warning time to see a horde coming. Small screens bottom out at minZoom and show less; that is the integer-zoom floor, not a target."
+ },
+ "pickups": {
+  "magnetAcceleration": 1400,
+  "magnetInitialSpeed": 60,
+  "collectRadius": 14,
+  "gemLifetimeSeconds": 0
+ },
+ "pools": {
+  "enemies": 800,
+  "projectiles": 1200,
+  "pickups": 1500,
+  "damageNumbers": 64,
+  "particles": 900,
+  "hazards": 64,
+  "props": 120,
+  "effects": 256
+ },
+ "fx": {
+  "_note": "Conformed FX clips (art/sprites.json -> fx). `life` is how long the whole clip plays, in seconds — the renderer divides it by the clip's packed frame count, so retiming an effect is this number and nothing else. Effects are decoration: when the pool is full the sim drops them silently rather than perturbing a seeded run.",
+  "hitSpark": {
+   "life": 0.2,
+   "scale": 0.55
   },
-  "caps": {
-    "dodgePct": 60,
-    "attackSpeedPct": 300,
-    "damageNumbers": 40
+  "critStar": {
+   "life": 0.32,
+   "scale": 0.8
   },
-  "combat": {
-    "critMultiplierBase": 1.5,
-    "armorConstant": 40,
-    "knockbackDecay": 8,
-    "hitstopSecondsOnCrit": 0.04,
-    "hitFlashSeconds": 0.06,
-    "deathSpinSeconds": 0.2
+  "muzzle": {
+   "life": 0.16,
+   "scale": 0.5
   },
-  "camera": {
-    "deadZoneRadius": 40,
-    "lerp": 0.12,
-    "leadDistance": 30,
-    "traumaPlayerHit": 0.4,
-    "traumaBossCharge": 0.7,
-    "traumaDecayPerSecond": 1.2,
-    "maxShakePixels": 18,
-    "targetWorldHeight": 560,
-    "minZoom": 2,
-    "maxZoom": 16,
-    "_zoomNote": "Zoom is derived, not fixed: round(canvasHeight / targetWorldHeight), integer only, clamped. A fixed zoom made screen size and DPI control HOW MUCH WORLD you see - at 1920x1080 dpr 1.5 the view was 810 world px tall, so the farmer was 2% of screen width and every round a speck. 560 lands on ~540 world px on every screen from 1080p to 4K, which is the SAME view a 1080p dpr-1 screen always had: the framing that was already right, now independent of monitor and DPI. It is deliberately NOT tighter - the rounds were made legible by packing bigger art, not by cropping the field, and cropping costs you the warning time to see a horde coming. Small screens bottom out at minZoom and show less; that is the integer-zoom floor, not a target."
+  "slash": {
+   "life": 0.22,
+   "scale": 0.9
   },
-  "pickups": {
-    "magnetAcceleration": 1400,
-    "magnetInitialSpeed": 60,
-    "collectRadius": 14,
-    "gemLifetimeSeconds": 0
+  "explosion": {
+   "life": 0.55,
+   "scale": 1.2
   },
-  "pools": {
-    "enemies": 800,
-    "projectiles": 1200,
-    "pickups": 1500,
-    "damageNumbers": 64,
-    "particles": 900,
-    "hazards": 64,
-    "props": 120,
-    "effects": 256
+  "gas": {
+   "life": 0.9,
+   "scale": 1.1
   },
-  "fx": {
-    "_note": "Conformed FX clips (art/sprites.json -> fx). `life` is how long the whole clip plays, in seconds — the renderer divides it by the clip's packed frame count, so retiming an effect is this number and nothing else. Effects are decoration: when the pool is full the sim drops them silently rather than perturbing a seeded run.",
-    "hitSpark": {
-      "life": 0.2,
-      "scale": 0.55
-    },
-    "critStar": {
-      "life": 0.32,
-      "scale": 0.8
-    },
-    "muzzle": {
-      "life": 0.16,
-      "scale": 0.5
-    },
-    "slash": {
-      "life": 0.22,
-      "scale": 0.9
-    },
-    "explosion": {
-      "life": 0.55,
-      "scale": 1.2
-    },
-    "gas": {
-      "life": 0.9,
-      "scale": 1.1
-    },
-    "dust": {
-      "life": 0.4,
-      "scale": 0.75
-    },
-    "shock": {
-      "life": 0.35,
-      "scale": 1.3
-    },
-    "_rates": "Hit sparks on every hit would be 200 sparks a frame in a late wave and would bury the enemies. `hitSparkChance` is the fraction of non-crit hits that spark; crits always do, because a crit is the thing you want to notice.",
-    "hitSparkChance": 0.35,
-    "muzzleChance": 0.5,
-    "_ring": "The weapon ring drawn around the player. radius is how far the icons sit from the player's centre, scale shrinks the 32px source art to something that reads beside a 32px character, and recoil is how far a weapon kicks back along its aim when it fires.",
-    "weaponRingRadius": 24,
-    "weaponRingScale": 0.45,
-    "weaponRecoilSeconds": 0.12,
-    "weaponRecoilPixels": 6,
-    "_newClips": "Clips from the unTied projectile packs. shockwave replaces the conformed FX-pack ring for ground pulses; arrowImpact and bigImpact are the dedicated impact animations those packs ship, which the FX pack had no equivalent of.",
-    "shockwave": {
-      "life": 0.3,
-      "scale": 1
-    },
-    "arrowImpact": {
-      "life": 0.28,
-      "scale": 0.7
-    },
-    "bigImpact": {
-      "life": 0.34,
-      "scale": 0.8
-    },
-    "_ringScaleNote": "Ring icons are normalised to weaponRingTargetWidth rather than scaled by a flat factor, because the sources differ: a 32px tool icon and a ~20px gun drawn to be held need different multipliers to end up the same size on screen.",
-    "weaponRingTargetWidth": 15,
-    "weaponRingSpreadDegrees": 250,
-    "_weaponRingSpreadNote": "The ARC the weapons fan across, centred on the direction the character faces (down/front). 360 puts them on a perfect circle at even spacing, which reads as an ORBIT — a thing going around him — rather than as gear carried at his sides. Leaving a gap behind the head is most of the difference, and it costs nothing."
+  "dust": {
+   "life": 0.4,
+   "scale": 0.75
   },
-  "arena": {
-    "edgePadding": 24
+  "shock": {
+   "life": 0.35,
+   "scale": 1.3
   },
-  "harvest": {
-    "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
-    "radius": 46,
-    "workingSeconds": 0.18,
-    "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running — sweeping twenty nodes at base rate beats working one — which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
-    "dwellSeconds": 2,
-    "dwellMultiplier": 3,
-    "dwellDecayRate": 2.5
+  "_rates": "Hit sparks on every hit would be 200 sparks a frame in a late wave and would bury the enemies. `hitSparkChance` is the fraction of non-crit hits that spark; crits always do, because a crit is the thing you want to notice.",
+  "hitSparkChance": 0.35,
+  "muzzleChance": 0.5,
+  "_ring": "The weapon ring drawn around the player. radius is how far the icons sit from the player's centre, scale shrinks the 32px source art to something that reads beside a 32px character, and recoil is how far a weapon kicks back along its aim when it fires.",
+  "weaponRingRadius": 24,
+  "weaponRingScale": 0.45,
+  "weaponRecoilSeconds": 0.12,
+  "weaponRecoilPixels": 6,
+  "_newClips": "Clips from the unTied projectile packs. shockwave replaces the conformed FX-pack ring for ground pulses; arrowImpact and bigImpact are the dedicated impact animations those packs ship, which the FX pack had no equivalent of.",
+  "shockwave": {
+   "life": 0.3,
+   "scale": 1
   },
-  "offers": {
-    "_note": "How the draw is composed, as opposed to what is in it.",
-    "weaponOfferWeight": 1.6,
-    "_weaponWeightNote": "Weapons are weighted up against items so merge pressure survives a big item roster. Once weapon slots are full only OWNED weapons can be offered, so a draw is six weapons against forty items; at 22 items that was six against twenty-two. The roster growing from 22 to 40 therefore cut merge opportunities by about a third without anything being rebalanced, and cleared runs stopped reaching tier 4 at all. 1.6 restores the old weapon share. This is the knob to turn when the item count changes again."
+  "arrowImpact": {
+   "life": 0.28,
+   "scale": 0.7
   },
-  "terrain": {
-    "_note": "Which Wang tilesets the ground bakes from. Names match assets/tilesets/<name>.png+json, packed into the atlas as wang.<name>.<NW><NE><SW><SE>. Here rather than in the renderer because choosing a ground is content, and because a map descriptor will eventually want to pick its own pair.",
-    "groundSet": "dirt_to_grass_plain",
-    "soilSet": "grass_to_soil_v2",
-    "soilEdgeCols": 4,
-    "_chosenNote": "dirt_to_grass_plain over dirt_to_grass and _flat. The first carried an obvious repeating motif at 32px that read as wallpaper; _flat replaced it with a regular grid weave, subtler but still a repeat. _plain has none, and the argument for it is not only that: the ground is what two hundred enemies and their bullets are read AGAINST, so a busy floor costs legibility exactly when the screen is fullest. Interest belongs in the props and decals on top of it."
-  }
+  "bigImpact": {
+   "life": 0.34,
+   "scale": 0.8
+  },
+  "_ringScaleNote": "Ring icons are normalised to weaponRingTargetWidth rather than scaled by a flat factor, because the sources differ: a 32px tool icon and a ~20px gun drawn to be held need different multipliers to end up the same size on screen.",
+  "weaponRingTargetWidth": 15,
+  "weaponRingSpreadDegrees": 250,
+  "_weaponRingSpreadNote": "The ARC the weapons fan across, centred on the direction the character faces (down/front). 360 puts them on a perfect circle at even spacing, which reads as an ORBIT — a thing going around him — rather than as gear carried at his sides. Leaving a gap behind the head is most of the difference, and it costs nothing."
+ },
+ "arena": {
+  "edgePadding": 24
+ },
+ "harvest": {
+  "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
+  "radius": 46,
+  "workingSeconds": 0.18,
+  "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running — sweeping twenty nodes at base rate beats working one — which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
+  "dwellSeconds": 2,
+  "dwellMultiplier": 3,
+  "dwellDecayRate": 2.5
+ },
+ "offers": {
+  "_note": "How the draw is composed, as opposed to what is in it.",
+  "weaponOfferWeight": 1.6,
+  "_weaponWeightNote": "Weapons are weighted up against items so merge pressure survives a big item roster. Once weapon slots are full only OWNED weapons can be offered, so a draw is six weapons against forty items; at 22 items that was six against twenty-two. The roster growing from 22 to 40 therefore cut merge opportunities by about a third without anything being rebalanced, and cleared runs stopped reaching tier 4 at all. 1.6 restores the old weapon share. This is the knob to turn when the item count changes again."
+ },
+ "terrain": {
+  "_note": "Which Wang tilesets the ground bakes from. Names match assets/tilesets/<name>.png+json, packed into the atlas as wang.<name>.<NW><NE><SW><SE>. Here rather than in the renderer because choosing a ground is content, and because a map descriptor will eventually want to pick its own pair.",
+  "groundSet": "dirt_to_grass_plain",
+  "soilSet": "grass_to_soil_v2",
+  "soilEdgeCols": 4,
+  "_chosenNote": "dirt_to_grass_plain over dirt_to_grass and _flat. The first carried an obvious repeating motif at 32px that read as wallpaper; _flat replaced it with a regular grid weave, subtler but still a repeat. _plain has none, and the argument for it is not only that: the ground is what two hundred enemies and their bullets are read AGAINST, so a busy floor costs legibility exactly when the screen is fullest. Interest belongs in the props and decals on top of it.",
+  "blight": [
+   {
+    "fromWave": 9,
+    "groundSet": "grass_to_witheredgrass"
+   },
+   {
+    "fromWave": 15,
+    "groundSet": "grass_to_rot"
+   },
+   {
+    "fromWave": 21,
+    "groundSet": "grass_to_coldash"
+   }
+  ],
+  "_blightNote": "The ground gets worse as the run does: pasture until wave 9, then sickly yellow-grey withered grass, then dead grey-green rot, then cold ash for the last stretch. Bands rather than a blend because a Wang set is a whole terrain pair — you swap and re-bake, you cannot cross-fade two of them. These three are from the ten-set family recovered off the account, all chained off one grass, so they agree with each other. Remove the array and the ground never changes, which is what every run did before."
+ }
 }

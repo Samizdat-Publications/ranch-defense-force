@@ -21,9 +21,23 @@ import { wangKey, type Corner } from '../src/render/wang.ts'
 /** Default zoom. The game derives its own; see `zoomFor` in the renderer. */
 export const ZOOM = 2
 const TERRAIN = (TUNING as unknown as {
-  terrain?: { groundSet?: string; soilSet?: string; soilEdgeCols?: number }
+  terrain?: {
+    groundSet?: string; soilSet?: string; soilEdgeCols?: number
+    blight?: { fromWave: number; groundSet: string }[]
+  }
 }).terrain ?? {}
 const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
+/**
+ * The wave-banded ground, matching the renderer. Without this a screenshot of
+ * wave 20 shows a healthy pasture the game never draws — and a screenshot that
+ * disagrees with the game is the thing this file exists to avoid.
+ */
+const BLIGHT = (TERRAIN.blight ?? []).slice().sort((a, b) => a.fromWave - b.fromWave)
+function groundSetFor(wave: number): string {
+  let set = GROUND_SET
+  for (const b of BLIGHT) if (wave >= b.fromWave) set = b.groundSet
+  return set
+}
 const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
 const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
 const PIXELS_PER_WALK_FRAME = 11
@@ -346,7 +360,9 @@ export class WorldPainter {
    * the naming cannot drift even if the field generation does.
    */
   private wangTerrain(world: World): boolean {
-    const probe = frames[wangKey(GROUND_SET, 0, 0, 0, 0)]
+    const ground = frames[wangKey(groundSetFor(world.spawner.wave), 0, 0, 0, 0)]
+      ? groundSetFor(world.spawner.wave) : GROUND_SET
+    const probe = frames[wangKey(ground, 0, 0, 0, 0)]
     if (!probe) return false
 
     const tile = 32
@@ -387,7 +403,7 @@ export class WorldPainter {
     ]
     for (let ty = startTy; ty < endTy; ty++) {
       for (let tx = startTx; tx < endTx; tx++) {
-        const g = frames[wangKey(GROUND_SET, ...corners(field, tx, ty))]
+        const g = frames[wangKey(ground, ...corners(field, tx, ty))]
         if (g) this.drawFrame(g, tx * tile, ty * tile)
         const sc = corners(soil, tx, ty)
         if (sc[0] || sc[1] || sc[2] || sc[3]) {
