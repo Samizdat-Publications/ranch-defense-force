@@ -48,50 +48,15 @@
    "down"
   ],
   "sheets": {
-   "rooster": {
-    "path": "Chickens_and_Roosters_32x32/Rooster_Brown_32x32.png",
-    "rows": 1,
-    "frameWidth": 32,
-    "walkRow": 3,
-    "framesPerDirection": 6
-   },
-   "feralDog": {
-    "path": "Dogs_32x32/Dog_Basenji_Brown_32x32.png",
-    "rows": 2,
-    "frameWidth": 64,
-    "walkRow": 4,
-    "framesPerDirection": 6
-   },
    "duckFlight": {
     "path": "Ducks_32x32/Duck_Brown_32x32.png",
     "rows": 2,
     "frameWidth": 64,
     "walkRow": 2,
     "framesPerDirection": 6
-   },
-   "blownSheep": {
-    "path": "Sheeps_32x32/Sheep_2_White_32x32.png",
-    "rows": 2,
-    "frameWidth": 64,
-    "walkRow": 2,
-    "framesPerDirection": 6
-   },
-   "sickHog": {
-    "path": "Pigs_32x32/Pig_Pink_32x32.png",
-    "rows": 2,
-    "frameWidth": 64,
-    "walkRow": 2,
-    "framesPerDirection": 6
-   },
-   "prizeBull": {
-    "_note": "The wave 12 boss. The cow sheet is NOT shaped like the other animals — 72x12 cells against their 48x8 — and its walk band sits at row 6 on a 96px pitch, not 64. Derived with npm run pitch; rows 2 and 4 look plausible and are not it. Cow_Big_Black is used because §9 wants the Bull palette-shifted to near-black and this variant already is, so the shift costs nothing.",
-    "path": "Cows_32x32/Cow_Big_Black_32x32.png",
-    "rows": 2,
-    "frameWidth": 96,
-    "walkRow": 6,
-    "framesPerDirection": 6
    }
-  }
+  },
+  "_replacedNote": "feralDog, rooster, sickHog, blownSheep and prizeBull were REMOVED, not left alongside: they are generated now and live in pixellabObjects. Both groups write the same frame keys and whichever pass runs later silently wins, which is exactly the bug this rule exists for. duckFlight is still LimeZu — no duck was generated."
  },
  "vehicles": {
   "_note": "The Duster (§9 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch — bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
@@ -801,25 +766,7 @@
    "south-east": "downRight"
   },
   "sheets": {
-   "bullCursed": {
-    "dir": "bull_cursed",
-    "cell": 68,
-    "clips": {
-     "death": {
-      "slug": "buckling_at_the_knees_and_collapsing_heavily_onto",
-      "frames": 9
-     },
-     "attack": {
-      "slug": "lowering_its_head_and_charging_forward_horns_firs",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_a_heavy_dragging_stagger_head_swingi",
-      "frames": 9
-     }
-    }
-   },
-   "barnDogCursed": {
+   "feralDog": {
     "dir": "barn_dog_cursed2",
     "cell": 56,
     "clips": {
@@ -833,6 +780,78 @@
      },
      "walk": {
       "slug": "walking_with_a_low_skulking_prowl_head_hanging_do",
+      "frames": 9
+     }
+    }
+   },
+   "rooster": {
+    "dir": "infected_rooster_rotten",
+    "cell": 68,
+    "clips": {
+     "attack": {
+      "slug": "flaring_its_wings_and_lashing_out_with_its_spurs",
+      "frames": 9
+     },
+     "death": {
+      "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_jerky_twitching_strut",
+      "frames": 9
+     }
+    }
+   },
+   "sickHog": {
+    "dir": "infected_hog_rotten",
+    "cell": 68,
+    "clips": {
+     "attack": {
+      "slug": "charging_forward_and_swiping_with_its_tusks",
+      "frames": 9
+     },
+     "death": {
+      "slug": "collapsing_forward_and_rolling_onto_its_side_goin",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_laboured_stagger",
+      "frames": 9
+     }
+    }
+   },
+   "blownSheep": {
+    "dir": "infected_sheep_rotten",
+    "cell": 68,
+    "clips": {
+     "death": {
+      "slug": "folding_at_the_legs_and_slumping_to_the_ground",
+      "frames": 9
+     },
+     "attack": {
+      "slug": "lowering_its_head_and_ramming_forward",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_slow_bloated_waddle",
+      "frames": 9
+     }
+    }
+   },
+   "prizeBull": {
+    "dir": "bull_cursed",
+    "cell": 68,
+    "clips": {
+     "death": {
+      "slug": "buckling_at_the_knees_and_collapsing_heavily_onto",
+      "frames": 9
+     },
+     "attack": {
+      "slug": "lowering_its_head_and_charging_forward_horns_firs",
+      "frames": 9
+     },
+     "walk": {
+      "slug": "walking_with_a_heavy_dragging_stagger_head_swingi",
       "frames": 9
      }
     }
@@ -923,60 +942,6 @@
      },
      "walk": {
       "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "infectedRooster": {
-    "dir": "infected_rooster_rotten",
-    "cell": 68,
-    "clips": {
-     "attack": {
-      "slug": "flaring_its_wings_and_lashing_out_with_its_spurs",
-      "frames": 9
-     },
-     "death": {
-      "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_a_jerky_twitching_strut",
-      "frames": 9
-     }
-    }
-   },
-   "infectedSheep": {
-    "dir": "infected_sheep_rotten",
-    "cell": 68,
-    "clips": {
-     "death": {
-      "slug": "folding_at_the_legs_and_slumping_to_the_ground",
-      "frames": 9
-     },
-     "attack": {
-      "slug": "lowering_its_head_and_ramming_forward",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_a_slow_bloated_waddle",
-      "frames": 9
-     }
-    }
-   },
-   "infectedHog": {
-    "dir": "infected_hog_rotten",
-    "cell": 68,
-    "clips": {
-     "attack": {
-      "slug": "charging_forward_and_swiping_with_its_tusks",
-      "frames": 9
-     },
-     "death": {
-      "slug": "collapsing_forward_and_rolling_onto_its_side_goin",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_a_laboured_stagger",
       "frames": 9
      }
     }

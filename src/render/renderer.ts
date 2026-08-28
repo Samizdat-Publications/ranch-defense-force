@@ -16,7 +16,7 @@
 import type { World } from '../sim/world'
 import { Camera } from './camera'
 import { ENEMIES, NODES, TUNING, WEAPONS, projectileScaleFor } from '../content'
-import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
+import { Atlas, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 import { wangKey, type Corner } from './wang'
 
@@ -463,7 +463,10 @@ export class Renderer {
     sheet: string, facing: number, travelled: number, moving: boolean,
   ): AtlasFrame | undefined {
     if (!this.atlas) return undefined
-    const dir = this.atlas.directions[directionIndex(facing)] ?? 'down'
+    // The sheet's OWN direction list: four for the humanoid rig, eight for the
+    // generated animals. Asking the atlas keeps the two rigs from having to
+    // know about each other here.
+    const dir = this.atlas.directionFor(sheet, facing)
     if (!moving) return this.atlas.get(`${sheet}.idle.${dir}.0`)
     const len = this.atlas.clipLength(sheet, 'walk')
     // Heavy things read as heavy by moving at a lower frame rate, not by

@@ -35,6 +35,8 @@ const CLIP_FPS = 15
 export interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
 interface AtlasJson {
   rig: { directions: string[] }
+  /** Per-sheet direction lists; a sheet absent from here is on the rig's four. */
+  dirSets?: Record<string, string[]>
   clipLengths: Record<string, Record<string, number>>
   frames: Record<string, Frame>
 }
@@ -271,7 +273,16 @@ export class WorldPainter {
     }
   }
 
-  private directionIndex(facing: number): number {
+  /*
+     Kept byte-for-byte in step with `directionIndex` in src/core/atlas.ts.
+     This file deliberately holds a second copy of the renderer's
+     frame-selection rules (see the header), and the cost of that is that a
+     change there is a change here — a screenshot that picks directions by a
+     different rule than the game is worse than no screenshot, because it looks
+     authoritative.
+  */
+  private directionIndex(facing: number, count: number): number {
+    if (count === 8) return ((Math.round(facing / (Math.PI / 4)) % 8) + 8) % 8
     const c = Math.cos(facing)
     const s = Math.sin(facing)
     if (Math.abs(c) >= Math.abs(s) * 0.85) return c < 0 ? 2 : 3
@@ -279,7 +290,8 @@ export class WorldPainter {
   }
 
   private sheetFrame(sheet: string, facing: number, travelled: number, moving: boolean): Frame | undefined {
-    const dir = atlas.rig.directions[this.directionIndex(facing)] ?? 'down'
+    const dirs = atlas.dirSets?.[sheet] ?? atlas.rig.directions
+    const dir = dirs[this.directionIndex(facing, dirs.length)] ?? dirs[0] ?? 'down'
     if (!moving) return frames[`${sheet}.idle.${dir}.0`]
     const len = clipLengths[sheet]?.walk ?? 6
     const f = Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len

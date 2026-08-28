@@ -234,6 +234,22 @@ if (manifest.pixellabStrips) {
   }
 }
 
+/*
+   The eight-direction order, and it is ANGLE-SORTED on purpose.
+
+   The humanoid rig's `directions` is `[down, up, left, right]`, which is not
+   sorted by angle — `directionIndex` picks it apart with a comparison that also
+   biases toward the side views. That does not generalise to eight, so the
+   eight-direction sheets declare their own list in this order and the renderer
+   indexes it with a single `round(facing / 45deg)`.
+
+   Screen space, +y down: 0 is east/right and it turns clockwise.
+*/
+const EIGHT_ORDER = ['right', 'downRight', 'down', 'downLeft', 'left', 'upLeft', 'up', 'upRight']
+
+/** Per-sheet direction lists, for sheets not on the humanoid rig. */
+const dirSets: Record<string, string[]> = {}
+
 // -------------------------------------------------------- pixellab objects
 //
 // The animals. Same frame-key convention as every other sheet
@@ -246,8 +262,48 @@ if (manifest.pixellabStrips) {
 // dog that never fills it). Trimming is what keeps 2,500 frames affordable.
 if (manifest.pixellabObjects) {
   const cfg = manifest.pixellabObjects
+  const named = new Set(Object.values(cfg.compassToDirection))
+  const missing = EIGHT_ORDER.filter((d) => !named.has(d))
+  if (missing.length) {
+    errors.push(`pixellabObjects.compassToDirection is missing ${missing.join(', ')} — the renderer indexes the eight-direction list by angle and cannot tolerate a gap.`)
+  }
   for (const [id, sheet] of Object.entries(cfg.sheets)) {
+    dirSets[id] = EIGHT_ORDER
     clipLengths[id] ??= {}
+
+    /*
+       An IDLE clip, from `rotations/`.
+
+       PixelLab generates an object as eight rotations and then animates them,
+       so the rotation IS the standing pose — the same drawing every clip starts
+       from. Packing it as `idle` costs eight frames an animal and makes these
+       sheets shaped like every other sheet in the atlas, which matters well
+       beyond the renderer: `items.json` and `weapons.json` both address card
+       art as `<sheet>.idle.down.0`, and a sheet with no idle silently loses its
+       card. The alternative — teaching every reader to fall back to walk frame
+       0 — is the same fix spread over more places.
+    */
+    clipLengths[id].idle = 1
+    for (const [compass, dir] of Object.entries(cfg.compassToDirection)) {
+      const path = `${cfg._base}${sheet.dir}/rotations/${compass}.png`
+      let img: Image
+      try {
+        img = decodePng(readFileSync(path))
+      } catch (e) {
+        errors.push(`${path}: ${(e as Error).message}`)
+        continue
+      }
+      const b = contentBounds(img, 0, 0, sheet.cell, sheet.cell)
+      if (b.empty) { errors.push(`${path}: rotation is entirely transparent`); continue }
+      pending.push({
+        name: `${id}.idle.${dir}.0`,
+        img,
+        sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        ox: b.x - sheet.cell / 2,
+        oy: b.y - sheet.cell,
+      })
+    }
+
     for (const [clipName, clip] of Object.entries(sheet.clips)) {
       clipLengths[id][clipName] = clip.frames
       for (const [compass, dir] of Object.entries(cfg.compassToDirection)) {
@@ -1037,6 +1093,9 @@ writeFileSync(
       width,
       height,
       rig: { directions: rig.directions, clips: rig.clips },
+      // Sheets that are NOT on the humanoid rig. A sheet absent from here uses
+      // the rig's four directions, so every existing sheet is untouched.
+      dirSets,
       clipLengths,
       frames,
     },
