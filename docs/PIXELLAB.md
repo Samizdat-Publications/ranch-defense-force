@@ -30,22 +30,75 @@ are hand-made and cohesive. PixelLab fills the gaps.
 
 ## The subscription
 
+**Being cancelled.** The account is Tier 2 and the plan is not renewing, so
+everything below is a record of what was available, not a menu.
+
 | | |
 |---|---|
 | Service | PixelLab (pixellab.ai) |
-| Tier | Tier 1 · Pixel Apprentice, $12/month |
-| Budget | 2,000 generations/month |
-| Max output | 320×320 |
+| Tier | **Tier 2 · Pixel Artisan** |
+| Budget | **4,710 generations/month** (not 5,000 — the dashboard figure is the one that counts) |
+| Concurrency | **10 jobs** |
+| Max output | 512×512 |
 | Licence | commercial use permitted |
-| API | yes — REST, plus an MCP server for Claude Code |
+| API | REST at `api.pixellab.ai/v2`, plus an MCP server |
 
-Pro tools cost **20 generations** per run, ordinary tools cost **1**. So the real
-monthly budget is about **100 Pro images** or 2,000 cheap ones. We have been
-spending Pro on everything that matters; at 24 icons a month that is a quarter of
-the budget.
+An earlier version of this file said Tier 1, 2,000/month, 8 concurrent and 320px
+max. That was true once and had been wrong for several sessions.
 
-The API key lives in the user's PixelLab account page. It is **not** in this repo
-and must not be committed.
+### What dies with the account, and what does not
+
+This is the distinction that matters when a subscription is ending, and it is
+not the credit balance.
+
+**Yours forever:** every PNG that has been downloaded. Generated art is
+commercially licensed and committed to this repo.
+
+**Dies:** the **object, character and tileset ids**. `create_object_state`,
+`animate_object` and `create_8_direction_object`-with-a-`style_object_id` all
+take an id that lives on PixelLab's servers. Once the account lapses you cannot
+derive a new state, rotation or animation from work already generated — you
+would have to start the animal again from nothing.
+
+So the last thing to do on a live account is not to generate new subjects. It is
+to take every derivation you will ever want off the ids you already have, and to
+download everything. `art/pixellab-queue.json` → `_accountLedger` records every
+id the account held on 2026-08-28.
+
+### Measured costs
+
+Read the balance either side of a call rather than trusting a table; these were
+measured that way.
+
+| Tool | Cost |
+|---|---|
+| `POST /objects/{id}/animations` (`mode: v3`) | **1 per direction** — 8 for a full ring |
+| `create_image_pro` @64px | 20, and it returns **16** candidates |
+| `create_8_direction_object` | 20 |
+| `POST /create-1-direction-object` @64px | cheap; returns 16 candidate frames |
+| `create_character` (`mode: pro`) | 20 |
+| Utilities — unzoom, reduce colors, pixel art correction, remove background | free |
+
+`animate_object` at one generation a direction is the best value on the price
+list by an order of magnitude, and a static ring that never gets a walk is the
+most wasteful thing on the account.
+
+### Enumerating and recovering an account
+
+Not documented by PixelLab and worth keeping:
+
+- `GET /v2/balance` — `subscription.generations` is what remains.
+- `GET /v2/objects`, `/v2/characters`, `/v2/tilesets` list everything. `limit`
+  is capped at 100. **There is no `/v2/images`**, so loose Pro icon candidates
+  are only recoverable from a job id you wrote down.
+- `GET /mcp/objects/<id>/download` returns a **zip** for a multi-direction
+  object and a **bare PNG** for a 1-direction one. `tools/pixellab-object.ts`
+  assumes the zip and dies on the PNG with "not a zip"; 1-direction objects go
+  to `assets/pixellab/env/` instead.
+- `GET /v2/tilesets/<id>` returns **16 loose base64 tiles and no spritesheet and
+  no bounding boxes** — unlike the create response, which carries both. So a set
+  generated in an earlier session cannot be recovered by hand.
+  `tools/pixellab-tileset.ts` composes the sheet and synthesises the boxes.
 
 ## What the tools actually do
 
