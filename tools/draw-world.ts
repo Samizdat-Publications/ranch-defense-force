@@ -305,6 +305,45 @@ export class WorldPainter {
     return s > 0 ? 0 : 1
   }
 
+  /**
+   * The renderer's baked scenery — flat decals and the boundary fence —
+   * restated so a headless shot shows them. Neither was drawn here before, so
+   * every screenshot so far has been of a field with no fence in it.
+   *
+   * Same RNG seeds as the renderer, kept apart from the ground's stream for the
+   * same reason it keeps them apart: scattering scenery must not move a tile.
+   */
+  private decals(world: World): void {
+    const kinds = ['decal.tireRuts', 'decal.scorch', 'decal.mud', 'decal.ash']
+      .map((k) => frames[k]).filter((f): f is Frame => !!f)
+    if (!kinds.length) return
+    const rng = new Rng(world.seed ^ 0x0dec_a15)
+    const count = Math.round((world.arenaW * world.arenaH) / 240_000)
+    for (let i = 0; i < count; i++) {
+      const f = kinds[rng.int(0, kinds.length - 1)]
+      const x = rng.int(60, world.arenaW - 60)
+      const y = rng.int(60, world.arenaH - 60)
+      this.drawFrame(f, x, y)
+    }
+  }
+
+  private fence(world: World): void {
+    const post = frames['prop.fencePost']
+    const rail = frames['prop.fenceRail']
+    if (!post) return
+    const rng = new Rng(world.seed ^ 0x5eed_fe4c)
+    const PITCH = 56
+    const pick = (): Frame => (rail && rng.next() < 0.25 ? rail : post)
+    for (let x = PITCH / 2; x < world.arenaW; x += PITCH) {
+      this.drawFrame(pick(), x, 10)
+      this.drawFrame(pick(), x, world.arenaH - 2)
+    }
+    for (let y = PITCH; y < world.arenaH - PITCH / 2; y += PITCH) {
+      this.drawFrame(pick(), 12, y)
+      this.drawFrame(pick(), world.arenaW - 12, y)
+    }
+  }
+
   /** One clip frame by progress 0..1, clamped. Mirrors the renderer. */
   private clipFrame(sheet: string, facing: number, clip: string, progress: number): Frame | undefined {
     const len = clipLengths[sheet]?.[clip]
@@ -326,7 +365,7 @@ export class WorldPainter {
 
   private terrain(world: World): void {
     fillRect(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0x479757)
-    if (this.wangTerrain(world)) return
+    if (this.wangTerrain(world)) { this.decals(world); this.fence(world); return }
 
     const grass = frames['terrain.grass']
     const dirt = frames['terrain.dirt']
@@ -429,8 +468,20 @@ export class WorldPainter {
 
   /** Paint everything, camera centred on the player. */
   paint(world: World): void {
-    this.camX = Math.round(world.player.x - this.viewW / 2)
-    this.camY = Math.round(world.player.y - this.viewH / 2)
+    /*
+       Centred on the player and CLAMPED TO THE ARENA, matching
+       `Camera.clamp` in src/render/camera.ts.
+
+       Without the clamp a shot near an edge shows ground beyond the fence that
+       the game never lets you see — the arena canvas simply ends and the base
+       fill shows through as a flat green band. That is precisely the class of
+       divergence this file exists to avoid: a screenshot that looks
+       authoritative and is of a view the player cannot have.
+    */
+    const maxX = Math.max(0, world.arenaW - this.viewW)
+    const maxY = Math.max(0, world.arenaH - this.viewH)
+    this.camX = Math.round(Math.min(maxX, Math.max(0, world.player.x - this.viewW / 2)))
+    this.camY = Math.round(Math.min(maxY, Math.max(0, world.player.y - this.viewH / 2)))
     this.terrain(world)
 
     const drawList: { y: number; f: Frame; x: number }[] = []

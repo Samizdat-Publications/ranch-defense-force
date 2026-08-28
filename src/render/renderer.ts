@@ -254,6 +254,7 @@ export class Renderer {
 
     // Wang ground if the tilesets are packed; the stamped version below if not.
     if (this.bakeWangGround(g, cols, rows, tile, groundSet)) {
+      this.paintDecals(g, c)
       this.paintFence(g, c)
       this.terrain = c
       return
@@ -287,10 +288,80 @@ export class Renderer {
   }
 
   /** Fence line, drawn flat until the fence tiles are in the atlas. */
+  /**
+   * The arena boundary, as real fence rather than a stroked rectangle.
+   *
+   * It was `strokeRect` with a brown line, which read as a border and not as a
+   * fence. Posts are stamped at a fixed pitch with the broken rail spliced in
+   * on a roll, so the line reads as a fence somebody stopped maintaining.
+   *
+   * Baked into the terrain, which is right HERE and would not be right in the
+   * field: a baked sprite has no y-sort, so the player draws over it. On the
+   * boundary that never shows, because the player is always inside it.
+   *
+   * Falls back to the stroked line if the art is not packed — the boundary has
+   * to be legible even with no atlas.
+   */
   private paintFence(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
-    g.strokeStyle = '#6b5027'
-    g.lineWidth = 6
-    g.strokeRect(3, 3, c.width - 6, c.height - 6)
+    const post = this.atlas?.get('prop.fencePost')
+    const rail = this.atlas?.get('prop.fenceRail')
+    const img = this.atlas?.image
+    if (!post || !img) {
+      g.strokeStyle = '#6b5027'
+      g.lineWidth = 6
+      g.strokeRect(3, 3, c.width - 6, c.height - 6)
+      return
+    }
+
+    // Its own stream, seeded apart from the ground's, so adding fence variety
+    // cannot shift which tile the ground drew.
+    const rng = new Rng(this.world.seed ^ 0x5eed_fe4c)
+    const PITCH = 56
+    const put = (f: AtlasFrame, x: number, y: number): void => {
+      g.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy), f.w, f.h)
+    }
+    const pick = (): AtlasFrame => (rail && rng.next() < 0.25 ? rail : post)
+
+    for (let x = PITCH / 2; x < c.width; x += PITCH) {
+      put(pick(), x, 10)
+      put(pick(), x, c.height - 2)
+    }
+    for (let y = PITCH; y < c.height - PITCH / 2; y += PITCH) {
+      put(pick(), 12, y)
+      put(pick(), c.width - 12, y)
+    }
+  }
+
+  /**
+   * Flat scenery scattered on the ground: ruts, scorch, mud, ash.
+   *
+   * Baked, and only FLAT things are, which is the whole rule. A decal lies on
+   * the ground and can never be walked behind, so it loses nothing by having no
+   * y-sort. A hay bale or a trough would — the player would draw on top of it —
+   * and those need a sorted layer that does not exist yet.
+   *
+   * Density is deliberately low. ART_STYLE is explicit that the ground should
+   * be BORING because two hundred enemies and their bullets are read against
+   * it; this is meant to break up the field, not to decorate it.
+   */
+  private paintDecals(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
+    const img = this.atlas?.image
+    if (!img) return
+    const kinds = ['decal.tireRuts', 'decal.scorch', 'decal.mud', 'decal.ash']
+      .map((k) => this.atlas?.get(k))
+      .filter((f): f is AtlasFrame => !!f)
+    if (!kinds.length) return
+
+    const rng = new Rng(this.world.seed ^ 0x0dec_a15)
+    const count = Math.round((c.width * c.height) / 240_000)
+    for (let i = 0; i < count; i++) {
+      const f = kinds[rng.int(0, kinds.length - 1)]
+      const x = rng.int(60, c.width - 60)
+      const y = rng.int(60, c.height - 60)
+      g.globalAlpha = 0.75
+      g.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy), f.w, f.h)
+    }
+    g.globalAlpha = 1
   }
 
   /**
