@@ -35,7 +35,8 @@
     "frames": "vite-node tools/pixellab-frames.ts --",
     "objman": "vite-node tools/object-manifest.ts --",
     "contact": "vite-node tools/atlas-contact.ts --",
-    "scale": "vite-node tools/scale-check.ts --"
+    "scale": "vite-node tools/scale-check.ts --",
+    "pick": "vite-node tools/pick-props.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
