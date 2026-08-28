@@ -30,7 +30,8 @@
     "object": "vite-node tools/pixellab-object.ts --",
     "animal": "vite-node tools/animal-check.ts --",
     "anim": "vite-node tools/pixellab-anim.ts --",
-    "character": "vite-node tools/pixellab-character.ts --"
+    "character": "vite-node tools/pixellab-character.ts --",
+    "tileset": "vite-node tools/pixellab-tileset.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
