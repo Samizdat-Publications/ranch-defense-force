@@ -104,26 +104,27 @@
   }
  },
  "nodes": {
-  "_note": "Harvestable resource nodes. Rocks are mined with the pickaxe, trees felled with the axe — see src/content/nodes.json for their HP and payouts. The pack ships rocks with ore already embedded (bronze, silver, gold, blue and red stone), which is exactly the 'minerals inside the rock' read Deep Rock Galactic: Survivor is built on, so the ore tier is visible before you swing at it.",
-  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Props_and_Buildings_32x32/",
+  "_note": "Harvest rocks and ore, GENERATED. Replaces the LimeZu pack rocks, whose keys these are — the enemy of a swap like this is leaving both groups writing the same frame keys, so the LimeZu entries are gone rather than commented out. The ore read the pack was chosen for (\"minerals inside the rock\", visible before you swing) is preserved and made sicker: rust, bone-white crystal, diseased yellow-green, cold blue, and raw red flesh swelling out of a crack.",
+  "_sizeNote": "Content trims to 41x29 up to 57x54 against LimeZu 32x32 cells, so these read chunkier. Deliberate — the node radius is 13 and the sprite has always overhung its hitbox. Not scaled: integer zoom only.",
+  "_base": "assets/pixellab/env/",
   "files": {
-   "node.rockSmall": "Rock_Small_32x32.png",
-   "node.rockMedium": "Rock_Medium_32x32.png",
-   "node.rockBig": "Rock_Big_32x32.png",
-   "node.oreBronze": "Rock_Small_Bronze_Stone_32x32.png",
-   "node.oreSilver": "Rock_Medium_Silver_Stone_32x32.png",
-   "node.oreGold": "Rock_Medium_Gold_Stone_32x32.png",
-   "node.oreBlue": "Rock_Big_Blue_Stone_32x32.png",
-   "node.oreRed": "Rock_Big_REd_Stone_32x32.png"
+   "node.rockSmall": "stone_rust_corrosion.png",
+   "node.rockMedium": "rock_damp_stained.png",
+   "node.rockBig": "boulder_rot_stained.png",
+   "node.oreBronze": "stone_rust_ore.png",
+   "node.oreSilver": "rock_bonewhite_crystal.png",
+   "node.oreGold": "boulder_yellowgreen_crystal.png",
+   "node.oreBlue": "boulder_pale_blue_crystal.png",
+   "node.oreRed": "boulder_flesh.png"
   }
  },
  "nodeTrees": {
-  "_note": "Single-tile trees only. The Trees directory is mostly *_Modular_Left/Middle/Right pieces meant to be tiled into a treeline; those are multi-tile and would fail the one-tile assertion. The standalone Tree_* files are what a fellable tree needs.",
-  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Trees_32x32/",
+  "_note": "Fellable trees, GENERATED. Replaces the LimeZu Tree_* files under the same keys. The three smallest of the recovered trees, because a harvest node is something you walk up to: dead_tree_snapped_128, dying_tree_split_b and the two huge oaks (171x165 and 184x171) are landmark scenery, not nodes, and are left unpacked for that.",
+  "_base": "assets/pixellab/env/",
   "files": {
-   "node.treeSmall": "Tree_Birch_Green_Small_32x32.png",
-   "node.treeMedium": "Tree_Oak_Brown_Medium_32x32.png",
-   "node.treeBig": "Tree_Oak_Blue_Green_Big_32x32.png"
+   "node.treeSmall": "dead_sapling.png",
+   "node.treeMedium": "dead_tree_snapped_96.png",
+   "node.treeBig": "dying_tree_split_a.png"
   }
  },
  "weapons": {
