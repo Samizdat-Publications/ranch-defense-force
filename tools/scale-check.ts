@@ -21,6 +21,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { decodePng, encodePng, blankImage, blit, type Image } from './png.ts'
+import enemiesRaw from '../src/content/enemies.json'
 
 interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
 const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
@@ -31,6 +32,20 @@ const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
 const img = decodePng(readFileSync('public/atlas.png'))
 
 const ZOOM = 2
+
+/*
+   Each enemy's own `drawScale`, because leaving it out makes this tool LIE.
+
+   Bosses are drawn at an integer multiple — prizeBull is 2 — and a comparison
+   that ignores that shows a boss at the size of its trash mobs. The first
+   version of this file did exactly that and produced the conclusion "the bull
+   is about player height", which is wrong by a factor of two in play.
+
+   Integer only, and rounded here the same way the renderer rounds it: a 32px
+   cow at 2.2 is a blurry cow, and the whole screen stops being pixel art.
+*/
+const { _bosses: _unused, ...enemies } = enemiesRaw as unknown as Record<string, { drawScale?: number }>
+const drawScaleOf = (sheet: string): number => Math.round(enemies[sheet]?.drawScale ?? 1)
 const args = process.argv.slice(2).filter((a) => a !== '--')
 const sheets = args.length ? args : ['hand', 'feralDog', 'rooster', 'sickHog', 'blownSheep', 'prizeBull']
 
@@ -45,8 +60,9 @@ for (const m of missing) console.error(`  no idle/walk down frame for "${m.sheet
 const ok = picked.filter((p) => p.frame) as { sheet: string; frame: Frame }[]
 if (!ok.length) process.exit(1)
 
-const CELL = Math.max(...ok.map((p) => p.frame.w)) * ZOOM + 24
-const H = Math.max(...ok.map((p) => p.frame.h)) * ZOOM + 40
+const scaleOf = (sheet: string): number => ZOOM * drawScaleOf(sheet)
+const CELL = Math.max(...ok.map((p) => p.frame.w * scaleOf(p.sheet))) + 24
+const H = Math.max(...ok.map((p) => p.frame.h * scaleOf(p.sheet))) + 40
 const out: Image = blankImage(CELL * ok.length, H)
 
 // Real ground under them, so the judgement includes the contrast in play.
@@ -67,13 +83,14 @@ if (ground) {
 const BASE = H - 16
 ok.forEach((p, i) => {
   const f = p.frame
+  const z = scaleOf(p.sheet)
   // Nearest-neighbour at an integer zoom, which is the only kind this project
   // allows: a 32px sprite at 2.5x is a blurry 32px sprite.
-  const scaled = blankImage(f.w * ZOOM, f.h * ZOOM)
+  const scaled = blankImage(f.w * z, f.h * z)
   for (let y = 0; y < scaled.height; y++) {
-    const sy = f.y + ((y / ZOOM) | 0)
+    const sy = f.y + ((y / z) | 0)
     for (let x = 0; x < scaled.width; x++) {
-      const s = (sy * img.width + f.x + ((x / ZOOM) | 0)) * 4
+      const s = (sy * img.width + f.x + ((x / z) | 0)) * 4
       const d = (y * scaled.width + x) * 4
       scaled.data[d] = img.data[s]
       scaled.data[d + 1] = img.data[s + 1]
@@ -83,12 +100,12 @@ ok.forEach((p, i) => {
   }
   // ox/oy are the offset from the bottom-centre pivot to the trimmed top-left,
   // so this is the renderer's own placement rather than a guess at it.
-  const px = i * CELL + (CELL >> 1) + f.ox * ZOOM
-  const py = BASE + f.oy * ZOOM
+  const px = i * CELL + (CELL >> 1) + f.ox * z
+  const py = BASE + f.oy * z
   blit(scaled, 0, 0, scaled.width, scaled.height, out, Math.round(px), Math.round(py))
 })
 
 const dest = '/tmp/scale-check.png'
 writeFileSync(dest, encodePng(out))
-console.log(`${ok.map((p) => p.sheet).join('  |  ')}`)
-console.log(`-> ${dest}  ${out.width}x${out.height}, ${ZOOM}x, feet on one baseline`)
+console.log(ok.map((p) => `${p.sheet}${drawScaleOf(p.sheet) > 1 ? ` (drawScale ${drawScaleOf(p.sheet)})` : ''}`).join('  |  '))
+console.log(`-> ${dest}  ${out.width}x${out.height}, camera ${ZOOM}x plus each enemy's drawScale, feet on one baseline`)
