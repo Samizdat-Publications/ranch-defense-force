@@ -99,9 +99,9 @@
   "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. §11 wants gems readable above all else.",
   "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
   "files": {
-   "pickup.feed": "Pickup_Crop_Grain_32x32.png",
    "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
-  }
+  },
+  "_replacedNote": "pickup.feed was REMOVED here, not left alongside: it is generated now and lives in the pixellab group. Two groups writing one frame key means the later pass silently wins. pickup.heal is still LimeZu — no heal pickup was generated, and the sim only spawns xp and feed kinds today."
  },
  "nodes": {
   "_note": "Harvest rocks and ore, GENERATED. Replaces the LimeZu pack rocks, whose keys these are — the enemy of a swap like this is leaving both groups writing the same frame keys, so the LimeZu entries are gone rather than commented out. The ore read the pack was chosen for (\"minerals inside the rock\", visible before you swing) is preserved and made sicker: rust, bone-white crystal, diseased yellow-green, cold blue, and raw red flesh swelling out of a crack.",
@@ -492,10 +492,13 @@
    "item.whetstone": "whetstone.png",
    "item.workBoots": "work_boots.png",
    "weapon.crowBell": "cow_bell.png",
-   "weapon.seedDrill": "seed_drill.png"
+   "weapon.seedDrill": "seed_drill.png",
+   "pickup.xp": "xp_seed_16.png",
+   "pickup.feed": "feed_token_16.png"
   },
   "conform": true,
-  "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one — the yard rooster popped against a muted scene because he was never quantised to it."
+  "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one — the yard rooster popped against a muted scene because he was never quantised to it.",
+  "_pickupNote": "pickup.xp and pickup.feed are the 16px generations, not the 32px ones. The renderer already looked for pickup.<kind> and fell back to a 5px coloured square. The 32px seed trims to 20x28, which against a 14px collect radius and hundreds of gems on screen is clutter; at 16px they trim to 12x14 — bigger than the square they replace, small enough to carry a wave of them. The 32px xp_seed and feed_token stay in picked/ as card art."
  },
  "gasMaskIcon": {
   "_note": "The gas mask cropped from the generator accessory sheet rather than generated. docs/PIXELLAB.md: 'A gas mask already exists ... crop it from that sheet rather than generating one.' Uses the idle down cell, which is the only front-on view.",
