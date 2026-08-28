@@ -4,6 +4,139 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 13 — spending the subscription down
+
+The owner is cancelling PixelLab. The brief was to burn the remaining
+generations on whatever is most valuable, most important first, so that
+anything we run out of money for is small.
+
+**The framing that decided everything:** credits are use-it-or-lose-it,
+engineering time is not. So the job was never "improve the game with
+credits". It was **acquire raw material that can only be made while the
+account is live, and leave every bit of wiring for later**. Nothing was
+wired this session on purpose. Wiring works forever; generating does not.
+
+Started at **2,096 of 4,710** remaining (Tier 2, resets Sep 14). Ended at
+about **334**. Roughly **1,760 generations spent**, and a further large
+pile recovered for nothing.
+
+## The best thing done this session cost zero generations
+
+**Auditing the account against the repo.** `GET /v2/objects`,
+`/v2/characters` and `/v2/tilesets` enumerate everything the account
+holds, and a lot of it had never been downloaded. It would simply have
+vanished.
+
+- **17 environment objects** from 2026-08-18 — six dead and dying trees,
+  eleven boulders, rocks and stones with ore, crystal and rot. That is
+  most of the "trees and rocks/minerals" work session 12's handoff asked
+  for, already paid for and forgotten. They also map straight onto
+  `nodes` and `nodeTrees`, which are LimeZu rocks and LimeZu trees.
+- **The four `rotten` livestock**, three of them already carrying full
+  eight-direction walks with the right clip names — "a jerky twitching
+  strut", "a slow bloated waddle", "a laboured stagger". These are the
+  finished infected enemies, not the mildly-diseased first attempt.
+- **15 tilesets**, ten of them one family chained off a single grass on
+  the low-detail/lineless recipe: cold ash, grey-green rot, withered dead
+  grass, dead ground, gravel, muddy water, tilled soil, four bare earths.
+
+**Check the account before generating anything, ever.** Nearly a third of
+what this session "needed" already existed.
+
+## The perishable asset is the object ids, not the balance
+
+This is the one thing worth carrying forward. A downloaded PNG is ours
+forever. But `create_object_state`, `animate_object` and
+`create_8_direction_object`-with-a-`style_object_id` all take an **id
+that lives on PixelLab's servers**. Once the account lapses you cannot
+derive a new state, rotation or animation from anything already
+generated — the animal has to start again from nothing.
+
+So derivations went first, and `art/pixellab-queue.json` `_accountLedger`
+now records every id the account held, against the repo path it landed
+in. After cancellation that block is history rather than a menu.
+
+## What the money bought
+
+**221 generations of animation**, which was overwhelmingly the best value
+on the price list.
+
+- Seven rings had rotations and no walk. `animate_object(mode='v3')` is
+  **one generation per direction**, so a full eight-direction walk is
+  eight. Six cursed animals and the rotten hen now walk.
+- **Ten attacks and ten deaths**, per species rather than shared, because
+  at eight generations each there is no reason to share one. Every enemy
+  in the roster now has walk + attack + death. The two player minions —
+  Barn Dog and Whitacre Bull — got attacks too; they are summons that
+  fight and had only a walk.
+
+**~1,520 generations of map objects**, 76 of them across four waves, each
+wave ordered so a shortfall would cost scenery rather than substance:
+
+1. Crops healthy and rotted (corn, wheat, pumpkin, cabbage), the horror
+   props and their healthy twins, then landmarks last.
+2. Pickups — `xp_seed` was a flat coloured square — plus the gas cloud,
+   which matters because `gasImmune`, `trailGas` and `gasGrace` have all
+   been in the sim with nothing ever rendering gas. Plus a chain
+   lightning arc for Threshing Floor, the last `_standInArt` item left.
+   Plus barn, farmhouse and bunkhouse.
+3. Field dressing and the FX set the game never owned — muzzle flash,
+   dust, sparks, heal glow, level-up burst.
+4. Biome props, ground decals, and the six stamped-metal UI plates that
+   ART_STYLE explicitly sanctions generating because CSS cannot make
+   metal look struck.
+
+## Things measured this session, that cost real money to learn
+
+**Size decides how many tries you get, and the price does not change.**
+32px returns **64 candidates**, 64px returns **16**, 96–128px returns
+**4** — all for the same 20 generations. `_modelNote` said this about
+`create_image_pro`; it is true of map objects too. Generate small and
+draw at an integer zoom unless the subject genuinely needs the pixels.
+The pickups and FX bought 64 tries each; the buildings bought four.
+
+**A 1-direction object never reaches `completed`.** It parks in `review`
+holding its candidates in `frame_urls` until a frame is selected. The
+first driver polled for `completed` and would have burnt its whole
+timeout on every batch with the work already done and paid for.
+`tools/pixellab-frames.ts` pulls all the candidates plus a contact sheet.
+
+**A job status is a claim about a job; the object is the artefact.**
+The first animation driver trusted `GET /background-jobs/<id>`, read a
+single 404 as "finished", and reported arabian_cursed complete at 8/8
+with two directions on disk. Verify against the object — ask which
+directions actually carry frames — and re-fire the rest. That is also
+what makes retries automatic, and retries here are routine: one attack
+POST came back 500 and the identical retry landed 8/8.
+
+**`GET /v2/tilesets/<id>` cannot be used by hand.** Unlike the create
+response it returns no spritesheet and no bounding boxes, only sixteen
+loose base64 tiles. `tools/pixellab-tileset.ts` composes the sheet and
+synthesises the boxes from the grid it lays out, which is safer than
+trusting supplied ones — the box is true by construction.
+
+## What is now waiting, and none of it needs a subscription
+
+This is the whole point of how the session was spent. **The backlog is
+unpacked art, not missing art.**
+
+- **76 map objects** with every candidate kept and a contact sheet each.
+  Picking is free: `npm run cut -- single <sheet>/<name>_NN.png
+  assets/pixellab/picked/<name>.png`.
+- **Twelve animals** with walk, attack and death in eight directions, and
+  ten more with walks — still none of it in the atlas. `_howToWireIt` in
+  the queue has the direction mapping measured and the four-vs-eight call
+  is still a judgement, not a measurement.
+- **29 tilesets** against a terrain bake that reads one hardcoded pair
+  from `tuning.json`.
+- The 17 recovered trees and rocks are a drop-in replacement for the
+  LimeZu `nodes` and `nodeTrees`.
+
+`npm test` 131 passing, `npm run typecheck` clean, `npm run atlas` packs
+1859 frames with all 29 tilesets present — the build fails on a Wang set
+missing any of its sixteen corner combinations, so that is the proof the
+recovered sets are whole.
+
 # Session 12 — the art becomes ours
 
 The owner: *"I'm not tied to ANY of the original artwork. I just needed something
