@@ -107,16 +107,24 @@ replacing the Lyria clips. OGG rather than MP3 because MP3 will not loop
 seamlessly, and every layer loops for as long as a wave lasts. Credit is on the
 title screen and in the README.
 
-**Ten animals have eight rotations and an eight-direction walk** in
-assets/pixellab/object/ and NONE of it is packed. See _howToWireIt in the queue:
-four decisions have to be made rather than guessed, starting with the direction
-mapping, which is the fourth distinct order in this project.
+**The animal roster is wired.** feralDog, rooster, sickHog, blownSheep and
+prizeBull draw from generated eight-direction sheets with walk, attack and death
+(`pixellabObjects` in `art/sprites.json`, built by `npm run objman`). The LimeZu
+entries for those keys were deleted, not left alongside. duckFlight is still
+LimeZu — no duck was generated.
 
-Infected livestock are still ordinary animals IN GAME. The infected **farmhand** is
-real — generated, and the enemy you see most in a run. Side views for the
-infected hen, rooster, hog and sheep are generated and staged in
-`assets/pixellab/picked/`; they are references for the 8-direction pass, not
-shippable enemies.
+**The harvest nodes are ours.** All eleven rock, ore and tree sprites come from
+the environment objects recovered off the PixelLab account. The two huge oaks
+and two larger trees are deliberately unpacked, for scenery.
+
+**The ground degrades with the wave** — `tuning.terrain.blight`, pasture through
+withered grass and rot to cold ash. Re-bakes on a band change, never per frame.
+
+**The pickups are real art** at 16px. `pickup.heal` is still LimeZu's apple.
+
+**Still borrowed or unwired:** Threshing Floor (the last `_standInArt` item);
+the attack clips and the FX set, both generated and not yet played; 76 picked
+props with no scenery layer to scatter them into; the UI rarity plates.
 
 ## Rules that have bitten, in this repo, more than once
 
