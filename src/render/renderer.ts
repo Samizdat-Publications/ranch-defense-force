@@ -152,6 +152,23 @@ export class Renderer {
    *  per band rather than once per frame. */
   private bakedSet: string = GROUND_SET
 
+  /**
+   * Static decorative props, y-sorted with everything else.
+   *
+   * Renderer-owned, not sim-owned, because scenery has no behaviour: it never
+   * moves, never collides and never takes damage, so putting it in the world
+   * would add a pool and a tick cost for something that is a picture. It draws
+   * through the same sorted pass as crops, so the player walks in front of and
+   * behind it rather than always on top.
+   *
+   * Placed in a BAND NEAR THE EDGES. These carry no collision — there is no
+   * scenery collider in the sim and adding one is a gameplay change, not a
+   * dressing one — and walking through a water trough in open field would read
+   * as a bug. Around the periphery, where the fence already is and the player
+   * rarely fights, it reads as the farm the arena was cut out of.
+   */
+  private readonly scenery: { x: number; y: number; frame: AtlasFrame }[] = []
+
   /** Melee sweeps and auras, collected during the sprite pass and stroked as
    *  arcs afterwards. Fixed length, reused; never reallocated per frame. */
   private readonly arcs: { x: number; y: number; radius: number; angle: number; aura: boolean }[] = []
@@ -184,7 +201,13 @@ export class Renderer {
     if (!dctx) throw new Error('decal canvas context unavailable')
     this.decalCtx = dctx
 
-    const cap = TUNING.pools.enemies + TUNING.pools.projectiles + TUNING.pools.props + 64
+    // Scenery is scattered before the draw list is sized, because it competes
+    // for the same fixed slots: `push()` returns null when the list is full and
+    // the caller breaks, so under-sizing here silently drops whatever sorts
+    // last — the far side of the field.
+    this.buildScenery()
+    const cap = TUNING.pools.enemies + TUNING.pools.projectiles + TUNING.pools.props
+      + this.scenery.length + 64
     for (let i = 0; i < cap; i++) {
       this.items.push({
         x: 0, y: 0, liftY: 0, frame: null, colour: '', w: 0, h: 0, flash: false,
@@ -198,6 +221,46 @@ export class Renderer {
     this.order = new Int32Array(cap)
 
     this.bakeTerrain()
+  }
+
+  /**
+   * Scatter the scenery once, from a stream of its own.
+   *
+   * Seeded apart from the ground and the decals for the same reason those are
+   * seeded apart from each other and from the sim: nothing decorative may move
+   * a tile, a decal or a spawn.
+   */
+  private buildScenery(): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const kinds = [
+      'prop.hayBale', 'prop.hayBaleRotted', 'prop.trough', 'prop.troughFouled',
+      'prop.logPile', 'prop.bonePile', 'prop.carcass', 'prop.oilDrum',
+      'prop.milkCans', 'prop.feedBin', 'prop.wheelbarrow', 'prop.plough',
+      'prop.graveMarker', 'prop.treeStump', 'prop.barbedWire',
+      'prop.scarecrow', 'prop.scarecrowRotted', 'prop.burnBarrel',
+    ].map((k) => atlas.get(k)).filter((f): f is AtlasFrame => !!f)
+    if (!kinds.length) return
+
+    const rng = new Rng(this.world.seed ^ 0x5ce_1e11)
+    const W = this.world.arenaW
+    const H = this.world.arenaH
+    // How deep the peripheral band reaches in from each edge.
+    const BAND = 220
+    const count = Math.round((W * H) / 90_000)
+    for (let i = 0; i < count; i++) {
+      const f = kinds[rng.int(0, kinds.length - 1)]
+      // Pick an edge, then a point inside that edge's band.
+      let x: number
+      let y: number
+      switch (rng.int(0, 3)) {
+        case 0: x = rng.int(40, W - 40); y = rng.int(40, BAND); break
+        case 1: x = rng.int(40, W - 40); y = rng.int(H - BAND, H - 40); break
+        case 2: x = rng.int(40, BAND); y = rng.int(40, H - 40); break
+        default: x = rng.int(W - BAND, W - 40); y = rng.int(40, H - 40); break
+      }
+      this.scenery.push({ x, y, frame: f })
+    }
   }
 
   resize(w: number, h: number): void {
@@ -627,6 +690,21 @@ export class Renderer {
     const right = cam.x + cam.viewW + 64
     const top = cam.y - 96
     const bottom = cam.y + cam.viewH + 64
+
+    // Scenery goes through the same sorted pass as the crops, so a scarecrow
+    // occludes what is behind it and not what is in front.
+    for (let i = 0; i < this.scenery.length; i++) {
+      const sc = this.scenery[i]
+      if (sc.x < left || sc.x > right || sc.y < top || sc.y > bottom) continue
+      const it = this.push()
+      if (!it) break
+      it.x = sc.x
+      it.y = sc.y
+      it.frame = sc.frame
+      it.colour = PALETTE.void
+      it.w = 0
+      it.h = 0
+    }
 
     // Crops y-sort with everything else, so the player walks in front of and
     // behind them rather than always on top.

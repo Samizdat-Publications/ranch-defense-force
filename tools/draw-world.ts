@@ -327,6 +327,37 @@ export class WorldPainter {
     }
   }
 
+  /** The renderer's peripheral scenery band, restated. Same seed, same order. */
+  private scenery(world: World): { x: number; y: number; f: Frame }[] {
+    const kinds = [
+      'prop.hayBale', 'prop.hayBaleRotted', 'prop.trough', 'prop.troughFouled',
+      'prop.logPile', 'prop.bonePile', 'prop.carcass', 'prop.oilDrum',
+      'prop.milkCans', 'prop.feedBin', 'prop.wheelbarrow', 'prop.plough',
+      'prop.graveMarker', 'prop.treeStump', 'prop.barbedWire',
+      'prop.scarecrow', 'prop.scarecrowRotted', 'prop.burnBarrel',
+    ].map((k) => frames[k]).filter((f): f is Frame => !!f)
+    const out: { x: number; y: number; f: Frame }[] = []
+    if (!kinds.length) return out
+    const rng = new Rng(world.seed ^ 0x5ce_1e11)
+    const W = world.arenaW
+    const H = world.arenaH
+    const BAND = 220
+    const count = Math.round((W * H) / 90_000)
+    for (let i = 0; i < count; i++) {
+      const f = kinds[rng.int(0, kinds.length - 1)]
+      let x: number
+      let y: number
+      switch (rng.int(0, 3)) {
+        case 0: x = rng.int(40, W - 40); y = rng.int(40, BAND); break
+        case 1: x = rng.int(40, W - 40); y = rng.int(H - BAND, H - 40); break
+        case 2: x = rng.int(40, BAND); y = rng.int(40, H - 40); break
+        default: x = rng.int(W - BAND, W - 40); y = rng.int(40, H - 40); break
+      }
+      out.push({ x, y, f })
+    }
+    return out
+  }
+
   private fence(world: World): void {
     const post = frames['prop.fencePost']
     const rail = frames['prop.fenceRail']
@@ -485,6 +516,8 @@ export class WorldPainter {
     this.terrain(world)
 
     const drawList: { y: number; f: Frame; x: number }[] = []
+    // Scenery joins the same sorted list as everything else, as in the game.
+    for (const sc of this.scenery(world)) drawList.push({ y: sc.y, x: sc.x, f: sc.f })
     for (let i = 0; i < world.props.live; i++) {
       const c = world.props.items[i]
       const f = frames[c.sprite]
