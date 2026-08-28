@@ -1,328 +1,329 @@
 {
-  "farmhand": {
-    "name": "Farmhand",
-    "sheet": "zombie",
-    "hp": 14,
-    "speed": 82,
-    "damage": 6,
-    "radius": 11,
-    "firstWave": 1,
-    "threatCost": 4,
-    "groupSize": 10,
-    "behaviour": "chase",
-    "xp": 1,
-    "teaches": "chaff that makes AoE feel good"
+ "farmhand": {
+  "name": "Farmhand",
+  "sheet": "zombie",
+  "hp": 14,
+  "speed": 82,
+  "damage": 6,
+  "radius": 11,
+  "firstWave": 1,
+  "threatCost": 4,
+  "groupSize": 10,
+  "behaviour": "chase",
+  "xp": 1,
+  "teaches": "chaff that makes AoE feel good"
+ },
+ "rooster": {
+  "name": "Rooster",
+  "sheet": "rooster",
+  "hp": 9,
+  "speed": 160,
+  "damage": 4,
+  "radius": 8,
+  "firstWave": 2,
+  "threatCost": 5,
+  "groupSize": 8,
+  "behaviour": "erratic",
+  "separation": false,
+  "xp": 1,
+  "teaches": "hard to single-target, melts to anything wide"
+ },
+ "feralDog": {
+  "name": "Feral Dog",
+  "sheet": "dog",
+  "hp": 30,
+  "speed": 132,
+  "damage": 10,
+  "radius": 12,
+  "firstWave": 4,
+  "threatCost": 12,
+  "groupSize": 4,
+  "behaviour": "flank",
+  "xp": 2,
+  "special": {
+   "bark": {
+    "tellSeconds": 1,
+    "summonsPack": true
+   }
   },
-  "rooster": {
-    "name": "Rooster",
-    "sheet": "rooster",
-    "hp": 9,
-    "speed": 160,
-    "damage": 4,
-    "radius": 8,
-    "firstWave": 2,
-    "threatCost": 5,
-    "groupSize": 8,
-    "behaviour": "erratic",
-    "separation": false,
-    "xp": 1,
-    "teaches": "hard to single-target, melts to anything wide"
+  "teaches": "check behind you"
+ },
+ "duckFlight": {
+  "name": "Duck Flight",
+  "sheet": "duck",
+  "hp": 12,
+  "speed": 185,
+  "damage": 7,
+  "radius": 9,
+  "firstWave": 5,
+  "threatCost": 6,
+  "groupSize": 8,
+  "behaviour": "laneFly",
+  "separation": false,
+  "xp": 1,
+  "teaches": "don't stand in a lane"
+ },
+ "acidZombie": {
+  "name": "Acid Zombie",
+  "sheet": "acid_zombie",
+  "hp": 40,
+  "speed": 88,
+  "damage": 12,
+  "radius": 12,
+  "firstWave": 6,
+  "threatCost": 14,
+  "groupSize": 3,
+  "behaviour": "chase",
+  "xp": 3,
+  "special": {
+   "onDeath": "acidPool",
+   "poolRadius": 60,
+   "poolDps": 8,
+   "poolDuration": 5
   },
-  "feralDog": {
-    "name": "Feral Dog",
-    "sheet": "dog",
-    "hp": 30,
-    "speed": 132,
-    "damage": 10,
-    "radius": 12,
-    "firstWave": 4,
-    "threatCost": 12,
-    "groupSize": 4,
-    "behaviour": "flank",
-    "xp": 2,
-    "special": {
-      "bark": {
-        "tellSeconds": 1,
-        "summonsPack": true
-      }
-    },
-    "teaches": "check behind you"
+  "teaches": "kill things somewhere you don't need to stand"
+ },
+ "maskedSprayer": {
+  "name": "Masked Sprayer",
+  "sheet": "gas_enemy",
+  "hp": 45,
+  "speed": 100,
+  "damage": 14,
+  "radius": 12,
+  "firstWave": 7,
+  "threatCost": 18,
+  "groupSize": 2,
+  "behaviour": "kiteAndSpray",
+  "holdDistance": 260,
+  "coneDegrees": 45,
+  "coneRange": 200,
+  "windUp": 0.8,
+  "xp": 4,
+  "teaches": "priority targeting"
+ },
+ "blownSheep": {
+  "name": "Blown Sheep",
+  "sheet": "sheep",
+  "hp": 120,
+  "speed": 60,
+  "damage": 18,
+  "radius": 15,
+  "firstWave": 9,
+  "threatCost": 26,
+  "groupSize": 2,
+  "behaviour": "chase",
+  "knockbackImmune": true,
+  "frontalReductionPct": 60,
+  "xp": 5,
+  "teaches": "get behind things"
+ },
+ "sickHog": {
+  "name": "Sick Hog",
+  "sheet": "pig",
+  "hp": 160,
+  "speed": 84,
+  "damage": 25,
+  "radius": 16,
+  "firstWave": 10,
+  "threatCost": 32,
+  "groupSize": 1,
+  "behaviour": "charge",
+  "chargeSpeed": 260,
+  "windUp": 1,
+  "overshoot": 140,
+  "staggerSeconds": 1.5,
+  "xp": 6,
+  "teaches": "the stagger window is the reward"
+ },
+ "bloatedFarmhand": {
+  "name": "Bloated Farmhand",
+  "sheet": "zombie2",
+  "hp": 55,
+  "speed": 90,
+  "damage": 10,
+  "radius": 14,
+  "firstWave": 12,
+  "threatCost": 20,
+  "groupSize": 3,
+  "behaviour": "chase",
+  "special": {
+   "onDeath": "gasBurst",
+   "cloudRadius": 90,
+   "cloudGrowth": 10,
+   "cloudDps": 10,
+   "cloudDuration": 6,
+   "_note": "Growth was 30/s over 6s, which is a final radius of 270 — a cloud wider than the 520px camera view. That was survivable while the cloud was decoration; once it damaged the player it was not a hazard you could play around, it was a tax with no visible edge. 10/s lands at 150, which fills half the screen and can still be walked out of."
   },
-  "duckFlight": {
-    "name": "Duck Flight",
-    "sheet": "duck",
-    "hp": 12,
-    "speed": 185,
-    "damage": 7,
-    "radius": 9,
-    "firstWave": 5,
-    "threatCost": 6,
-    "groupSize": 8,
-    "behaviour": "laneFly",
-    "separation": false,
-    "xp": 1,
-    "teaches": "don't stand in a lane"
+  "xp": 4,
+  "teaches": "punishes indiscriminate clearing"
+ },
+ "maskedHauler": {
+  "name": "Masked Hauler",
+  "sheet": "gas_enemy2",
+  "hp": 220,
+  "speed": 66,
+  "damage": 22,
+  "radius": 16,
+  "firstWave": 14,
+  "threatCost": 44,
+  "groupSize": 1,
+  "behaviour": "chase",
+  "special": {
+   "aura": "hpBuff",
+   "radius": 150,
+   "hpBonusPct": 40
   },
-  "acidZombie": {
-    "name": "Acid Zombie",
-    "sheet": "acid_zombie",
-    "hp": 40,
-    "speed": 88,
-    "damage": 12,
-    "radius": 12,
-    "firstWave": 6,
-    "threatCost": 14,
-    "groupSize": 3,
-    "behaviour": "chase",
-    "xp": 3,
-    "special": {
-      "onDeath": "acidPool",
-      "poolRadius": 60,
-      "poolDps": 8,
-      "poolDuration": 5
-    },
-    "teaches": "kill things somewhere you don't need to stand"
-  },
-  "maskedSprayer": {
-    "name": "Masked Sprayer",
-    "sheet": "gas_enemy",
-    "hp": 45,
-    "speed": 100,
-    "damage": 14,
-    "radius": 12,
-    "firstWave": 7,
-    "threatCost": 18,
-    "groupSize": 2,
-    "behaviour": "kiteAndSpray",
-    "holdDistance": 260,
-    "coneDegrees": 45,
-    "coneRange": 200,
-    "windUp": 0.8,
-    "xp": 4,
-    "teaches": "priority targeting"
-  },
-  "blownSheep": {
-    "name": "Blown Sheep",
-    "sheet": "sheep",
-    "hp": 120,
-    "speed": 60,
-    "damage": 18,
-    "radius": 15,
-    "firstWave": 9,
-    "threatCost": 26,
-    "groupSize": 2,
-    "behaviour": "chase",
-    "knockbackImmune": true,
-    "frontalReductionPct": 60,
-    "xp": 5,
-    "teaches": "get behind things"
-  },
-  "sickHog": {
-    "name": "Sick Hog",
-    "sheet": "pig",
-    "hp": 160,
-    "speed": 84,
-    "damage": 25,
-    "radius": 16,
-    "firstWave": 10,
-    "threatCost": 32,
-    "groupSize": 1,
-    "behaviour": "charge",
-    "chargeSpeed": 260,
-    "windUp": 1,
-    "overshoot": 140,
-    "staggerSeconds": 1.5,
-    "xp": 6,
-    "teaches": "the stagger window is the reward"
-  },
-  "bloatedFarmhand": {
-    "name": "Bloated Farmhand",
-    "sheet": "zombie2",
-    "hp": 55,
-    "speed": 90,
-    "damage": 10,
-    "radius": 14,
-    "firstWave": 12,
-    "threatCost": 20,
-    "groupSize": 3,
-    "behaviour": "chase",
-    "special": {
-      "onDeath": "gasBurst",
-      "cloudRadius": 90,
-      "cloudGrowth": 10,
-      "cloudDps": 10,
-      "cloudDuration": 6,
-      "_note": "Growth was 30/s over 6s, which is a final radius of 270 \u2014 a cloud wider than the 520px camera view. That was survivable while the cloud was decoration; once it damaged the player it was not a hazard you could play around, it was a tax with no visible edge. 10/s lands at 150, which fills half the screen and can still be walked out of."
-    },
-    "xp": 4,
-    "teaches": "punishes indiscriminate clearing"
-  },
-  "maskedHauler": {
-    "name": "Masked Hauler",
-    "sheet": "gas_enemy2",
-    "hp": 220,
-    "speed": 66,
-    "damage": 22,
-    "radius": 16,
-    "firstWave": 14,
-    "threatCost": 44,
-    "groupSize": 1,
-    "behaviour": "chase",
-    "special": {
-      "aura": "hpBuff",
-      "radius": 150,
-      "hpBonusPct": 40
-    },
-    "xp": 8,
-    "teaches": "read the field, not the nearest target"
-  },
-  "_bosses": {
-    "prizeBull": {
-      "name": "The Prize Bull",
-      "sheet": "cow",
-      "scale": 2,
-      "paletteShift": "nearBlackRedEye",
-      "hp": 900,
-      "speed": 55,
-      "damage": 40,
-      "radius": 30,
-      "wave": 12,
-      "animFps": 6,
-      "phases": [
-        {
-          "until": 0.5,
-          "attacks": [
-            {
-              "id": "charge",
-              "windUp": 1.2,
-              "tell": "dustPawLoop",
-              "speed": 520,
-              "damagesOwnTrash": true,
-              "staggerSeconds": 2
-            }
-          ]
-        },
-        {
-          "until": 0,
-          "attacks": [
-            {
-              "id": "charge",
-              "windUp": 1.2,
-              "tell": "dustPawLoop",
-              "speed": 520,
-              "damagesOwnTrash": true,
-              "staggerSeconds": 2,
-              "summons": {
-                "enemy": "sickHog",
-                "count": 4,
-                "chargesAlongside": true
-              }
-            }
-          ]
-        }
-      ],
-      "normalSpawnsContinue": true
-    },
-    "duster": {
-      "name": "The Duster",
-      "sheet": "tractor",
-      "scale": 3,
-      "paletteShift": "rustRed",
-      "hp": 2400,
-      "speed": 70,
-      "damage": 45,
-      "radius": 46,
-      "wave": 25,
-      "animFps": 6,
-      "phases": [
-        {
-          "id": "thePattern",
-          "until": 0.5,
-          "chases": false,
-          "desc": "Fixed agricultural back-and-forth, laying a gas strip behind it.",
-          "gasStripWidth": 70,
-          "gasDps": 12,
-          "gasDuration": 14
-        },
-        {
-          "id": "offTheRails",
-          "until": 0,
-          "chases": true,
-          "chaseSpeed": 60,
-          "desc": "Turns, finds you, drags its gas strip in a curve.",
-          "baleThrow": {
-            "interval": 3.2,
-            "damage": 30,
-            "bounces": 4
-          },
-          "addSpawns": [
-            "farmhand",
-            "bloatedFarmhand"
-          ],
-          "arenaShrink": {
-            "seconds": 90,
-            "toFraction": 0.33
-          }
-        }
-      ]
-    }
-  },
+  "xp": 8,
+  "teaches": "read the field, not the nearest target"
+ },
+ "_bosses": {
   "prizeBull": {
-    "name": "The Prize Bull",
-    "sheet": "prizeBull",
-    "_note": "Wave 12 boss (\u00a79). Nine hundred pounds of blue ribbon. Charges in a straight line and hits his own trash on the way through, so a bad build survives long enough to learn what is wrong with it.",
-    "hp": 900,
-    "speed": 72,
-    "damage": 26,
-    "radius": 26,
-    "xp": 60,
-    "threatCost": 0,
-    "groupSize": 1,
-    "behaviour": "charge",
-    "knockbackImmune": true,
-    "boss": true,
-    "drawScale": 2,
-    "animFrameScale": 0.5,
-    "special": {
-      "stampedeBelowPct": 50,
-      "stampedeSummons": "sickHog",
-      "stampedeCount": 4
+   "name": "The Prize Bull",
+   "sheet": "cow",
+   "scale": 2,
+   "paletteShift": "nearBlackRedEye",
+   "hp": 900,
+   "speed": 55,
+   "damage": 40,
+   "radius": 30,
+   "wave": 12,
+   "animFps": 6,
+   "phases": [
+    {
+     "until": 0.5,
+     "attacks": [
+      {
+       "id": "charge",
+       "windUp": 1.2,
+       "tell": "dustPawLoop",
+       "speed": 520,
+       "damagesOwnTrash": true,
+       "staggerSeconds": 2
+      }
+     ]
     },
-    "teaches": "a straight line you can step out of"
+    {
+     "until": 0,
+     "attacks": [
+      {
+       "id": "charge",
+       "windUp": 1.2,
+       "tell": "dustPawLoop",
+       "speed": 520,
+       "damagesOwnTrash": true,
+       "staggerSeconds": 2,
+       "summons": {
+        "enemy": "sickHog",
+        "count": 4,
+        "chargesAlongside": true
+       }
+      }
+     ]
+    }
+   ],
+   "normalSpawnsContinue": true
   },
   "duster": {
-    "name": "The Duster",
-    "sheet": "duster",
-    "_note": "Wave 25 boss (\u00a79). Nobody is driving it. Phase 1 is a fixed agricultural back-and-forth that NEVER chases \u2014 the whole fight is where you stand relative to a machine that will not deviate. Phase 2 breaks the pattern and comes for you while the rows burn inward.",
-    "hp": 2400,
-    "speed": 54,
-    "damage": 34,
-    "radius": 52,
-    "xp": 200,
-    "threatCost": 0,
-    "groupSize": 1,
-    "behaviour": "duster",
-    "knockbackImmune": true,
-    "boss": true,
-    "drawScale": 1,
-    "animFrameScale": 0.45,
-    "special": {
-      "_note": "Phase 2 starts below phase2BelowPct. gasEvery is how often it drops a strip; the strip is a real gas hazard and hurts you exactly like a Bloated Farmhand cloud.",
-      "phase2BelowPct": 50,
-      "gasEvery": 0.5,
-      "gasRadius": 44,
-      "gasSeconds": 7,
-      "gasDps": 9,
-      "laneStep": 150,
-      "patrolSpeed": 54,
-      "chaseSpeed": 38,
-      "shrinkSeconds": 90,
-      "shrinkToFraction": 0.34,
-      "shrinkDps": 18,
-      "summonEvery": 3.5,
-      "summons": "farmhand",
-      "summonCount": 2
+   "name": "The Duster",
+   "sheet": "tractor",
+   "scale": 3,
+   "paletteShift": "rustRed",
+   "hp": 2400,
+   "speed": 70,
+   "damage": 45,
+   "radius": 46,
+   "wave": 25,
+   "animFps": 6,
+   "phases": [
+    {
+     "id": "thePattern",
+     "until": 0.5,
+     "chases": false,
+     "desc": "Fixed agricultural back-and-forth, laying a gas strip behind it.",
+     "gasStripWidth": 70,
+     "gasDps": 12,
+     "gasDuration": 14
     },
-    "teaches": "a machine that will not deviate"
+    {
+     "id": "offTheRails",
+     "until": 0,
+     "chases": true,
+     "chaseSpeed": 60,
+     "desc": "Turns, finds you, drags its gas strip in a curve.",
+     "baleThrow": {
+      "interval": 3.2,
+      "damage": 30,
+      "bounces": 4
+     },
+     "addSpawns": [
+      "farmhand",
+      "bloatedFarmhand"
+     ],
+     "arenaShrink": {
+      "seconds": 90,
+      "toFraction": 0.33
+     }
+    }
+   ]
   }
+ },
+ "prizeBull": {
+  "name": "The Prize Bull",
+  "sheet": "prizeBull",
+  "_note": "Wave 12 boss (§9). Nine hundred pounds of blue ribbon. Charges in a straight line and hits his own trash on the way through, so a bad build survives long enough to learn what is wrong with it.",
+  "hp": 900,
+  "speed": 72,
+  "damage": 26,
+  "radius": 26,
+  "xp": 60,
+  "threatCost": 0,
+  "groupSize": 1,
+  "behaviour": "charge",
+  "knockbackImmune": true,
+  "boss": true,
+  "drawScale": 2,
+  "animFrameScale": 0.5,
+  "special": {
+   "stampedeBelowPct": 50,
+   "stampedeSummons": "sickHog",
+   "stampedeCount": 4
+  },
+  "teaches": "a straight line you can step out of",
+  "deathSeconds": 0.8
+ },
+ "duster": {
+  "name": "The Duster",
+  "sheet": "duster",
+  "_note": "Wave 25 boss (§9). Nobody is driving it. Phase 1 is a fixed agricultural back-and-forth that NEVER chases — the whole fight is where you stand relative to a machine that will not deviate. Phase 2 breaks the pattern and comes for you while the rows burn inward.",
+  "hp": 2400,
+  "speed": 54,
+  "damage": 34,
+  "radius": 52,
+  "xp": 200,
+  "threatCost": 0,
+  "groupSize": 1,
+  "behaviour": "duster",
+  "knockbackImmune": true,
+  "boss": true,
+  "drawScale": 1,
+  "animFrameScale": 0.45,
+  "special": {
+   "_note": "Phase 2 starts below phase2BelowPct. gasEvery is how often it drops a strip; the strip is a real gas hazard and hurts you exactly like a Bloated Farmhand cloud.",
+   "phase2BelowPct": 50,
+   "gasEvery": 0.5,
+   "gasRadius": 44,
+   "gasSeconds": 7,
+   "gasDps": 9,
+   "laneStep": 150,
+   "patrolSpeed": 54,
+   "chaseSpeed": 38,
+   "shrinkSeconds": 90,
+   "shrinkToFraction": 0.34,
+   "shrinkDps": 18,
+   "summonEvery": 3.5,
+   "summons": "farmhand",
+   "summonCount": 2
+  },
+  "teaches": "a machine that will not deviate"
+ }
 }

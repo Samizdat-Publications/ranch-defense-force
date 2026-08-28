@@ -1816,8 +1816,22 @@ export class World {
     if (isBoss) this.bossKills++
     this.sound(isBoss ? 'bossDeath' : 'enemyDeath')
     this.bleed(e.x, e.y, e.typeId === 'rooster' ? 2 : 10)
-    // No death frames needed — spin and scale to zero (§10 step 4).
-    e.dying = C.deathSpinSeconds
+    /*
+       How long the corpse stays before its slot is freed.
+
+       The default is the 0.2s spin-and-scale-to-zero that stood in for death
+       art (§10 step 4). The generated animals HAVE death art now — nine frames
+       in eight directions each — and it cannot read in 200ms, so those species
+       carry their own `deathSeconds` in content.
+
+       It is per-enemy rather than global on purpose: a bullet-heaven kills
+       hundreds of things a run, and holding every corpse for half a second is a
+       change to how cluttered the screen gets and to how hard the enemy pool is
+       pushed. Species with real death art earn the extra time; a rooster that
+       still pops does not need it.
+    */
+    e.dying = (ENEMIES[e.typeId] as { deathSeconds?: number } | undefined)?.deathSeconds
+      ?? C.deathSpinSeconds
     e.vx = 0
     e.vy = 0
   }
