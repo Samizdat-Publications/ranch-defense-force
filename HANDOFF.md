@@ -11,7 +11,9 @@ TypeScript + Vite + Canvas 2D, no engine. The repo is public.
    time. Long, and worth it.
 3. `docs/NEXT_SESSION.md` — **what to do next and in what order.** Start here if
    you are picking this up cold; it names the brief, the traps this particular
-   work will hit, and what not to redo.
+   work will hit, and what not to redo. It is rewritten every session — if it
+   describes work you can see is already done, say so rather than doing it
+   again.
 4. `docs/ART_STYLE.md` — **the house style, and what every asset is generated
    against.** Camera, scale, palette, and the per-tool recipes that work. The
    art is ours now; the LimeZu packs were a starting point, not a commitment.
@@ -41,9 +43,10 @@ reference scenes.
 
 ### The immediate next task
 
-**Play it.** Every screen is built and both scenes have been compared against
-the reference on screen. What has never happened is a person holding the
-controls since the art landed, and that is now the only milestone left.
+**It has been played.** The owner played the built game in session 15 and it
+held up: *"I plaed it and it was great."* Two findings came out of it and both
+are live work — the waves want more enemies each, and the class dropdown has
+never been played through. `docs/NEXT_SESSION.md` carries the brief.
 
 To compare a scene against its reference again: the two `docs/reference/*.html`
 files will not load through the Vite dev server — Vite tries to transform them
@@ -140,7 +143,16 @@ npm run cut        # trim one candidate onto the game's grid
 npm run zoom       # render the home scene at several target heights
 npm run range      # every weapon firing, on one contact sheet
 npm run shot       # headless screenshot of a real run
+npm run contact    # pull frames OUT of the packed atlas — proves the whole chain
+npm run contactdir # tile a directory of raw candidates onto one sheet, at a zoom
+npm run animal     # the animal comparison table, at the game's zoom on real grass
+npm run scale      # what a sheet actually measures, drawScale included
 ```
+
+Three PixelLab drivers are committed and **all three need a live API key, which
+this project no longer has**: `npm run mapobject` (batch `/map-objects`, the
+cheap endpoint), `npm run rmbg` (strip an opaque card), `npm run object`. They
+are kept as the record of what works and what it costs — see `docs/PIXELLAB.md`.
 
 `F1` in game toggles the dev overlay; `N` skips a wave.
 
@@ -154,84 +166,132 @@ without grinding to it.
 
 ## Outstanding, roughly in order
 
-**Everything below is current as of session 12. `NOTES.md` session 12 is the
+**Everything below is current as of session 15. `NOTES.md` session 15 is the
 detail; `docs/ART_STYLE.md` is what to generate against.**
 
-1. **A human playtest of the new art.** The whole cast, the ground and the
-   palette changed in one session. It has been looked at on screen but not
-   PLAYED. This is still M8's acceptance criterion and still the only milestone
-   left.
-2. **The balance session.** The owner reported the waves as far too slow and the
-   harness agreed — 19 enemies alive at the average death. Raising the budget or
-   the spawn rate BOTH fail `run.test.ts`, on the identical budget, so the game
-   has no headroom: density and player power are coupled. The fix is more
-   enemies that are individually weaker across `enemies.json`, and it wants a
-   deliberate session. Numbers are in `formulas.ts` above `threatBudget`.
+**PixelLab is gone.** The subscription was cancelled at the end of session 15
+with the balance spent to exactly 0, and the API key is dead. No new art can be
+generated. Everything outstanding below is a *picking and wiring* job against
+candidates already on disk — see `assets/pixellab/SESSION15.md`.
+
+1. **The balance session.** This is the owner's own top note from playing it:
+   *"Needs more enemies per wave to balance."* Performance is NOT the limit — the
+   owner ran 200+ enemies alive several times and *"it all worked great"*, so
+   `pressureCeiling: 380` in `waves.json` is a design choice to revisit, not a
+   frame-rate one.
+
+   **Start by moving the curve into content.** `threatBudget` is hardcoded in
+   `src/sim/formulas.ts` as `30 + 22*wave + 1.4*wave*wave`, while
+   `waves.json` carries `threatBudget.formula` as a string that **nothing
+   reads**. The content file describes the curve; the code is the truth. Read
+   those three coefficients from `waves.json` first and the whole session
+   becomes editing content instead of editing code, which is what CLAUDE.md
+   requires anyway. `waveScalar` has the identical split.
+
+   The known trap, from session 12: raising the budget OR the spawn rate both
+   fail `run.test.ts` on the identical budget, because density and player power
+   are coupled. The fix is more enemies that are individually weaker across
+   `enemies.json`, not a bigger number in one place.
+
    Also parked for that session: base move speed 160, crop density and feed
    value, damage-% items vs "merging IS the offensive game", late shops thinning
    to items only, elites being spawn-time only, and global hitstop.
-3. **Sixteen animals, generated and still unpacked.** Ten healthy plus six
-   cursed, in `assets/pixellab/object/<name>/`. FOUR DIRECTIONS was decided, so
-   what remains is a manifest entry and a renderer bucket, not a judgement.
-   `npm run animal` re-derives the measurements. Note the cursed pony and dog
-   are `*_cursed2` — the first attempts did not take, see the colour lesson.
-4. **The remaining LimeZu art.** Every CHARACTER is ours now. Props, buildings,
-   weapons, FX, crops and the boss vehicles are not. Nothing forces a big-bang
-   swap: atlas keys are stable, art swaps one manifest line at a time, and a
-   missing sprite already degrades to a coloured square.
+
+2. **Play the six classes.** The owner: *"I didnt ge tto test all the models
+   fromthe dropdown yet."* Six classes ship and only some have been played. A
+   class that is unplayable or trivially dominant is invisible to every test in
+   the suite.
+
+3. **Finish retiring LimeZu.** Nearly done, and the remaining art is generated
+   and waiting. The exact inventory and the picking notes are in
+   `assets/pixellab/SESSION15.md`; the wiring order is in
+   `docs/NEXT_SESSION.md`. Nothing forces a big-bang swap: atlas keys are
+   stable, art swaps one manifest line at a time, and a missing sprite already
+   degrades to a coloured square.
+
+4. **Maps.** 29 Wang tilesets are packed and `tuning.json`'s `terrain` block
+   already treats the ground set as content with per-blight-band sets. The owner
+   wants a map to change **ground and tileset, node and enemy mix, arena size
+   and shape, and hazards** — all four. Hazard and biome-node art was generated
+   in session 15 for exactly this. The blocker is ordering: a map choice **must
+   be the first draw off the RNG** or every seed stops replaying, and
+   `run.test.ts`'s "replays a whole run identically from its seed" must keep
+   passing.
+
 5. **Save export/import.** Saves die when browser data is cleared and no browser
    storage survives that. ~30 lines, no backend. Do it before anyone else plays.
-6. **Two staged sprites want a renderer change.** The gas cloud and salt-ring
-   decal are trimmed in `assets/pixellab/picked/` and wired to nothing, because
-   the FX they would replace are animated clips rather than static frames.
-7. **Listen to the music in a real run.** Chosen from pack metadata, never by
+
+6. **Listen to the music in a real run.** Chosen from pack metadata, never by
    ear.
 
 ### What is generated vs what is still LimeZu — the exact table
 
-Audited from the packed atlas, not from memory:
+Audited from `art/sprites.json`, not from memory. **The characters and the
+animals are all ours now**, on an eight-direction rig with walk, attack and
+death clips:
 
-| | source | size | walk |
-|---|---|---|---|
-| all 6 player classes | **GENERATED** | 26-32 x 51-55 | 8 |
-| farmhand, acidZombie, bloatedFarmhand, maskedSprayer, maskedHauler | **GENERATED** | 28-32 x 51-58 | 8 |
-| rooster, feralDog, duckFlight, blownSheep, sickHog, prizeBull, duster | LimeZu | 22-38 x 30-52 | 6 |
+| | source |
+|---|---|
+| all 6 player classes | **GENERATED** |
+| farmhand, acidZombie, bloatedFarmhand, maskedSprayer, maskedHauler | **GENERATED** |
+| rooster, feralDog, sickHog, blownSheep, prizeBull | **GENERATED**, 8 directions |
+| `duckFlight` (enemy), `duster` (wave-25 boss) | LimeZu — **art generated in session 15, not yet wired** |
 
-**Every HUMANOID is ours. No ANIMAL is.** That is why the feral dogs "barely look
-infected" — they are still LimeZu's basenji, untouched. It is not that the
-regeneration failed; the animals were never in that batch.
+Everything else still sourced from the LimeZu pack, with generated replacements
+now sitting in `assets/pixellab/` unwired:
 
-**Sixteen cursed animals are already generated and sitting unpacked** in
-`assets/pixellab/object/`: bull, donkey, arabian, draft mule, fjord pony and
-barn dog as `*_cursed*`, plus the four infected livestock and their harder
-`*_rotten` retries. Wiring them is outstanding item 3, and it is the shortest
-path to a scarier field.
+| manifest group | count | replacement |
+|---|---|---|
+| `scene` + `sceneStrips` | 25 stills | `assets/pixellab/yard/`, `yard_picked/`, and the five livestock in `field/scene_*` |
+| `singles` (field crops) | 10 | `field/crop_*` — plus blighted variants that did not exist before |
+| `weapons` | 8 | `field/weapon_*` |
+| `vehicles` (`duster`) | 1 | `duster/` — 22 candidates across four facings |
+| `animals` (`duckFlight`) | 1 | `field/duck_*` |
+| `singlesExtra` (`pickup.heal`) | 1 | `field/pickup_heal_*` |
+| `gasMaskIcon` | 1 | `field/icon_gasmask_*` |
+| `terrainSource` | sheet | **no generation needed** — 29 Wang sets are already packed |
+| `public/ui/panel.png` | 1 | `field2/ui_panel_1.png` (the only candidate with a real frame) |
 
-### The rooster enemy is drawing a HEN
+`art/palette.json` is also k-means-extracted from the LimeZu sheets. That is a
+derived palette, not distributed art, and it stays — it is authored now and
+must not be regenerated.
 
-Found by extracting the frame and looking at it. `rooster.idle.down.0` is a
-round orange hen with a tiny comb; the bird with the tail and wattle is
-`scene.rooster`, which only the yard scene uses.
+Third-party packs that are **not** LimeZu and are out of scope for this:
+`projectiles` (unTied Games), `icons-farm`, `icons-tools`, `icons-guns`,
+`effects-fx`.
 
-The sheet is `Rooster_Brown_32x32.png` at `walkRow: 3`, and row 3 is a hen row.
-**Same class of bug as the cow**, whose walk band turned out to be at row 6 on a
-96px pitch when every other animal is 64 at rows 2-4 — measure with
-`npm run pitch`, never infer from the last sheet.
+### Already wired, so you do not redo it
 
-Not fixed, because the animals are being replaced wholesale anyway. Fix it there
-rather than re-deriving a LimeZu row that is about to be deleted.
+Sessions 12–15, cumulative. If something here looks undone, look again before
+building it:
 
-### Wired and done this session, so you do not redo it
-
-- **The ground autotiles** from Wang sets, six of them, chained off one grass.
-- **The palette is authored** and every generated group conforms to it.
+- **The ground autotiles** from Wang sets, chained off one grass, with **blight
+  bands** that swap the ground set as the waves progress.
+- **The palette is authored** and every generated group conforms to it — except
+  the FX, deliberately, because the palette has no coverage for an electric blue
+  arc.
 - **The whole cast is generated** — 6 classes, the infected farmhand and 4
   enemies — at size 64, cut to a 32x64 cell with feet on **y58**.
+- **The animals are generated and packed on an eight-direction rig**, with walk,
+  attack and death clips. `directionIndex` is rig-aware: sheets absent from
+  `dirSets` keep the humanoids' four, so that path did not regress.
+- **Attack and death clips are bound to the sim** through `attackT` and `dying`.
+  `attackT` is deliberately render-facing because behaviours own `t0`/`s0`
+  privately.
 - **Class plates are portraits**, derived from each class's own sprite.
-- **The rooster** walks a 24s beat, pecks and crows, with real east/west art.
+- **Rarity plates are struck metal**, blended over the tier gradient with CSS
+  **longhands, never the `background` shorthand** — a shorthand followed by a
+  longhand that overwrites its payload is invisible, and that cost two
+  milestones of 94%-transparent cards.
+- **Fence, decals and scenery** are painted from their own seeded RNG streams,
+  y-sorted, with scenery allocated before the pools so `cap` includes it.
+- **The gas cloud and salt ring are wired.**
 - **Eighteen scene actors animate** instead of bobbing.
 - **The weapon ring** fans across an arc and sorts its depth separately from its
   lift.
+- **The atlas is 2048 wide, not 1024.** At 1024 the animals forced a
+  `1024×16384` page — the area was fine, the dimension was past many GPUs' max
+  texture size and near iOS Safari's canvas-area cap.
 
 ### The rollback point
 

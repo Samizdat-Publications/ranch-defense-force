@@ -4,6 +4,131 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 15 — the account is spent, and the handoff is honest again
+
+Two jobs: convert the last of a dying subscription into art, and leave the
+repo readable by someone who was not here. **Balance went 259 -> 0.** 247
+images landed. **None of it is wired, on purpose.**
+
+## Why nothing was wired
+
+Same calculus as session 13, and it is worth restating because it looks like
+laziness from the outside: credits expire, engineering time does not. The
+account died at the end of this session. Wiring is available forever; the
+generations were available for one more afternoon. So the afternoon bought
+art, and the wiring is the next session's — which is also the session that
+can *look* at each sprite in a real run, which this one could not.
+
+The corollary is that `art/sprites.json` is untouched. Packing an unreviewed
+pick is precisely how a wrong sprite ships silently here, and that has
+happened before.
+
+## What the money bought
+
+| directory | subjects | what |
+|---|---|---|
+| `assets/pixellab/yard/` + `yard_picked/` | 18 | the whole home-screen scene |
+| `assets/pixellab/field/` | 28 + 19 | crops, the 8 weapon sprites, the duck, hazards, biome nodes, blighted crop variants |
+| `assets/pixellab/field2/` | 5 | retries of what the first pass got wrong |
+| `assets/pixellab/duster/` | 4 facings | the wave-25 boss |
+
+That covers essentially everything LimeZu still supplied except the terrain
+sheet, which needs no art at all — 29 Wang sets are already packed.
+
+## `/map-objects` costs a twentieth of what session 13 paid
+
+The single most useful measurement here. `POST /v2/map-objects` is **1
+generation**; `create-1-direction-object` is **20**, for art of the same
+quality. It also takes a non-square `image_size`, which is what a 400x224
+barn needs and what the square-only endpoint cannot do. Session 13 spent
+roughly 2,000 generations through the expensive path on the belief that it
+was cheap, recorded in `docs/PIXELLAB.md` as "cheap; returns 16 candidate
+frames". That row is now corrected.
+
+Three related things, all measured rather than assumed:
+
+- **Candidate count moves with size at the same price**: 32px returns 64
+  candidates, 64px returns 16, 96-128px returns 4, above ~160px returns one.
+  The cheapest way to get choice is to generate small.
+- **`remove-background` costs 1, not free** as the docs claim.
+- **Rejections are free.** `detail` is a validated enum and I sent
+  `"highly detailed"` instead of `"high detail"` — 20 calls 422'd for zero
+  generations. A cheap probe before a big batch genuinely costs nothing, and
+  that is how the 400px size cap got established too.
+
+## Everything large comes back on a card
+
+Every subject generated at ~400px returned a framed illustration on a solid
+opaque ground. Every subject at <=160px came back cleanly cut out. The barn,
+house, silo and oak all needed `remove-background`, which is why
+`yard_picked/` exists as a separate directory from `yard/`.
+
+**Protect before you write.** Session 13 made the opposite mistake — re-cut
+the coop from its carded candidate *before* protecting it — so the de-card
+pass writes to a staging copy here and the raw candidates stay raw.
+
+## What the model ignored
+
+Worth recording because it is a prompting limit, not a fluke:
+
+- **The duster ignored the requested facing about half the time**, even with
+  LEFT and RIGHT capitalised and "seen from directly behind" spelled out. 22
+  candidates across four facings gives enough to pick four genuinely
+  different views, but the filenames cannot be trusted.
+- **"Blighted" needed to be said several ways.** A first pass asking for a
+  "rotting pumpkin" returned a healthy orange one. Naming the absence —
+  "no healthy colour", "grey and mouldy", "collapsed" — at guidance 18 was
+  what worked.
+- **`ui_panel` produced one usable candidate out of twelve.** Eleven came
+  back as blank parchment with no frame at all. A panel is a shape, and the
+  endpoint wants to draw a subject.
+
+## The handoff was lying, and that was the real blocker
+
+`HANDOFF.md` said "current as of session 12" and its outstanding list still
+asked for work finished in sessions 13 and 14 — item 3 wanted sixteen animals
+packed that are packed, item 6 wanted a gas cloud wired that is wired.
+`docs/NEXT_SESSION.md` was still the session-12 brief, "make the field
+frightening", every item of which is done. And `HANDOFF.md` sends a cold
+reader to `NEXT_SESSION.md` **first**.
+
+So a new session following the documented reading order would have redone two
+sessions of finished work before writing a line. Both are rewritten. This is
+the failure mode of a per-session handoff file: it is the highest-leverage
+document in the repo and the one nobody re-reads after writing it.
+
+## The playtest, and the one thing it changes
+
+The owner played it: *"I plaed it and it was great."* Two findings:
+
+- **More enemies per wave.** And critically, **performance is not the
+  limit** — they ran 200+ enemies alive several times and *"it all worked
+  great"*. `pressureCeiling: 380` is a design choice to revisit, not a frame
+  budget.
+- **The class dropdown is untested.** Six classes ship, some have never been
+  played.
+
+Found while checking that first note, and it is the thing that makes tuning
+awkward: **`threatBudget` is hardcoded in `src/sim/formulas.ts`** as
+`30 + 22*wave + 1.4*wave*wave`, while `waves.json` carries
+`threatBudget.formula` as a string that **nothing reads**. The content file
+describes the curve; the code is the truth. `waveScalar` has the identical
+split. Since the owner's first tuning ask is density, the first move of that
+session is to read those coefficients from content — which CLAUDE.md's
+no-balance-constants-in-code rule requires anyway. Not done here, because it
+belongs to the session with a person at the controls.
+
+## Tools kept
+
+Three drivers moved out of `/tmp` into `tools/`, reading `PIXELLAB_API_KEY`
+from the environment rather than a scratchpad path: `npm run mapobject`,
+`npm run rmbg`, and `npm run contactdir` (which tiles a directory of raw
+candidates at an integer zoom — 32px art cannot be judged at 1:1, and every
+review pass this session needed it). The first two cannot run again without a
+new account. They are kept as the record of what works and what it costs.
+
+---
+
 # Session 14 — the art goes in
 
 Session 13 bought raw material and wired none of it, deliberately. This
