@@ -1079,6 +1079,23 @@ try {
   writeFileSync('public/ui/panel.png', encodePng(panel))
   console.log('ui: public/ui/panel.png 64x62')
 } catch (e) {
+  void e
+}
+
+/*
+   The rarity plate, emitted as a FILE rather than packed.
+
+   The UI is DOM and CSS needs a real URL, which is the same reason panel.png
+   is emitted above. Generated at 192x32 against the real destination — a
+   banner spanning a 210px card at 30px tall — after a first attempt produced
+   24x30 badges for it and cost about 120 generations for art nothing could
+   use. Measure the destination before generating chrome.
+*/
+try {
+  const plate = decodePng(readFileSync('assets/pixellab/ui/plate.png'))
+  writeFileSync('public/ui/plate.png', encodePng(plate))
+  console.log(`ui: public/ui/plate.png ${plate.width}x${plate.height}`)
+} catch (e) {
   // A missing UI pack costs the chrome, not the game — the CSS has colour
   // fallbacks for every border-image.
   console.warn('ui pack unavailable, screens fall back to flat panels:', (e as Error).message)
