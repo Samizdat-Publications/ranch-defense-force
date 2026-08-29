@@ -134,21 +134,48 @@ one, so shots near an edge showed ground beyond the fence that the game
 never lets you see. Found by looking at a fence screenshot and asking
 what the flat green band was.
 
-## Two things deliberately NOT wired, and why
+## Both of those got done, and the reason they were cheap
 
-- **The FX set.** The existing effects are multi-frame animated clips
-  from an effects pack, conformed to the palette. The generated FX are
-  single stills. Swapping them in would trade animation for a static
-  frame, which is a downgrade. They stay available for a use that suits
-  them.
-- **The UI rarity plates, and this one is a generation mistake worth
-  recording.** They were generated as 24x30 square badges. The plate they
-  would fill is a variable-width banner spanning a 210px card — about a
-  6.5x horizontal stretch. ART_STYLE already warns that "stock is
-  authored for a shape" and that a surface of a different shape needs its
-  own stock rather than the same one stretched. The lesson is to measure
-  the destination BEFORE generating chrome, not after: this cost 120
-  generations for art nothing can use as drawn.
+**`/map-objects` costs ONE generation and takes any aspect ratio.** That is
+the single most useful thing learned this session. Every prop this project
+generated went through `create-1-direction-object` at TWENTY apiece, and
+that endpoint only accepts a square `size`. So the ~120 generations spent
+on unusable square rarity badges were not merely the wrong shape — they
+were on the wrong endpoint by a factor of twenty.
+
+**The rarity plate** is one 192x32 steel banner, measured against the real
+destination this time (a 30px plate across a 210px card). One plate, not
+six: `card.css` already expresses every tier through `--tier-colour`, so
+the banner is blended OVER that gradient and all five rarities plus the
+plain-steel rank variant keep working with no per-tier art. Eight
+generations, including two first attempts that came back as a dirty white
+board and a flat bar — what makes a plate read as struck metal is
+STRUCTURE, a bevelled rim and rivets, not surface noise.
+
+**The FX are ours and animated.** `animate-with-text-v3` turns a finished
+still into eight or nine frames for ONE generation, the cheapest thing on
+the price list. muzzle, gas, dust, explosion and slash replaced; seven
+generations for the set including two new stills.
+
+They are deliberately NOT conformed to the house palette, unlike the pack
+FX. Conforming exists to drag a bought sheet onto our palette; these never
+left it, and the palette is authored for terrain and creatures with no
+coverage for an electric blue arc. Quantising would send those pixels
+somewhere absurd — the "explosion turning magenta" failure already on
+record.
+
+**A detector that had to be measured rather than guessed.** The animator's
+failure mode is a last frame that collapses to a flat block of colour, and
+it would have flashed a filled rectangle over the game on the last frame of
+every shot. Bounds cannot catch it: an effect legitimately fills its
+canvas, and frames 0-2 of that same muzzle flash do. Measured, the good
+frames are 43-56% transparent with about twenty colours and the bad one is
+7% with four — so the test is both conditions together, and a dense
+explosion is never mistaken for a failure.
+
+**One stale note corrected:** the queue claimed "nothing in the game
+renders gas". `playFx('gas')` has always been there and the pack had a gas
+clip. The generated one replaces it rather than filling a hole.
 
 # Session 13 — spending the subscription down
 
