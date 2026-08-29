@@ -100,17 +100,55 @@ Wang set is a whole terrain pair; you swap and re-bake. Safe because the
 bake already had **its own RNG stream**, separate precisely so "the ground
 must not move a single later spawn".
 
-## Still not wired
+## The rest of it
 
-- **The attack clips.** Ten exist. The charge behaviours own the `t0`/`s0`
-  scratch and their wind-up state is not exposed, so binding an attack
-  pose is a deeper change into behaviour internals than it looked.
-- **The FX set** — muzzle flash, impact, dust, sparks, gas. `gasImmune`,
-  `trailGas` and `gasGrace` are still in the sim with nothing rendering
-  gas.
-- **Scenery props.** 76 props are picked and unpacked; the field scatters
-  harvest nodes only, so a non-interactive prop layer has to exist first.
-- **The UI plates** and the two class ability poses.
+**The attack clips play.** I had stopped on this saying the charge
+behaviours own the `t0`/`s0` scratch and their wind-up state is not
+exposed. True, and the wrong conclusion: the fix is not for the renderer
+to decode private state, it is for the sim to say something the renderer
+can use. `e.attackT` is that — a behaviour says "the attack starts now"
+and never learns the clip length. `charge` fires it on the tell,
+everything else on the contact hit, because the chasers have no attack
+state at all. Cosmetic, so unlike the death timer it needed no balance
+concession.
+
+**Scenery is on the field**, eighteen props, renderer-owned rather than
+sim-owned because scenery has no behaviour. Placed in a band near the
+edges, and that is a constraint not a taste: they carry no collision, and
+walking through a water trough in open field would read as a bug.
+Scattered BEFORE the draw list is sized, because `push()` returns null
+when full and every caller breaks — under-sizing silently drops whatever
+sorts last.
+
+**The fence is real art** instead of a `strokeRect`, and flat decals are
+baked into the terrain. Only flat things are baked: a decal can never be
+walked behind, so it loses nothing by having no y-sort.
+
+**Threshing Floor was the last `_standInArt` item** and now has the
+generated chain lightning arc. That flag is zero across the whole content
+set.
+
+**And the screenshot tool was lying about the camera.** `draw-world`
+centred on the player with no clamp while `Camera.clamp` bounds the real
+one, so shots near an edge showed ground beyond the fence that the game
+never lets you see. Found by looking at a fence screenshot and asking
+what the flat green band was.
+
+## Two things deliberately NOT wired, and why
+
+- **The FX set.** The existing effects are multi-frame animated clips
+  from an effects pack, conformed to the palette. The generated FX are
+  single stills. Swapping them in would trade animation for a static
+  frame, which is a downgrade. They stay available for a use that suits
+  them.
+- **The UI rarity plates, and this one is a generation mistake worth
+  recording.** They were generated as 24x30 square badges. The plate they
+  would fill is a variable-width banner spanning a 210px card — about a
+  6.5x horizontal stretch. ART_STYLE already warns that "stock is
+  authored for a shape" and that a surface of a different shape needs its
+  own stock rather than the same one stretched. The lesson is to measure
+  the destination BEFORE generating chrome, not after: this cost 120
+  generations for art nothing can use as drawn.
 
 # Session 13 — spending the subscription down
 

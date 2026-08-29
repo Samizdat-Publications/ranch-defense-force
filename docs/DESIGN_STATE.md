@@ -122,9 +122,17 @@ withered grass and rot to cold ash. Re-bakes on a band change, never per frame.
 
 **The pickups are real art** at 16px. `pickup.heal` is still LimeZu's apple.
 
-**Still borrowed or unwired:** Threshing Floor (the last `_standInArt` item);
-the attack clips and the FX set, both generated and not yet played; 76 picked
-props with no scenery layer to scatter them into; the UI rarity plates.
+**`_standInArt` is now ZERO across the whole content set** — Threshing Floor,
+the last one, has the generated chain lightning arc.
+
+**Walk, attack and death all play** for the generated roster. The fence is real
+art, flat decals are baked into the terrain, and eighteen props are scattered as
+y-sorted scenery in a band near the arena edges.
+
+**Deliberately unwired:** the generated FX stills (the existing effects are
+animated clips from a pack — a still would be a downgrade), and the UI rarity
+plates (generated as 24x30 badges; the plate they would fill is a banner across
+a 210px card, so they are the wrong shape rather than the wrong art).
 
 ## Rules that have bitten, in this repo, more than once
 
