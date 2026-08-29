@@ -129,10 +129,19 @@ the last one, has the generated chain lightning arc.
 art, flat decals are baked into the terrain, and eighteen props are scattered as
 y-sorted scenery in a band near the arena edges.
 
-**Deliberately unwired:** the generated FX stills (the existing effects are
-animated clips from a pack — a still would be a downgrade), and the UI rarity
-plates (generated as 24x30 badges; the plate they would fill is a banner across
-a 210px card, so they are the wrong shape rather than the wrong art).
+**The FX are generated and animated** — muzzle, gas, dust, explosion and slash,
+one generation each via `animate-with-text-v3`. Not conformed: the authored
+palette has no coverage for an electric arc. hitSpark, critStar and shock are
+still pack art.
+
+**The rarity plate is generated steel**, one 192x32 banner blended over the
+existing tier gradient so all five rarities and the rank variant work off
+`--tier-colour` with no per-tier art. Emitted to `public/ui/plate.png`, because
+the UI is DOM and CSS needs a real URL.
+
+**Use `/map-objects`, not `create-1-direction-object`, for anything flat.** One
+generation instead of twenty, and it takes any aspect ratio rather than a square
+size only.
 
 ## Rules that have bitten, in this repo, more than once
 
