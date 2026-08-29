@@ -139,6 +139,16 @@ interface Manifest {
     cell: number
     clips: Record<string, { path: string; row: number; frames: number }>
   }
+  /**
+   * Generated FX, animated from a still and delivered as one PNG per frame.
+   *
+   * Same frame keys and the same CENTRE pivot as the pack `fx` group, so the
+   * renderer cannot tell them apart — an effect is centred on a point in the
+   * world, it does not stand on the ground. A clip declared here REPLACES the
+   * pack clip of that name, which is why the pack entry has to be deleted
+   * rather than left alongside.
+   */
+  pixellabFx?: { _base: string; clips: Record<string, { dir: string }> }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
 }
 
@@ -764,6 +774,75 @@ if (fx && Object.keys(fx.clips ?? {}).length > 0) {
       errors.push(`fx ${name}: ${path} row ${clip.row} is entirely transparent`)
       continue
     }
+    clipLengths[`fx.${name}`] = { play: packed }
+  }
+}
+
+// ------------------------------------------------------- generated fx
+//
+// NOT conformed to the house palette, unlike the pack FX above.
+//
+// Conforming exists to drag a bought sheet onto our palette. These were
+// generated in the house style already, and the palette is authored for
+// terrain and creatures — it has no coverage for an electric blue arc, so
+// quantising would send those pixels to the nearest thing it does have. That
+// is the "explosion turning magenta" failure ART_STYLE records, and the fix is
+// not to quantise art that never left the palette.
+if (manifest.pixellabFx) {
+  const cfg = manifest.pixellabFx
+  for (const [name, clip] of Object.entries(cfg.clips)) {
+    const dir = `${cfg._base}${clip.dir}`
+    let files: string[]
+    try {
+      files = readdirSync(dir).filter((f) => f.endsWith('.png')).sort()
+    } catch (e) {
+      errors.push(`${dir}: ${(e as Error).message}`)
+      continue
+    }
+    let packed = 0
+    for (const f of files) {
+      let img: Image
+      try {
+        img = decodePng(readFileSync(`${dir}/${f}`))
+      } catch (e) {
+        errors.push(`${dir}/${f}: ${(e as Error).message}`)
+        continue
+      }
+      const b = contentBounds(img, 0, 0, img.width, img.height)
+      if (b.empty) break
+      /*
+         Drop a frame that has COLLAPSED INTO A SOLID BLOCK.
+
+         The animator's failure mode is a final frame that comes back as a flat
+         rectangle of colour — the muzzle flash returned eight good frames and a
+         tan square. It is not transparent, so the empty check above misses it,
+         and it would flash a filled rectangle over the game on the last frame
+         of every shot.
+
+         Bounds alone cannot catch it: an effect legitimately fills its canvas,
+         and frames 0-2 of that same muzzle flash do. What separates them is
+         measured — the good frames are 43-56% transparent with ~20 colours, the
+         bad one is 7% transparent with 4. Both conditions together, so a dense
+         explosion is never mistaken for a failure.
+      */
+      let clear = 0
+      const hues = new Set<number>()
+      for (let p = 0; p < img.data.length; p += 4) {
+        if (img.data[p + 3] < 9) clear++
+        else hues.add((img.data[p] << 16) | (img.data[p + 1] << 8) | img.data[p + 2])
+      }
+      const px = img.width * img.height
+      if (clear / px < 0.15 && hues.size <= 8) break
+      pending.push({
+        name: `fx.${name}.${packed}`,
+        img,
+        sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        ox: b.x - img.width / 2,
+        oy: b.y - img.height / 2,
+      })
+      packed++
+    }
+    if (!packed) { errors.push(`pixellabFx ${name}: no usable frames in ${dir}`); continue }
     clipLengths[`fx.${name}`] = { play: packed }
   }
 }
