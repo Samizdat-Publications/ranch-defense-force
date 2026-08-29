@@ -141,7 +141,31 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  background: linear-gradient(180deg, var(--tier-colour), var(--tier-dark));
+  /*
+     Struck metal over the tier colour, rather than instead of it.
+
+     The plate is a generated 192x32 steel banner (`/ui/plate.png`, emitted by
+     the atlas build because CSS needs a real URL and cannot read the atlas).
+     It is BLENDED over the existing tier gradient rather than replacing it, so
+     all five rarities and the plain-steel rank variant keep working off
+     `--tier-colour` with no per-tier art — one plate instead of six.
+
+     Longhands, not the `background` shorthand: a shorthand followed by a
+     longhand that overwrites its payload is invisible, and that has cost this
+     project two milestones of see-through cards already.
+
+     `pixelated` because the plate is pixel art stretched a couple of percent
+     to the card width; smoothing it would soften the rim that makes it read as
+     metal at all.
+  */
+  background-color: var(--tier-dark);
+  background-image:
+    url('/ui/plate.png'),
+    linear-gradient(180deg, var(--tier-colour), var(--tier-dark));
+  background-size: 100% 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-blend-mode: overlay, normal;
+  image-rendering: pixelated;
   border: 2px solid #2b241a;
   box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.45),
