@@ -28,6 +28,8 @@
     "cut": "vite-node tools/pixellab-cut.ts --",
     "fetch": "vite-node tools/pixellab-fetch.ts --",
     "object": "vite-node tools/pixellab-object.ts --",
+    "mapobject": "vite-node tools/pixellab-mapobject.ts --",
+    "rmbg": "vite-node tools/pixellab-rmbg.ts --",
     "animal": "vite-node tools/animal-check.ts --",
     "anim": "vite-node tools/pixellab-anim.ts --",
     "character": "vite-node tools/pixellab-character.ts --",
@@ -35,6 +37,7 @@
     "frames": "vite-node tools/pixellab-frames.ts --",
     "objman": "vite-node tools/object-manifest.ts --",
     "contact": "vite-node tools/atlas-contact.ts --",
+    "contactdir": "vite-node tools/contact-dir.ts --",
     "scale": "vite-node tools/scale-check.ts --",
     "pick": "vite-node tools/pick-props.ts --"
   },
