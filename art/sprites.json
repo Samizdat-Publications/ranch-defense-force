@@ -259,37 +259,13 @@
     "row": 0,
     "frames": 12
    },
-   "muzzle": {
-    "path": "Part 11/526.png",
-    "row": 0,
-    "frames": 9
-   },
-   "slash": {
-    "path": "Part 10/477.png",
-    "row": 5,
-    "frames": 12
-   },
-   "explosion": {
-    "path": "Part 12/569.png",
-    "row": 0,
-    "frames": 13
-   },
-   "gas": {
-    "path": "Part 12/566.png",
-    "row": 3,
-    "frames": 13
-   },
-   "dust": {
-    "path": "Part 9/426.png",
-    "row": 4,
-    "frames": 10
-   },
    "shock": {
     "path": "Part 9/436.png",
     "row": 5,
     "frames": 9
    }
-  }
+  },
+  "_replacedNote": "muzzle, gas, dust, explosion and slash were REMOVED here: they are generated and animated now and live in pixellabFx. Two groups writing one frame key means the later pass silently wins. hitSpark, critStar and shock are still the pack."
  },
  "projectiles": {
   "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid — no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
@@ -1003,6 +979,27 @@
       "frames": 9
      }
     }
+   }
+  }
+ },
+ "pixellabFx": {
+  "_note": "FX animated from a generated still via animate-with-text-v3 — one generation per 8-frame clip, which is the cheapest thing on the price list. Same frame keys and centre pivot as the pack fx group, so the renderer cannot tell them apart.",
+  "_base": "assets/pixellab/fx/",
+  "clips": {
+   "muzzle": {
+    "dir": "muzzle"
+   },
+   "gas": {
+    "dir": "gas"
+   },
+   "dust": {
+    "dir": "dust"
+   },
+   "explosion": {
+    "dir": "explosion"
+   },
+   "slash": {
+    "dir": "slash"
    }
   }
  }
