@@ -38,6 +38,7 @@ everything below is a record of what was available, not a menu.
 | Service | PixelLab (pixellab.ai) |
 | Tier | **Tier 2 · Pixel Artisan** |
 | Budget | **4,710 generations/month** (not 5,000 — the dashboard figure is the one that counts) |
+| **Status** | **CANCELLED after session 15. Balance spent to exactly 0; the key is dead.** Nothing in this file can be run again. It is kept as the record of what works, what it costs, and what to do differently on a future account. |
 | Concurrency | **10 jobs** |
 | Max output | 512×512 |
 | Licence | commercial use permitted |
@@ -67,21 +68,67 @@ id the account held on 2026-08-28.
 
 ### Measured costs
 
-Read the balance either side of a call rather than trusting a table; these were
-measured that way.
+Read the balance either side of a call rather than trusting a table; every row
+below was measured that way, and two of them contradict PixelLab's own docs.
 
-| Tool | Cost |
+| Endpoint | Cost |
 |---|---|
+| **`POST /v2/map-objects`** | **1** — any aspect ratio, 32–400px |
+| **`POST /v2/animate-with-text-v3`** | **1** — 8–9 frames from a single still |
 | `POST /objects/{id}/animations` (`mode: v3`) | **1 per direction** — 8 for a full ring |
+| `POST /create-1-direction-object` | **20** — square `size` only |
 | `create_image_pro` @64px | 20, and it returns **16** candidates |
 | `create_8_direction_object` | 20 |
-| `POST /create-1-direction-object` @64px | cheap; returns 16 candidate frames |
 | `create_character` (`mode: pro`) | 20 |
-| Utilities — unzoom, reduce colors, pixel art correction, remove background | free |
+| `POST /v2/remove-background` | **1** — the docs say free; it is not |
+| Utilities — unzoom, reduce colors, pixel art correction | free |
 
-`animate_object` at one generation a direction is the best value on the price
-list by an order of magnitude, and a static ring that never gets a walk is the
-most wasteful thing on the account.
+**`/map-objects` is the headline.** It costs a twentieth of
+`create-1-direction-object` for art of the same quality, and unlike that
+endpoint it takes a non-square `image_size`, which is what a 400×224 barn or a
+192×32 name plate needs. An earlier version of this table called
+`create-1-direction-object` "cheap"; session 13 paid 20 a call on that belief.
+Session 15 generated 247 images for 247 generations through `/map-objects`.
+
+**Candidate count is free money and moves with size.** At the same price a
+32px call returns **64** candidates, 64px returns **16**, and 96–128px returns
+**4**. Above roughly 160px it returns one image. So the cheapest way to get
+choice is to generate small and only go large when the subject genuinely needs
+the pixels.
+
+**Anything large comes back carded.** Every subject generated at ~400px returned
+a framed illustration on a solid opaque ground; every subject at ≤160px came back
+cleanly cut out. `remove-background` fixes it at 1 generation each. **Protect
+before you write** — a pass that re-cuts from the source must run *after* the
+de-card, or it re-cuts the carded original. That ordering mistake has been made
+here once already.
+
+**Enum values are validated and rejections are free.** `detail` takes exactly
+`low detail` / `medium detail` / `high detail`; anything else is a 422 that costs
+nothing. Twenty calls bounced that way in session 15 for the price of zero
+generations, so a cheap probe before a big batch is genuinely free.
+
+`animate-with-text-v3` and `animate_object` at one generation a clip are the
+best value on the price list by an order of magnitude, and a static ring that
+never gets a walk is the most wasteful thing on the account.
+
+### The drivers, and the fact that they cannot run
+
+Three batch drivers are committed and **all three need a live key, which this
+project no longer has**:
+
+| command | endpoint | what it does |
+|---|---|---|
+| `npm run mapobject -- <jobs.json> <outDir> [concurrency]` | `/map-objects` | the cheap workhorse; `n` per subject, skips anything already on disk so a re-run after a timeout does not pay twice |
+| `npm run rmbg -- <file.png> ...` | `/remove-background` | de-cards in place, then checks the corners of the content bounds to confirm rather than assuming |
+| `npm run object` | `create-*-object` | the expensive path, kept for the record |
+
+They read `PIXELLAB_API_KEY` from the environment. **The key never enters the
+repo — the repo is public.**
+
+`npm run contactdir -- <dir> <out.png> [maxWidth] [zoom]` tiles a directory of
+raw candidates onto one sheet, grouped by subject, at an integer zoom. Judging
+32px art at 1:1 is not possible and every review pass needs this.
 
 ### Enumerating and recovering an account
 
