@@ -1,6 +1,6 @@
 {
- "id": "d6f3950f-44f9-4296-9279-e419b702dc34",
- "name": "concrete_to_grating",
+ "id": "ac3d6c25-776e-46b1-882e-fee6ff754580",
+ "name": "concrete_to_steelwall",
  "tile_size": {
   "width": 32,
   "height": 32
@@ -123,7 +123,7 @@
     "description": null
    },
    {
-    "id": "5dfb4b2f-3dc9-47cc-aaba-98a94cf4466a",
+    "id": "6f431aef-7e55-4a96-9a57-f89e815dbe9f",
     "name": "wang_0",
     "corners": {
      "NW": "lower",
@@ -225,7 +225,7 @@
     "description": null
    },
    {
-    "id": "541c7daf-b646-49e8-bafe-043cc3a67e0a",
+    "id": "765ebc04-8638-4a54-b52f-49366012a8f0",
     "name": "wang_15",
     "corners": {
      "NW": "upper",

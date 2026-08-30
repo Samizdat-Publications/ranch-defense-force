@@ -436,7 +436,18 @@
           "base.lift1",
           "base.lift2",
           "base.lift3",
-          "base.lift4"
+          "base.lift4",
+          "base.serverRack",
+          "base.lockers",
+          "base.cratePallet",
+          "base.filingSpill",
+          "base.rubble",
+          "base.cableSpool",
+          "base.latrine",
+          "base.warningSign",
+          "base.palletJack",
+          "base.medChair",
+          "base.labBench"
         ],
         "decals": [
           "decal.scorch",
@@ -457,6 +468,20 @@
           "base.wallLamp",
           "base.wallPlain"
         ]
+      },
+      "_overheadNote": "A ceiling, so the room has a top. Strip lights and service runs rather than stalactites -- same layer, opposite vocabulary, which is the whole monotony break. `striplightDead` hangs at an angle off its cable and is the one that does the work: a room where SOME of the lights have failed reads as a place something happened to. It fades near the player like every overhead layer does, because a bullet-heaven player has to see what is about to hit them.",
+      "overhead": {
+        "sprites": [
+          "base.striplightLit",
+          "base.striplightDead",
+          "base.striplightLit",
+          "base.ceilingPipes",
+          "base.ceilingDuct"
+        ],
+        "perMillionPx": 9,
+        "fadeRadius": 150,
+        "minAlpha": 0.12,
+        "alpha": 0.75
       },
       "breakables": {
         "weights": {

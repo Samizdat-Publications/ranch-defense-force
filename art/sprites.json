@@ -1541,8 +1541,24 @@
       "base.wallVent": "wallVent.png",
       "base.wallStencil": "wallStencil.png",
       "base.wallLamp": "wallLamp.png",
-      "base.wallPlain": "wallPlain.png"
+      "base.wallPlain": "wallPlain.png",
+      "base.serverRack": "serverRack.png",
+      "base.lockers": "lockers.png",
+      "base.cratePallet": "cratePallet.png",
+      "base.filingSpill": "filingSpill.png",
+      "base.rubble": "rubble.png",
+      "base.cableSpool": "cableSpool.png",
+      "base.latrine": "latrine.png",
+      "base.warningSign": "warningSign.png",
+      "base.palletJack": "palletJack.png",
+      "base.medChair": "medChair.png",
+      "base.striplightLit": "striplightLit.png",
+      "base.striplightDead": "striplightDead.png",
+      "base.labBench": "labBench.png",
+      "base.ceilingPipes": "ceilingPipes.png",
+      "base.ceilingDuct": "ceilingDuct.png"
     },
-    "_panelNote": "The six `base.wall*` panels are 32x48 things BOLTED TO a wall, not the wall itself. That distinction cost a generation to learn: every map-object comes back with an outline the whole way round, so eight in a row read as eight separate bricks and never as a continuous surface. The wall proper is a Wang TILESET (`concrete_to_wall`), because corner autotiling gives four correct corners for free and stamped sprites need a hand-written case for each. `wallCap*` were cut from the same misunderstanding and are not packed."
+    "_panelNote": "The six `base.wall*` panels are 32x48 things BOLTED TO a wall, not the wall itself. That distinction cost a generation to learn: every map-object comes back with an outline the whole way round, so eight in a row read as eight separate bricks and never as a continuous surface. The wall proper is a Wang TILESET (`concrete_to_wall`), because corner autotiling gives four correct corners for free and stamped sprites need a hand-written case for each. `wallCap*` were cut from the same misunderstanding and are not packed.",
+    "_nameNote": "Two of these are named for what they ARE and not for what was asked for, which is the rule this repo keeps relearning: `node_scrapheap_2` is a fire truck and `node_saltrock_1` is amethyst. `latrine` was prompted as an emergency eyewash station and came back an unmistakable toilet -- good art, wrong subject, and a bunker wants a latrine anyway. `medChair` was prompted as a wheeled gurney and came back a reclining examination chair. Both are kept; both are named for the picture. Three others (a lab bench, ceiling pipes and a ceiling duct) came back near-empty when asked for 'seen from below' and were deleted: the model has no ceiling view, so overhead art has to be asked for plainly and treated as overhead by the RENDERER."
   }
 }
