@@ -315,18 +315,27 @@ describe('maps', () => {
       // duckFlight, against the unbiased Home Field. Counting spawn REQUESTS
       // rather than asserting a ratio: the roster is weighted by cost too, and
       // pinning an exact number here would break on any enemies.json edit.
+      // Census across SEVERAL seeds and several late waves, not one of each.
+      // One seed on one wave cannot resolve a 2x bias once the roster is 15
+      // enemies deep: a single wave's budget only buys a handful of groups, so
+      // whether the biased enemy appears at all is mostly luck. That version of
+      // this test passed when it was written and started failing the moment
+      // five enemies were added, which is the definition of a test measuring
+      // its sample rather than its subject.
       const census = (mapId: string): Record<string, number> => {
         const out: Record<string, number> = {}
-        for (let seed = 0; seed < 600; seed++) {
+        let found = 0
+        for (let seed = 0; seed < 900 && found < 6; seed++) {
           const w = new World(seed, 'hand')
           if (w.mapId !== mapId) continue
-          // Wave 16 so the whole roster is unlocked.
-          w.spawner.beginWave(16)
-          for (let i = 0; i < 4000; i++) {
-            w.spawner.update(STEP, 0)
-            for (const p of w.spawner.pending) out[p.typeId] = (out[p.typeId] ?? 0) + p.count
+          found++
+          for (const wave of [16, 20, 24]) {
+            w.spawner.beginWave(wave)
+            for (let i = 0; i < 3000; i++) {
+              w.spawner.update(STEP, 0)
+              for (const p of w.spawner.pending) out[p.typeId] = (out[p.typeId] ?? 0) + p.count
+            }
           }
-          break
         }
         return out
       }

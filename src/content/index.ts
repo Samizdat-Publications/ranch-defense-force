@@ -170,7 +170,23 @@ export const ITEMS = defsOf<ItemDef>(itemsRaw)
 // enemies.json carries the bosses under a `_bosses` key; split them out so the
 // spawner never has to filter a magic key out of the roster.
 const { _bosses, ...enemyRest } = enemiesRaw as unknown as Record<string, unknown>
-export const ENEMIES = enemyRest as unknown as Record<string, EnemyDef>
+/**
+ * `defsOf` and not a bare spread.
+ *
+ * This line used to drop only `_bosses`, which meant every OTHER `_`-prefixed
+ * design note in enemies.json survived into the roster as a fake enemy. The
+ * failure is silent and total: `ENEMY_IDS` includes the note, `refreshRoster`
+ * reads `undefined` for its `firstWave` so it is never filtered out, and then
+ * `1 / Math.sqrt(undefined)` puts a NaN into the spawn weight table. One NaN
+ * makes `weightedIndex` return garbage for EVERY enemy, so the director stops
+ * spawning and a whole run reports zero kills.
+ *
+ * The file got its first such note in session 17 and immediately took the whole
+ * acceptance suite down with it. `defsOf` is the utility that already exists for
+ * exactly this, and its own comment records that this class of bug had bitten
+ * twice before.
+ */
+export const ENEMIES = defsOf<EnemyDef>(enemyRest)
 export const BOSSES = (_bosses ?? {}) as Record<string, Record<string, unknown>>
 
 export const WAVES = wavesRaw

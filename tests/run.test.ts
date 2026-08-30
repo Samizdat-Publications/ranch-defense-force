@@ -149,7 +149,26 @@ function simulate(
   }
 }
 
-const SEEDS = [20260810, 4242, 555, 31337, 7, 99]
+/*
+   Twenty-four seeds, not six.
+ *
+ * THE BAR HAS NOT MOVED -- it is still "at least half of them clear". Only the
+ * sample grew, which makes this test strictly harder to pass by luck, not
+ * easier.
+ *
+ * Six was never enough to measure what this test measures. The clear rate was
+ * surveyed three separate times in session 17, each over 40-60 full runs:
+ * 60% before the map system, 55% on the unchanged Home Field alone, and 62.5%
+ * after the roster went from 10 enemies to 15. At a true rate near 60%, six
+ * samples fail a 50% bar about one time in five ON A PASSING GAME -- so every
+ * change that reshuffles the seed stream had a one-in-five chance of turning
+ * this red for no reason, and twice in one session it did. That is a test
+ * measuring its own sample size.
+ *
+ * At twenty-four the same bar sits about two standard deviations from the mean
+ * instead of half of one.
+ */
+const SEEDS = Array.from({ length: 24 }, (_, i) => 1009 * (i + 1))
 
 describe('a full run', () => {
   it('completes all 25 waves on most seeds, in about 17 minutes', () => {
@@ -181,7 +200,12 @@ describe('a full run', () => {
     // only ever kites measures The Kid twice.
     const hand = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'brawl')).filter((r) => r.cleared).length
     const kid = SEEDS.map((s) => simulate(s, 'kid', pickSmart, 'kite')).filter((r) => r.cleared).length
-    expect(Math.abs(hand - kid)).toBeLessThanOrEqual(2)
+    // Proportional, not absolute. This was `<= 2` when SEEDS was six -- a
+    // third of the sample. Widening SEEDS to twenty-four without scaling it
+    // would have silently made the test four times stricter than written, and
+    // it is not the bar that is supposed to be changing. ceil(n/3) is exactly
+    // 2 at n=6, so this is the same test.
+    expect(Math.abs(hand - kid)).toBeLessThanOrEqual(Math.ceil(SEEDS.length / 3))
     expect(hand).toBeGreaterThan(0)
     expect(kid).toBeGreaterThan(0)
   }, 600_000)
@@ -207,7 +231,11 @@ describe('a full run', () => {
     //
     // Its own, larger seed set: the six SEEDS the other tests share cannot
     // resolve an effect this size at all.
-    const CROSSOVER_SEEDS = Array.from({ length: 16 }, (_, i) => 1000 + i * 7919)
+    // Thirty-two, not sixteen, for the same reason SEEDS is twenty-four: the
+    // assertion is unchanged, the sample is bigger. At sixteen this flipped
+    // sign twice in one session while the 36-seed measurement stayed the right
+    // way up both times.
+    const CROSSOVER_SEEDS = Array.from({ length: 32 }, (_, i) => 1000 + i * 7919)
     const cleared = (classId: string, pilot: Pilot): number =>
       CROSSOVER_SEEDS.map((s) => simulate(s, classId, pickSmart, pilot))
         .filter((r) => r.cleared).length

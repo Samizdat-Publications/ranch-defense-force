@@ -176,6 +176,92 @@
   "xp": 8,
   "teaches": "read the field, not the nearest target"
  },
+ "_lateRosterNote": "The five below all existed as complete 8-direction rigs in the atlas -- walk, attack, death and idle, 224 frames each -- and were wired to nothing. 1,120 frames, 26% of the packed atlas, already paid for and never drawn. They are placed at waves 3, 8, 13, 16 and 19 rather than spread evenly, because the roster's real gap was the back half: before this, the last new enemy arrived at wave 14 and waves 15-25 introduced nothing at all. Nearly half a run was the same eight things getting bigger numbers.",
+
+ "infectedHen": {
+  "name": "Infected Hen",
+  "sheet": "infectedHen",
+  "hp": 8,
+  "speed": 148,
+  "damage": 5,
+  "radius": 9,
+  "firstWave": 3,
+  "threatCost": 4,
+  "groupSize": 12,
+  "behaviour": "erratic",
+  "separation": true,
+  "xp": 1,
+  "teaches": "a cloud you cannot aim through"
+ },
+
+ "fjordPonyCursed": {
+  "name": "Cursed Fjord Pony",
+  "sheet": "fjordPonyCursed",
+  "hp": 88,
+  "speed": 104,
+  "damage": 14,
+  "radius": 15,
+  "firstWave": 8,
+  "threatCost": 19,
+  "groupSize": 2,
+  "behaviour": "chase",
+  "xp": 4,
+  "teaches": "the first thing that is both quick and solid"
+ },
+
+ "arabianCursed": {
+  "name": "Cursed Arabian",
+  "sheet": "arabianCursed",
+  "hp": 130,
+  "speed": 96,
+  "damage": 22,
+  "radius": 16,
+  "firstWave": 13,
+  "threatCost": 33,
+  "groupSize": 1,
+  "behaviour": "charge",
+  "chargeSpeed": 340,
+  "windUp": 0.7,
+  "overshoot": 190,
+  "staggerSeconds": 1.2,
+  "xp": 6,
+  "_note": "The Hog's charge, read faster: shorter wind-up, higher top speed, longer overshoot and a briefer stagger. The Hog teaches you that a charge has a reward window; this one teaches you the window is not always the same size.",
+  "teaches": "the same tell, on a shorter fuse"
+ },
+
+ "donkeyCursed": {
+  "name": "Cursed Donkey",
+  "sheet": "donkeyCursed",
+  "hp": 165,
+  "speed": 76,
+  "damage": 24,
+  "radius": 16,
+  "firstWave": 16,
+  "threatCost": 33,
+  "groupSize": 1,
+  "behaviour": "flank",
+  "xp": 8,
+  "_note": "flank is the Feral Dog's behaviour and nothing else has used it since wave 4. On a 30hp dog getting behind you is a nuisance; at 165hp it is the reason to keep moving. Same code, twelve waves later, a different problem.\n\nIt was knockbackImmune for one pass and that was a mistake, caught by measurement rather than by eye: a flanker that cannot be pushed off is aimed squarely at the one class whose kit is standing still. The crossover test measured The Hand's preference for holding ground at 21-vs-11 without these enemies and 26-vs-21 with them -- the gap halved, and this card was why. Knockback restored; it still gets behind you, you can still shove it.",
+  "teaches": "check behind you, again, when it matters"
+ },
+
+ "draftMuleCursed": {
+  "name": "Cursed Draft Mule",
+  "sheet": "draftMuleCursed",
+  "hp": 250,
+  "speed": 56,
+  "damage": 30,
+  "radius": 18,
+  "firstWave": 19,
+  "threatCost": 46,
+  "groupSize": 1,
+  "behaviour": "chase",
+  "knockbackImmune": true,
+  "xp": 11,
+  "_note": "The heaviest thing in the game short of a boss, and the only new enemy after wave 16. First pass was 360hp with knockback immunity AND 45% frontal reduction -- three defensive layers at once, where maskedHauler at 220hp has none of them. Six seeds went to one. Frontal reduction dropped and the numbers pulled back; knockback immunity stays, because being unable to stop it is the whole idea and it is the one layer that changes how you play rather than how long you shoot.",
+  "teaches": "some things are not a fight"
+ },
+
  "_bosses": {
   "prizeBull": {
    "name": "The Prize Bull",
