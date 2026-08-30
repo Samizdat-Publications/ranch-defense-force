@@ -421,6 +421,66 @@
       "frames": 7,
       "file": "maskedHauler.death.right.png"
     },
+    "baseGuard.walk.down": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseGuard.walk.down.png"
+    },
+    "baseGuard.walk.up": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseGuard.walk.up.png"
+    },
+    "baseGuard.walk.left": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseGuard.walk.left.png"
+    },
+    "baseGuard.walk.right": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseGuard.walk.right.png"
+    },
+    "baseTech.walk.down": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseTech.walk.down.png"
+    },
+    "baseTech.walk.up": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseTech.walk.up.png"
+    },
+    "baseTech.walk.left": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseTech.walk.left.png"
+    },
+    "baseTech.walk.right": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseTech.walk.right.png"
+    },
+    "baseHazmat.walk.down": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseHazmat.walk.down.png"
+    },
+    "baseHazmat.walk.up": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseHazmat.walk.up.png"
+    },
+    "baseHazmat.walk.left": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseHazmat.walk.left.png"
+    },
+    "baseHazmat.walk.right": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseHazmat.walk.right.png"
+    },
     "feralDog.death.right": {
       "cell": 53,
       "frames": 9,

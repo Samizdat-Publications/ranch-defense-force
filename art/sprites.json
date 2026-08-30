@@ -1724,7 +1724,11 @@
       "ranch.barnLanternDark": "barnLanternDark.png",
       "ranch.stockTank": "stockTank.png",
       "ranch.feedPan": "feedPan.png",
-      "ranch.barnLadder": "barnLadder.png"
+      "ranch.barnLadder": "barnLadder.png",
+      "ranch.barnFloor": "barnFloor.png",
+      "ranch.muckTracks": "muckTracks.png",
+      "ranch.nestBox": "nestBox.png",
+      "ranch.eggClutch": "eggClutch.png"
     },
     "_fenceNote": "`ranch.fencePost` measures 22x15 of actual content -- it is a squat STUB, not a post, and stretching it to post height is forcing a sprite to be something it is not. Claude Design found this by measuring the alpha box when its pens kept losing their corners. `ranch.fenceCornerPost` is the real tall post; `ranch.fenceRun` is a three-panel run drawn receding, which is what a pen side actually wants; `gateOpen`/`gateClosed` are a pair.",
     "_verticalFenceNote": "THERE IS NO RECEDING FENCE SPRITE AND THERE IS NOT GOING TO BE. Three attempts at 'a fence running away from the viewer', in three different phrasings -- as a viewpoint, as a perspective, and as a pure shape ('three posts stacked with two rails between') -- all returned a single tall post. It is the same failure as 'seen from below' on the ceiling pieces: the generator draws OBJECTS and does not take instruction about the angle you are looking at one from.\nThe answer is compositional and it is what pixel games actually do: build a vertical pen side by REPEATING `ranch.fenceCornerPost` down the screen at a fixed spacing, with the gap between posts reading as the rail at this scale -- or drop `ranch.fenceRail` between each pair if the run is close to camera. `ranch.fenceRun` stays the horizontal answer."
@@ -1800,11 +1804,14 @@
       "pen.paddockDirt": "paddockDirt.png",
       "pen.chickenRunGreen": "chickenRunGreen.png",
       "pen.paddockGrass": "paddockGrass.png",
-      "pen.chickenRunDirt": "chickenRunDirt.png"
+      "pen.chickenRunDirt": "chickenRunDirt.png",
+      "pen.paddockFlat": "paddockFlat.png",
+      "pen.chickenRunFlat": "chickenRunFlat.png"
     },
     "_cardNote": "Every pen came back CARDED -- an opaque fill behind the sprite -- and so did the treeline. `npm run rmbg` fixes it and the repo already knew the rule: large subjects come back framed on a solid ground while the same prompt at 96px comes back clean. A carded pen would have drawn an opaque rectangle over the scene's own sky and ground. ALWAYS rmbg a scene-scale asset and verify the alpha afterwards rather than trusting the call.",
     "_hollowNote": "PENS CARRY NO GROUND OF THEIR OWN. `npm run pens` measures the ground quad and then PUNCHES THE INTERIOR OUT -- writes alpha 0 over every pixel of the fill it just flooded, back to the source png, so the next atlas build packs the hollow version.\nClaude Design's reasoning and it is right: the chicken run came back a golf-green against the ranch's olive-khaki ground, and a pen that brings its own floor only works on one surface. Transparent, and the scene's grass shows through and one pen works anywhere.\nAsking the generator for a transparent interior does NOT work -- it fills it regardless, three times out of three. But the fill is exactly what makes the quad detectable, so the answer is to keep it, measure with it, and delete it afterwards. Free and exact, because the flood already knows every interior pixel. The quad is taken BEFORE the punch, so it is unaffected. Re-running `npm run pens` on an already-hollow pen is a no-op: the flood finds nothing to fill.",
-    "_projectionNote": "THE FIRST FOUR PENS ARE IN THE WRONG PROJECTION and are kept only until the reshoot lands. Design pinned it with a number: paddockDirt's floor quad is 269 wide x 123 deep, a depth/width of 0.457, which is a camera 25-30 degrees above the horizon looking down INTO the pen. `ranch.barn`'s content box is 383x183 = 0.478 for a building FACE, which is a camera only 10-15 degrees up. So the buildings show their front walls while the pens show their whole floor as a lozenge, and no amount of placement reconciles the two.\nA reshoot wants depth/width near 0.20-0.25: far rail only slightly above the near rail, interior a shallow band and not a diamond. Forcing it with a WIDE, SHALLOW CANVAS (400x160 rather than 400x260) constrains the drawing far better than asking for an angle, which the generator ignores."
+    "_projectionNote": "THE FIRST FOUR PENS ARE IN THE WRONG PROJECTION and are kept only until the reshoot lands. Design pinned it with a number: paddockDirt's floor quad is 269 wide x 123 deep, a depth/width of 0.457, which is a camera 25-30 degrees above the horizon looking down INTO the pen. `ranch.barn`'s content box is 383x183 = 0.478 for a building FACE, which is a camera only 10-15 degrees up. So the buildings show their front walls while the pens show their whole floor as a lozenge, and no amount of placement reconciles the two.\nA reshoot wants depth/width near 0.20-0.25: far rail only slightly above the near rail, interior a shallow band and not a diamond. Forcing it with a WIDE, SHALLOW CANVAS (400x160 rather than 400x260) constrains the drawing far better than asking for an angle, which the generator ignores.",
+    "_flatNote": "`pen.paddockFlat` IS THE RESHOOT and the one to use. Its floor quad measures 319 wide x 36 deep, a depth/width of 0.113 against the old paddockDirt's 0.457 -- forced by asking on a 400x160 canvas instead of 400x260, which constrains the drawing where words about camera angle do not. It may be slightly FLATTER than the 0.20-0.25 Design asked for; that is a judgement call for the scene, and it errs on the side of matching the buildings.\n`pen.chickenRunFlat` is a PARTIAL FAILURE and should not be used yet: the wire mesh reads as interior to the flood, so only 677 pixels punched and the detected quad is degenerate (near, left and right land on one point). A mesh pen needs either an opaque interior fill the flood can separate from the mesh, or a hand-authored quad. The four older pens are kept until the reshoot is complete."
   },
   "vault": {
     "_note": "Scene-scale set pieces for the base, drawn as ONE sprite each for the same reason the pens are: individually placed drums is exactly where a scene mis-scales them. `vault.drumWeeping` is the story of the game in one asset -- a split containment drum and what came out of it -- so it is deliberately not two things to align by hand.",
@@ -1813,8 +1820,11 @@
     "files": {
       "vault.drumRank": "drumRank.png",
       "vault.drumWeeping": "drumWeeping.png",
-      "vault.floorGrate": "floorGrate.png"
-    }
+      "vault.floorGrate": "floorGrate.png",
+      "vault.drumScatter": "drumScatter.png",
+      "vault.drumStack": "drumStack.png"
+    },
+    "_varietyNote": "Three drum groupings, not one. Two copies of a single rank read as two neat lines and the scene lost the variety it had when drums were placed individually. `drumScatter` is six at different angles, `drumStack` is a pallet stacked two high, `drumRank` is the ordered row. Mix them."
   },
   "sceneBg": {
     "_note": "Backdrop strips for the title scenes. `sceneBg.treeline` is one wide sprite for the horizon, which Claude Design called the weakest thing left on screen when it was faking one with nine tree sprites and a gradient. Carded on generation and stripped with `npm run rmbg`.",
