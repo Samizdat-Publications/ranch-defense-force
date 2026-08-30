@@ -4,6 +4,81 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 16b — the repo had two heads, and nobody had looked
+
+Asked to check GitHub for old screenshots and to get everything merged. Both
+questions turned up the same thing: **this session had been working on a stale
+tree the whole time.**
+
+## `origin/main` was 28 commits ahead and nobody had fetched
+
+The working tree sessions 14-16 started from was 28 commits behind the remote,
+and the reason it went unnoticed is worth writing down: **the tree was also full
+of uncommitted changes, so being stale looked exactly like being mid-task.** A
+dirty `git status` is not evidence that you are up to date.
+
+Those 28 commits are all art and presentation — the effects animated, scenery
+y-sorted at the field edges, a real fence, the XP gem, the cursed cast walking,
+the rocks and trees, the rarity plate struck in metal, and one called **"the
+last LimeZu buildings"**.
+
+So three sessions' conclusions inherited a stale base. The most visible: session
+14 concluded "there is no generated building art anywhere on disk", which was
+true of that tree and false of the repo.
+
+## And a third line, with the buildings on it
+
+`origin/claude/pixel-labs-credit-plan-ufnx41` — two commits, unmerged into
+anything, carrying `assets/pixellab/yard_picked/`: **a generated barn, a
+farmhouse, a silo and an oak.** They are good, and they are the biggest
+remaining LimeZu presence on the home screen.
+
+That makes **three** times in this session that art was declared not to exist
+while it sat somewhere reachable, after session 13 made it two:
+
+| claimed | actually |
+|---|---|
+| PixelLab cancelled, nothing can be generated | subscription active, allowance refills monthly |
+| no new ground art to be had | fourteen finished tilesets unfetched on the account |
+| no generated building art anywhere | barn, house and silo on an unmerged branch |
+
+**A document about the world is evidence, not the world.** That is in CLAUDE.md
+now with the three commands that would have settled each one.
+
+## The merge was measured and then aborted
+
+`git merge origin/main` from the session branch: **21 conflicts, 28 hunks.**
+`renderer.ts` has seven of them and both sides rewrote the terrain bake;
+`draw-world.ts` has four for the same reason. `world.ts` and `build-atlas.ts`
+auto-merged cleanly, which says the two sides touched different parts of both.
+
+Aborted rather than half-done. Resolving a renderer both sides restructured,
+while running low on context, risks corrupting 28 commits of somebody's art work
+and three sessions of systems — and both sides are committed and safe, so the
+cost of waiting is zero and the cost of a bad merge is not.
+
+**`docs/MERGE.md` is the map**: what is on each side, the conflict table, which
+side wins where, and why `NOTES.md` must keep both sets of sessions.
+
+## Recovered
+
+- **The original atlas.** `public/atlas.png` was tracked at exactly one commit,
+  `feb651d1`, before it was gitignored — 1024x512, 41KB, every sprite the game
+  had on 2026-08-11. It is in the archive.
+- No screenshots were ever published to GitHub: no releases, no images in the
+  README, and Pages deploys from an Actions artifact rather than a branch, so
+  there is no deploy history to mine. The reconstructions from git history are
+  the only visual record there is, and now there is also a real artifact.
+
+## Also
+
+A proper README — what the game is, how a run goes, the descent, the six rules,
+the art licence stated accurately now that most of the art is ours, and the
+screenshots. It had been claiming "M0-M4 complete" and "both classes" since
+there were two.
+
+---
+
 # Session 16 — the descent, and the account was never dead
 
 Three asks: more floor types, a way down into caves that get worse as you go,

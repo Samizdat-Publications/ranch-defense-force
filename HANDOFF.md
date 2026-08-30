@@ -1,5 +1,11 @@
 # Handoff — read this first
 
+> **STOP: the repo has two heads.** `origin/main` and
+> `session-14-16-maps-caves-archive` both moved from the same base and neither
+> contains the other — 21 conflicts, 28 hunks. **[`docs/MERGE.md`](docs/MERGE.md)
+> maps it file by file and merging them is the first job of the next session.**
+> Everything below describes the session-branch side.
+
 You are picking up **Ranch Defense Force**, a wave-based bullet-heaven on a farm.
 TypeScript + Vite + Canvas 2D, no engine. The repo is public.
 

@@ -22,6 +22,12 @@ Depth 1, The Root Cellar — packed earth, lamplit, and the infected coming out 
 - **cave-the_washout** — [`2026-08-30-the-descent__cave-the_washout.png`](2026-08-30-the-descent__cave-the_washout.png)
 - **floor-grass_to_greystone** — [`2026-08-30-the-descent__floor-grass_to_greystone.png`](2026-08-30-the-descent__floor-grass_to_greystone.png)
 
+## 2026-08-30 · found-buildings  `47667ab3+wip`
+
+A generated barn, farmhouse, silo and oak, found on the unmerged branch claude/pixel-labs-credit-plan-ufnx41. Three sessions had concluded no generated building art existed.
+
+- **buildings** — [`2026-08-30-found-buildings__buildings.png`](2026-08-30-found-buildings__buildings.png)
+
 ## 2026-08-30 · caves-and-maps  `bdff23af+wip`
 
 Session 16 — five surface maps and three cave levels, at wave 14 with the blight well underway.
@@ -85,6 +91,12 @@ Reconstructed from 585c31b2 — "The rooster stops blinking, and the generated a
 Reconstructed from 982361b3 — "The ground autotiles, and the blockiness was geometry not art". Built and shot from that commit's own code and art; no screenshot was taken at the time.
 
 - **hist** — [`2026-08-17-ground-autotiles__hist.png`](2026-08-17-ground-autotiles__hist.png)
+
+## 2026-08-11 · original-atlas  `feb651d1`
+
+THE ORIGINAL ATLAS, 1024x512 and 41KB, recovered from feb651d1 — the one commit where public/atlas.png was tracked before it was gitignored. Every sprite the game had on 2026-08-11.
+
+- **atlas-original** — [`2026-08-11-original-atlas__atlas-original.png`](2026-08-11-original-atlas__atlas-original.png)
 
 ## 2026-08-11 · m5-tier-riders  `1a0d8c18`
 

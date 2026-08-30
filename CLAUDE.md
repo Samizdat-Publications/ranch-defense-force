@@ -3,6 +3,17 @@
 Wave-based bullet-heaven, TypeScript + Vite + Canvas 2D, no engine.
 Full spec in `design_handoff_ranch_defense_force/GAME_DESIGN.md`.
 
+> ## THE REPO HAS TWO HEADS. READ `docs/MERGE.md` FIRST.
+>
+> `origin/main` and `session-14-16-maps-caves-archive` both moved a long way
+> from the same base and neither contains the other. 21 conflicts, 28 hunks,
+> mapped file by file in that document. **Merging them is the first job.**
+>
+> **And run `git fetch && git status` before reading anything else.** This
+> happened because a session started from a tree that was 28 commits behind
+> without noticing — the tree was also full of uncommitted work, so being stale
+> looked exactly like being mid-task.
+
 **M0–M4 are done. Read [NOTES.md](NOTES.md) before doing anything** — it has what
 was built, what deviated from the spec and why, the bugs found and their causes,
 and the design decisions currently open. It is the handoff, and it is kept
@@ -80,6 +91,21 @@ rather than a skin: its width and height become `world.arenaW/arenaH`, so
 enemies spawn on ITS edges and nodes scatter across ITS field. The seed picks
 one by DERIVING a stream from itself, never by drawing from `world.rng` — that
 is what lets maps exist without every old seed changing what it replays.
+
+## Check the source, not the document about the source
+
+Three times in one session a document was confidently wrong about something one
+command could settle:
+
+- a brief said PixelLab was **cancelled**; the subscription was active and the
+  allowance refills monthly (`get_balance`);
+- a handoff said no new ground art existed; **fourteen finished tilesets** were
+  sitting unfetched on the account (`npm run tsaudit`);
+- three sessions concluded there was **no generated building art**; a barn, a
+  farmhouse and a silo were on an unmerged branch (`git branch -a`).
+
+Session 13 hit the same shape with the cursed animals. **A document about the
+world is evidence, not the world.**
 
 ## Non-negotiables
 

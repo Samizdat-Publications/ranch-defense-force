@@ -1,4 +1,22 @@
-# Next session — play it, WITH the owner
+# Next session — merge the two heads, then play it WITH the owner
+
+## 0. THE MERGE, BEFORE ANYTHING ELSE
+
+`origin/main` and `session-14-16-maps-caves-archive` both moved a long way from
+the same base and neither contains the other: 28 commits of art and presentation
+on one side, the map/cave/archive systems on the other. 21 conflicts, 28 hunks,
+mapped file by file in **[`docs/MERGE.md`](MERGE.md)**.
+
+There is a third, smaller line too — `origin/claude/pixel-labs-credit-plan-ufnx41`
+carries **a generated barn, farmhouse and silo**, which is the biggest remaining
+LimeZu presence on the home screen.
+
+Nothing is lost and nothing is urgent-broken. But every plan below assumes one
+tree, so this comes first.
+
+---
+
+# After the merge — play it, WITH the owner
 
 Sessions 14 and 15 cleared the two things the owner asked for ahead of playing:
 everything alive in the yard is generated art now, and there are five maps
