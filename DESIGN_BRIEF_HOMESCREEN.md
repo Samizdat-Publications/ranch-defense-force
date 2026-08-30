@@ -121,3 +121,55 @@ differently. Right now I only use them as the class-picker backdrop.
   the board, the deal animation and the rarity plate are all in and correct.
 
 It is the composition I need, not the mechanism.
+
+---
+
+# Still wanted from Design (added session 16)
+
+Two open items. Neither is started; both are composition work, which is why
+they are here rather than in NOTES.
+
+## 1. The yard scene still runs on LimeZu buildings
+
+The generated barn, farmhouse, silo and oak are **on disk and committed** at
+`assets/pixellab/yard_picked/` and are referenced by **nothing** — `grep -c
+yard_picked art/sprites.json` returns 0. `scene.barn`, `scene.house` and
+`scene.silo` still point at `assets/scene/*.png`, which is the purchased pack.
+
+This is §1 of `docs/NEXT_SESSION.md` and it is not a generation job — the art
+exists. It is a placement job, and it needs placement work because **the
+generated buildings are a different size to the ones the coordinates were
+written for**: barn is 400x224 where the pack's was 480, silo 224x400 where the
+pack's was 448. The API capped at 400px. Design's scene coordinates are the
+top-left of each sprite's FULL box, so every one of them wants a nudge rather
+than a rescale, and `scene` is packed `noTrim` precisely so that stays true.
+Integer zoom only.
+
+Also unchanged: `SceneKind` is still `'yard' | 'field'`. Two scenes, as
+delivered.
+
+## 2. The lightning cut — daytime farm to infected night
+
+The owner's ask, for later. On the title screen: the yard opens as a **clean,
+healthy, daytime farm** — nothing wrong with it, no blight, no cursed cast.
+Then a **lightning flash**, and on the other side of it the same yard is the
+**infected night version** the game actually takes place in.
+
+Worth saying what makes this cheap or expensive before it gets specced:
+
+- The scene is already a stack of placed `<img>` layers on a 1920x1080 stage
+  scaled as one unit, with drifting clouds, a sun and a porch-light flicker.
+  A day and a night palette over the same placements is a CSS problem, not a
+  new scene.
+- What it would need in art is a **clean variant of the props that are visibly
+  cursed** — the walkers, the rot, the blighted crops. If the day version is
+  the same sprites with a warm filter, the flash lands on nothing.
+- The flash itself must be CSS animation only. The existing constraint holds:
+  no new runtime dependencies, nothing per-frame in JS.
+- One accessibility note to design around rather than discover: a full-screen
+  white flash is the classic photosensitivity trigger. It wants a ceiling on
+  luminance and a `prefers-reduced-motion` path that cross-fades instead.
+
+Sequencing: this depends on item 1. Rebuilding the yard on the generated cast
+and then re-lighting it twice is one job done once; doing it in the other order
+is the placement pass done twice.
