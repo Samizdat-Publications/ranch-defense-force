@@ -385,3 +385,36 @@ own rig, for free, and PixelLab cannot match that rig.
   proportions belonged to a different game.
 - **The API key is not in this repo.** If you wire up the MCP server or the REST
   API, read it from the environment.
+
+## v3 animations lose directions, silently
+
+Measured session 18, across three objects animated with `animate_object`
+(mode v3, all eight cardinals requested):
+
+| object | clip | directions returned |
+|---|---|---|
+| `infected_hen_rotten` | hit | 7 of 8 |
+| `arabian_cursed` | hit | **5 of 8** |
+| `barn_dog_cursed2` | walk (earlier session) | 4 of 8 |
+
+**The API reports the missing ones as covered.** Asking it to fill the gaps with
+`animation_group_id` alone returns *"group already covers all 8 directions"*,
+so the accounting says the work is done while the frames are not there. Only the
+downloaded folder tells the truth.
+
+Two consequences worth building around:
+
+- **Read the disk, not the response.** `npm run objman` counts the directories
+  that actually exist and records the subset on the clip, and warns when a
+  combat clip is short. That warning is the signal, not the API's own count.
+- **Filling a gap needs `directions=[...]` plus `replace_existing: true`.**
+  Without both, the request is rejected as redundant.
+
+It is not fatal, because the renderer's clip chain falls through to the next
+state when a direction is absent — a missing recoil frame means that enemy
+keeps walking through the hit from that one facing. But a walk cycle missing
+half its directions is an enemy that vanishes when it turns, which is why the
+packer treats combat clips and ambient clips differently.
+
+Budget accordingly: an eight-direction clip sometimes costs eight directions and
+delivers five.

@@ -806,6 +806,10 @@
       "slug": "lunging_forward_and_snapping_its_jaws",
       "frames": 9
      },
+     "hit": {
+      "slug": "reeling_backward_from_a_blow_head_snapping_back",
+      "frames": 7
+     },
      "walk": {
       "slug": "walking_with_a_low_skulking_prowl_head_hanging_do",
       "frames": 9
@@ -891,6 +895,17 @@
      "attack": {
       "slug": "rearing_up_and_striking_down_with_its_front_hooves",
       "frames": 9
+     },
+     "hit": {
+      "slug": "reeling_backward_from_a_blow_head_snapping_back",
+      "frames": 7,
+      "dirs": [
+       "south",
+       "south-west",
+       "north-west",
+       "north-east",
+       "south-east"
+      ]
      },
      "death": {
       "slug": "stumbling_buckling_at_the_front_legs_and_falling",
