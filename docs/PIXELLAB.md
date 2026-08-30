@@ -30,8 +30,15 @@ are hand-made and cohesive. PixelLab fills the gaps.
 
 ## The subscription
 
-**Being cancelled.** The account is Tier 2 and the plan is not renewing, so
-everything below is a record of what was available, not a menu.
+**Live, and being kept for another month.** Tier 2, renewing. Everything below
+is a menu, not a record — which is the opposite of what this section said for
+three sessions.
+
+Two currencies, and they rank the options differently. The **monthly 4,710
+generations** are spent and reset **Sep 14**. **USD credits** are the only
+spendable resource until then, and on credits *size is nearly free* — see the
+dollar table below, which inverts the "generate small" advice that is correct
+for the generation counter and wrong for money.
 
 | | |
 |---|---|
