@@ -1246,7 +1246,18 @@
    "ouiji": {
     "dir": "ouiji",
     "cell": 56,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north",
+       "east"
+      ]
+     }
+    }
    },
    "tabbyCat": {
     "dir": "tabbyCat",
@@ -1333,7 +1344,17 @@
    "beardedHen": {
     "dir": "beardedHen",
     "cell": 48,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north"
+      ]
+     }
+    }
    },
    "buffHen": {
     "dir": "buffHen",
@@ -1363,7 +1384,17 @@
    "barredHen": {
     "dir": "barredHen",
     "cell": 48,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north"
+      ]
+     }
+    }
    },
    "farmRooster": {
     "dir": "farmRooster",
