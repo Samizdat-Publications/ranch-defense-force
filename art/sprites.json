@@ -1369,17 +1369,47 @@
    "silkieHen": {
     "dir": "silkieHen",
     "cell": 48,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north"
+      ]
+     }
+    }
    },
    "polishHen": {
     "dir": "polishHen",
     "cell": 48,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north"
+      ]
+     }
+    }
    },
    "leghornHen": {
     "dir": "leghornHen",
     "cell": 48,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north"
+      ]
+     }
+    }
    },
    "barredHen": {
     "dir": "barredHen",
