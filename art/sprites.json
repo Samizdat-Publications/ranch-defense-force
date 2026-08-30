@@ -83,16 +83,6 @@
   "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
   "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
   "files": {
-   "crop.corn": "Crop_Corn_Ripe_32x32.png",
-   "crop.pumpkin": "Crop_Pumpkin_Ripe_32x32.png",
-   "crop.watermelon": "Crop_Watermelon_Ripe_32x32.png",
-   "crop.cabbage": "Crop_Cabbage_Ripe_32x32.png",
-   "crop.tomato": "Crop_Tomato_Ripe_32x32.png",
-   "crop.grain": "Crop_Grain_Ripe_32x32.png",
-   "crop.chili": "Crop_Chili_Pepper_Ripe_32x32.png",
-   "crop.strawberry": "Crop_Strawberry_Ripe_32x32.png",
-   "crop.cauliflower": "Crop_Cauliflower_Ripe_32x32.png",
-   "crop.zucchini": "Crop_Zucchini_Ripe_32x32.png"
   }
  },
  "singlesExtra": {
@@ -102,6 +92,24 @@
    "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
   },
   "_replacedNote": "pickup.feed was REMOVED here, not left alongside: it is generated now and lives in the pixellab group. Two groups writing one frame key means the later pass silently wins. pickup.heal is still LimeZu — no heal pickup was generated, and the sim only spawns xp and feed kinds today."
+ },
+ "crops": {
+  "_note": "The ten field crops, GENERATED, replacing the LimeZu pack crops whose keys these are. The pack entries are DELETED rather than left alongside -- two groups writing one frame key is the trap that has cost this project time before, and the later group wins silently.",
+  "_sizeNote": "32x32 where the pack crops were 32x64. The pack drew a whole plant with soil; these are the fruit alone, which is what a 13px harvest radius actually wants. Picked by contact sheet: chili_1 over _0 because _0 is two loose peppers with no plant, grain_1 over _0 because _0 is a single thin stalk that vanishes at field scale, pumpkin_1 over _0 for the stem, tomato_1 for the vine cluster.",
+  "_blightedNote": "field/ and field2/ also hold BLIGHTED variants for cabbage, corn, grain, pumpkin and tomato, picked but not wired. A blighted map should swap the crop art rather than remove the crop -- see docs/NEXT_SESSION.md. Left for the play session because it changes what a map looks like mid-run.",
+  "_base": "assets/pixellab/field/",
+  "files": {
+   "crop.cabbage": "crop_cabbage_0.png",
+   "crop.cauliflower": "crop_cauliflower_0.png",
+   "crop.chili": "crop_chili_1.png",
+   "crop.corn": "crop_corn_0.png",
+   "crop.grain": "crop_grain_1.png",
+   "crop.pumpkin": "crop_pumpkin_1.png",
+   "crop.strawberry": "crop_strawberry_0.png",
+   "crop.tomato": "crop_tomato_1.png",
+   "crop.watermelon": "crop_watermelon_0.png",
+   "crop.zucchini": "crop_zucchini_1.png"
+  }
  },
  "nodes": {
   "_note": "Harvest rocks and ore, GENERATED. Replaces the LimeZu pack rocks, whose keys these are — the enemy of a swap like this is leaving both groups writing the same frame keys, so the LimeZu entries are gone rather than commented out. The ore read the pack was chosen for (\"minerals inside the rock\", visible before you swing) is preserved and made sicker: rust, bone-white crystal, diseased yellow-green, cold blue, and raw red flesh swelling out of a crack.",

@@ -32,6 +32,7 @@
     "rmbg": "vite-node tools/pixellab-rmbg.ts --",
     "animal": "vite-node tools/animal-check.ts --",
     "anim": "vite-node tools/pixellab-anim.ts --",
+    "animate": "vite-node tools/pixellab-animate.ts --",
     "character": "vite-node tools/pixellab-character.ts --",
     "tileset": "vite-node tools/pixellab-tileset.ts --",
     "frames": "vite-node tools/pixellab-frames.ts --",

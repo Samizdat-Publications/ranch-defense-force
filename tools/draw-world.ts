@@ -40,6 +40,8 @@ function groundSetFor(world: World, wave: number): string {
   return set
 }
 const PIXELS_PER_WALK_FRAME = 11
+/** Matches `PROP_FPS` in the renderer. Ambient loops run slower than combat art. */
+const PROP_FPS = 8
 /** Matches `PROJECTILE_SCALE` in the renderer; per-weapon multiplier on top. */
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile and FX clips are authored at 15fps. */
@@ -534,7 +536,14 @@ export class WorldPainter {
     for (const sc of this.scenery(world)) drawList.push({ y: sc.y, x: sc.x, f: sc.f })
     for (let i = 0; i < world.props.live; i++) {
       const c = world.props.items[i]
-      const f = frames[c.sprite]
+      // Animated if the atlas has a loop for it, static otherwise. Mirrors
+      // Renderer.propFrame exactly, including the position-derived phase --
+      // a screenshot where the whole field sways on one frame while the game
+      // staggers them would be a screenshot of a different program.
+      const len = clipLengths[c.sprite]?.play ?? 1
+      const f = len > 1
+        ? frames[`${c.sprite}.${((((world.elapsed * PROP_FPS) | 0) + ((c.x * 0.7 + c.y * 1.3) | 0)) % len)}`] ?? frames[c.sprite]
+        : frames[c.sprite]
       if (f) drawList.push({ y: c.y, x: c.x, f })
     }
     for (let i = 0; i < world.enemies.live; i++) {

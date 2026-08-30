@@ -120,6 +120,8 @@ interface Manifest {
   nodes?: { _base: string; files: Record<string, string> }
   /** Biome nodes and hazard decals for the map system. See art/sprites.json. */
   biome?: { _base: string; files: Record<string, string> }
+  /** The ten generated field crops, replacing the LimeZu pack crops. */
+  crops?: { _base: string; files: Record<string, string> }
   tools?: { _base: string; files: Record<string, string>; conform?: boolean }
   weaponTiers?: { _base: string; files: Record<string, string>; conform?: boolean }
   gunSheet?: {
@@ -656,7 +658,7 @@ interface SingleGroup {
 
 const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
-  manifest.nodes, manifest.biome, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
+  manifest.nodes, manifest.biome, manifest.crops, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
   manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
   manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,

@@ -56,6 +56,13 @@ const PIXELS_PER_WALK_FRAME = 11
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile clips are authored at 15fps. */
 const PROJECTILE_FPS = 15
+/**
+ * Ambient prop loops run slower than combat art on purpose. A crop swaying at
+ * 15fps reads as a flicker; at 8 it reads as wind, and the whole point of the
+ * pass is that the field looks alive without competing with the fight for the
+ * player's eye.
+ */
+const PROP_FPS = 8
 
 /**
  * Which Wang sets the ground bakes from — now the MAP's, not a global.
@@ -727,7 +734,7 @@ export class Renderer {
       if (!it) break
       it.x = c.x
       it.y = c.y
-      it.frame = this.atlas?.get(c.sprite) ?? null
+      it.frame = this.propFrame(c.sprite, c.x, c.y)
       it.flash = c.flash > 0
       it.colour = '#8fbf5a'
       it.w = c.radius * 2
@@ -1100,6 +1107,34 @@ export class Renderer {
     // Advance through the clip over the arc's short life so the swing moves.
     const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + ((p.angle * 4) | 0)) % len
     return atlas.get(`${clip}.${f}`) ?? atlas.get(`${clip}.0`)
+  }
+
+  /**
+   * A prop's frame, animated if the atlas has a loop for it.
+   *
+   * Props were drawn from one static key. A crop that sways, a crystal that
+   * glimmers or a barrel that smokes is the difference between a field and a
+   * diorama, and the frames cost a cent each -- but nothing would ever have
+   * played them, because this line only ever asked for `node.oreGold` and never
+   * `node.oreGold.3`.
+   *
+   * Static keys still work untouched: an unanimated prop has no `.0` frame, so
+   * `len` is 1 and this returns exactly what it always did. Adding a loop is
+   * therefore an atlas change alone, with no content edit and no code edit.
+   *
+   * Phase comes from world position, not from a per-prop timer. Two reasons:
+   * there is no per-prop animation state to keep (props are pooled and reused),
+   * and a field of forty crops all swaying on the same frame reads as a screen
+   * refreshing rather than as wind. The same trick the projectile pass uses.
+   */
+  private propFrame(sprite: string, x: number, y: number): AtlasFrame | null {
+    const atlas = this.atlas
+    if (!atlas) return null
+    const len = atlas.clipLength(sprite, 'play')
+    if (len <= 1) return atlas.get(sprite) ?? null
+    const phase = ((x * 0.7 + y * 1.3) | 0)
+    const f = (((this.world.elapsed * PROP_FPS) | 0) + phase) % len
+    return atlas.get(`${sprite}.${f}`) ?? atlas.get(sprite) ?? null
   }
 
   private projectileFrame(
