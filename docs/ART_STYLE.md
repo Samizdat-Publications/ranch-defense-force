@@ -96,6 +96,33 @@ Everything below was measured, usually by getting it wrong first.
 ruts" is a scene, and it comes back as a *pattern* — literally purple paving.
 "Bare earth, smooth, matte, almost featureless" comes back as ground.
 
+**Then keep that noun and change ONLY the colour.** Session 13 spent seven
+tilesets learning this. The blight ground had to be a dead version of the
+pasture, and every way of naming the SUBSTANCE failed:
+
+| asked for | came back as |
+|---|---|
+| `dead ash, smooth, matte, almost featureless` | grey rock ledge with a cliff edge |
+| `cold grey ash, smooth, matte, almost featureless` | rubble |
+| `dead grey-green rot, smooth, matte, almost featureless` | rubble with a repeating motif |
+| `flat grey-brown dead ground, powdery, ...` | brown with a regular bump pattern |
+| `sickly yellow-grey withered dead grass, ...` | warm straw with a rust rim line |
+| **`bare pale grey-green earth, smooth, matte, almost featureless`** | **ground** |
+
+The model hears "ash" or "rot" and draws stones. It hears "bare earth" and draws
+a floor. The winning prompt is the known-good one with one word swapped.
+
+**Negative prompts make it WORSE, which is the opposite of the instinct.** An
+eighth attempt asked for `perfectly flat, uniform colour, no texture, no
+speckles, no marks, no detail` and came back MORE mottled than the plain request
+it was trying to improve on, with stray red pixels. Do not enumerate what you do
+not want in a tileset prompt.
+
+**Judge the terrain EDGE, not only the fill.** Two otherwise-good sets were
+rejected for a hard bright rim line along the boundary tiles — invisible in the
+16-tile sheet thumbnail and a drawn-on outline once it is on the field. Extract
+`wang.<set>.1100` and `.1000` and look at them.
+
 `lineless` is the single most important setting: `selective outline` draws a hard
 dark rule around every terrain edge, which is exactly the blockiness the tiles
 exist to remove. `highly detailed` at 32px does not mean more texture, it means
@@ -151,10 +178,52 @@ walk cycle is a named template rather than a described motion.
 bust portrait. The class cards get portraits that match their sprite **by
 construction** rather than by prompting twice and hoping.
 
+### Scenery — `create_map_object`, NOT `create_1_direction_object`
+
+**The reason is the camera and it is not negotiable.**
+`create_1_direction_object` only accepts `view: 'top-down'` or `'sidescroller'`;
+`create_map_object` accepts `'low top-down'`, which is what this file commits
+every asset to. A prop generated at the wrong camera is invisible on its own and
+obvious the moment it stands next to the cast.
+
+    detail: 'medium detail'   shading: 'basic shading'
+    outline: 'single color outline'   view: 'low top-down'
+
+**Map objects auto-delete after eight hours.** They are not a library to come
+back to. `npm run mapobj -- <id> <name> ...` pulls them into
+`assets/pixellab/env/`, and it takes many pairs, so a whole batch is one call.
+
+**Check the BASE of every prop.** About a third arrive standing on a disc of
+soil or grass the prompt never asked for. That is invisible on pasture and
+obviously wrong on ash. `isolated on nothing, no grass, no ground, no soil, no
+shadow` fixes it but not reliably — the same wording worked for an oak at canvas
+192, failed for a broken tree at 128, and worked for it at 96.
+
+### Animations on an object — `animate_object`
+
+**`mode: 'v3'` is the default and you want it.** `pro` costs 20–40 generations
+PER DIRECTION — 160–320 for a full eight — where four cardinals of v3 across
+five animals cost about two generations in total. It is also the better output.
+
+- **It keeps its input as frame 0**, so `frame_count: 8` stores NINE frames.
+  `clipLengths` in the atlas is per-sheet for exactly this reason.
+- **Generate four directions, not eight.** The renderer buckets facing into
+  four; `directions: ['south','north','east','west']` halves the cost and
+  `animation_group_id` extends it later if that ever changes.
+- **The folder name comes from the DESCRIPTION, not `display_name`.** Passing
+  `display_name: 'walk'` still lands the frames in
+  `animations/walking_with_a_stiff_lurching_limp/`. Record the real slug.
+- **Prompt the gait.** "a stiff lurching limp", "a laboured stagger", "a slow
+  bloated waddle" cost the same as "walking" and read differently in motion.
+
 ### Cursed variants — `create_object_state`
 
 Takes a finished object, applies an edit, and returns a new object **with all
-eight rotations intact**. That satisfies the pairing rule by construction: the
+eight rotations intact**.
+
+**It does NOT carry the base object's ANIMATIONS across.** A cursed variant of a
+walking animal arrives static, and that is what turned "wire the sixteen animals
+that already exist" into a ten-walk-cycle job. Animate the variant separately. That satisfies the pairing rule by construction: the
 cursed animal is derived from the healthy one, so the two read as the same
 animal before and after.
 
@@ -217,12 +286,20 @@ and silently drops pieces, and `no_background: true` **keys out light interiors*
 
 | Area | State |
 |---|---|
-| Ground tilesets | **Ours.** Regenerating at low top-down + muted. |
-| Animals (16) | **Ours.** Low top-down; unpacked pending the four-vs-eight call. |
+| Ground tilesets | **Ours.** Low top-down, muted, chained off one grass. |
+| Blight ground | **Ours.** `grass_to_blight`; spreads with the wave. |
+| Field animals | **Ours**, except `duckFlight`. Cursed objects, 4 directions, 9-frame walks. |
+| Characters | **Ours.** Six classes and five humanoid enemies. |
+| Trees, rocks, ore | **Ours.** Blighted; `assets/pixellab/env/`. |
 | Scene animations | **Ours.** Generated from the sprites already in the scene. |
-| Characters | LimeZu generator, plus one PixelLab farmhand. Not yet replaced. |
-| Props, buildings, weapons, FX | LimeZu. Not yet replaced. |
+| Crops | LimeZu — but the pack's own `_Rotten_` variants, which are right. |
+| Buildings, fences, weapons, FX, boss vehicles | LimeZu. Not yet replaced. |
 | UI | CSS, plus LimeZu's `panel.png` — which is dead and unreferenced. |
+
+**One known palette gap.** `art/palette.json` has no light blue — its only blues
+are three dusk-sky slates at value 24–38 — so anything pale and cold quantises
+to cream. That is how an ore tier briefly went missing. Aim dark, or add a
+mid-value cold blue and re-check every conformed group.
 
 **Nothing here forces a big-bang replacement.** The atlas keys are stable, so art
 swaps one manifest line at a time, and a missing sprite already degrades to a

@@ -57,13 +57,29 @@ interface RunResult {
  */
 type Pilot = 'kite' | 'brawl' | 'wander'
 
+/**
+ * `mapId` pins the arena.
+ *
+ * EVERY TEST THAT MEASURES A CLASS OR A BUILD PINS IT, and that is not the
+ * tests being made easier — it is a confound being removed. The seed picks the
+ * map now, so a six-seed comparison of two classes was also comparing two sets
+ * of arenas, and the arena is a big variable: the balance harness over 24 seeds
+ * puts the brawling Kid at 46% on the old single arena and 67% across the map
+ * rotation, because a brawler on a bigger field has room to break off. Six
+ * seeds cannot resolve a class difference through that.
+ *
+ * `home_quarter` IS the old 2400x1600 arena, layer for layer, which is why it
+ * is in the rotation — so pinning to it makes these tests ask exactly what they
+ * asked before maps existed. The maps get their own test below.
+ */
 function simulate(
   seed: number,
   classId: string,
   pick: Picker,
   pilot: Pilot,
+  mapId = 'home_quarter',
 ): RunResult {
-  const world = new World(seed, classId)
+  const world = new World(seed, classId, undefined, undefined, mapId)
   const offers = new OfferPool(world.rng)
   let pending = 0
   let shopQueued = false

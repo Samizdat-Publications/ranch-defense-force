@@ -140,3 +140,80 @@ describe('card art', () => {
     expect(bad).toEqual([])
   })
 })
+
+describe('the blight', () => {
+  /**
+   * The ground gets worse as the run goes on, and two properties of that are
+   * load-bearing rather than cosmetic. Both are cheap to assert and neither is
+   * visible in a screenshot, which is exactly the shape of bug that has cost
+   * this project real time before.
+   */
+  const cols = 75
+  const rows = 50
+
+  it('replays identically from the same seed', async () => {
+    const { blightField, DEFAULT_BLIGHT } = await import('../src/render/blight')
+    for (const wave of [4, 12, 25]) {
+      const a = blightField(20260811, cols, rows, wave, DEFAULT_BLIGHT)
+      const b = blightField(20260811, cols, rows, wave, DEFAULT_BLIGHT)
+      expect(a, `wave ${wave}`).toEqual(b)
+    }
+    // And a different seed is a different field, or the seed is doing nothing.
+    const a = blightField(20260811, cols, rows, 12, DEFAULT_BLIGHT)
+    const b = blightField(99, cols, rows, 12, DEFAULT_BLIGHT)
+    expect(a).not.toEqual(b)
+  })
+
+  /**
+   * Monotonic, because the terrain re-bakes when the wave changes and ash that
+   * came and went would read as a rendering fault rather than as rot. This is
+   * what the "draw every blob from the stream, use only some" dance in
+   * `blightField` buys, and without the test nothing would notice it being
+   * optimised away into `for (i < live)`.
+   */
+  it('only ever spreads — a baked wave contains every earlier one', async () => {
+    const { blightField, DEFAULT_BLIGHT } = await import('../src/render/blight')
+    let prev: Uint8Array | null = null
+    for (let wave = 1; wave <= 25; wave++) {
+      const f = blightField(20260811, cols, rows, wave, DEFAULT_BLIGHT)
+      if (prev && f) {
+        const lost: number[] = []
+        for (let i = 0; i < prev.length; i++) if (prev[i] && !f[i]) lost.push(i)
+        expect(lost.length, `wave ${wave} lost ${lost.length} ashed vertices`).toBe(0)
+      }
+      if (f) prev = f
+    }
+  })
+
+  it('leaves the early waves clean and the late ones overrun', async () => {
+    const { blightField, DEFAULT_BLIGHT } = await import('../src/render/blight')
+    const cover = (wave: number): number => {
+      const f = blightField(20260811, cols, rows, wave, DEFAULT_BLIGHT)
+      if (!f) return 0
+      let n = 0
+      for (let i = 0; i < f.length; i++) n += f[i]
+      return n / f.length
+    }
+    // The first guess at this curve was 0% until wave 7 and 4% at wave 10 — an
+    // effect nobody would ever see. These bounds are what stops that returning.
+    expect(cover(1), 'wave 1').toBe(0)
+    expect(cover(10), 'wave 10').toBeGreaterThan(0.12)
+    expect(cover(25), 'wave 25').toBeGreaterThan(0.85)
+  })
+
+  /**
+   * The set is painted OVER the pasture, so its lower terrain has to be the
+   * same grass the ground set's upper is or the two will not meet and the
+   * blight will sit on the field inside a seam.
+   */
+  it('is chained off the same grass the ground set ends on', async () => {
+    const { readFileSync } = await import('node:fs')
+    const terrain = (TUNING as unknown as {
+      terrain: { groundSet: string; blight: { set: string } }
+    }).terrain
+    const read = (name: string): { base_tile_ids: { lower: string; upper: string } } =>
+      JSON.parse(readFileSync(`assets/tilesets/${name}.json`, 'utf8'))
+    expect(read(terrain.blight.set).base_tile_ids.lower)
+      .toBe(read(terrain.groundSet).base_tile_ids.upper)
+  })
+})

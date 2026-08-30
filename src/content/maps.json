@@ -1,0 +1,266 @@
+{
+  "_note": "The arenas a run can be played on. The seed picks one; see mapForSeed in src/content/index.ts. Sizes are in world pixels and become world.arenaW/arenaH, so a map is a real gameplay object rather than a skin -- enemies spawn on ITS edges and nodes scatter across ITS field.",
+  "_familyNote": "EVERY MAP USES ONE TILESET FAMILY, and that is a decision rather than a shortage. The fifteen sets in assets/tilesets/ fall into two groups chained by shared base tiles: the 'plain' family hangs off dirt_to_grass_plain's mown grass (base tile cfa0c886) and the 'pack green' family off dirt_to_grass's pasture (6e1d7fea). Only sets sharing a base tile meet seamlessly, so a map cannot mix them.",
+  "_rejectedFamilyNote": "THE PACK-GREEN FAMILY WAS TESTED AT PLAY ZOOM AND REJECTED, not inherited as an opinion. A whole map was built on dirt_to_grass + grass_to_soil + grass_to_water and shot through the real renderer: the grass tiles a dense tuft pattern, the soil an obvious brick grid, the water a wavy repeat, and every terrain edge carries a hard cream rim line. The player and the enemies read poorly against all of it. Session 12 reached the same conclusion from the tilesheet; this checked it the fair way and agrees.",
+  "_groundsNote": "WHICH GROUNDS SURVIVED, measured with `npm run look -- <frame> --tile 5`, which repeats a tile five by five so its own motif shows as a grid. That test is the only honest one: a 32px tile judged ALONE looks like texture, and the same tile across a field turns its mottling into a visible pattern, which is what the eye reads at play zoom.  PASSED AT ANY SCALE: mown grass and bare earth, both nearly featureless, and muddy water, which is mottled and soft with no motif.  PASSED IN BANDS AND BEDS: tilled soil -- it repeats hard, but what it repeats is FURROWS, and a regular furrow grid is what a ploughed field looks like.  FAILED: grass_to_gravel_v2 tiles into a grid of identical grey glyphs that read as printed characters, and worse in a narrow track than in a patch; grass_to_ash_v2 tiles into rows of little ledges with drop shadows, which is the same fault session 13 rejected it for. Neither is used, and neither should be without regenerating it -- which the generation allowance allows again from 2026-09-14.",
+  "_varietyNote": "So the floors are grass, bare earth, tilled soil, mud and the blight -- five, where the single old arena had four. THE REST OF THE VARIETY IS LAYOUT AND SIZE, and after the tiled test that is the honest place for it to come from: the ratio of bare earth to pasture, whether the plough is in edge bands or broad beds, whether there is a wet channel and which way it runs, and whether the map is 2400x1600 or 3200x2100.",
+  "_waterNote": "MUD IS A FLOOR, NOT AN OBSTACLE. There is no terrain collision in this game and adding it would be a gameplay change rather than an art one, so a wet channel is something you walk over. That is also why these are ditches, ruts and bottoms rather than rivers: the tile conforms to a dark mottled brown and reads as wet ground, which is honest, where 'creek' would promise water you can see and be stopped by. Whether it SHOULD slow you is a question for the play session, not an oversight.",
+  "_layerNote": "Layers paint in order. The FIRST is the base and covers every cell; the rest paint only where they touch their own upper terrain, because they share the base's grass as their lower and repainting a clear cell repaints identical pixels. `invert: true` starts the field full and the shape CARVES it, which is how a base lays grass everywhere and wears dirt through it -- and leaving `invert` off does the opposite, which is how Dry Lot is bare ground with pasture surviving in islands. The blight is not a layer: it is wave-driven, and it paints between the base and everything above so a lane the player has learned to watch is not the first thing to vanish under the rot.",
+  "_coverageNote": "COVERAGE IS TUNED TO MEASURED NUMBERS, printed by `npm run maps`. Guessing and looking got the first Stony Ground to 57% gravel in one merged grey mass -- worse than the flat map it was meant to improve on. The shipped arena is the reference: 11.3% worn earth, 10.5% tilled edges. Features sit between 5% and 20%, except where a map's whole idea is a different majority ground.",
+  "_sizeNote": "2400x1600 was the only arena until now and is kept as Home Quarter, so there is always a familiar one in the rotation. The others run to 3200x2100, which is 1.75x the area. ENEMIES SPAWN ON ARENA EDGES AND WALK IN, so a bigger arena is a longer walk and a slower wave. That is a real balance consequence rather than a free win; these sizes are what run.test.ts still passes on, and the measured effect is in NOTES session 15.",
+  "maps": [
+    {
+      "id": "home_quarter",
+      "name": "The Home Quarter",
+      "blurb": "Worn pasture, tilled either side.",
+      "width": 2400,
+      "height": 1600,
+      "blight": "grass_to_blight",
+      "_note": "The original arena, layer for layer: grass with worn dirt through it and tilled corn rows down both sides. Kept exactly so the set has a control in it -- if a later map feels wrong, this is what it is being compared against.",
+      "layers": [
+        {
+          "set": "dirt_to_grass_plain",
+          "shape": "blobs",
+          "invert": true,
+          "count": 26,
+          "minRadius": 1,
+          "maxRadius": 3
+        },
+        {
+          "set": "grass_to_soil_v2",
+          "shape": "edges",
+          "sides": [
+            "left",
+            "right"
+          ],
+          "depth": 4
+        }
+      ],
+      "kind": "surface"
+    },
+    {
+      "id": "long_acre",
+      "name": "The Long Acre",
+      "blurb": "A wide field with the drainage ditch down it.",
+      "width": 3200,
+      "height": 1600,
+      "blight": "grass_to_blight",
+      "_note": "Wide rather than large -- the same height as Home Quarter and a third again as long, so it reads as distance without adding a slow vertical walk. The ditch runs the LONG axis, so you travel along it rather than across it and it works as a lane; the tilled ends are the corn rows kept on the short sides, where the spawner uses them.",
+      "layers": [
+        {
+          "set": "dirt_to_grass_plain",
+          "shape": "blobs",
+          "invert": true,
+          "count": 30,
+          "minRadius": 1,
+          "maxRadius": 4
+        },
+        {
+          "set": "grass_to_soil_v2",
+          "shape": "edges",
+          "sides": [
+            "left",
+            "right"
+          ],
+          "depth": 5
+        },
+        {
+          "set": "grass_to_water_v2",
+          "shape": "ribbon",
+          "axis": "h",
+          "halfWidth": 1,
+          "wander": 0.3
+        }
+      ],
+      "kind": "surface"
+    },
+    {
+      "id": "creek_bottom",
+      "name": "Creek Bottom",
+      "blurb": "Low ground. It is mud down here most of the year.",
+      "width": 2800,
+      "height": 2000,
+      "blight": "grass_to_blight",
+      "_note": "The channel is the map. It runs the SHORT axis so it crosses the player's path rather than lying along it, wide enough that crossing is a commitment, with wet ground standing either side of it. No tilled soil at all -- this is bottom land, nobody ploughs it -- so all four spawn edges look the same and the channel is the only landmark on the map.",
+      "layers": [
+        {
+          "set": "dirt_to_grass_plain",
+          "shape": "patches",
+          "invert": true,
+          "count": 7,
+          "lobes": 4,
+          "minRadius": 3,
+          "maxRadius": 6,
+          "spread": 0.8
+        },
+        {
+          "set": "grass_to_water_v2",
+          "shape": "patches",
+          "count": 9,
+          "lobes": 3,
+          "minRadius": 2,
+          "maxRadius": 4,
+          "spread": 0.95
+        },
+        {
+          "set": "grass_to_water_v2",
+          "shape": "ribbon",
+          "axis": "v",
+          "halfWidth": 3,
+          "wander": 0.35
+        }
+      ],
+      "kind": "surface"
+    },
+    {
+      "id": "back_forty",
+      "name": "The Back Forty",
+      "blurb": "The far end of the place. Half of it under plough.",
+      "width": 3200,
+      "height": 2100,
+      "blight": "grass_to_blight",
+      "_note": "The big one, and the most worked: broad tilled beds patched across the middle instead of banded at the edges, so the ploughed ground is something you move THROUGH rather than something at your back. Tilled top and bottom as well, which puts the corn rows on the two long edges. The soil tile repeats hard and that is right here -- what it repeats is furrows, and a field of them is what ploughed ground looks like.",
+      "layers": [
+        {
+          "set": "dirt_to_grass_plain",
+          "shape": "blobs",
+          "invert": true,
+          "count": 44,
+          "minRadius": 1,
+          "maxRadius": 4
+        },
+        {
+          "set": "grass_to_soil_v2",
+          "shape": "edges",
+          "sides": [
+            "top",
+            "bottom"
+          ],
+          "depth": 4
+        },
+        {
+          "set": "grass_to_soil_v2",
+          "shape": "patches",
+          "count": 6,
+          "lobes": 5,
+          "minRadius": 4,
+          "maxRadius": 7,
+          "spread": 0.85
+        }
+      ],
+      "kind": "surface"
+    },
+    {
+      "id": "dry_lot",
+      "name": "The Dry Lot",
+      "blurb": "Bare ground and standing water. Grass gave up here.",
+      "width": 2800,
+      "height": 1800,
+      "blight": "grass_to_blight",
+      "_note": "The one map that INVERTS the base: its field starts as bare earth and grass is patched INTO it, so the ground is dirt with pasture surviving in islands rather than pasture with wear through it. That is the only composition here that changes what a map is MADE of instead of what is drawn on it, and it is why bare earth passing the tiled test at any scale mattered. Two shallow ruts of standing water cross it, because bare ground is where water sits.",
+      "layers": [
+        {
+          "set": "dirt_to_grass_plain",
+          "shape": "patches",
+          "count": 22,
+          "lobes": 4,
+          "minRadius": 3,
+          "maxRadius": 6,
+          "spread": 0.9
+        },
+        {
+          "set": "grass_to_water_v2",
+          "shape": "ribbon",
+          "axis": "h",
+          "halfWidth": 1,
+          "wander": 0.3
+        },
+        {
+          "set": "grass_to_water_v2",
+          "shape": "ribbon",
+          "axis": "v",
+          "halfWidth": 1,
+          "wander": 0.3
+        }
+      ],
+      "kind": "surface"
+    },
+    {
+      "id": "root_cellar",
+      "name": "The Root Cellar",
+      "kind": "cave",
+      "depth": 1,
+      "blurb": "Under the house. Packed earth, and the smell of preserves gone over.",
+      "width": 1800,
+      "height": 1200,
+      "darkness": 0.42,
+      "_note": "The shallowest, and deliberately the least strange -- this is a room under a farmhouse before it is a cave, so the floor is packed earth and the arena is only half the Home Quarter's. The step down from a 3200x2100 field to this is the point: enemies spawn on arena edges, so a small arena is a close one and the pressure arrives immediately.",
+      "_caveFamilyTodo": "chain off 8f1e6b38 upper=fae2fa2f (bare grey-brown earth) -- only worth chaining off if it is regenerated cleaner",
+      "nodes": {
+        "rock": 30,
+        "tree": 8,
+        "crop": 12
+      },
+      "layers": [
+        {
+          "set": "dirt_to_grass_plain",
+          "shape": "fill",
+          "invert": true
+        }
+      ],
+      "_floorNote": "grass_to_greybrown was here first and it FAILED at play zoom -- rows of identical marks, blatant wallpaper, and the darkness at 0.42 is nowhere near enough to hide it. This is dirt_to_grass_plain's LOWER terrain, bare earth, which is one of the two grounds that passed the tiled test at any scale, and it is also literally what a room under a farmhouse has for a floor."
+    },
+    {
+      "id": "the_washout",
+      "name": "The Washout",
+      "kind": "cave",
+      "depth": 2,
+      "blurb": "Where it all drained to. The walls are wet and the wet is green.",
+      "width": 1600,
+      "height": 1100,
+      "darkness": 0.55,
+      "_note": "The water table, and the answer to where the spray went. Sickly grey-green stone, tighter again, and darker. More rock and fewer crops than the cellar: less grows this far down.",
+      "_caveFamilyTodo": "chain off d7a21ae7 upper=3af3cd28 (shallow muddy water)",
+      "nodes": {
+        "rock": 36,
+        "tree": 6,
+        "crop": 8
+      },
+      "layers": [
+        {
+          "set": "grass_to_water_v2",
+          "shape": "fill"
+        }
+      ],
+      "_floorNote": "The muddy water tile, used as the whole floor rather than as a channel. Mottled with no motif, so it passes at any scale, and a floor of standing mud is exactly what 'where it all drained to' means."
+    },
+    {
+      "id": "the_seam",
+      "name": "The Seam",
+      "kind": "cave",
+      "depth": 3,
+      "blurb": "Raw rock, and the blight coming UP out of it.",
+      "width": 1400,
+      "height": 1000,
+      "darkness": 0.68,
+      "_note": "The deepest, and the point of the whole descent: the blight is not falling on this place from the dusters, it is coming out of the ground here and the dusters were trying to hold it down. Charcoal rock, the tightest arena in the game, and the darkest. Almost nothing grows -- what feed there is comes out of the seam.",
+      "_caveFamilyTodo": "chain off c0ea15cb upper=4c7edc59 (dead grey-green rot)",
+      "nodes": {
+        "rock": 44,
+        "tree": 4,
+        "crop": 5
+      },
+      "layers": [
+        {
+          "set": "grass_to_greenrot",
+          "shape": "fill"
+        }
+      ],
+      "_floorNote": "grass_to_darkgrey was here first and it FAILED at play zoom worse than anything -- a grid of dark blue glyphs, plainly visible even at 0.68 darkness. This one was checked the same way and holds: sickly grey-green, and at this brightness its repeat reads as texture."
+    }
+  ],
+  "_kindNote": "A map is a SURFACE or a CAVE. The surface maps are the farm and one of them is picked by the seed at the start of a run. The caves are entered by walking into a way down that opens in the field once the blight has taken hold, and they are ordered by `depth` -- descending takes you to the next one and there is no way back up. See NOTES session 16 for the whole design.",
+  "_caveGroundNote": "A CAVE HAS ONE FLOOR, AND THAT IS A LIMIT OF THE ART RATHER THAN A CHOICE. Every tileset on the account pairs GRASS with something, so a second ground layer in a cave would draw grass in its transition tiles -- a green fringe around every patch, underground. So a cave's base layer is `fill`, which is a flat floor of that level's ground and no grass anywhere.  WHICH FLOOR WAS DECIDED AT PLAY ZOOM UNDER REAL DARKNESS, not from the tiled sheet. Nine grey tilesets were recovered from the PixelLab account for this and most of them fail: grass_to_greybrown and grass_to_darkgrey both tile into an obvious grid at the darkness levels they were meant for, and grass_to_greystone into horizontal lines. Darkness helps far less than it seems like it should -- a repeat at 40% brightness is still a repeat. What holds is bare earth, muddy water and grass_to_greenrot.  The fix is a chained cave family -- <stone> -> water, <stone> -> rubble, generated with each stone's own base tile id as `lower_base_tile_id` -- and the ids are on each cave below so it can be ordered the day the generation allowance refills on 2026-09-14.",
+  "_darknessNote": "`darkness` is how far the dark closes in, 0 to 1, drawn as a radial hole around the player. It is the single biggest thing that makes a cave a cave, it costs one gradient per frame, and it also earns the floors: several of these tilesets carry a visible repeat at full brightness and a repeat you cannot see is not a repeat. Surface maps leave it out.",
+  "_nodesNote": "`nodes` overrides the global mix in nodes.json for this map. THE TOOL LADDER IS WHY THE CAVES ARE NOT ALL ROCK: pickaxe works rock, axe works tree and crop, so an all-rock cave is a feed desert for a player who took the axe. Every cave carries some of each -- rock-dominant because it is a cave, roots through the ceiling for the axe, and something pale growing in the dark."
+}

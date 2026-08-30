@@ -266,7 +266,9 @@
       "tree": 28,
       "crop": 46
     },
-    "minDistanceFromPlayer": 140
+    "minDistanceFromPlayer": 140,
+  "referenceArea": 3840000,
+  "_referenceAreaNote": "THE COUNTS ABOVE ARE A DENSITY, NOT A HEADCOUNT, and this is what turns them into one. 3840000 is 2400x1600, the arena that was the only one until maps existed -- so Home Quarter scales by exactly 1.0 and every number above still means what it meant. A 3200x2100 map scales by 1.75.  This is not a balance change, it is the fix for one. Maps landed with the counts still absolute, and the acceptance test caught it immediately: a 1.75x arena with the same 74 nodes has 43% of the density, so the player harvests less per minute, levels slower and is under-built by wave 20. Two of six seeds cleared instead of five, The Hand scored BETTER running than standing (because standing still on a sparse map harvests nothing, which inverts the one class whose identity is holding ground), and the random-pick bot outlived the merging one. Scaling by area puts every map back at the density the game was tuned on."
   },
   "mobDrops": {
     "_note": "Seed packs off kills. A small, steady trickle of feed that is not tied to standing still, so a player who is being chased the whole wave still earns something.",

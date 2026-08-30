@@ -173,6 +173,62 @@ function travelling(x: number, y: number, anim: string, child: HTMLElement | nul
 }
 
 /**
+ * An animal that wanders a few paces and comes back, facing the way it goes.
+ *
+ * ## Why this exists at all
+ *
+ * The generated animals have ONE clip each — a walk. There is no idle and there
+ * cannot be one: the PixelLab account is cancelled, so what is on disk is what
+ * there is. A walk cycle played on a stationary animal is a treadmill, and it
+ * reads worse than the still frame it replaced. So the ones that stand in a pen
+ * are given somewhere to walk instead.
+ *
+ * ## The two things that are easy to get wrong
+ *
+ * **The strips face WEST.** `--amble` is a positive distance and `y-amble`
+ * translates NEGATIVE by it, so the animal moves the way it is pointing. A
+ * positive translate against a west-facing sprite is a moonwalk, which is the
+ * bug the rooster's path already carries a comment about.
+ *
+ * **The wrapper owns the path, the strip owns only its own frames.** Same split
+ * as the rooster: one element translates and flips, the other steps. Putting
+ * both on one element means the `transform` and the `background-position`
+ * animations fight over the same declaration.
+ *
+ * Periods should be coprime across a pen. Three animals falling into step read
+ * as one machine, which is the note the graze strips already carried.
+ */
+function ambling(
+  x: number, y: number, dist: number, period: string, child: HTMLElement | null, delay = '',
+): HTMLElement | null {
+  if (!child) return null
+  const wrap = box(
+    `left:${x}px;top:${y}px;--amble:${dist}px;` +
+    `animation:y-amble ${period} linear infinite${delay ? ` ${delay}` : ''}`,
+  )
+  wrap.append(child)
+  return wrap
+}
+
+/**
+ * A generated-object walk, ready to drop inside `ambling()` or `travelling()`.
+ *
+ * Sits at 0,0 of its wrapper and does nothing but step. The cell and frame
+ * count are what `npm run objstrip` printed when it assembled the strip — they
+ * are measured off the art, not chosen, and typing a different number here
+ * fails silently by sliding the walk instead of stepping it.
+ */
+function objWalk(
+  name: string, cellW: number, cellH: number, frames: number, dur: string, zoom = 1,
+): HTMLElement | null {
+  return stripActor(name, {
+    w: cellW * zoom, h: cellH * zoom,
+    sheetW: cellW * frames * zoom, sheetH: cellH * zoom,
+    frames, dur, keyframe: 'y-strip',
+  })
+}
+
+/**
  * A generated actor strip, placed by its top-left like every other scene sprite.
  *
  * `npm run anim` writes one cell per frame at the SOURCE SPRITE'S OWN SIZE, so
@@ -399,15 +455,60 @@ function yard(): (HTMLElement | null)[] {
   }
   L.push(pen)
 
-  // The pen: grazing rather than bobbing. Durations are deliberately coprime so
-  // three animals in one pen never fall into step and read as one machine.
-  L.push(actor('scene.cowGrazeStrip', 1628, 658, 90, 54, 9, '5.4s')
-    ?? sprite('scene.cow', 1628, 658))
-  L.push(actor('scene.calfGrazeStrip', 1746, 672, 52, 40, 9, '3.1s', 1, '0.6s')
-    ?? sprite('scene.calf', 1746, 672))
-  L.push(actor('scene.sheepGrazeStrip', 1826, 678, 52, 34, 9, '4.3s', 1, '1.4s')
-    ?? sprite('scene.sheep', 1826, 678))
+  /*
+     THE STOCK PEN, AND IT IS OURS NOW.
+
+     Was a LimeZu cow, calf and sheep grazing in place. Is the Whitacre bull, a
+     fjord pony and a donkey, all generated, all previously sitting on disk with
+     nowhere to go — the bull because nothing used the healthy variant, the two
+     equines because HANDOFF item 4 asks what a cursed horse IS before it can be
+     an enemy and never asks what a live one is. A live one is stock in a pen.
+
+     THE FEET ARE THE ONLY NUMBER THAT MATTERS AND THEY DID NOT CHANGE. All
+     three animals it replaces stood on y=712 — cow 658+54, calf 672+40, sheep
+     678+34 — so each `top` here is 712 minus the cell height `npm run objstrip`
+     measured. Reading the tops across and calling them "about the same" is how
+     an animal ends up hovering; the ground line is what the eye reads.
+
+     Cells, from objstrip: bull 64x45, pony 53x50, donkey 56x58. The donkey's
+     ears cross the top rail, which is right — these paint after the pen, so a
+     tall animal stands in front of a three-rail fence rather than being clipped
+     by it. That was already true of the 54px cow.
+
+     THE BULL'S STRIP IS CUT FROM `east` AND EVERY OTHER ONE FROM `west`, which
+     looks like a typo and is not. Open `rotations/west.png` on the dog, the
+     pony, the donkey, the arabian or the mule: the animal faces LEFT. Open the
+     bull's: it faces RIGHT. The generator did not hold one convention across
+     the batch, and `y-amble` needs them all pointing the same way or the bull
+     moonwalks its outward leg. The same discovery corrected the bull's compass
+     mapping in art/sprites.json, where it was making the in-game prizeBull
+     charge backwards.
+  */
+  L.push(ambling(1628, 667, 30, '19s', objWalk('scene.bullWalkStrip', 64, 45, 9, '1.5s')))
+  L.push(ambling(1740, 662, 22, '13s', objWalk('scene.ponyWalkStrip', 53, 50, 9, '1.1s'), '2.4s'))
+  L.push(ambling(1826, 654, 26, '17s', objWalk('scene.donkeyWalkStrip', 56, 58, 9, '1.3s'), '5.1s'))
   L.push(sprite('scene.trough', 1600, 700))
+
+  /*
+     A SADDLE HORSE OUT ON THE GRASS, THIS SIDE OF THE TRACK.
+
+     The one addition to the reference composition rather than a swap, and it is
+     here on purpose: `arabian_horse` is the last of the four generated equines
+     with anywhere sensible to be, the band between the well and the track is
+     empty ground in a scene that is otherwise busy, and a horse loose in the
+     yard is what a ranch looks like at the end of a day.
+
+     Same ground line as the pen — feet on 712 — so it sits at the same depth as
+     the stock and the eye reads one middle distance rather than two. 1230 keeps
+     it clear of the well, which ends at 1208, and clear of the Homestead door
+     button, which starts at 1292 and is the only thing on this screen you can
+     click.
+
+     `draft_mule` is generated, good, and deliberately NOT here: it is very
+     nearly black, and at dusk against ground this dark it is a silhouette with
+     no shape in it. It wants a lit scene or a pale one.
+  */
+  L.push(ambling(1230, 658, 24, '23s', objWalk('scene.horseWalkStrip', 59, 54, 9, '1.25s'), '3.7s'))
 
   // -- actors at 2x. Two hens cross the whole yard, right to left.
   for (const [anim, step] of [
@@ -461,23 +562,56 @@ function yard(): (HTMLElement | null)[] {
   L.push(peck(992, 660, '2.6s', '0.8s'))
   L.push(peck(1064, 674, '3.1s', '1.9s'))
 
-  // -- a hand crossing the yard, and another walking away up the track
+  /*
+     A HAND CROSSING THE YARD, AND THE WIDOW WALKING AWAY UP THE TRACK.
+
+     These were the last two LimeZu people on the home screen and they are the
+     game's own cast now — literally: `scene.handWalkEastStrip` is the same file
+     the atlas cuts The Hand's in-game walk out of. It is his ground; the class
+     panel to the left says so in as many words.
+
+     The direction is not decorative. `y-across` translates POSITIVE, so that
+     one needs the EAST walk; `y-up` translates negative in y, so the other
+     needs NORTH — the back of a head, walking away. Getting either backwards
+     gives you someone gliding while facing the wrong way, which is the same
+     failure the rooster's return leg has a comment about.
+
+     32x64 cells at 2x, eight frames rather than the pack's six, and the
+     GENERIC `y-strip` keyframe — `stripActor` publishes `--strip-w`, so a
+     512px strip needs no `y-strip-512` block. That is what that keyframe is
+     for and why the numbered ones are not worth adding to.
+  */
   L.push(travelling(470, 566, 'y-across 61s linear infinite',
-    stripActor('scene.farmerWalkStrip', {
-      w: 64, h: 128, sheetW: 384, sheetH: 128, frames: 6, dur: '1.1s', keyframe: 'y-strip-384',
+    stripActor('scene.handWalkEastStrip', {
+      w: 64, h: 128, sheetW: 512, sheetH: 128, frames: 8, dur: '1.1s', keyframe: 'y-strip',
     })))
   L.push(travelling(1290, 1010, 'y-up 74s linear infinite',
-    stripActor('scene.farmerWalkUpStrip', {
-      w: 64, h: 128, sheetW: 384, sheetH: 128, frames: 6, dur: '1.05s', keyframe: 'y-strip-384',
+    stripActor('scene.widowWalkNorthStrip', {
+      w: 64, h: 128, sheetW: 512, sheetH: 128, frames: 8, dur: '1.05s', keyframe: 'y-strip',
     })))
 
   // -- the fence, which everything above walks behind
   L.push(tileBand('scene.fencePicket',
     'left:-20px;right:-20px;top:742px;height:32px;filter:brightness(0.62)', 96, 32))
 
-  // -- the nearest ground, in front of the fence, at 2x
-  L.push(actor('scene.dogIdleStrip', 132, 818, 60, 42, 9, '2.9s', 2)
-    ?? sprite('scene.dogLab', 132, 818, 2))
+  /*
+     THE NEAREST GROUND, IN FRONT OF THE FENCE, AT 2x — AND OUR DOG ON IT.
+
+     Was the LimeZu labrador breathing on the spot. Is `barn_dog`, generated,
+     which has a walk and no idle, so it is given ground to cover rather than
+     played in place. Same feet: the lab was 60x42 at 2x from y=818, so its
+     paws were on 818+84=902, and 52x42 at 2x from the same top lands there too.
+     The x moves 8px right of the lab's to keep the dog on the same centre.
+
+     THE PATROL IS SHORT ON PURPOSE, AND ITS LIMIT WAS MEASURED IN THE PAGE.
+     The first class card's left edge is at stage x=332 — read off
+     `.home-rail > .hero` at runtime, not counted off a mockup — and the cards
+     are opaque, so a dog that wanders past it walks behind one and vanishes.
+     Starting at 216 and ambling 180 left puts the extremes at 36 and 320: the
+     whole clear corner, and nothing to hide behind. It passes BEHIND the milk
+     cans, which is DOM order doing the right thing for free.
+  */
+  L.push(ambling(216, 818, 180, '21s', objWalk('scene.dogWalkStrip', 52, 42, 9, '0.75s', 2)))
   L.push(sprite('scene.milkcan', 24, 872, 2))
   L.push(sprite('scene.milkcan', 66, 890, 2))
 

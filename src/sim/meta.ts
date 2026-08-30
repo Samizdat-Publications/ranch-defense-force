@@ -174,6 +174,9 @@ export interface RunResult {
   bossKills: number
   tier: number
   cleared: boolean
+  /** How far the run got underground. 0 on the surface. Optional so every
+   *  existing caller — the tests especially — still means depth 0. */
+  depth?: number
 }
 
 /**
@@ -183,12 +186,20 @@ export interface RunResult {
  * was actually banked, rather than recomputing it and risking the two drifting.
  */
 export function bankRun(s: Save, r: RunResult, seed: number, classId: string): number {
-  const acres = (META as unknown as { acres: { perWaveCleared: number; perBossKill: number; firstTimeThisTier: number } }).acres
+  const acres = (META as unknown as {
+    acres: {
+      perWaveCleared: number; perBossKill: number
+      firstTimeThisTier: number; perDepth?: number
+    }
+  }).acres
   const firstTime = !s.tiersPaid.includes(r.tier)
   const base = acres.perWaveCleared * r.wavesCleared
     + acres.perBossKill * r.bossKills
     + (firstTime && r.cleared ? acres.firstTimeThisTier : 0)
-  const earned = Math.round(base * tierAcreMultiplier(r.tier))
+  // Depth pays, and it is what descending is for. Multiplied with the tier
+  // rather than added after it, so the two difficulty axes compose.
+  const depthMul = 1 + (acres.perDepth ?? 0) * (r.depth ?? 0)
+  const earned = Math.round(base * tierAcreMultiplier(r.tier) * depthMul)
 
   s.acres += earned
   if (firstTime && r.cleared) s.tiersPaid = [...s.tiersPaid, r.tier]

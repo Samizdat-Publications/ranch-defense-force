@@ -76,8 +76,31 @@ interface Manifest {
   portraits?: SingleGroup
   /** Walk strips. Packed untrimmed so steps() lands on cell boundaries. */
   sceneStrips?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  /**
+   * The people in the yard: whole character walk strips, read straight out of
+   * the generated character folders rather than copied into assets/scene/.
+   *
+   * These are the same files pixellabStrips packs frame-by-frame. It writes
+   * `hand.walk.right.N`; this writes `scene.handWalkEastStrip`. Different keys,
+   * so it is not the two-groups-one-key trap — that was checked, not assumed.
+   */
+  sceneCast?: SingleGroup
   /** Generated card art. Deliberately larger than 32px; cards zoom by integers. */
   pixellab?: { _base: string; files: Record<string, string> }
+  /** Generated 8-direction OBJECTS: one PNG per rotation, one PNG per walk
+   *  frame. Nothing shares a grid, so the geometry is measured per object. */
+  pixellabObjects?: {
+    _base: string
+    compassToDirection: Record<string, string>
+    conform?: boolean
+    objects: Record<string, {
+      dir: string
+      walk: string
+      /** Overrides the group mapping when this object's rotations are
+       *  named against a different convention. See the bull. */
+      compassToDirection?: Record<string, string>
+    }>
+  }
   /** Generated characters, pre-cut to the game's 32x64 grid. */
   pixellabStrips?: {
     _base: string
@@ -94,7 +117,8 @@ interface Manifest {
   }
   weapons?: { _base: string; files: Record<string, string> }
   weaponsFarmTools?: { _base: string; files: Record<string, string>; conform?: boolean }
-  nodes?: { _base: string; files: Record<string, string> }
+  /** Trees, rocks and ore. Generated; see art/sprites.json for what they replaced. */
+  nodesGenerated?: { _base: string; files: Record<string, string>; conform?: boolean }
   tools?: { _base: string; files: Record<string, string>; conform?: boolean }
   weaponTiers?: { _base: string; files: Record<string, string>; conform?: boolean }
   gunSheet?: {
@@ -106,7 +130,6 @@ interface Manifest {
     colLefts: number[]
     rowTops: number[]
   }
-  nodeTrees?: { _base: string; files: Record<string, string> }
   projectiles?: {
     _base: string
     clips: Record<string, { path: string }>
@@ -352,6 +375,125 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
   }
 }
 
+// ------------------------------------------------------- pixellab objects
+
+/**
+ * Pack a generated 8-direction object — the cursed animals.
+ *
+ * A fourth layout in this project. The humanoids are 32x64 on stacked row
+ * pairs, the LimeZu animals are four direction clips side by side in one band,
+ * the tractor is 192px frames stacked by direction, and this is one PNG per
+ * rotation plus one PNG per walk frame in named compass folders. None of them
+ * could have been assumed from the others.
+ *
+ * The two numbers that matter are both measured here rather than declared,
+ * because the canvas is 56 or 68 square with the animal drawn loose inside it:
+ *
+ * - **The baseline is per (object, direction).** Per FRAME is the bobbing bug
+ *   from session 12 — the dog's south walk swings 6px between a standing pose
+ *   and a mid-stride one. Per OBJECT is wrong the other way: the bottom gap is
+ *   5px facing south against 7px in profile, because from behind the hind legs
+ *   are nearer the camera and drawn lower, so one number for all four sinks the
+ *   animal whenever it turns. The rotation is folded into the same measurement
+ *   so an animal does not jump the moment it starts walking.
+ * - **x pivots on the CANVAS centre, not the content centre**, which drifts as
+ *   a leg swings out and would slide the animal sideways within its own walk.
+ */
+if (manifest.pixellabObjects) {
+  const cfg = manifest.pixellabObjects
+  const quantiser = cfg.conform ? makeQuantiser(loadPalette()) : undefined
+
+  for (const [id, obj] of Object.entries(cfg.objects)) {
+    const base = `${cfg._base}${obj.dir}`
+
+    /*
+     * THE GROUP'S COMPASS MAPPING IS NOT TRUE OF EVERY OBJECT, AND ONE OF THEM
+     * PROVES IT.
+     *
+     * `west -> left` holds for the dog, the pony, the donkey, the arabian and
+     * the mule: open `rotations/west.png` on any of them and the animal faces
+     * left. Open the BULL'S and it faces RIGHT. The generator did not apply one
+     * convention, and nothing downstream could tell — the renderer never
+     * mirrors a sprite, so `prizeBull` charged left showing a bull pointed
+     * right, and it read as a sliding model rather than as an error.
+     *
+     * The IoU check this mapping was signed off with cannot catch that. It
+     * proves east is a mirror of west, which is true of every one of them; it
+     * says nothing about WHICH WAY EITHER FACES. That has to be looked at.
+     *
+     * So an object may name its own mapping and the group's is the default.
+     */
+    const compassMap = obj.compassToDirection ?? cfg.compassToDirection
+
+    for (const [compass, dir] of Object.entries(compassMap)) {
+      const walkDir = `${base}/animations/${obj.walk}/${compass}`
+      let walkFiles: string[]
+      try {
+        walkFiles = readdirSync(walkDir).filter((f) => f.endsWith('.png')).sort()
+      } catch {
+        errors.push(
+          `${walkDir}: no walk frames. The rotations alone are not enough — an ` +
+          `enemy that slides without moving its legs is worse than the sheet it ` +
+          `replaces. Generate the clip with animate_object before wiring it.`,
+        )
+        continue
+      }
+      if (walkFiles.length === 0) {
+        errors.push(`${walkDir}: empty`)
+        continue
+      }
+
+      // Rotation first, then the walk. Decoded once and reused, because the
+      // baseline pass and the emit pass both need every frame.
+      const paths = [`${base}/rotations/${compass}.png`, ...walkFiles.map((f) => `${walkDir}/${f}`)]
+      const imgs: Image[] = []
+      let failed = false
+      for (const path of paths) {
+        try {
+          const img = decodePng(readFileSync(path))
+          quantiser?.conform(img)
+          imgs.push(img)
+        } catch (e) {
+          errors.push(`${path}: ${(e as Error).message}`)
+          failed = true
+          break
+        }
+      }
+      if (failed) continue
+
+      const canvasW = imgs[0].width
+      if (imgs.some((i) => i.width !== canvasW || i.height !== imgs[0].height)) {
+        errors.push(`${base}/${compass}: frames are not all the same canvas size`)
+        continue
+      }
+
+      const bounds = imgs.map((img) => contentBounds(img, 0, 0, img.width, img.height))
+      const emptyAt = bounds.findIndex((b) => b.empty)
+      if (emptyAt >= 0) {
+        errors.push(`${paths[emptyAt]}: entirely transparent`)
+        continue
+      }
+      // The one baseline this direction is drawn against.
+      const baseline = Math.max(...bounds.map((b) => b.y + b.h))
+
+      for (let i = 0; i < imgs.length; i++) {
+        const b = bounds[i]
+        pending.push({
+          // Index 0 is the rotation, standing in as the idle; the rest is walk.
+          name: i === 0 ? `${id}.idle.${dir}.0` : `${id}.walk.${dir}.${i - 1}`,
+          img: imgs[i],
+          sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+          ox: b.x - canvasW / 2,
+          oy: b.y - baseline,
+        })
+      }
+      clipLengths[id] ??= {}
+      clipLengths[id].idle = 1
+      clipLengths[id].walk = walkFiles.length
+    }
+  }
+}
+
 // ------------------------------------------------------------------ animals
 
 for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
@@ -516,10 +658,17 @@ interface SingleGroup {
 
 const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
-  manifest.nodes, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
+  manifest.tools, manifest.weaponTiers,
+  // Generated scenery. cardArt because these are legitimately 40-190px — a tree
+  // is not a weapon icon and the pack's size assertion is measuring the wrong
+  // thing here, exactly as it is for the card art.
+  manifest.nodesGenerated ? { ...manifest.nodesGenerated, cardArt: true } : undefined,
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
   manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
   manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,
+  // A 256x64 walk strip is neither a weapon icon nor trimmable: cardArt for the
+  // first reason, noTrim for the second, exactly as sceneStrips is.
+  manifest.sceneCast ? { ...manifest.sceneCast, cardArt: true, noTrim: true } : undefined,
   manifest.portraits,
 ].filter(Boolean) as SingleGroup[]
 

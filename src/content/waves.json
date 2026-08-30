@@ -17,6 +17,8 @@
     20,
     24
   ],
+  "descentFromWave": 10,
+  "_descentNote": "The first wave boundary a way down can open on. It only opens on a boundary that is ALSO in shopAfterWaves, so a run has one stop-and-decide rhythm rather than two interruptions. 10 rather than 1 because the fiction is that the ash comes UP: a hole in a clean field is a hole, and a hole in a field that has already started going grey is where the grey is coming from. The blight starts at wave 2 and is clearly visible by 10 (24% coverage).",
   "eliteEveryNWaves": 5,
   "elite": {
     "chance": 0.1,
@@ -64,5 +66,5 @@
       "stopSpawningAfterWave": 14
     }
   },
-  "_bossWaveNote": "waveCount is 25, not 24. §9 puts the Duster on wave 25 while waveCount was 24, so the run called finishRun the instant wave 24 completed and wave 25 never began — the final boss could not be fought at all. Wave 25 is now the finale."
+  "_bossWaveNote": "waveCount is 25, not 24. \u00a79 puts the Duster on wave 25 while waveCount was 24, so the run called finishRun the instant wave 24 completed and wave 25 never began \u2014 the final boss could not be fought at all. Wave 25 is now the finale."
 }

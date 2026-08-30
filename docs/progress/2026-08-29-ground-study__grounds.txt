@@ -1,0 +1,2 @@
+The six candidate grounds as single tiles at 6x — grass, bare earth, tilled soil, gravel, muddy water, blight.
+commit bdff23af

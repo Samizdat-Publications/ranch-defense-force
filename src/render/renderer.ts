@@ -19,6 +19,8 @@ import { ENEMIES, NODES, TUNING, WEAPONS, projectileScaleFor } from '../content'
 import { Atlas, directionIndex, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 import { wangKey, type Corner } from './wang'
+import { blightField, DEFAULT_BLIGHT, type BlightConfig } from './blight'
+import { groundLayers, type GroundLayer } from './terrain'
 
 const BUCKET = 8
 
@@ -58,15 +60,18 @@ const PROJECTILE_SCALE = 0.55
 const PROJECTILE_FPS = 15
 
 /**
- * Which Wang sets the ground bakes from. Content, not code — choosing a ground
- * is a content decision, and a map descriptor will want to pick its own pair.
+ * How the ash spreads. Timing is global; WHICH set it spreads in is per-map,
+ * because a map's blight has to chain onto that map's own grass or the two
+ * terrains will not meet.
+ *
+ * `tuning.terrain.groundSet` / `soilSet` are gone: the ground a map is made of
+ * moved into `src/content/maps.json`, where a map can name as many sets as it
+ * wants instead of exactly two.
  */
 const TERRAIN = (TUNING as unknown as {
-  terrain?: { groundSet?: string; soilSet?: string; soilEdgeCols?: number }
+  terrain?: { blight?: Partial<BlightConfig> }
 }).terrain ?? {}
-const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
-const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
-const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
+const BLIGHT: BlightConfig = { ...DEFAULT_BLIGHT, ...TERRAIN.blight }
 
 interface DrawItem {
   x: number
@@ -128,6 +133,18 @@ export class Renderer {
   private decals: HTMLCanvasElement
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
+  /**
+   * What the last full bake produced, kept so a wave change can repaint only
+   * the cells the ash actually reached. See `repaintBlight`.
+   */
+  private bakedLayers: GroundLayer[] | null = null
+  private bakedBlight: Uint8Array | null = null
+  private bakedCols = 0
+  private bakedRows = 0
+  /** The map the terrain was baked for. Descending changes it mid-run. */
+  private bakedMapId = ''
+  /** The wave `terrain` was baked for. The ash spreads, so the bake expires. */
+  private bakedWave = 0
 
   /** Melee sweeps and auras, collected during the sprite pass and stroked as
    *  arcs afterwards. Fixed length, reused; never reallocated per frame. */
@@ -190,7 +207,34 @@ export class Renderer {
    * frame — never per-tile draws (§13). Deterministic from the run seed, so a
    * replayed run gets the same field.
    */
+  /**
+   * Re-point the camera and the decal buffer at the current arena.
+   *
+   * Descending changes the arena's SIZE, and both of those are sized from it —
+   * a camera still clamping to a 3200x2100 field in a 1400x1000 cave lets the
+   * view walk off the edge of the world, and a decal canvas the wrong size
+   * silently stops taking stains past its old bounds.
+   */
+  private resizeToArena(): void {
+    const w = this.world
+    this.camera.setBounds(w.arenaW, w.arenaH)
+    if (this.decals.width !== w.arenaW || this.decals.height !== w.arenaH) {
+      this.decals.width = w.arenaW
+      this.decals.height = w.arenaH
+    }
+  }
+
   private bakeTerrain(): void {
+    this.bakedMapId = this.world.map.id
+    const wave = this.world.spawner?.wave ?? 1
+    // The ash only ever spreads, so a later wave is the last picture plus more
+    // — repaint what it reached instead of the whole arena. Falls through to
+    // the full bake whenever that is not true or anything is missing.
+    if (wave > this.bakedWave && this.repaintBlight(wave)) {
+      this.bakedWave = wave
+      return
+    }
+    this.bakedWave = wave
     const c = document.createElement('canvas')
     c.width = this.world.arenaW
     c.height = this.world.arenaH
@@ -228,7 +272,10 @@ export class Renderer {
       for (let x = 0; x < cols; x++) put(grass, x * tile, y * tile)
     }
 
-    // Wang ground if the tilesets are packed; the stamped version below if not.
+    // The map's Wang ground if its tilesets are packed. If they are not, the
+    // stamped version below runs instead — and it draws the ONE arena that
+    // existed before maps did, not this map. That state is a fresh clone that
+    // has not run `npm run atlas`, where the point is that the game runs at all.
     if (this.bakeWangGround(g, cols, rows, tile)) {
       this.paintFence(g, c)
       this.terrain = c
@@ -279,10 +326,16 @@ export class Renderer {
    * blocky; there is no amount of extra tile detail that fixes it, because the
    * staircase is in the geometry and not in the art.
    *
-   * Two passes, because a Wang set is a PAIR of terrains and not a palette:
-   * worn dirt through the pasture, then tilled soil down the two corn edges the
-   * spawner uses. The second is drawn over the first and its own lower terrain
-   * is grass, which is what the edges are.
+   * ONE PASS PER LAYER, and the layers are the MAP. A Wang set is a pair of
+   * terrains rather than a palette, so a map that wants grass, worn earth,
+   * tilled soil, gravel and a creek needs five sets stacked — each painting its
+   * upper terrain wherever its own field says, over whatever is beneath. The
+   * fields come from `src/render/terrain.ts` so this and `tools/draw-world.ts`
+   * cannot disagree about what a map looks like.
+   *
+   * Every set above the base MUST chain onto the base's grass — its own lower
+   * terrain has to be the identical tile — or the two will not meet and the
+   * seam shows. `src/content/maps.json` says which sets do.
    *
    * Returns false if the tilesets are not packed, and the caller falls back to
    * the stamped bake — a missing tileset costs the ground, not the game.
@@ -291,75 +344,149 @@ export class Renderer {
     g: CanvasRenderingContext2D, cols: number, rows: number, tile: number,
   ): boolean {
     const atlas = this.atlas
-    if (!atlas || !atlas.get(wangKey(GROUND_SET, 0, 0, 0, 0))) return false
-
-    const img = atlas.image
-    // Its own RNG stream: the ground must not move a single later spawn, and
-    // the seed guarantee is what every replay test rests on.
-    const rng = new Rng(this.world.seed ^ 0x7e44a1)
+    const map = this.world.map
+    const base = map.layers[0]
+    if (!atlas || !base || !atlas.get(wangKey(base.set, 0, 0, 0, 0))) return false
 
     const vw = cols + 1
-    const vh = rows + 1
-    /** 1 is the set's upper terrain, 0 its lower. Vertices, so (cols+1)^2. */
-    const field = new Uint8Array(vw * vh).fill(1)
+    const layers = groundLayers(map, this.world.seed, cols, rows)
 
-    // Worn patches, blobbed at vertices so their edges land between tiles.
-    for (let i = 0; i < 26; i++) {
-      const cx = rng.int(2, cols - 3)
-      const cy = rng.int(2, rows - 3)
-      const r = rng.int(1, 3)
-      for (let y = -r; y <= r; y++) {
-        for (let x = -r; x <= r; x++) {
-          if (x * x + y * y > r * r) continue
-          const vx = cx + x
-          const vy = cy + y
-          if (vx < 0 || vy < 0 || vx >= vw || vy >= vh) continue
-          field[vy * vw + vx] = 0
-        }
-      }
-    }
-
-    const paint = (set: string, at: Uint8Array): void => {
+    const paint = (set: string, at: Uint8Array, coverAll: boolean): void => {
       for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const nw = at[y * vw + x] as Corner
-          const ne = at[y * vw + x + 1] as Corner
-          const sw = at[(y + 1) * vw + x] as Corner
-          const se = at[(y + 1) * vw + x + 1] as Corner
-          const f = atlas.get(wangKey(set, nw, ne, sw, se))
-          if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
-        }
+        for (let x = 0; x < cols; x++) this.paintCell(g, set, at, x, y, vw, tile, coverAll)
       }
     }
 
-    paint(GROUND_SET, field)
+    // The ground the map is made of. First layer covers every cell; the rest
+    // only touch what they change — they share the base's grass as their own
+    // lower terrain, so painting a clear cell repaints identical pixels.
+    paint(base.set, layers[0].field, true)
 
-    // The tilled edges the spawner calls `cornTile`. Upper is soil here, so the
-    // field is inverted relative to the pass above: 0 everywhere, 1 at the ends.
-    if (atlas.get(wangKey(SOIL_SET, 1, 1, 1, 1))) {
-      const soil = new Uint8Array(vw * vh)
-      let any = false
-      for (let vy = 0; vy < vh; vy++) {
-        for (let vx = 0; vx < vw; vx++) {
-          if (vx < SOIL_EDGE_COLS || vx >= vw - SOIL_EDGE_COLS) { soil[vy * vw + vx] = 1; any = true }
-        }
-      }
-      if (any) {
-        // Only cells that touch soil, so the pass does not repaint the pasture
-        // with this set's own (identical) grass and double the draw cost.
-        for (let y = 0; y < rows; y++) {
-          for (let x = 0; x < cols; x++) {
-            const nw = soil[y * vw + x] as Corner
-            const ne = soil[y * vw + x + 1] as Corner
-            const sw = soil[(y + 1) * vw + x] as Corner
-            const se = soil[(y + 1) * vw + x + 1] as Corner
-            if (!(nw || ne || sw || se)) continue
-            const f = atlas.get(wangKey(SOIL_SET, nw, ne, sw, se))
-            if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
-          }
-        }
+    /*
+       THE ASH, PAINTED BETWEEN THE BASE AND EVERYTHING ABOVE IT.
+
+       Over the ground because that is what it is spreading across. UNDER every
+       deliberate feature — the tilled corn rows, a gravel track, a creek —
+       because those are the landmarks a player navigates by, and a lane you
+       have learned to watch should not be the first thing to disappear under
+       the rot. The blight is tone, and it does not get to cost legibility.
+
+       Its set is per-map: it has to chain onto THAT map's grass.
+    */
+    const blightSet = map.blight ?? BLIGHT.set
+    const blight = blightField(this.world.seed, cols, rows, this.bakedWave, BLIGHT)
+    if (blight && atlas.get(wangKey(blightSet, 1, 1, 1, 1))) paint(blightSet, blight, false)
+
+    for (let i = 1; i < layers.length; i++) {
+      const l = layers[i]
+      if (atlas.get(wangKey(l.set, 1, 1, 1, 1))) paint(l.set, l.field, false)
+    }
+
+    // Kept so the next wave can repaint only what the ash reached.
+    this.bakedLayers = layers
+    this.bakedBlight = blight
+    this.bakedCols = cols
+    this.bakedRows = rows
+    return true
+  }
+
+  /** One cell of one Wang layer. The whole bake is this, in a loop. */
+  private paintCell(
+    g: CanvasRenderingContext2D, set: string, at: Uint8Array,
+    x: number, y: number, vw: number, tile: number, coverAll: boolean,
+  ): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const nw = at[y * vw + x] as Corner
+    const ne = at[y * vw + x + 1] as Corner
+    const sw = at[(y + 1) * vw + x] as Corner
+    const se = at[(y + 1) * vw + x + 1] as Corner
+    if (!coverAll && !(nw || ne || sw || se)) return
+    const f = atlas.get(wangKey(set, nw, ne, sw, se))
+    if (f) g.drawImage(atlas.image, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
+  }
+
+  /**
+   * Repaint only the cells the ash reached since the last bake.
+   *
+   * A FULL RE-BAKE IS A VISIBLE HITCH ON A BIG MAP. Measured in the browser on
+   * the 3200x2100 arena: 56.7ms for the wave-change frame, which is nearly four
+   * dropped frames, against 0.12ms for a warm one. It scales with area, so the
+   * bigger maps roughly doubled a stutter that was already there.
+   *
+   * The fix rests on a property the blight already guarantees and a test
+   * already asserts: **it is MONOTONIC.** Wave N's field is wave N-1's plus
+   * more, never different, so the picture only ever gains ash and the cells
+   * that did not gain any are already correct on the canvas.
+   *
+   * A changed cell is repainted in the same order the full bake uses — base,
+   * ash, then the map's features — because the ash goes UNDER the features and
+   * painting it last would put it over the tilled rows.
+   *
+   * Returns false when anything it needs is missing or the field is not a
+   * superset, and the caller does the full bake. Bailing is always safe; the
+   * only cost is the hitch this exists to avoid.
+   */
+  private repaintBlight(wave: number): boolean {
+    const atlas = this.atlas
+    const layers = this.bakedLayers
+    const prev = this.bakedBlight
+    if (!atlas || !layers || !this.terrain) return false
+
+    const cols = this.bakedCols
+    const rows = this.bakedRows
+    const next = blightField(this.world.seed, cols, rows, wave, BLIGHT)
+    // No ash yet on either side, so the canvas is already right. This is the
+    // wave-1-to-2 change on the default config, and treating it as a bail
+    // meant one pointless full bake at the start of every run.
+    if (!next) return prev === null
+    const blightSet = this.world.map.blight ?? BLIGHT.set
+    if (!atlas.get(wangKey(blightSet, 1, 1, 1, 1))) return false
+
+    const g = this.terrain.getContext('2d')
+    if (!g) return false
+    g.imageSmoothingEnabled = false
+
+    const vw = cols + 1
+    const tile = 32
+    // Vertices that gained ash. If any LOST it the field is not monotonic and
+    // this whole approach is void — bail to the full bake rather than leave a
+    // stale patch of grass that nothing will ever repaint.
+    const gained: number[] = []
+    for (let i = 0; i < next.length; i++) {
+      if (next[i] === prev?.[i]) continue
+      if (prev && prev[i] === 1 && next[i] === 0) return false
+      if (next[i] === 1) gained.push(i)
+    }
+    if (gained.length === 0) {
+      this.bakedBlight = next
+      return true
+    }
+
+    // A vertex touches the four cells around it, so dedupe before painting.
+    const cells = new Set<number>()
+    for (const i of gained) {
+      const vx = i % vw
+      const vy = (i / vw) | 0
+      for (const [dx, dy] of [[0, 0], [-1, 0], [0, -1], [-1, -1]] as const) {
+        const cx = vx + dx
+        const cy = vy + dy
+        if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) continue
+        cells.add(cy * cols + cx)
       }
     }
+
+    for (const c of cells) {
+      const x = c % cols
+      const y = (c / cols) | 0
+      this.paintCell(g, layers[0].set, layers[0].field, x, y, vw, tile, true)
+      this.paintCell(g, blightSet, next, x, y, vw, tile, false)
+      for (let i = 1; i < layers.length; i++) {
+        this.paintCell(g, layers[i].set, layers[i].field, x, y, vw, tile, false)
+      }
+    }
+
+    this.bakedBlight = next
     return true
   }
 
@@ -368,6 +495,21 @@ export class Renderer {
     const p = w.player
     const ctx = this.ctx
     this.drawCalls = 0
+
+    // The ash spreads, so the bake expires. Once per wave, not per frame — a
+    // full-arena repaint is 2400x1600 and belongs nowhere near the hot loop.
+    // Comparing the wave rather than subscribing to it keeps the renderer's
+    // one-way dependency on the sim intact.
+    // The ash spreads and the ground can change underneath you. A wave change
+    // is an incremental repaint; a MAP change is a different arena and a
+    // different canvas, so it forces a full bake.
+    if (w.map.id !== this.bakedMapId) {
+      this.bakedLayers = null
+      this.bakedBlight = null
+      this.terrain = null
+      this.resizeToArena()
+      this.bakeTerrain()
+    } else if ((w.spawner?.wave ?? 1) !== this.bakedWave) this.bakeTerrain()
 
     const pxi = p.px + (p.x - p.px) * alpha
     const pyi = p.py + (p.y - p.py) * alpha
@@ -408,6 +550,7 @@ export class Renderer {
     this.drawCalls++
 
     this.drawArenaBurn(ctx)
+    this.drawDescent(ctx)
     this.drawHazards(ctx)
     this.drawTelegraphs(ctx)
     // Ground effects (dash dust, the Dig In pulse) go under the sprite layer,
@@ -424,6 +567,11 @@ export class Renderer {
     this.drawPickups(ctx, alpha)
     this.drawParticles(ctx)
     this.drawDamageNumbers(ctx)
+
+    // The dark goes over the field and UNDER the damage numbers would be wrong
+    // — a number you cannot read is a number that did not happen — so it is
+    // last inside the camera and the HUD is drawn over it untouched.
+    this.drawDark(ctx, pxi, pyi)
 
     ctx.setTransform(1, 0, 0, 1, 0, 0)
   }
@@ -1003,6 +1151,118 @@ export class Renderer {
       it.scaleX = TUNING.fx.weaponRingScale * 0.85 * side
       it.scaleY = TUNING.fx.weaponRingScale * 0.85
     }
+  }
+
+  /**
+   * The way down, once it has opened.
+   *
+   * Drawn rather than modelled: there is no sprite for a cellar hatch and none
+   * can be generated until the allowance refills, so this is a black hole in
+   * the ground with a lip and a pulse on it. It reads as a hole because it is
+   * DARKER than everything around it and nothing else on the field is — the
+   * blight only ever makes the ground paler.
+   *
+   * Under the hazards and over the terrain, so a hazard dropped on top of it
+   * still reads as the more urgent thing.
+   */
+  private drawDescent(ctx: CanvasRenderingContext2D): void {
+    const d = this.world.descentPoint
+    if (!d) return
+    const t = this.world.elapsed
+    // Slow, so it reads as something breathing rather than as a UI blink.
+    const pulse = 0.5 + Math.sin(t * 1.7) * 0.5
+
+    // The lip: broken ground around the mouth, brightest where the light
+    // catches it, so the hole has an edge rather than being a painted disc.
+    ctx.save()
+    ctx.translate(d.x, d.y)
+    ctx.fillStyle = 'rgba(24, 20, 18, 0.55)'
+    ctx.beginPath()
+    ctx.ellipse(0, 2, d.r + 7, (d.r + 7) * 0.62, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = '#0a0908'
+    ctx.beginPath()
+    ctx.ellipse(0, 0, d.r, d.r * 0.62, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.strokeStyle = `rgba(214, 176, 108, ${0.28 + pulse * 0.42})`
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.ellipse(0, 0, d.r + 2, (d.r + 2) * 0.62, 0, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Something coming up out of it. Two slow motes, phase-offset.
+    for (const [i, speed] of [[0, 1], [1, 0.7]] as const) {
+      const up = ((t * speed * 0.35) + i * 0.5) % 1
+      ctx.globalAlpha = (1 - up) * 0.5
+      ctx.fillStyle = '#8fa06a'
+      ctx.fillRect(-2 + i * 5, -6 - up * 26, 2, 2)
+    }
+    ctx.globalAlpha = 1
+
+    /*
+       THE PROMPT, AND IT IS WHY THE DESCENT NEEDS A KEY AT ALL.
+
+       Walking into the hole used to be enough, and the acceptance bots — random
+       walkers — kept falling in and dying two levels down, which dropped the
+       clear rate from five seeds in six to two. That was the test reporting a
+       DESIGN fault rather than a broken build: a one-way trip you can take by
+       wandering across a 34px circle is a trap, not a choice. It takes a
+       deliberate press now, and this is what says so.
+    */
+    if (this.world.onDescentPoint) {
+      ctx.font = '9px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillStyle = 'rgba(10, 8, 8, 0.75)'
+      ctx.fillRect(-30, -d.r * 0.62 - 22, 60, 13)
+      ctx.fillStyle = `rgba(240, 214, 150, ${0.75 + pulse * 0.25})`
+      ctx.fillText('[E] GO DOWN', 0, -d.r * 0.62 - 12)
+      ctx.textAlign = 'left'
+    }
+    ctx.restore()
+    this.drawCalls++
+  }
+
+  /**
+   * The dark, underground.
+   *
+   * A radial hole punched around the player over the whole visible arena. It is
+   * the single biggest thing that makes a cave feel like a cave, it costs one
+   * gradient, and it also EARNS the cave floors: several of the tilesets carry
+   * a visible repeat at full brightness, and a repeat you cannot see is not a
+   * repeat.
+   *
+   * `darkness` is per-map content, absent on the surface. The gradient is drawn
+   * in world space inside the camera transform so it moves with the player
+   * rather than sitting on the screen — a screen-space vignette is a lens
+   * effect and this is meant to be the absence of light in a place.
+   *
+   * **`tools/draw-world.ts` restates this per-pixel** and the two have to stay
+   * in step: the lit radius, the three stops and the alphas are all repeated
+   * there. Without it a headless shot of a cave shows a floor at a brightness
+   * nobody will ever see it at, which would make the screenshot archive lie.
+   */
+  private drawDark(ctx: CanvasRenderingContext2D, px: number, py: number): void {
+    const k = this.world.map.darkness ?? 0
+    if (k <= 0) return
+
+    // The lit radius shrinks as the level gets darker, and never below what it
+    // takes to see something walking at you — a cave you cannot fight in is a
+    // cave nobody plays twice.
+    const view = Math.max(this.camera.viewW, this.camera.viewH)
+    const lit = view * (0.62 - k * 0.34)
+    const g = ctx.createRadialGradient(px, py, lit * 0.35, px, py, lit)
+    g.addColorStop(0, 'rgba(6, 6, 9, 0)')
+    g.addColorStop(0.55, `rgba(6, 6, 9, ${(k * 0.5).toFixed(3)})`)
+    g.addColorStop(1, `rgba(4, 4, 7, ${(0.55 + k * 0.42).toFixed(3)})`)
+
+    ctx.fillStyle = g
+    ctx.fillRect(
+      this.camera.x - 8, this.camera.y - 8,
+      this.camera.viewW + 16, this.camera.viewH + 16,
+    )
+    this.drawCalls++
   }
 
   /**

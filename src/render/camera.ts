@@ -18,13 +18,27 @@ export class Camera {
   constructor(
     public viewW: number,
     public viewH: number,
-    private readonly arenaW: number,
-    private readonly arenaH: number,
+    private arenaW: number,
+    private arenaH: number,
   ) {}
 
   resize(w: number, h: number): void {
     this.viewW = w
     this.viewH = h
+  }
+
+  /**
+   * The arena changed size under us. Descending does this mid-run.
+   *
+   * These were readonly, which was right while there was one arena for the
+   * length of a run. A camera still clamping to a 3200x2100 field inside a
+   * 1400x1000 cave lets the view walk off the edge of the world, and it does it
+   * quietly — the field simply runs out and there is void beyond it.
+   */
+  setBounds(arenaW: number, arenaH: number): void {
+    this.arenaW = arenaW
+    this.arenaH = arenaH
+    this.clamp()
   }
 
   snapTo(x: number, y: number): void {

@@ -19,7 +19,11 @@ import { Player } from './player'
 import { tierHpMultiplier } from './meta'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar } from './formulas'
-import { ELEMENTS, ENEMIES, ITEMS, NODES, TUNING, WAVES, WEAPONS, type StatMods } from '../content'
+import {
+  caveAtDepth, ELEMENTS, ENEMIES, ITEMS, mapById, mapForSeed,
+  NODES, TUNING, WAVES, WEAPONS,
+  type MapDef, type StatMods,
+} from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
 import { ENEMY_BEHAVIOURS, type SteerContext } from '../behaviours/enemies'
 
@@ -47,6 +51,10 @@ export interface WorldEvents {
   onWaveComplete?: (wave: number, income: number) => void
   onPlayerDeath?: () => void
   onBossWave?: (bossId: string) => void
+  /** A way down has opened in the field. `depth` is where it leads. */
+  onDescentOpen?: (depth: number) => void
+  /** The player took it. */
+  onDescend?: (depth: number, map: MapDef) => void
 }
 
 export class World {
@@ -55,8 +63,67 @@ export class World {
   readonly player = new Player()
   readonly spawner: Spawner
 
-  readonly arenaW = WAVES.arena.width
-  readonly arenaH = WAVES.arena.height
+  /**
+   * The map this run is played on, and the arena it defines.
+   *
+   * **Chosen by DERIVING a stream from the seed, not by drawing from
+   * `this.rng`.** That distinction is the whole reason maps could be added at
+   * all: a draw here would shift every subsequent draw and no existing seed
+   * would replay. Deriving consumes nothing, so wave order, drops and offers
+   * are byte-identical to what a seed produced before there were maps.
+   *
+   * The arena SIZE does change what a seed plays out as — spawns are on arena
+   * edges and nodes scatter across the arena — but the same seed still replays
+   * itself exactly, which is what the acceptance test asserts.
+   *
+   * `WAVES.arena` is the fallback and nothing else reads it now.
+   */
+  /*
+     THE MAP IS NOT READONLY ANY MORE, BECAUSE OF THE DESCENT.
+
+     A run starts on a surface map the seed picks and can end three levels
+     underground. `descend()` swaps all four of these together and everything
+     sized from them — the spatial grid, the node field — is rebuilt in the same
+     call. Nothing else may write them.
+  */
+  map: MapDef
+  arenaW: number
+  arenaH: number
+
+  /**
+   * 0 on the surface, 1-3 underground. Read by the renderer for the darkness,
+   * by `meta.ts` for the acre bonus, and by the descent itself.
+   */
+  depth = 0
+
+  /**
+   * The way down, once it has opened. World coordinates and a radius.
+   *
+   * It is NOT a prop. Props are harvestable nodes with hp and a tool that works
+   * them, and giving one an "actually it is a door" flag would put a branch in
+   * the harvest path for a thing that is not harvested. This is three numbers
+   * the tick checks against the player's position.
+   */
+  descentPoint: { x: number; y: number; r: number } | null = null
+
+  /** The player is standing on it. The renderer draws the prompt from this. */
+  onDescentPoint = false
+
+  /**
+   * How many times the reference arena this map is, by AREA.
+   *
+   * Every node count in `nodes.json` is multiplied by it, because those counts
+   * are a density and not a headcount — scattering 74 nodes across a 1.75x map
+   * gives 57% of the crops per screen, and the run economy is downstream of how
+   * much a player can harvest per minute.
+   *
+   * This is not a balance lever and should not be used as one. It exists so
+   * that changing a map's SIZE does not silently change the game's economy,
+   * which is exactly what it did when maps first landed: two of six seeds
+   * cleared instead of five, and The Hand — the class whose whole identity is
+   * standing still — scored better running away.
+   */
+  fieldDensity: number
 
   readonly enemies: Pool<Enemy>
   readonly projectiles: Pool<Projectile>
@@ -67,7 +134,7 @@ export class World {
   readonly props: Pool<Prop>
   readonly effects: Pool<Effect>
 
-  private readonly grid: SpatialGrid
+  private grid: SpatialGrid
   private readonly gx: Float64Array
   private readonly gy: Float64Array
   private readonly queryOut: Int32Array
@@ -179,13 +246,29 @@ export class World {
   private chaining = false
 
   /**
-   * @param tier County Fair difficulty tier, 1-based. Scales enemy HP and the
-   *             acre payout; see `meta.ts`. Defaults to 1 so every existing
-   *             caller — tests, tools, the headless painter — is unaffected.
+   * @param tier  County Fair difficulty tier, 1-based. Scales enemy HP and the
+   *              acre payout; see `meta.ts`. Defaults to 1 so every existing
+   *              caller — tests, tools, the headless painter — is unaffected.
+   * @param mapId Forces the map instead of deriving it from the seed. **For
+   *              TOOLS ONLY.** The balance harness needs to hold the arena
+   *              still while it varies something else, and comparing a change
+   *              across a run where the map also moved measures two things at
+   *              once. The game never passes it.
    */
-  constructor(seed: number, classId: string, metaMods: StatMods = {}, readonly tier = 1) {
+  constructor(
+    seed: number, classId: string, metaMods: StatMods = {}, readonly tier = 1,
+    mapId?: string,
+  ) {
     this.seed = seed
     this.rng = new Rng(seed)
+    this.map = mapId ? mapById(mapId) : mapForSeed(seed)
+    // Forcing a cave straight from the constructor is a TOOLS path — the game
+    // always starts on the surface — but depth still has to agree with the map
+    // it is standing on, or the darkness and the acre bonus read the wrong one.
+    this.depth = this.map.depth ?? 0
+    this.arenaW = this.map.width ?? WAVES.arena.width
+    this.arenaH = this.map.height ?? WAVES.arena.height
+    this.fieldDensity = (this.arenaW * this.arenaH) / NODES.field.referenceArea
     this.spawner = new Spawner(this.rng)
 
     this.enemies = new Pool(T.pools.enemies, makeEnemy)
@@ -226,7 +309,9 @@ export class World {
     const def = NODES.kinds[kind]
     if (!def) return
     const field = NODES.field
-    const cap = field.max[kind] ?? 0
+    const d = this.fieldDensity
+    const cap = Math.round((field.max[kind] ?? 0) * d)
+    count = Math.round(count * d)
     const pad = 80
 
     let live = 0
@@ -272,14 +357,119 @@ export class World {
     }
   }
 
-  /** Lay out the whole field at the start of a run. */
+  /** Lay out the whole field at the start of a run, or of a cave level. */
   private scatterField(): void {
-    for (const [kind, n] of Object.entries(NODES.field.initial)) this.scatterNodes(kind, n)
+    // A map may name its own mix. The caves do: rock-dominant, but never all
+    // rock, because the tool ladder gates what a build can harvest.
+    const mix = this.map.nodes ?? NODES.field.initial
+    for (const [kind, n] of Object.entries(mix)) this.scatterNodes(kind, n)
+  }
+
+  // ------------------------------------------------------------- the descent
+
+  /**
+   * Open a way down, somewhere out in the field.
+   *
+   * Called at a wave boundary once the blight has taken hold. Placed away from
+   * the player so descending is a decision you walk to rather than one you fall
+   * into — and away from the edges, because the edges are where enemies come in
+   * and a door you have to fight your way to is a different, worse thing.
+   *
+   * **DERIVED FROM THE SEED, NEVER DRAWN FROM `this.rng`.** It was drawn at
+   * first, and the acceptance suite caught it within the hour: `openDescent`
+   * takes up to twelve numbers off the stream at the wave-10 boundary, so every
+   * spawn, drop and offer from wave 10 on moved, and two of six seeds cleared
+   * instead of five. Nothing about the descent had to be wrong for that — the
+   * shift alone did it.
+   *
+   * Same rule as `mapForSeed`, the terrain bake and the blight, and the third
+   * time this project has paid for learning it. A seed still replays its
+   * descent exactly, because the derivation includes the wave.
+   */
+  private openDescent(wave: number): void {
+    if (this.descentPoint || !caveAtDepth(this.depth + 1)) return
+    const rng = new Rng((this.seed ^ 0x2c9a77) + wave * 0x9e3779b1)
+    const pad = 200
+    let x = this.arenaW / 2
+    let y = this.arenaH / 2
+    for (let attempt = 0; attempt < 12; attempt++) {
+      x = rng.range(pad, this.arenaW - pad)
+      y = rng.range(pad, this.arenaH - pad)
+      if (Math.hypot(x - this.player.x, y - this.player.y) >= 320) break
+    }
+    this.descentPoint = { x, y, r: 34 }
+    this.events.onDescentOpen?.(this.depth + 1)
+  }
+
+  /**
+   * Go down one level. One way — there is no ladder back up.
+   *
+   * Everything the PLAYER is survives: build, level, feed, hp, weapons, items.
+   * Everything the FIELD is does not: the arena changes size, so every live
+   * entity is holding a coordinate in a space that no longer exists, and the
+   * spatial grid is sized from the old arena. Both are rebuilt here.
+   *
+   * The wave clock keeps running. Descending is not a rest.
+   */
+  descend(): boolean {
+    const next = caveAtDepth(this.depth + 1)
+    if (!next) return false
+
+    this.map = next
+    this.depth = next.depth ?? this.depth + 1
+    this.arenaW = next.width
+    this.arenaH = next.height
+    this.fieldDensity = (this.arenaW * this.arenaH) / NODES.field.referenceArea
+    this.descentPoint = null
+
+    // The grid is sized from the arena, so it cannot outlive one.
+    this.grid = new SpatialGrid(this.arenaW, this.arenaH, T.pools.enemies)
+
+    /*
+       EVERYTHING IN THE OLD ARENA IS RELEASED, and that is not only tidiness.
+       An enemy at x=3100 on a 1400-wide map is off the map and unreachable, a
+       projectile in flight is aimed at somewhere that no longer exists, and a
+       pickup out there can never be collected. Leaving any of them would leak a
+       pool slot per descent for the rest of the run.
+
+       Pickups are magnetised rather than dropped, so descending does not cost
+       the player the XP already on the ground.
+    */
+    this.magnetiseAll()
+    this.enemies.clear()
+    this.projectiles.clear()
+    this.pickups.clear()
+    this.hazards.clear()
+    this.props.clear()
+    this.particles.clear()
+    this.effects.clear()
+    this.damageNumbers.clear()
+
+    this.player.x = this.arenaW / 2
+    this.player.y = this.arenaH / 2
+    this.player.px = this.player.x
+    this.player.py = this.player.y
+
+    this.scatterField()
+    this.sound('descend')
+    this.events.onDescend?.(this.depth, next)
+    return true
   }
 
   // ---------------------------------------------------------------- tick
 
-  step(dt: number, moveX: number, moveY: number, abilityPressed: boolean): void {
+  /**
+   * @param interactPressed Edge-triggered, and DEFAULTED so every existing
+   *   caller — the tests, the balance harness, the headless painter — passes
+   *   false and therefore never descends. That is not a convenience: the bots
+   *   are random walkers, and a one-way trip they can take by wandering over a
+   *   34px circle would make every acceptance number a measurement of
+   *   accidents. A person descends because they chose to.
+   */
+  step(
+    dt: number, moveX: number, moveY: number, abilityPressed: boolean,
+    interactPressed = false,
+  ): void {
     if (this.paused || this.over) return
 
     if (this.hitstop > 0) {
@@ -328,6 +518,19 @@ export class World {
 
     // 10. pickups
     this.updatePickups(dt)
+
+    /*
+       10b. THE WAY DOWN, checked here and not earlier.
+
+       After pickups so anything on the ground this tick is collected before the
+       arena it is lying in stops existing, and before vfx so the level that
+       draws its particles is the one you are standing in. It is a circle test
+       against one point — there is no entity, no pool slot and no collision
+       layer for it.
+    */
+    const d = this.descentPoint
+    this.onDescentPoint = !!d && Math.hypot(this.player.x - d.x, this.player.y - d.y) <= d.r
+    if (this.onDescentPoint && interactPressed) this.descend()
 
     // 11. vfx
     this.updateVfx(dt)
@@ -396,6 +599,20 @@ export class World {
       // The field grows back a little each wave, so a player who cleared it
       // early is not permanently out of crops to harvest.
       for (const [kind, n] of Object.entries(NODES.field.regrowPerWave)) this.scatterNodes(kind, n)
+      /*
+         A WAY DOWN OPENS ONCE THE GROUND HAS ALREADY STARTED GOING.
+
+         `descentFromWave` is deliberately after the blight is visible rather
+         than at wave 1: the fiction is that the ash is coming UP, and a hole in
+         a clean field is a hole, where a hole in a field that is already going
+         grey is where the grey is coming from. It opens on the same boundaries
+         the shop does, so a run has a rhythm of stop-and-decide rather than two
+         separate interruptions.
+      */
+      if (
+        wasWave >= (WAVES.descentFromWave as number)
+        && (WAVES.shopAfterWaves as number[]).includes(wasWave)
+      ) this.openDescent(wasWave)
       this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
       if (bossId) {

@@ -231,7 +231,10 @@ function finishRun(cleared: boolean): void {
   // credited rather than a second, separately-computed number.
   const earned = bankRun(
     profile,
-    { wavesCleared: world.wavesCleared, bossKills: world.bossKills, tier: currentTier, cleared },
+    {
+      wavesCleared: world.wavesCleared, bossKills: world.bossKills,
+      tier: currentTier, cleared, depth: world.depth,
+    },
     world.seed,
     currentClassId,
   )
@@ -299,7 +302,7 @@ const loop = new Loop(
     }
 
     if (world && state === 'playing') {
-      world.step(dt, input.moveX, input.moveY, input.abilityPressed)
+      world.step(dt, input.moveX, input.moveY, input.abilityPressed, input.interactPressed)
       openLevelUpIfPending()
     }
   },

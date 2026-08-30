@@ -1,0 +1,2 @@
+Reconstructed from 34e93f20 — "Add a headless screenshot tool, update the handoff notes". Built and shot from that commit's own code and art; no screenshot was taken at the time.
+commit 34e93f20

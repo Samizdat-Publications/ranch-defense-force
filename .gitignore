@@ -17,6 +17,12 @@ public/ui/
 public/audio/
 tools/shot.png
 tools/_*
+tools/maps/
+
+# docs/progress/ is DELIBERATELY NOT IGNORED. It is the screenshot archive
+# and the whole point is that it survives — sixteen sessions left no visual
+# record because every shot went to a gitignored path. See tools/snap.ts.
+docs/progress/_tmp/
 
 # Installers / binaries (not usable by agents, license-restricted)
 *.exe

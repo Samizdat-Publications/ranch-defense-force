@@ -30,7 +30,15 @@
     "object": "vite-node tools/pixellab-object.ts --",
     "animal": "vite-node tools/animal-check.ts --",
     "anim": "vite-node tools/pixellab-anim.ts --",
-    "character": "vite-node tools/pixellab-character.ts --"
+    "character": "vite-node tools/pixellab-character.ts --",
+    "mapobj": "vite-node tools/pixellab-map-object.ts --",
+    "tileset": "vite-node tools/pixellab-tileset.ts --",
+    "objstrip": "vite-node tools/object-strip.ts --",
+    "look": "vite-node tools/sprite-look.ts --",
+    "maps": "vite-node tools/map-check.ts --",
+    "tsaudit": "vite-node tools/tileset-audit.ts --",
+    "snap": "vite-node tools/snap.ts --",
+    "snaphist": "vite-node tools/snap-history.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

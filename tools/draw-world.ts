@@ -17,15 +17,16 @@ import { Rng } from '../src/core/rng.ts'
 import { TUNING, WEAPONS, projectileScaleFor } from '../src/content/index.ts'
 import type { World } from '../src/sim/world.ts'
 import { wangKey, type Corner } from '../src/render/wang.ts'
+import { blightField, DEFAULT_BLIGHT, type BlightConfig } from '../src/render/blight.ts'
+import { groundLayers } from '../src/render/terrain.ts'
 
 /** Default zoom. The game derives its own; see `zoomFor` in the renderer. */
 export const ZOOM = 2
 const TERRAIN = (TUNING as unknown as {
-  terrain?: { groundSet?: string; soilSet?: string; soilEdgeCols?: number }
+  terrain?: { blight?: Partial<BlightConfig> }
 }).terrain ?? {}
-const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
-const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
-const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
+/** Ash timing is global; which SET it spreads in is per-map. */
+const BLIGHT: BlightConfig = { ...DEFAULT_BLIGHT, ...TERRAIN.blight }
 const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROJECTILE_SCALE` in the renderer; per-weapon multiplier on top. */
 const PROJECTILE_SCALE = 0.55
@@ -43,6 +44,8 @@ const atlasImg = decodePng(readFileSync('public/atlas.png'))
 const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as AtlasJson
 
 export const frames = atlas.frames
+/** The packed sheet itself, for tools that blit frames without a WorldPainter. */
+export const atlasImage = atlasImg
 export const clipLengths = atlas.clipLengths
 
 /** The renderer's element tinting: `proj.spark` + `fire` -> `proj.spark.fire`. */
@@ -298,7 +301,10 @@ export class WorldPainter {
     const startTx = Math.floor(this.camX / tile) - 1
     const startTy = Math.floor(this.camY / tile) - 1
     const terrainRng = new Rng(world.seed ^ 0x7e44a1)
-    // Reproduce the renderer's dirt patches so the shot matches the game.
+    // THE PRE-WANG STAMPED GROUND, and it no longer draws the map — it draws
+    // the one arena that existed before maps did. It fires only when the
+    // tilesets are not packed, which is a fresh clone that has not run
+    // `npm run atlas`, and in that state the point is that the game RUNS.
     const patches: [number, number, number][] = []
     for (let i = 0; i < 26; i++) {
       patches.push([
@@ -327,43 +333,27 @@ export class WorldPainter {
    * The renderer's Wang ground, restated so a headless shot shows the ground the
    * GAME draws rather than a second one that merely resembles it.
    *
-   * This is a duplicate of `Renderer.bakeWangGround` and it has to stay in step
-   * with it — the same RNG stream in the same order, or the shot is of a
-   * different field than the run it claims to picture. The tile KEY is the one
-   * thing not restated: `wangKey` is imported from the renderer's own module, so
-   * the naming cannot drift even if the field generation does.
+   * **The field generation is no longer restated.** It used to be — 26 blobs and
+   * two soil columns, hand-copied, with a note saying they had to stay in step.
+   * Maps made that untenable: five map descriptors and four layer shapes is far
+   * too much to keep in step by hand, and the failure would be silent, so
+   * `groundLayers` is imported and this method does nothing but BLIT. What is
+   * still duplicated is the camera window and the draw order, which is the part
+   * a second implementation is a useful check on.
    */
   private wangTerrain(world: World): boolean {
-    const probe = frames[wangKey(GROUND_SET, 0, 0, 0, 0)]
-    if (!probe) return false
+    const map = world.map
+    const base = map.layers[0]
+    if (!base || !frames[wangKey(base.set, 0, 0, 0, 0)]) return false
 
     const tile = 32
     const cols = Math.ceil(world.arenaW / tile)
     const rows = Math.ceil(world.arenaH / tile)
     const vw = cols + 1
-    const vh = rows + 1
-    const rng = new Rng(world.seed ^ 0x7e44a1)
-    const field = new Uint8Array(vw * vh).fill(1)
-    for (let i = 0; i < 26; i++) {
-      const cx = rng.int(2, cols - 3)
-      const cy = rng.int(2, rows - 3)
-      const r = rng.int(1, 3)
-      for (let y = -r; y <= r; y++) {
-        for (let x = -r; x <= r; x++) {
-          if (x * x + y * y > r * r) continue
-          const vx = cx + x
-          const vy = cy + y
-          if (vx < 0 || vy < 0 || vx >= vw || vy >= vh) continue
-          field[vy * vw + vx] = 0
-        }
-      }
-    }
-    const soil = new Uint8Array(vw * vh)
-    for (let vy = 0; vy < vh; vy++) {
-      for (let vx = 0; vx < vw; vx++) {
-        if (vx < SOIL_EDGE_COLS || vx >= vw - SOIL_EDGE_COLS) soil[vy * vw + vx] = 1
-      }
-    }
+    const layers = groundLayers(map, world.seed, cols, rows)
+    // Shared with the renderer rather than restated, same as the layers.
+    const blight = blightField(world.seed, cols, rows, world.spawner?.wave ?? 1, BLIGHT)
+    const blightSet = map.blight ?? BLIGHT.set
 
     const startTx = Math.max(0, Math.floor(this.camX / tile) - 1)
     const startTy = Math.max(0, Math.floor(this.camY / tile) - 1)
@@ -373,15 +363,20 @@ export class WorldPainter {
       at[y * vw + x] as Corner, at[y * vw + x + 1] as Corner,
       at[(y + 1) * vw + x] as Corner, at[(y + 1) * vw + x + 1] as Corner,
     ]
+    const put = (set: string, at: Uint8Array, tx: number, ty: number, coverAll: boolean): void => {
+      const c = corners(at, tx, ty)
+      if (!coverAll && !(c[0] || c[1] || c[2] || c[3])) return
+      const f = frames[wangKey(set, ...c)]
+      if (f) this.drawFrame(f, tx * tile, ty * tile)
+    }
+
     for (let ty = startTy; ty < endTy; ty++) {
       for (let tx = startTx; tx < endTx; tx++) {
-        const g = frames[wangKey(GROUND_SET, ...corners(field, tx, ty))]
-        if (g) this.drawFrame(g, tx * tile, ty * tile)
-        const sc = corners(soil, tx, ty)
-        if (sc[0] || sc[1] || sc[2] || sc[3]) {
-          const sf = frames[wangKey(SOIL_SET, ...sc)]
-          if (sf) this.drawFrame(sf, tx * tile, ty * tile)
-        }
+        // Base, then the ash, then the map's features — the renderer's order,
+        // and the ash sits under the features on purpose. See bakeWangGround.
+        put(base.set, layers[0].field, tx, ty, true)
+        if (blight) put(blightSet, blight, tx, ty, false)
+        for (let i = 1; i < layers.length; i++) put(layers[i].set, layers[i].field, tx, ty, false)
       }
     }
     return true
@@ -389,8 +384,20 @@ export class WorldPainter {
 
   /** Paint everything, camera centred on the player. */
   paint(world: World): void {
-    this.camX = Math.round(world.player.x - this.viewW / 2)
-    this.camY = Math.round(world.player.y - this.viewH / 2)
+    /*
+       CLAMPED TO THE ARENA, like the real camera and unlike this method until
+       now. It centred on the player unconditionally, so standing near an edge
+       put the void on screen — invisible on a 3200x2100 field where the player
+       rarely reaches one, and immediately obvious in a 1400x1000 cave, where
+       the bottom third of every shot was flat green.
+
+       `Camera.clamp` does the same two lines. A headless picture that shows
+       something the game never shows is worse than no picture.
+    */
+    this.camX = Math.max(0, Math.min(
+      Math.round(world.player.x - this.viewW / 2), Math.max(0, world.arenaW - this.viewW)))
+    this.camY = Math.max(0, Math.min(
+      Math.round(world.player.y - this.viewH / 2), Math.max(0, world.arenaH - this.viewH)))
     this.terrain(world)
 
     const drawList: { y: number; f: Frame; x: number }[] = []
@@ -506,6 +513,59 @@ export class WorldPainter {
           s * this.zoom, s * this.zoom,
           g.kind === 'xp' ? 0x5fd0c6 : 0xe0b040,
         )
+      }
+    }
+
+    this.dark(world)
+  }
+
+  /**
+   * The dark, underground — the renderer's `drawDark`, restated per-pixel.
+   *
+   * Restated because it has to be. `Renderer.drawDark` is a canvas radial
+   * gradient and there is no canvas here, so this walks the pixels and computes
+   * the same falloff. It matters more than most of the duplication in this file:
+   * a headless shot of a cave WITHOUT it is a picture of a floor nobody will
+   * ever see that brightly, which would make every screenshot in
+   * `docs/progress/` a lie about the cave levels.
+   *
+   * The numbers are the renderer's, exactly — lit radius, the three stops, and
+   * the alphas — so if one is tuned the other has to be. Both say so.
+   */
+  private dark(world: World): void {
+    const k = world.map.darkness ?? 0
+    if (k <= 0) return
+
+    const view = Math.max(this.viewW, this.viewH)
+    const lit = view * (0.62 - k * 0.34)
+    const inner = lit * 0.35
+    const px = (world.player.x - this.camX) * this.zoom
+    const py = (world.player.y - this.camY) * this.zoom
+    const litPx = lit * this.zoom
+    const innerPx = inner * this.zoom
+    const midAlpha = k * 0.5
+    const outAlpha = 0.55 + k * 0.42
+
+    const img = this.canvas
+    for (let y = 0; y < img.height; y++) {
+      for (let x = 0; x < img.width; x++) {
+        const d = Math.hypot(x - px, y - py)
+        let a: number
+        if (d <= innerPx) a = 0
+        else if (d >= litPx) a = outAlpha
+        else {
+          // The canvas gradient's two segments: 0 -> midAlpha to the 0.55 stop,
+          // then midAlpha -> outAlpha to the rim.
+          const t = (d - innerPx) / (litPx - innerPx)
+          a = t <= 0.55
+            ? (t / 0.55) * midAlpha
+            : midAlpha + ((t - 0.55) / 0.45) * (outAlpha - midAlpha)
+        }
+        if (a <= 0) continue
+        const i = (y * img.width + x) * 4
+        img.data[i] = Math.round(img.data[i] * (1 - a) + 6 * a)
+        img.data[i + 1] = Math.round(img.data[i + 1] * (1 - a) + 6 * a)
+        img.data[i + 2] = Math.round(img.data[i + 2] * (1 - a) + 8 * a)
       }
     }
   }

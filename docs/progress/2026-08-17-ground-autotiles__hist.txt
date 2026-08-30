@@ -1,0 +1,2 @@
+Reconstructed from 982361b3 — "The ground autotiles, and the blockiness was geometry not art". Built and shot from that commit's own code and art; no screenshot was taken at the time.
+commit 982361b3

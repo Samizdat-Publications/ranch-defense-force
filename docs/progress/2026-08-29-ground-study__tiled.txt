@@ -1,0 +1,2 @@
+The same tiles repeated 5x5, which is the only honest test. Gravel and ash_v2 fail here: an obvious grid of identical marks.
+commit bdff23af

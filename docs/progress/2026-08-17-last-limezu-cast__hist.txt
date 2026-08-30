@@ -1,0 +1,2 @@
+Reconstructed from 585c31b2 — "The rooster stops blinking, and the generated art joins the palette". Built and shot from that commit's own code and art; no screenshot was taken at the time.
+commit 585c31b2

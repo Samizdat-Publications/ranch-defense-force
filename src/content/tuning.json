@@ -1,5 +1,5 @@
 {
-  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
+  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code \u2014 CLAUDE.md forbids balance constants living in source.",
   "player": {
     "baseMoveSpeed": 160,
     "basePickupRadius": 70,
@@ -48,11 +48,12 @@
     "damageNumbers": 64,
     "particles": 900,
     "hazards": 64,
-    "props": 120,
+    "props": 240,
+    "_propsNote": "props is sized for the LARGEST map, not the reference one. Node counts in nodes.json are a density scaled by arena area, so a 3200x2100 map wants 200 standing props against the 114 a 2400x1600 one does. A pool that is too small does not error -- acquire() returns null and the field is quietly short -- so this number has to be checked whenever a map gets bigger: sum(nodes.field.max) * largestArea / nodes.field.referenceArea.",
     "effects": 256
   },
   "fx": {
-    "_note": "Conformed FX clips (art/sprites.json -> fx). `life` is how long the whole clip plays, in seconds — the renderer divides it by the clip's packed frame count, so retiming an effect is this number and nothing else. Effects are decoration: when the pool is full the sim drops them silently rather than perturbing a seeded run.",
+    "_note": "Conformed FX clips (art/sprites.json -> fx). `life` is how long the whole clip plays, in seconds \u2014 the renderer divides it by the clip's packed frame count, so retiming an effect is this number and nothing else. Effects are decoration: when the pool is full the sim drops them silently rather than perturbing a seeded run.",
     "hitSpark": {
       "life": 0.2,
       "scale": 0.55
@@ -109,7 +110,7 @@
     "_ringScaleNote": "Ring icons are normalised to weaponRingTargetWidth rather than scaled by a flat factor, because the sources differ: a 32px tool icon and a ~20px gun drawn to be held need different multipliers to end up the same size on screen.",
     "weaponRingTargetWidth": 15,
     "weaponRingSpreadDegrees": 250,
-    "_weaponRingSpreadNote": "The ARC the weapons fan across, centred on the direction the character faces (down/front). 360 puts them on a perfect circle at even spacing, which reads as an ORBIT — a thing going around him — rather than as gear carried at his sides. Leaving a gap behind the head is most of the difference, and it costs nothing."
+    "_weaponRingSpreadNote": "The ARC the weapons fan across, centred on the direction the character faces (down/front). 360 puts them on a perfect circle at even spacing, which reads as an ORBIT \u2014 a thing going around him \u2014 rather than as gear carried at his sides. Leaving a gap behind the head is most of the difference, and it costs nothing."
   },
   "arena": {
     "edgePadding": 24
@@ -118,7 +119,7 @@
     "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
     "radius": 46,
     "workingSeconds": 0.18,
-    "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running — sweeping twenty nodes at base rate beats working one — which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
+    "_dwellNote": "Standing on a node ramps its harvest rate. Flat-rate proximity harvesting rewards running \u2014 sweeping twenty nodes at base rate beats working one \u2014 which inverted the intent and eroded The Hand's stand-your-ground identity in the balance harness. The ramp makes committing to a seam the efficient play.",
     "dwellSeconds": 2,
     "dwellMultiplier": 3,
     "dwellDecayRate": 2.5
@@ -133,6 +134,16 @@
     "groundSet": "dirt_to_grass_plain",
     "soilSet": "grass_to_soil_v2",
     "soilEdgeCols": 4,
-    "_chosenNote": "dirt_to_grass_plain over dirt_to_grass and _flat. The first carried an obvious repeating motif at 32px that read as wallpaper; _flat replaced it with a regular grid weave, subtler but still a repeat. _plain has none, and the argument for it is not only that: the ground is what two hundred enemies and their bullets are read AGAINST, so a busy floor costs legibility exactly when the screen is fullest. Interest belongs in the props and decals on top of it."
+    "_chosenNote": "dirt_to_grass_plain over dirt_to_grass and _flat. The first carried an obvious repeating motif at 32px that read as wallpaper; _flat replaced it with a regular grid weave, subtler but still a repeat. _plain has none, and the argument for it is not only that: the ground is what two hundred enemies and their bullets are read AGAINST, so a busy floor costs legibility exactly when the screen is fullest. Interest belongs in the props and decals on top of it.",
+    "blight": {
+      "_note": "The ash spreading across the pasture as the run goes on, and the strongest tone lever in the game for the effort: no new art, one bake pass. The set must be chained off the SAME canonical grass the ground set uses as its upper, or the two terrains will not meet. Numbers were picked against MEASURED coverage, not by eye \u2014 the first guess left the field at 0% until wave 7 and 4% at wave 10, which nobody would ever see. This one reads 0% to wave 3, 24% at wave 10, 51% at 15, 100% at 25. Set startWave above 25 to switch the effect off.",
+      "set": "grass_to_blight",
+      "startWave": 2,
+      "fullWave": 25,
+      "blobs": 120,
+      "maxRadius": 9,
+      "curve": 1.5,
+      "_setNote": "grass_to_ash_v2 was the obvious candidate and it is WRONG: it is a grey rock ledge with a cliff edge and a drop shadow, not ash. Four regenerations to find phrasing that works. \"dead ash\", \"grey-green rot\" and \"cold grey ash\" all came back as rubble \u2014 the model hears the noun and draws stones. What worked was keeping the noun that already produced the good plain grass (\"bare earth, smooth, matte, almost featureless\") and changing only the colour word."
+    }
   }
 }

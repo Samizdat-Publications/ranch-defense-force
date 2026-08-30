@@ -15,6 +15,8 @@ export class Input {
   private padIndex: number | null = null
   private digitLatch: number | null = null
   private pauseLatch = false
+  private interactLatch = false
+  private interactWasDown = false
 
   /** Normalised movement, -1..1 each axis. */
   moveX = 0
@@ -26,6 +28,15 @@ export class Input {
   /** True for one tick on the frame Escape went down. Edge-triggered like the
    *  ability, so holding it does not toggle pause sixty times a second. */
   pausePressed = false
+  /**
+   * True for one tick on the frame the interact button went down.
+   *
+   * Edge-triggered like the ability, and SEPARATE from it on purpose: the
+   * ability is the thing you mash, and interact is the thing you do once and
+   * mean. The only use so far is taking the way down, which is one-way — it
+   * must not be reachable by holding a key you are already holding.
+   */
+  interactPressed = false
   padConnected = false
 
   attach(target: Window = window): void {
@@ -52,6 +63,7 @@ export class Input {
       this.abilityLatch = true
       e.preventDefault()
     }
+    if (e.code === 'KeyE') this.interactLatch = true
     if (e.code === 'Escape' || e.code === 'KeyP') {
       this.pauseLatch = true
       e.preventDefault()
@@ -120,6 +132,16 @@ export class Input {
 
     this.abilityPressed = abilityDown && !this.abilityWasDown
     this.abilityWasDown = abilityDown
+
+    let interactDown = this.interactLatch
+    this.interactLatch = false
+    // Gamepad face button 2 (X / square), which is not the ability's button 0.
+    if (this.padIndex !== null) {
+      const pad = navigator.getGamepads?.()[this.padIndex]
+      if (pad?.buttons[2]?.pressed) interactDown = true
+    }
+    this.interactPressed = interactDown && !this.interactWasDown
+    this.interactWasDown = interactDown
     this.abilityLatch = false
 
     this.digitPressed = this.digitLatch ?? 0

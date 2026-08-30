@@ -1,0 +1,2 @@
+prizeBull walking left and right, cut from the packed atlas after the compass fix.
+commit bdff23af

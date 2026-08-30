@@ -164,4 +164,4 @@ docs/mockups/    the eight design mockups, openable in a browser
 docs/archive/    superseded briefs. Not the state of anything.
 ```
 
-`npm run atlas` regenerates characters and repacks. `npm test` is 131 tests.
+`npm run atlas` regenerates characters and repacks. `npm test` is 135 tests.

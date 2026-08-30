@@ -2,7 +2,9 @@
   "acres": {
     "perWaveCleared": 2,
     "perBossKill": 25,
-    "firstTimeThisTier": 10
+    "firstTimeThisTier": 10,
+    "perDepth": 0.25,
+    "_perDepthNote": "What descending is FOR. Each cave level below the surface adds this much to the acre payout, so a run banked from The Seam pays 1.75x what the same waves pay on the farm.  IT IS THE ONLY REWARD, and it is deliberately the only one: the risk is already paid for by the arena. Enemies spawn on arena edges and the caves run 1800x1200 down to 1400x1000 against a surface 2400x1600 to 3200x2100, so a cave is a place where the crowd is on you immediately. That is an emergent difficulty rather than a tuned multiplier, which is the right kind: nothing in enemies.json changes underground."
   },
   "bunkhouse": {
     "costs": [

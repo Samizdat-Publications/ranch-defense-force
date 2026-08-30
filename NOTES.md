@@ -4,6 +4,764 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 16 — the descent, and the account was never dead
+
+Three asks: more floor types, a way down into caves that get worse as you go,
+and a record of the project's screenshots. All three landed. The first one
+started by correcting the premise the last two sessions were built on.
+
+## PixelLab was never cancelled, and that cost two sessions
+
+Sessions 14 and 15 opened with "PixelLab is cancelled — balance 0, key dead,
+nothing can be regenerated", took it on trust, and wrote it into **four
+documents**. It is wrong.
+
+```
+credits: $0.00      generations_remaining: 0
+generations_used: 4710 / 4710
+subscription: ACTIVE (Tier 2: Pixel Artisan)
+generations_reset: 2026-09-14
+```
+
+The subscription is live. What ran out is one cycle's allowance, and it refills.
+Generating was never a wall, it was a sixteen-day wait — and two sessions of
+planning went into a shortage that did not exist.
+
+**Worse: downloading has always been free, and there was a lot to download.**
+Twenty-nine tilesets exist on the account and fifteen were on disk. Fourteen had
+never been fetched. Nine of those are in the plain family — the one that works —
+each a distinct grey or sickly tone, and they arrived for nothing.
+
+Session 13 hit the identical thing: four cursed animals "that had never been
+downloaded", finished and free, while the handoff said the art did not exist.
+**Twice is a pattern. Check the account before believing a document about it.**
+`npm run tsaudit` is that check now.
+
+## The answer to "did we not generate other floors"
+
+Yes. Nine of them, sitting unfetched. And then most of them failed.
+
+Tiled 5x5 and then shot at play zoom under real cave darkness, of the nine:
+`grass_to_greybrown` tiles into rows of identical marks, `grass_to_darkgrey`
+into a grid of dark blue glyphs, `grass_to_greystone` into horizontal lines. All
+three were wired into the caves before they were tested that way.
+
+**Darkness helps far less than it seems like it should.** The argument for
+shipping a patterned floor underground was that you would not see it — the Root
+Cellar at 0.42 darkness reads its floor pattern perfectly clearly. A repeat at
+40% brightness is still a repeat.
+
+What holds, and what the caves ship on: **bare earth** and **muddy water**, both
+already proven at any scale, and **`grass_to_greenrot`**, verified the same way.
+
+## The descent
+
+A way down opens in the field at the wave-10 boundary, on the same boundaries
+the shop uses. Walk to it, press **E**, and you go under. There is no way back.
+
+| | | |
+|---|---|---|
+| The Root Cellar | 1800x1200, dark 0.42 | packed earth under the house |
+| The Washout | 1600x1100, dark 0.55 | where it drained to; standing mud |
+| The Seam | 1400x1000, dark 0.68 | the blight coming UP out of the rock |
+
+**The fiction is the point.** The dusters were not spraying the crops, they were
+spraying to hold something down, and the blight spreads from below. So the way
+down opens once the field has already started going grey — a hole in a clean
+field is a hole, and a hole in a field that is already rotting is where the rot
+is coming from. `descentFromWave` is 10 for that reason and not as a difficulty
+gate.
+
+**The difficulty is emergent and nothing in `enemies.json` changed.** Enemies
+spawn on ARENA EDGES, and the caves run 1800x1200 down to 1400x1000 against a
+surface 2400x1600 to 3200x2100. A small arena is a close one: the crowd is on
+you immediately. That inverts the property session 15 measured — bigger maps are
+slower — and it means the descent gets harder for free.
+
+The reward is `acres.perDepth`, 0.25 a level, so a run banked from The Seam pays
+1.75x. That is the only reward and deliberately so.
+
+### It has to be a decision, and the acceptance suite is what said so
+
+Walking into the hole used to be enough. The bots — random walkers — kept
+wandering across a 34px circle, taking a one-way trip and dying two levels down.
+The clear rate fell from five seeds in six to two.
+
+That was the test reporting a **design** fault, not a broken build. A one-way
+trip you can take by accident is a trap. It takes `[E]` now, `World.step`'s
+interact argument defaults to false so every existing caller means "did not
+choose to", and the prompt over the hole says so.
+
+### And it moved the RNG, which is the third time
+
+`openDescent` drew its position from `world.rng`. That takes up to twelve
+numbers off the stream at the wave-10 boundary, so **every spawn, drop and offer
+after wave 10 moved** — two of six seeds cleared instead of five, with nothing
+about the descent itself wrong.
+
+Derived from the seed now, like `mapForSeed`, the terrain bake and the blight.
+Third time this project has paid for that rule; there is a test for it now.
+
+## What descending actually does
+
+`World.map`, `arenaW`, `arenaH` and `fieldDensity` are no longer readonly, and
+`descend()` swaps all four together. Everything sized from them is rebuilt in
+the same call, and that list is the whole risk:
+
+- **the spatial grid**, which is sized from the arena and cannot outlive one;
+- **the camera bounds**, or the view walks off the edge of a smaller world;
+- **the decal canvas**, which silently stops taking stains past its old size;
+- **the terrain bake**, forced full on a map change rather than incremental;
+- **every pool**, cleared — an enemy at x=3100 in a 1400-wide cave is
+  unreachable and leaks a slot per descent.
+
+Pickups are magnetised before the clear, so descending does not cost the player
+XP already on the ground.
+
+## Two bugs in the tools, one of which ate the main tree
+
+**`git worktree remove --force` followed a junction and deleted the main tree's
+`node_modules/.bin`.** The history reconstruction linked the main tree's
+`node_modules` into a throwaway worktree to save an install; removing the
+worktree walked through the link and took out every shim, so `npm run typecheck`
+stopped working mid-session. A junction is not a boundary, and a cleanup that
+can reach outside the thing it is cleaning is not a cleanup. Each worktree
+installs its own now.
+
+**The headless painter never clamped its camera.** It centred on the player
+unconditionally, so standing near an edge put the void on screen. Invisible on a
+3200x2100 field, and the bottom third of every cave shot on a 1400x1000 one. The
+real camera has always clamped; this now does the same two lines.
+
+## The dark is in both renderers, and it had to be
+
+`Renderer.drawDark` is a canvas radial gradient. `tools/draw-world.ts` has no
+canvas, so it computes the same falloff per pixel — the same lit radius, the
+same three stops, the same alphas, and both files say the other one exists.
+
+Without it a headless shot of a cave shows a floor at a brightness nobody will
+ever see it at, which would make every image in the new screenshot archive a lie
+about the cave levels. It is also what let the floors be judged at all: the
+browser pane could not composite this session, so the only way to look at a cave
+was to make the offline painter honest.
+
+## The screenshot archive
+
+Nothing was ever kept. `npm run shot` writes to a gitignored path that the next
+shot overwrites, so sixteen sessions left no visual record — the only images in
+git are card mockups.
+
+`docs/progress/` is committed now, written by **`npm run snap`**, indexed by a
+generated `LOG.md` that is rebuilt from the directory so it cannot drift.
+
+**And the history was reconstructed.** `npm run snaphist` checks a commit out
+into a throwaway worktree, builds that commit's atlas from that commit's assets,
+and runs that commit's own screenshot tool. It is not a photograph and the log
+says so — but it is that commit's code and art, and the earliest one is real:
+2026-08-11, a farmer and one zombie on flat green.
+
+Thirty images, eleven captures, 2026-08-11 to today, 4.1MB.
+
+## Open
+
+- **The caves have ONE floor each**, because every tileset on the account pairs
+  GRASS with something and a second cave layer would draw grass fringes
+  underground. The fix is a chained cave family, and each cave records the base
+  tile id to chain off. **Order it on 2026-09-14.**
+- **The dark is a flat radius.** No light sources, no torches, nothing that
+  varies. It wants a flicker at least.
+- **Nothing about the caves has been PLAYED**, same as everything else.
+- The brawling Kid's +5 clears on the bigger surface maps, still untouched.
+
+---
+
+# Session 15 — five maps, and the arena stops being a constant
+
+The brief: *"bigger maps that are either pre-made or procedurally generated,
+with a variety of floor tile types — right now it's all one map."*
+
+There are five now. They are **pre-made descriptors with procedural fill**: a
+map names its size and an ordered list of ground LAYERS, each a Wang set plus a
+shape, and the shapes are generated from the seed. Authored where authoring
+matters — size, which grounds, how much of each — and generated where hand
+placement would be busywork.
+
+| map | size | what it is |
+|---|---|---|
+| The Home Quarter | 2400x1600 | the original arena, layer for layer. The control. |
+| The Long Acre | 3200x1600 | wide, drainage ditch down the long axis |
+| Creek Bottom | 2800x2000 | a wide mud channel crossing the short axis, no plough |
+| The Back Forty | 3200x2100 | the big one; broad tilled beds you move through |
+| The Dry Lot | 2800x1800 | bare earth with pasture surviving in islands |
+
+The seed picks one, evenly (1173–1246 each over 6000 seeds).
+
+## The RNG trap the handoff warned about twice was avoidable
+
+`docs/NEXT_SESSION.md` had said for two sessions: *"the map choice has to be the
+FIRST draw off the RNG, or every existing seed stops replaying."* True — **and
+only if you draw it.**
+
+`mapForSeed` DERIVES a stream from the seed instead: `imul(seed ^ salt, k)`. It
+consumes nothing from `world.rng`, so wave order, drops and offers are
+byte-identical to what a seed produced before maps existed. The terrain bake and
+the blight already used exactly this trick; nobody had noticed it answered the
+map question too.
+
+The arena SIZE still changes what a seed plays out as, because spawns are on
+arena edges and nodes scatter across the arena. That is a real difference and
+not an ordering bug: the same seed replays itself exactly, which is what the
+acceptance test asserts, and it still passes.
+
+## Bigger arenas broke three acceptance tests, and the cause was not balance
+
+First run with maps in: `completes all 25 waves` down to 2 of 6 seeds, `each
+class does better at its own game` INVERTED for The Hand, `rewards build
+quality` inverted.
+
+**The cause was that `nodes.json` quotes counts, not density.** Scatter 74 nodes
+across a 1.75x arena and you have 57% of the crops per screen. The run economy
+is downstream of harvest-per-minute, so the player levels slower and is
+under-built by wave 20 — and The Hand, the one class whose identity is standing
+still, is punished hardest, because standing still on a sparse field harvests
+nothing.
+
+`nodes.field.referenceArea` is 2400x1600 now and every count is multiplied by
+`arenaArea / referenceArea`. Home Quarter scales by exactly 1.0, so the shipped
+numbers still mean what they meant. That fixed two of the three failures
+outright.
+
+**The props pool had to grow with it** — 120 to 240 — because the biggest map
+wants 200 standing nodes and `Pool.acquire()` returns null rather than erroring.
+A pool that is too small does not fail, it quietly shortens the field. There is
+a test for that now.
+
+## What maps actually do to the balance, measured
+
+`npm run balance -- 24 both [mapId]` takes a map now, so the arena can be held
+still while something else varies. 24 seeds per configuration:
+
+| pilot | old single arena | map rotation |
+|---|---|---|
+| hand / kite | 10/24 | 10/24 |
+| hand / brawler | 16/24 | 16/24 |
+| kid / kite | 16/24 | 17/24 |
+| **kid / brawler** | **11/24** | **16/24** |
+
+Three of four are unchanged. **The brawling Kid gains five clears** — a brawler
+on a bigger field has room to break off when the crowd builds, and The Kid is
+fast enough to use it.
+
+That one real effect is also what broke the third test. `treats both classes
+comparably` compares two classes over SIX seeds, and with the map varying per
+seed it was comparing two sets of arenas at the same time — six seeds cannot
+resolve a class difference through that much variance.
+
+**So every test in `run.test.ts` now pins the arena to `home_quarter`.** That is
+not the tests being loosened, it is a confound being removed: those tests ask
+about classes and builds, and Home Quarter IS the old arena layer for layer, so
+pinning makes them ask exactly what they asked before. All six pass unchanged.
+
+Pinning removed the maps' only coverage, so `tests/maps.test.ts` is the coverage
+that is actually about maps — six tests, and each one is a bug that already
+happened or nearly did:
+
+- every layer CHAINS onto its base (checked against the tilesets' own
+  `base_tile_ids`);
+- editing one layer cannot move another;
+- a ribbon stays in its lane;
+- node density is constant across map sizes, and the pool can hold the biggest;
+- a seed always gets the same map, and seeds spread evenly;
+- every map is playable at all.
+
+## The ribbon was a diagonal with a wobble on it
+
+The first "vertical" creek crossed a 2800x2000 field corner to corner at about
+forty degrees, and a "horizontal" farm track arced from the bottom-left of the
+map to the top and back down.
+
+**A clamped accumulating drift saturates.** Once the drift hits its limit it
+stays there, so the band leaves at a constant angle. The walk needs three terms
+and all three matter: noise, DAMPING so a run of same-sign noise decays instead
+of compounding, and a PULL back toward the line it started on. That last one is
+what keeps a track in its lane over a hundred steps.
+
+## `--tile 5` — the only honest test of a ground tile, and it rejected two
+
+`npm run look -- <frame> --tile 5` repeats a tile five by five. A 32px tile
+judged ALONE looks like texture; the same tile across a field turns its mottling
+into a visible grid, and that is what the eye reads at play zoom.
+
+| ground | verdict |
+|---|---|
+| mown grass, bare earth | pass at any scale — nearly featureless |
+| muddy water | pass at any scale — mottled, soft, no motif |
+| tilled soil | pass in bands and beds. It repeats hard, but what it repeats is FURROWS |
+| `grass_to_gravel_v2` | **FAIL** — a grid of identical grey glyphs that read as printed characters |
+| `grass_to_ash_v2` | **FAIL** — rows of little ledges with drop shadows (as session 13 said) |
+
+The gravel was in three maps before this test was written. It looked like
+plausible gravel as one tile, and worse in a narrow track than in a patch.
+
+**The pack-green family was tested at play zoom and rejected too** — a whole map
+built on it and shot through the real renderer: dense tuft pattern in the grass,
+an obvious brick grid in the soil, a wavy repeat in the water, and a hard cream
+rim line at every terrain edge. Session 12 reached the same conclusion from the
+tilesheet; this checked it the fair way and agrees.
+
+So the floors are grass, bare earth, tilled soil, mud and blight — five, where
+the old arena had four. **The rest of the variety is layout and size**, and
+after the tiled test that is the honest place for it to come from.
+
+## Coverage is tuned to measured numbers
+
+`npm run maps` prints per-layer coverage as a percentage of vertices. Guessing
+and looking got the first Stony Ground to 57% gravel in one merged grey mass —
+worse than the flat map it was replacing. The shipped arena is the reference:
+11.3% worn earth, 10.5% tilled edges. Same lesson as the blight's coverage table
+in session 13, and it needed relearning.
+
+## The wave-change hitch is now smaller than it was BEFORE maps
+
+A re-bake repaints the whole arena, and that scales with area. Measured in the
+browser on 3200x2100: **56.7ms on the wave-change frame**, against 0.12ms for a
+warm one. Nearly four dropped frames, and roughly double what the old arena cost.
+
+The fix rests on a property the blight already guarantees and a test already
+asserts: **it is MONOTONIC.** Wave N's field is wave N-1's plus more, so the
+cells that gained no ash are already correct on the canvas. `repaintBlight`
+touches only the changed cells, in the same layer order as the full bake, and
+bails to a full bake if the field is ever not a superset.
+
+| | full bake | incremental |
+|---|---|---|
+| median wave change, all five maps | — | **2–4ms** |
+| worst wave change | 56.7ms | **7.7–17.1ms** |
+| picture at wave 25 | — | **identical on all five maps** |
+
+The identity was checked, not assumed: walking wave by wave and jumping straight
+to 25 produce the same ash coverage to the decimal on every map.
+
+## New and changed tools
+
+- **`npm run maps -- [wave] [outDir] [seed] [scale]`** — bakes every map's whole
+  ground and prints per-layer coverage. `npm run shot` draws a 520x330 camera
+  window, which is the wrong instrument for a 3200px composition.
+- **`npm run look -- ... --tile N`** — see above. It has now decided three
+  grounds and a whole tileset family.
+- **`npm run balance -- 24 both [mapId]`** — hold the arena still.
+- **`new World(seed, class, mods, tier, mapId?)`** — for TOOLS ONLY. The game
+  never passes it.
+- **The dev overlay names the map**, its size and its node density. With five
+  arenas, "which map is this" is a real question.
+
+## Open, and deliberately not decided here
+
+- **MUD DOES NOT BLOCK OR SLOW YOU.** There is no terrain collision and adding
+  it is a gameplay change, so a wet channel is a floor you walk over. It is the
+  one thing on these maps that looks like it should stop you. A question for the
+  play session.
+- **The brawling Kid's +5 clears.** Real, measured, and left alone — it is a
+  balance change and the owner asked not to be tuned around.
+- **Ten of the fifteen tilesets are unused** and still packed into the atlas,
+  which is 160 frames of nothing. Harmless, and filtering the packer to used
+  sets is a small win nobody needs yet.
+- **Enemies still spawn on ARENA EDGES**, so a bigger map is a longer walk in.
+  The density fix covers the economy; it does not change that pressure arrives
+  later on a big map. If the play session finds the big maps slow, spawning on a
+  ring around the player is the lever — and it is a tuning decision.
+
+---
+
+# Session 14 — everything alive in the yard is ours
+
+The brief: finish retiring LimeZu by picking and wiring art that is already
+generated, then more maps, then play together. Yard scene first.
+
+**PixelLab is cancelled — balance zero, key dead.** That is the fact the whole
+session runs on. Nothing can be generated, so "retire LimeZu" means: find what
+is on disk, judge it, and mount it. Where nothing is on disk, LimeZu stays, and
+saying so is part of the job.
+
+## Correcting the brief, because three of its pointers do not exist
+
+The session opened with "read NOTES.md session 15, then
+`assets/pixellab/SESSION15.md` — it names the duds and the de-carded picks."
+
+- **There is no session 15 or 14 in NOTES.md.** The top entry was session 13.
+- **There is no `SESSION15.md` anywhere** in the repo, under any casing.
+- `HANDOFF.md` and `docs/NEXT_SESSION.md` were current — current as of
+  **session 13**.
+
+The dud list and the de-carded picks had to be derived from the files instead,
+which is most of why the first hour went on inventory. This is the third session
+running in which the brief's claims about disk did not match disk; session 13
+records the same thing happening to it. **Check the pointers before planning
+around them.**
+
+## What the yard actually is now
+
+| in the yard | was | is |
+|---|---|---|
+| foreground dog | LimeZu labrador, breathing on the spot | `barn_dog`, generated, walking a patrol |
+| pen, three head | LimeZu cow, calf, sheep | `whitacre_bull`, `fjord_pony`, `donkey` |
+| loose on the grass | — | `arabian_horse`, the one addition |
+| hand crossing the yard | LimeZu farmer | **The Hand** — the same file the atlas cuts the player's walk from |
+| walking up the track | LimeZu farmer | **The Widow** |
+| rooster, oaks, treeline | already ours | unchanged |
+
+**Ten LimeZu entries left `art/sprites.json`** — the cow, calf, sheep and
+labrador statics, their four graze/idle strips, and `farmer_walk_up`. Removed
+rather than left as `?? sprite(...)` fallbacks, because a fallback to LimeZu is
+not a retirement; it is the same picture one atlas failure away. The files are
+still in `assets/scene/` and in git — only the manifest decides what ships.
+`farmer_walk_strip` stays because the FIELD scene mounts it three times.
+
+### What CANNOT be retired, and it is most of the frame
+
+There is **no generated building, fence or structure art anywhere on disk** —
+`assets/pixellab/` was checked folder by folder. So the barn, the farmhouse, the
+silo, the coop, the nest, the doghouse, the well, the hay, the trough, the milk
+cans, the picket band, the whole stock pen, the cow sign and the scarecrow are
+LimeZu and stay LimeZu until somebody pays for generations again. The birds stay
+too: there is a generated rooster, and no generated hen or chick that is not
+already cursed.
+
+Those buildings are the largest objects on the screen. **"The yard is ours" is
+not true and should not be claimed. "Everything alive in the yard except the
+hens is ours" is true.**
+
+## `npm run objstrip` — the API is dead, the art is not
+
+`npm run anim` downloads an `animate_image` job and therefore no longer runs. But
+a dozen 8-direction objects were pulled down before the account lapsed, and each
+holds a full walk at `animations/<clip>/<compass>/frame_NNN.png`. That is the
+picture the scene wants, in the wrong shape.
+
+`tools/object-strip.ts` is the shape change, offline. One rule in it matters:
+
+> **Frames are concatenated RAW, and exactly one crop rectangle — the union of
+> every frame's content — is applied to every cell.**
+
+`pixellab-anim.ts` bottom-centres each frame on its own content because an
+`animate_image` job returns ragged frames. Doing that here would be the session
+12 bobbing bug: a PixelLab object walk is already registered on one shared 56 or
+68px canvas (verified per object; the tool bails if one ever is not), and
+re-registering per frame makes the animal rise and fall by the swing of its own
+legs.
+
+## Two real bugs, and one that was not
+
+### `rotations/west.png` faces LEFT on five objects and RIGHT on the bull
+
+Put them side by side and it is instant: dog, pony, donkey, arabian and mule all
+face left in `west/`; **`whitacre_bull` and its cursed variant face right.** The
+generator did not hold one convention across the batch.
+
+Nothing downstream could catch it. The renderer never mirrors a sprite, so
+`prizeBull` charging left drew a bull pointed right — that reads as a sliding
+model rather than as an error, and it has been in the game since session 13.
+
+**The IoU sign-off cannot catch this, and the manifest claimed it could.** "east
+matches a mirrored west" is true of every one of them and says nothing about
+which way EITHER faces. `pixellabObjects` entries may now carry their own
+`compassToDirection`; the bull does, and the group default still covers the rest.
+
+### A `scaleX` flip written 4% apart is an interpolation, not a flip
+
+The first ambling animals came out looking like a bull's head towing a mosaic of
+the fence. The cause: `scaleX(1)` → `scaleX(-1)` is a range CSS INTERPOLATES,
+and the middle of that range is `scaleX(0)`.
+
+Measured rather than argued, with a probe element driven through its own cycle:
+**a 64px element written the old way is 0.000px wide at 48%** — three quarters
+of a second per turn at a 19s period, with the compositor resampling that sliver
+back up out of whatever was behind it.
+
+The flip stops now sit **0.01% apart** — under two milliseconds against a
+sixteen-millisecond frame, so it is a cut. Sampling every ambling animal at 2001
+points across its cycle now gives `min width === max width` exactly.
+
+**`y-rooster-path` had the identical fault** at 2%, and had had it since the
+rooster was built. Same fix, and its return leg moved from 62% to 63.9% so that
+the two percent he spends walking on the spot before the peck strip takes over
+is the same two percent it always was. Collapsing a turn without moving the stop
+after it does not remove the pause, it lengthens it.
+
+### The one that was not a bug: a moving layer smears in a SCREENSHOT
+
+A hen rendered as the same mosaic — and the hen was never touched. Freezing
+every animation in the scene and re-shooting: clean. **A layer that is moving
+when a screenshot is taken can composite as a smear even while it renders
+correctly.** That nearly bought a second bug report on innocent code.
+
+The rule out of it: **freeze the scene before judging a still.** Pausing every
+`Animation` under `.home-yard` and setting `currentTime` puts every walk
+mid-stride and every path off a turn, which is a fair frame rather than a lucky
+one. The `scaleX` bug survives that test because it was measured on element
+widths rather than read off a picture — which is exactly why it was real and the
+hen was not.
+
+## Found, not fixed: the conform pass deletes the hen's comb
+
+`npm run look -- assets/scene/chicken_walk_left_strip.png --conform`, and there
+it is. Raw, the hen has a red comb, a wattle and a yellow beak; conformed, they
+are gone into the body brown and the bird has no face.
+
+Same family as the ore tier that went missing in session 13: the house palette
+has no saturated red at that value, as it has no mid cold blue. **Left alone on
+purpose** — adding a colour re-quantises every conformed group, which session 13
+already says wants its own pass looking at all of them. It is one more entry on
+that session's list, and the hens are LimeZu anyway.
+
+## `npm run look`
+
+`tools/sprite-look.ts`. Any number of PNGs, side by side, bottom-aligned, on flat
+grey, at an integer zoom, optionally with the house palette applied after the raw
+copies. It found both of the above. Grey rather than transparent because on a
+dark page a transparent pixel and a dark pixel look identical, and "the prop is
+standing on baked-in ground" is the fault it gets used for most.
+
+## Generated, still unmounted
+
+- **`draft_mule`** — good art, deliberately not in the yard. It is very nearly
+  black, and at dusk against ground this dark it is a silhouette with no shape
+  in it. Its strip is built (`assets/scene/muleWalk_strip.png`) and not in the
+  manifest. It wants a lit scene or a pale one.
+- **`hen_rotten`**, and the four cursed equines — still no slot. Unchanged.
+- **Fifteen tilesets** in `assets/tilesets/`, of which one is used. That is the
+  supply for "more maps" and it needs no generation at all.
+
+## Verified
+
+`npm test` 135 passed, `npm run typecheck` clean, atlas 1693 frames. In the
+browser: every sprite name either scene asks for resolves in the atlas, all ten
+retired keys are gone, the field scene is untouched, no console errors. The
+bull, pony, donkey, horse, dog, Hand and Widow were each looked at zoomed and
+frozen, in place.
+
+**Still unverified: feel.** Nobody has played it. That was true at the end of
+session 13 and it is true now.
+
+---
+
+# Session 13 — the field catches up with the cast
+
+The brief was one sentence: *"the characters look right and the world they stand
+in doesn't."* Three things changed — the animals became ours, the scenery became
+ours, and the ground now rots as the run goes on.
+
+## The brief said this was wiring. It was not.
+
+`docs/NEXT_SESSION.md` opened with "sixteen cursed animals are already generated
+and unpacked, four directions was decided, so it's manifest plus renderer
+bucket, not judgement." Three of those claims were wrong on disk, and finding
+out cost the first hour:
+
+- **The six good cursed animals had no walk.** `arabian_cursed`,
+  `barn_dog_cursed2`, `bull_cursed`, `donkey_cursed`, `draft_mule_cursed` and
+  `fjord_pony_cursed2` each held eight static ROTATIONS and nothing else.
+  `create_object_state` returns all eight rotations of a variant — that is what
+  the note about it "satisfying the pairing rule by construction" meant — but it
+  does not carry the base object's ANIMATIONS across. Nobody had checked.
+- **The four `*_rotten` retries did not exist locally at all.** They exist on
+  PixelLab, they are good, and they had simply never been downloaded. `npm run
+  object` on the four ids from `list_objects` is the whole fix.
+- **The four animals that DID have walks are the weak ones.** `infected_hog`
+  reads as a spotted pig and `infected_sheep` as an ordinary sheep, exactly as
+  HANDOFF recorded. They are superseded by the rotten retries and now unused.
+
+So the work was a manifest entry, a renderer bucket, **and ten walk cycles**.
+
+**`animate_object(mode: 'v3')` is nearly free and that is the headline.** Four
+cardinals at `frame_count: 8` for five animals cost about two generations
+against a 2,153 balance. `pro` is 20–40 generations PER DIRECTION — 160–320 for
+one animal — so that mode flag is a three-order-of-magnitude decision and the
+default is the right one. v3 also **keeps its input as frame 0**, so
+`frame_count: 8` stores nine frames; `clipLengths` already carries per-sheet
+lengths, so nothing downstream cared.
+
+Gait is worth prompting. Each animal got its own — a stiff lurching limp, a
+jerky twitching strut, a laboured stagger, a slow bloated waddle, a heavy
+lurching gait — and they read differently in motion for no extra cost.
+
+### What is on the field now
+
+| enemy | was | is |
+|---|---|---|
+| `feralDog` | LimeZu basenji | `barn_dog_cursed2` |
+| `rooster` | LimeZu **hen** (the old bug) | `rooster_rotten` |
+| `sickHog` | LimeZu pink pig | `hog_rotten` |
+| `blownSheep` | LimeZu white sheep | `sheep_rotten` |
+| `prizeBull` | LimeZu black cow | `bull_cursed` |
+| `duckFlight` | LimeZu duck | **still LimeZu** — nothing generated for it |
+
+The rooster fix came free. The enemy was drawing `Rooster_Brown_32x32.png` row
+3, which is a hen row; replacing the bird rather than re-deriving the row was
+the right call and it is now moot.
+
+Unused but generated and good: `hen_rotten`, and the four cursed equines
+(`arabian`, `donkey`, `draft_mule`, `fjord_pony`) which have no enemy slot.
+They are still static — animating one is a single `animate_object` call.
+
+## `pixellabObjects` — a fourth sprite layout
+
+The humanoids are 32x64 on stacked row pairs, the LimeZu animals are four
+direction clips in one band at a 64 or 96px pitch, the tractor is 192px frames
+stacked by direction, and a PixelLab object is **one PNG per rotation plus one
+PNG per walk frame in named compass folders**. None of them could have been
+assumed from the others; that is now four for four.
+
+Two numbers are measured in the packer rather than declared, because the animal
+is drawn loose inside a 56 or 68px square canvas:
+
+- **One baseline per (object, DIRECTION).** Per FRAME is the bobbing bug from
+  session 12 — the dog's south walk swings 6px between standing and mid-stride.
+  Per OBJECT is wrong the other way: the bottom gap is 5px facing south against
+  7px in profile, because from behind the hind legs are nearer the camera and
+  drawn lower, so one number for all four sinks the animal when it turns. The
+  rotation is folded into the same measurement, so nothing jumps the moment it
+  starts walking.
+- **x pivots on the CANVAS centre, not the content centre**, which drifts as a
+  leg swings out and would slide the animal sideways within its own walk.
+
+The compass mapping needed no new derivation: `south→down, north→up, west→left,
+east→right`, byte-identical to `pixellabStrips`.
+
+**The LimeZu entries were REMOVED from `animals.sheets`, not left alongside.**
+Both groups write the same frame keys and whichever runs later silently wins.
+That is trap 3, and it has now cost eight sessions between them.
+
+## The scenery, and one prompt lesson worth more than the art
+
+Eleven props: three trees, three rocks, five ore. `create_map_object`, not
+`create_1_direction_object`, **and the reason is the camera** — 1-direction only
+accepts `top-down` or `sidescroller`, while map objects accept `low top-down`,
+which is what ART_STYLE commits every asset to. Getting that wrong is invisible
+in one sprite and obvious the moment it stands next to the cast. Map objects
+auto-delete after eight hours, so `npm run mapobj` pulls them down in the same
+session that makes them.
+
+**The crops cost nothing at all.** The pack ships `Crop_*_Rotten_32x32.png`
+beside every `_Ripe_`, so "crops rotted in the row rather than absent" was a
+`_Ripe_` → `_Rotten_` replace across ten manifest lines. It is the one piece of
+LimeZu art that is right for the premise as shipped.
+
+### Generated props stand on ground you did not ask for
+
+Three of eleven came back on a baked disc of soil or grass — fine on pasture,
+obviously wrong on ash. Negation fixes it (`isolated on nothing, no grass, no
+ground, no soil, no shadow`) but not reliably: the same wording worked for the
+oak at 192, failed for the broken tree at 128, and worked for it at 96. **Look
+at the base of every generated prop.**
+
+### The palette has no light blue, and it ate an ore tier
+
+`oreBlue` was generated as a bright cyan crystal and came out of conform as
+bone-white — indistinguishable from `oreSilver`, which is a real regression,
+because the ore tier is meant to be readable before you swing at it.
+
+The cause is the coverage rule `art/palette.json` warns about in its own header.
+Its only blues are three dusk-sky slates at value 24–38, with nothing above
+that, so any light blue lands on cream. Fixed **without touching the palette**,
+by generating a near-black navy that lands on the dusk blues instead — the five
+tiers now read as copper, bone, olive, navy and raw red.
+
+**The gap is still there.** Adding one mid-value cold blue would be the honest
+fix, and it re-quantises every conformed group, which is not a change to make at
+the end of a session without looking at all of them.
+
+## The ground rots now, and it is the biggest single change
+
+`grass_to_ash_v2` was the obvious candidate and **it is not ash**. Extracted and
+looked at, it is a grey ROCK LEDGE with a cliff edge and a drop shadow, at
+`transition_size: 0`. It would have put a quarry in the field.
+
+Seven tilesets to find phrasing that works, and the lesson generalises past this
+asset:
+
+> **Keep the noun that already works and change only the colour.** `bare earth,
+> smooth, matte, almost featureless` is what produced the good plain grass.
+> `dead ash`, `cold grey ash` and `dead grey-green rot` all came back as
+> RUBBLE — the model hears the substance and draws stones.
+
+And a second, which is the opposite of the instinct:
+
+> **Negative prompts made it worse.** `perfectly flat, uniform colour, no
+> texture, no speckles, no marks, no detail` came back MORE mottled than the
+> plain request it was trying to improve on.
+
+`grass_to_blight` is the winner, and the only one of seven with neither a
+repeating motif nor a hard rim line at the terrain edge. It is bone-pale, which
+was not the first instinct — but "dead and wrong in sunlight" is the brief, the
+cursed animals read strongly against it, and a farm turning to dust in daylight
+is the premise rather than a compromise with it.
+
+### `src/render/blight.ts`
+
+Shared by `Renderer.bakeWangGround` and `tools/draw-world.ts`, which already
+bake the same ground twice and already carry a note that the duplication has to
+stay in step by hand. A third hand-kept copy of a seeded field was not on.
+
+The terrain re-bakes when the wave changes — compared in `draw()` rather than
+subscribed to, which keeps the renderer's one-way dependency on the sim intact,
+and costs one 2400x1600 repaint per wave rather than per frame.
+
+**Two properties are load-bearing and both are now tested.**
+
+- **Deterministic**, because a run replays from its seed and the ground is part
+  of what replays. Every blob is drawn from the stream on every bake and the
+  wave decides only how many are USED — drawing just `live` of them would
+  advance the stream differently per bake and reshuffle the field.
+- **Monotonic**, because ash that came and went reads as a rendering fault
+  rather than as rot. **The test caught a real bug here**: the lobe offsets
+  scaled with progress, so lobes MOVED as they grew and uncovered four vertices
+  at wave 9. Four vertices flickering back to grass between two bakes is
+  invisible in a screenshot and would have survived indefinitely.
+
+### The numbers were measured, not eyeballed
+
+The first curve was squared over waves 3–22 and gave **0% coverage until wave 7
+and 4% at wave 10** — an effect nobody would ever see. Writing a five-line
+coverage table was the whole fix:
+
+| wave | 1 | 5 | 10 | 15 | 20 | 25 |
+|---|---|---|---|---|---|---|
+| ash | 0% | 5% | 31% | 54% | 84% | 99% |
+
+## Verified in the browser, and the port fight that delayed it
+
+`npm run shot` draws through `tools/draw-world.ts`, which is a SEPARATE COPY of
+the bake — so the headless pictures prove the blight field, the tilesets, the
+props and every animal frame, and prove **nothing** about
+`Renderer.bakeWangGround`'s blight pass or the re-bake-on-wave-change in
+`draw()`. Those two live only on the browser path. They are now checked.
+
+`.claude/launch.json` pinned `--strictPort` with `autoPort: false`, so a second
+session could not start a server at all while the first held 5199. **`autoPort`
+is now true and `--strictPort` is gone**, and the harness substitutes the real
+port into `runtimeArgs` — the log line reads `vite --port 51878`. A fixed port
+is only worth having while exactly one session wants it.
+
+Measured on the renderer's own terrain canvas, driving `window.rdf` directly and
+sampling pale pixels away from the tilled edges:
+
+| wave | 1 | 5 | 10 | 15 | 20 | 25 |
+|---|---|---|---|---|---|---|
+| pale | 9% | 19% | 37% | 66% | 87% | 99% |
+
+`bakedWave` tracked the wave on every step, so the re-bake fires. The 9% floor
+at wave 1 is worn dirt caught by the threshold, not ash — the shape above it is
+what matters, and it matches `blightField` closely.
+
+Then wave 12 with one of each cursed animal ringed around the player: rotten
+hogs, rotten sheep, rotten roosters and cursed dogs on spreading ash, with the
+dead oak and an ore boulder in frame. 236fps, 41 draw calls, 0.50ms frame.
+
+**What is still unverified is FEEL, not function.** Nobody has played it.
+
+---
+
 # Session 12 — the art becomes ours
 
 The owner: *"I'm not tied to ANY of the original artwork. I just needed something

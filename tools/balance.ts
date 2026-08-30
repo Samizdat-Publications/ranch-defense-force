@@ -25,6 +25,15 @@ const STEP = 1 / 60
 const runs = Number(process.argv[2] ?? 24)
 const classArg = process.argv[3] ?? 'both'
 const classes = classArg === 'both' ? ['hand', 'kid'] : [classArg]
+/**
+ * Optional map id: hold the arena still while something else varies.
+ *
+ * Without it every seed picks its own map, so a comparison across a change
+ * measures the change AND the map, which is two things at once. With it,
+ * `npm run balance -- 24 both home_quarter` is the game as it was before maps
+ * existed — Home Quarter is the old 2400x1600 arena, exactly.
+ */
+const mapArg = process.argv[4]
 
 /**
  * Two pilots, because one pilot measures one class.
@@ -71,7 +80,7 @@ interface Result {
 }
 
 function simulate(seed: number, classId: string, pilot: Pilot): Result {
-  const world = new World(seed, classId)
+  const world = new World(seed, classId, undefined, undefined, mapArg)
   const offers = new OfferPool(world.rng)
   let pending = 0
   let shopQueued = false

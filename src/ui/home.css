@@ -151,13 +151,26 @@
 
    Visibility stops sit 0.1% apart rather than sharing a value so each swap is a
    cut: two birds dissolving through each other reads as a ghost.
+
+   AND SO DO THE FLIP STOPS, NOW. They were two percent apart, which on a 24s
+   beat is half a second of CSS interpolating scaleX from 1 to -1 -- through
+   scaleX(0). The bird squashed to nothing and back, twice a cycle, and the
+   compositor resampled that sliver up into a smear of whatever was behind him.
+   The fault was found on `y-amble` below, by catching a bull mid-turn in a
+   screenshot; it was always here too, on a smaller animal for a shorter time.
+   A flip is a swap, and a swap must never be a fade.
+
+   The return leg now ends at 63.9 rather than 62 so that the two percent he
+   spends walking on the spot before `y-rooster-walk` hands over at 65.9 is the
+   SAME two percent it always was. Collapsing a turn without moving the stop
+   after it does not remove the pause, it lengthens it.
 */
 @keyframes y-rooster-path {
   0% { transform: translateX(0) scaleX(1); }
   30% { transform: translateX(46px) scaleX(1); }
-  32% { transform: translateX(46px) scaleX(-1); }
-  62% { transform: translateX(0) scaleX(-1); }
-  64% { transform: translateX(0) scaleX(1); }
+  30.01% { transform: translateX(46px) scaleX(-1); }
+  63.9% { transform: translateX(0) scaleX(-1); }
+  63.91% { transform: translateX(0) scaleX(1); }
   100% { transform: translateX(0) scaleX(1); }
 }
 /*
@@ -184,6 +197,51 @@
 @keyframes y-rooster-crow {
   0%, 85.9% { opacity: 0; }
   86%, 100% { opacity: 1; }
+}
+
+/*
+   AN ANIMAL WANDERING A FEW PACES AND COMING BACK.
+
+   ONE keyframe for every animal that stands somewhere, with the distance read
+   from `--amble` — same trick as `y-strip` above, and for the same reason: the
+   pen alone wants three different distances and three near-identical blocks are
+   three chances to typo a number that fails by sliding rather than by erroring.
+
+   IT TRANSLATES NEGATIVE. Every generated walk strip in this scene was cut from
+   the object's WEST rotation, so the sprite points left; a positive translate
+   would walk it backwards. `--amble` is therefore a positive distance and the
+   direction lives here, once, instead of as a minus sign on every caller.
+
+   `translateX` and `scaleX` are written together in EVERY stop. They are one
+   property, and a stop naming only the translate silently drops the flip — the
+   rooster's path has the same warning on it because it has already happened.
+
+   THE FLIP STOPS SIT 0.01% APART, AND THAT IS NOT A STYLE CHOICE.
+
+   `scaleX(1)` to `scaleX(-1)` is a range CSS will happily INTERPOLATE, and the
+   middle of that range is scaleX(0). Written four percent apart on a 19s cycle
+   it squashes a 65px animal to nothing and back over three quarters of a
+   second, and the compositor resamples that near-zero sliver back up to full
+   width as a smear of whatever was behind it. It was caught in a screenshot
+   looking like a bull's head towed by a mosaic of the fence.
+
+   0.01% of the period is under two milliseconds — a frame at 60fps is sixteen —
+   so the flip is a cut, and there is no frame on which the animal is a sliver.
+   This is the same trick the rooster's opacity stops already use one comment
+   down, and for the same reason: a swap must never be a fade.
+
+   That leaves 98.01–100% standing still while the strip keeps stepping. Two
+   percent of a cycle is a quadruped shifting its weight to come about; there is
+   no idle clip to cut to and there cannot be one, so the turn is where the walk
+   gets used for something honest.
+*/
+@keyframes y-amble {
+  0%      { transform: translateX(0) scaleX(1); }
+  48%     { transform: translateX(calc(var(--amble) * -1)) scaleX(1); }
+  48.01%  { transform: translateX(calc(var(--amble) * -1)) scaleX(-1); }
+  98%     { transform: translateX(0) scaleX(-1); }
+  98.01%  { transform: translateX(0) scaleX(1); }
+  100%    { transform: translateX(0) scaleX(1); }
 }
 
 @keyframes y-cross { 0% { transform: translateX(0); } 100% { transform: translateX(-2260px); } }

@@ -105,6 +105,11 @@ export class DevOverlay {
         `wave ${world.spawner.wave}  t${world.spawner.waveRemaining.toFixed(1)}s`,
         `budget ${world.spawner.budget.toFixed(0)}  seed ${world.seed}`,
         `elapsed ${world.elapsed.toFixed(1)}s  tick ${world.tick}`,
+        // Which arena, because the seed picks it now and five of them look
+        // different enough that "wait, which map is this" is a real question.
+        `map ${world.map.id}  ${world.arenaW}x${world.arenaH}  nodes x${world.fieldDensity.toFixed(2)}`,
+        `depth ${world.depth}` + (world.descentPoint ? '  way down OPEN' : '')
+          + (world.onDescentPoint ? ' [ON IT]' : ''),
         '',
         poolLine('enemies', world.enemies),
         poolLine('projectiles', world.projectiles),
