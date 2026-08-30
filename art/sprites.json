@@ -922,6 +922,10 @@
       "slug": "lunging_forward_and_biting",
       "frames": 9
      },
+     "hit": {
+      "slug": "reeling_backward_from_a_blow_head_snapping_back",
+      "frames": 7
+     },
      "walk": {
       "slug": "walking_with_a_stiff_jerky_shamble",
       "frames": 9
