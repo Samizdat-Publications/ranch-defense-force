@@ -951,6 +951,10 @@
       "slug": "folding_at_the_legs_and_slumping_to_the_ground",
       "frames": 9
      },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+      "frames": 9
+     },
      "attack": {
       "slug": "lunging_forward_and_biting",
       "frames": 9
@@ -995,6 +999,19 @@
     "dir": "fjord_pony_cursed2",
     "cell": 56,
     "clips": {
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "south-west",
+       "west",
+       "north",
+       "north-east",
+       "east",
+       "south-east"
+      ]
+     },
      "attack": {
       "slug": "rearing_up_and_stamping_down",
       "frames": 9
