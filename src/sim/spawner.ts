@@ -126,7 +126,22 @@ export class Spawner {
       // without making them vanish once the budget grows. The map then biases
       // that curve — a multiplier rather than a replacement, so an unbiased
       // map is bit-for-bit the roster the game always had.
-      const bias = this.map.enemyBias[id] ?? 1
+      /*
+         The map's say, or the enemy's own default.
+
+         `weight` on the DEF is what lets an enemy exist in the roster without
+         appearing everywhere. The base cast -- the security guard, the lab
+         technician, the containment crews -- sit at weight 0 and only spawn on
+         a map that asks for them by name, exactly the way biome node variants
+         sit at weight 0 in nodes.json until a map raises them. Adding them to
+         `enemies.json` therefore changes nothing above ground, which is what
+         keeps the surface game and its recorded seeds untouched.
+
+         A map entry REPLACES the default rather than multiplying it, so a base
+         map can raise a zero. Everything that predates this omits `weight`,
+         defaults to 1, and reads exactly as it always did.
+      */
+      const bias = this.map.enemyBias[id] ?? def.weight ?? 1
       if (bias <= 0) continue
       this.available.push(id)
       this.weights.push(bias / Math.sqrt(def.threatCost))

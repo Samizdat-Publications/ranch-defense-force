@@ -156,6 +156,16 @@ export interface EnemyDef {
   damage: number
   radius: number
   firstWave: number
+  /**
+   * Base draw weight, before any map's say. Defaults to 1.
+   *
+   * 0 means the enemy exists in the roster and appears NOWHERE until a map asks
+   * for it by name -- the same mechanism biome node variants use, and the reason
+   * the base cast can be added to this file without changing a single surface
+   * wave. A map's `enemyBias` entry REPLACES this rather than multiplying it, so
+   * a base map can raise a zero.
+   */
+  weight?: number
   threatCost: number
   groupSize: number
   behaviour: string

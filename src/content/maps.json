@@ -416,7 +416,27 @@
         "regrowPerWave": {},
         "variantWeights": {}
       },
-      "enemyBias": {},
+      "enemyBias": {
+        "farmhand": 1.2,
+        "baseTech": 1.4,
+        "feralDog": 0.8,
+        "acidZombie": 1.5,
+        "maskedSprayer": 1.4,
+        "baseGuard": 1.3,
+        "baseOperator": 1.0,
+        "bloatedFarmhand": 1.2,
+        "maskedHauler": 1.0,
+        "baseHazmat": 1.1,
+        "rooster": 0,
+        "infectedHen": 0,
+        "duckFlight": 0,
+        "blownSheep": 0,
+        "sickHog": 0,
+        "fjordPonyCursed": 0,
+        "arabianCursed": 0,
+        "donkeyCursed": 0,
+        "draftMuleCursed": 0
+      },
       "hazards": null,
       "fog": {
         "alpha": 0.16,
@@ -504,7 +524,8 @@
           "troughFouled": 0,
           "bonePile": 3
         }
-      }
+      },
+      "_biasNote": "The base roster. Zeroing the farm animals alone would leave six enemies across twenty-five waves with holes at 2, 3, 5, 8, 9, 10, 13, 16 and 19 -- which is the whole reason the base cast was generated. A cursed pony three floors under a missile silo is the sort of thing that makes a place read as randomly generated rather than built."
     },
     "theLift": {
       "name": "Sub-Level 2 \u2014 Lift Head",
@@ -526,14 +547,19 @@
         "regrowPerWave": {},
         "variantWeights": {}
       },
-      "_biasNote": "Deeper, so the roster hardens: the chaff thins and the containment crews get commoner. The farm animals are gone entirely -- a cursed pony three floors under a missile silo is the sort of thing that makes a place feel randomly generated rather than built.",
+      "_biasNote": "Deeper, so the roster hardens: the chaff thins, the containment crews get commoner and the breacher only exists down here. Same principle as the wave curve, one floor at a time.",
       "enemyBias": {
-        "farmhand": 0.7,
-        "acidZombie": 1.6,
-        "maskedSprayer": 1.6,
-        "bloatedFarmhand": 1.4,
-        "maskedHauler": 1.3,
-        "feralDog": 0.8,
+        "farmhand": 0.5,
+        "baseTech": 0.9,
+        "feralDog": 0.6,
+        "acidZombie": 1.4,
+        "maskedSprayer": 1.5,
+        "baseGuard": 1.5,
+        "baseOperator": 1.4,
+        "bloatedFarmhand": 1.3,
+        "maskedHauler": 1.2,
+        "baseHazmat": 1.5,
+        "baseBreacher": 1.2,
         "rooster": 0,
         "infectedHen": 0,
         "duckFlight": 0,
