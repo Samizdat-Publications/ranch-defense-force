@@ -5,23 +5,43 @@
   "pens": {
     "pen.paddockDirt": {
       "far": [
-        209,
-        52
+        204,
+        60
       ],
       "near": [
         193,
         183
       ],
       "left": [
-        52,
+        65,
         122
       ],
       "right": [
-        349,
-        112
+        334,
+        120
       ],
-      "content": "400x260",
-      "footLine": 259
+      "content": "375x209",
+      "footLine": 222
+    },
+    "pen.paddockGrass": {
+      "far": [
+        180,
+        59
+      ],
+      "near": [
+        177,
+        206
+      ],
+      "left": [
+        55,
+        119
+      ],
+      "right": [
+        304,
+        119
+      ],
+      "content": "308x179",
+      "footLine": 210
     },
     "pen.chickenRunGreen": {
       "far": [
@@ -40,8 +60,8 @@
         258,
         110
       ],
-      "content": "320x220",
-      "footLine": 219
+      "content": "280x195",
+      "footLine": 207
     }
   }
 }

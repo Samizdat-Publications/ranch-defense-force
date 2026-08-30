@@ -123,6 +123,8 @@ interface Manifest {
   pens?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** Scene-scale set pieces for the base. See art/sprites.json. */
   vault?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  /** Backdrop strips for the title scenes. See art/sprites.json. */
+  sceneBg?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** The military base under the farm. See art/sprites.json and docs/SUBTERRANEAN.md. */
   base?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   weapons?: { _base: string; files: Record<string, string> }
@@ -700,6 +702,7 @@ const singleGroups = [
   // measured against that box, so trimming would move both anchors.
   manifest.pens ? { ...manifest.pens, cardArt: true } : undefined,
   manifest.vault ? { ...manifest.vault, cardArt: true } : undefined,
+  manifest.sceneBg ? { ...manifest.sceneBg, cardArt: true } : undefined,
   manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
   manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,
   manifest.portraits,

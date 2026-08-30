@@ -1793,8 +1793,10 @@
     "noTrim": true,
     "files": {
       "pen.paddockDirt": "paddockDirt.png",
-      "pen.chickenRunGreen": "chickenRunGreen.png"
-    }
+      "pen.chickenRunGreen": "chickenRunGreen.png",
+      "pen.paddockGrass": "paddockGrass.png"
+    },
+    "_cardNote": "Every pen came back CARDED -- an opaque fill behind the sprite -- and so did the treeline. `npm run rmbg` fixes it and the repo already knew the rule: large subjects come back framed on a solid ground while the same prompt at 96px comes back clean. A carded pen would have drawn an opaque rectangle over the scene's own sky and ground. ALWAYS rmbg a scene-scale asset and verify the alpha afterwards rather than trusting the call."
   },
   "vault": {
     "_note": "Scene-scale set pieces for the base, drawn as ONE sprite each for the same reason the pens are: individually placed drums is exactly where a scene mis-scales them. `vault.drumWeeping` is the story of the game in one asset -- a split containment drum and what came out of it -- so it is deliberately not two things to align by hand.",
@@ -1803,6 +1805,14 @@
     "files": {
       "vault.drumRank": "drumRank.png",
       "vault.drumWeeping": "drumWeeping.png"
+    }
+  },
+  "sceneBg": {
+    "_note": "Backdrop strips for the title scenes. `sceneBg.treeline` is one wide sprite for the horizon, which Claude Design called the weakest thing left on screen when it was faking one with nine tree sprites and a gradient. Carded on generation and stripped with `npm run rmbg`.",
+    "_base": "assets/pixellab/scene-bg/",
+    "noTrim": true,
+    "files": {
+      "sceneBg.treeline": "treeline.png"
     }
   }
 }
