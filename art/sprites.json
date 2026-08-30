@@ -802,6 +802,19 @@
       "slug": "dropping_to_the_ground_and_going_limp",
       "frames": 9
      },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north-west",
+       "north",
+       "north-east",
+       "east",
+       "south-east"
+      ]
+     },
      "attack": {
       "slug": "lunging_forward_and_snapping_its_jaws",
       "frames": 9
@@ -822,6 +835,10 @@
     "clips": {
      "attack": {
       "slug": "flaring_its_wings_and_lashing_out_with_its_spurs",
+      "frames": 9
+     },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
       "frames": 9
      },
      "hit": {
@@ -850,6 +867,10 @@
       "slug": "collapsing_forward_and_rolling_onto_its_side_goin",
       "frames": 9
      },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+      "frames": 9
+     },
      "hit": {
       "slug": "reeling_backward_from_a_blow_head_snapping_back",
       "frames": 7
@@ -866,6 +887,10 @@
     "clips": {
      "death": {
       "slug": "folding_at_the_legs_and_slumping_to_the_ground",
+      "frames": 9
+     },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
       "frames": 9
      },
      "attack": {

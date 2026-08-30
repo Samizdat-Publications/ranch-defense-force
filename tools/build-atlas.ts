@@ -1133,29 +1133,72 @@ pending.sort((a, b) => b.sh - a.sh || b.sw - a.sw)
    renderer takes it from atlas.json and every frame carries absolute coords —
    so this is safe to change again if the atlas keeps growing.
 */
-const width = 2048
-let x = PAD
-let y = PAD
-let shelfHeight = 0
-const placed: (Pending & { px: number; py: number })[] = []
-
-for (const p of pending) {
-  if (x + p.sw + PAD > width) {
-    x = PAD
-    y += shelfHeight + PAD * 2
-    shelfHeight = 0
-  }
-  placed.push({ ...p, px: x, py: y })
-  x += p.sw + PAD * 2
-  if (p.sh > shelfHeight) shelfHeight = p.sh
-}
-const height = nextPowerOfTwo(y + shelfHeight + PAD * 2)
-
 function nextPowerOfTwo(v: number): number {
   let p = 1
   while (p < v) p *= 2
   return p
 }
+
+/** Shelf-pack at a given width and report the height it needs. */
+function packAt(w: number): { placed: (Pending & { px: number; py: number })[]; height: number } {
+  let x = PAD
+  let y = PAD
+  let shelfHeight = 0
+  const out: (Pending & { px: number; py: number })[] = []
+  for (const p of pending) {
+    if (x + p.sw + PAD > w) {
+      x = PAD
+      y += shelfHeight + PAD * 2
+      shelfHeight = 0
+    }
+    out.push({ ...p, px: x, py: y })
+    x += p.sw + PAD * 2
+    if (p.sh > shelfHeight) shelfHeight = p.sh
+  }
+  return { placed: out, height: nextPowerOfTwo(y + shelfHeight + PAD * 2) }
+}
+
+/*
+   THE WIDTH IS CHOSEN, NOT TYPED.
+
+   It used to be a hand-set constant, moved from 1024 to 2048 when the
+   eight-direction animals pushed the height to 16384. The comment that came
+   with that change said it was "safe to change again if the atlas keeps
+   growing" -- and then the atlas kept growing, hit 2048x16384 again, and
+   nothing said so. A constant that has to be revisited by a human who notices
+   is a constant that will be missed.
+
+   16384 is past the max texture size a lot of hardware will take, so a tall
+   page risks failing to allocate on a machine that would happily hold the same
+   pixels in a different shape. Widening trades height for width at identical
+   area, which is strictly better: 2048x16384 and 4096x8192 are the same 33.5M
+   pixels, and only one of them has a dimension that some GPUs refuse.
+
+   So: try the narrowest width that keeps BOTH dimensions inside the ceiling,
+   and fail loudly rather than emit a page that cannot be uploaded. Nothing
+   reads the width as a constant -- the renderer takes it from atlas.json and
+   every frame carries absolute coordinates.
+*/
+const DIMENSION_CEILING = 8192
+let width = 0
+let packedResult: ReturnType<typeof packAt> | null = null
+for (const w of [1024, 2048, 4096, 8192]) {
+  const attempt = packAt(w)
+  if (attempt.height <= DIMENSION_CEILING) {
+    width = w
+    packedResult = attempt
+    break
+  }
+}
+if (!packedResult) {
+  errors.push(
+    `atlas does not fit: even at ${DIMENSION_CEILING} wide the pack needs `
+    + `${packAt(DIMENSION_CEILING).height}px of height, past the ${DIMENSION_CEILING} `
+    + `ceiling. The art has outgrown one page — this needs a second atlas, not a `
+    + `bigger one.`,
+  )
+}
+const { placed, height } = packedResult ?? packAt(2048)
 
 const atlas = blankImage(width, height)
 const frames: Record<string, Frame> = {}

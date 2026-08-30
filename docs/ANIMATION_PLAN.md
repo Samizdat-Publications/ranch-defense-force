@@ -49,7 +49,24 @@ Filling a gap needs `directions=[...]` AND `replace_existing: true`.
 
 At the measured **$0.0104 per direction**, so $0.083 for an eight-direction clip.
 
-### Tier 1 — the animal enemies ($1.41, ~70 min serial)
+### Tier 1 — the animal enemies — **DONE**
+
+All ten animal enemies carry `hit` and `walkHurt` in eight directions:
+arabianCursed, blownSheep, donkeyCursed, draftMuleCursed, feralDog,
+fjordPonyCursed, infectedHen, prizeBull, rooster, sickHog.
+
+Cost the plan predicted: $1.41. Actual, including refill calls for directions
+the API reported as covered and did not deliver: **about $1.90.** That 1.3x is
+the direction-loss multiplier now recorded in `docs/PIXELLAB.md`, and it is the
+number to budget with.
+
+Two clips sit at 7/8 after refills that came back short twice --
+`fjordPonyCursed.walkHurt` (no north-west) and `feralDog.walkHurt` (no
+south-west). Both keep their ordinary walk in that one facing. Chasing the last
+direction was not worth a third round trip; the fallback chain is what makes it
+a cosmetic gap rather than a missing sprite.
+
+### Tier 1 — as originally planned ($1.41, ~70 min serial)
 
 These are PixelLab *objects*, so `animate_object` works directly and the
 pipeline above is exactly what to run.
