@@ -24,6 +24,77 @@ know that dog. Keep that and the scenes will land.
 
 ---
 
+## CORRECTIONS — read this before anything else
+
+Two things in the first passes were bugs in the helpers, not in your
+composition. Both are fixed on the branch above. Pull it.
+
+### 1. `spriteEl` was silently ignoring your size argument
+
+It snaps to **whole-pixel zoom**, which is correct for a card and fatal in a
+scene. Every animal in this game is authored on the game's 32x64 grid, because
+in the game every entity *is* a grid cell:
+
+| | source | | source |
+|---|---|---|---|
+| `wiz` — a cat | 16x42 | `hand` — a grown man | 30x52 |
+| `brahmaHen` — a hen | 26x43 | `blackMule` — a mule | 28x63 |
+| `joy` — a bulldog | 29x42 | `fjordPony` — a pony | 25x53 |
+
+Integer zoom pins all six to 1x. `spriteEl('joy', 40)` returns 40px tall and
+`spriteEl('fjordPony', 96)` returns **53px** — so a bulldog came out nearly as
+tall as a pony, and no choice of numbers could have fixed it, because the
+numbers were being discarded.
+
+### 2. Nothing had a contact shadow
+
+That is the *"everything is in the air"*. The eye reads ground contact from the
+shadow before it reads placement, and one soft ellipse is the entire fix.
+Positioning by `top` is the other half: a top says where a head is and nothing
+at all about where the thing stands.
+
+### Use these instead
+
+```ts
+sceneSprite('ranch.barn', 440)                     // exact height, on the ground
+sceneSprite('rosie', 76, { facing: 'downRight' })  // any of the eight facings
+groundActor('fjordPony', 'walk', 'left', x, footY, 96, '1.1s')   // ANIMATED
+```
+
+Both are exported from `src/ui/scene.ts`. They scale fractionally so they hit
+the height you ask for, they add the shadow, and `groundActor` positions by the
+**feet** — and sets `z-index` from `footY`, so back-to-front depth sorting is
+free. `spriteEl` and `clipActor` are still right for **cards**, where every
+sprite sits in its own fixed window. Never use them in a scene.
+
+### What size to draw things
+
+`docs/ASSET_CATALOG.md` now carries a **`draw at`** column on every table,
+derived from what each thing actually is against one stated reference:
+
+> **A grown person is 64px tall.** That is 36.6px per metre.
+
+Small animals sit deliberately above life scale — a cat at true scale is 9px and
+unreadable — but the ORDER is always right: hen < dog < pony < barn.
+
+Two that are always drawn wrong because their canvases are square and they are
+not:
+
+- `ranch.silo` — **146 wide, 440 tall.** As tall as the barn is wide.
+- `ranch.windmill` — **100 wide, 366 tall.** Taller than the barn. Never square.
+
+### And on depth
+
+The ranch scene is one flat plane, which is why it reads as a collage however
+well the individual pieces are chosen. It wants real ground: a horizon band, a
+mid-ground the buildings **sit in** rather than on top of, and paddock ground
+whose near fence rail crosses **in front of** the animals standing in it. Feet
+on the grass, sorted by `footY`. A foreground layer — dark grass, a fence post
+at the very front, slightly out of focus — costs nothing and does more for depth
+than any other single change.
+
+---
+
 ## Read these first, in this order
 
 | file | why |
