@@ -475,3 +475,44 @@ Ask for less. Get the mood from the layers.
 The account holds 41 tilesets and 797 objects. The odds that the floor you are
 about to generate already exists are not small — that is how the barn, the
 farmhouse and the silo sat unclaimed for four sessions.
+
+---
+
+## First base assets — generated and packed
+
+Sixteen `base.*` keys, and the visual language is established:
+
+| what | keys | notes |
+|---|---|---|
+| blast doors | `base.blastDoor0-5` | **Legible stencilled SECTOR numbering** — 01, 03, 07, 11, 12. One is chained shut. Hazard striping on several. |
+| lift cage gates | `base.lift0-4` | Concertina gates, lattice grilles, **floor indicator dials**, call button plates. Institutional green. |
+| containment tanks | `base.tank0-4` | Glass cylinders, green fluid, biohazard trefoils, cable runs from the base. |
+
+Plus **RDF Bunker Stencil** — a full pixel font (`public/fonts/rdf-bunker-stencil.ttf`,
+atlas in `assets/pixellab/font/`), `suspect_glyphs: 0`. Every digit, letter and
+punctuation mark for $0.125, which is where level numbers and every sign come
+from. See the note above on why numbers must not be generated as art.
+
+Sixteen candidates were claimed for each pack, so the six/five listed above are
+a curated subset and there are ten more of each available without paying again.
+
+### They are drawn front-on, and that is correct
+
+These mount on WALLS, and a wall in a top-down game is seen from the front.
+`base.*` is elevation art for the boundary; the FLOOR pieces — grating, pipe
+runs, cable trays, concrete tilesets — want top-down and are not generated yet.
+Do not mix the two up: a floor grating drawn in elevation reads as a fence.
+
+### What is still missing, in order
+
+1. **A concrete Wang tileset** for the floor. This is the biggest single gap —
+   there is no non-farm ground in the atlas at all, and all seven existing
+   tilesets are dirt and pasture.
+2. **Wall band art**, so the arena has edges. Nothing else on this list works
+   without it: a lift in the middle of an open field is a prop, not an exit.
+3. **Floor pieces**: grating, pipe runs, cable trays, drains.
+4. **Fluorescent fixtures**, working and dead. Half of them dead is the mood.
+5. **Paperwork** — crates with contract numbers, clipboards, a catalogue. The
+   drums are already generated and are the centrepiece; the paperwork is what
+   proves somebody KNEW.
+6. **The silo interior.** Last, and only after the layers above have been played.

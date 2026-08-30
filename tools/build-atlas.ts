@@ -119,6 +119,8 @@ interface Manifest {
   cave?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** The generated ranch: buildings, vehicles, fencing, feed. See art/sprites.json. */
   ranch?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  /** The military base under the farm. See art/sprites.json and docs/SUBTERRANEAN.md. */
+  base?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   weapons?: { _base: string; files: Record<string, string> }
   weaponsFarmTools?: { _base: string; files: Record<string, string>; conform?: boolean }
   nodes?: { _base: string; files: Record<string, string> }
@@ -688,6 +690,7 @@ const singleGroups = [
   // move that anchor to the first opaque pixel and every placement coordinate
   // would be wrong by a different amount.
   manifest.ranch ? { ...manifest.ranch, cardArt: true } : undefined,
+  manifest.base ? { ...manifest.base, cardArt: true } : undefined,
   manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
   manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,
   manifest.portraits,

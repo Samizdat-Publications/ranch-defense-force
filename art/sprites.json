@@ -1496,5 +1496,30 @@
    "ranch.wellStone": "wellStone.png",
    "ranch.windmill": "windmill.png"
   }
+ },
+ "base": {
+  "_note": "The military base under the farm -- see docs/SUBTERRANEAN.md. Blast doors with stencilled SECTOR numbering, lift cage gates with floor indicator dials, and specimen containment tanks.",
+  "_whyItLooksDifferent": "Deliberately the opposite visual language to the farm on every axis: cold not warm, metal not wood, rectilinear not organic, lit by fixtures not by the sun. That contrast IS the monotony break -- a player dropping from the field into the base should feel the change before reading a single label.",
+  "_viewNote": "Drawn front-on rather than top-down, and that is correct rather than a mistake: these mount on WALLS, and a wall in a top-down game is seen from the front. The floor pieces -- grating, pipe runs, concrete -- want top-down and are not generated yet.",
+  "_base": "assets/pixellab/base/",
+  "noTrim": true,
+  "files": {
+   "base.blastDoor0": "blastDoor0.png",
+   "base.blastDoor1": "blastDoor1.png",
+   "base.blastDoor2": "blastDoor2.png",
+   "base.blastDoor3": "blastDoor3.png",
+   "base.blastDoor4": "blastDoor4.png",
+   "base.blastDoor5": "blastDoor5.png",
+   "base.lift0": "lift0.png",
+   "base.lift1": "lift1.png",
+   "base.lift2": "lift2.png",
+   "base.lift3": "lift3.png",
+   "base.lift4": "lift4.png",
+   "base.tank0": "tank0.png",
+   "base.tank1": "tank1.png",
+   "base.tank2": "tank2.png",
+   "base.tank3": "tank3.png",
+   "base.tank4": "tank4.png"
+  }
  }
 }
