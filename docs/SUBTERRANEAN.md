@@ -156,6 +156,55 @@ random are five flavours of the same run. Ten numbered levels visited in order
 are a **journey**, and the player's story after a loss is "I got to LEVEL 6",
 which is a far better thing to say than "I got to wave 19".
 
+#### How you get to the next level
+
+The owner asked for a door that opens in a wall, or a machine that makes a
+portal, and left the choice open. The recommendation is **both, in that order,
+and the switch between them is a story beat.**
+
+**Levels 1 to N: the lift.** A door goes sideways; a lift goes DOWN, and down is
+the thing the level number measures. It is also already in the fiction — Claude
+Design stencilled `LIFT 12` on its own scene without being asked, which is a good
+sign that the vocabulary is doing the work.
+
+Concretely, when the floor is cleared:
+
+1. A **blast door** somewhere on the wall unseals — the wheel turns, the hazard
+   striping splits. Sixteen blast door variants are generated, so which door and
+   where can differ per level.
+2. Behind it, the **lift cage**. Walking in ends the floor.
+3. The **floor indicator ticks** — and that is where the level number lives
+   during the transition, counting down as you descend. One asset, reused every
+   level, doing the job a loading screen would otherwise do badly.
+4. The doors open on **LEVEL 08** stencilled ten feet tall on the concrete
+   opposite.
+
+That sequence is worth building carefully because it is the only moment in a run
+where nothing is attacking the player. It is the game's punctuation.
+
+**Below that: the portal machine.** Here is why it should not be the mechanism
+on level 2.
+
+The base is a 1971 military facility. Everything about it — poured concrete,
+stencils, dial indicators, cage lifts — says *people built this with the
+engineering they had.* A portal on level 2 throws that away for a magic door,
+and spends the mystery before it has been earned.
+
+But **when the lifts run out**, that is the reveal. The shafts stop. The last
+lift goes as deep as human engineering went, and below that there is something
+else — a machine nobody in 1971 could have built, humming, already running.
+Stepping into it is the moment the game says *you have left the part of this that
+people made.* That is worth an enormous amount, and it is free: it costs one
+asset, placed once, at the depth where the fiction turns.
+
+So the mechanism is the story. Lift while it is a facility. Portal when it stops
+being one.
+
+**A note on the arena for both.** Neither works until the map has edges — a lift
+in the middle of an open field is a prop, not an exit. The wall band described
+below is what makes an exit legible, and it is the cheap version of the boundary
+work. Do that first.
+
 #### What varies with depth
 
 Each level should change at least three of these, so the descent reads as
@@ -181,7 +230,20 @@ Three places, and all three are cheap:
 
 1. **Diegetically, large, on the wall.** A stencilled `LEVEL 07` painted on
    concrete, big enough to read at a glance, placed where the lift opens. This
-   is the one that matters and it is a single tileable asset per digit.
+   is the one that matters.
+
+   **Render it with a font, do not generate it as art.** Tried and measured:
+   asking PixelLab for "the numeral SEVEN in tall military stencil" returned
+   four candidates — white-on-white, an illegible run of drips, one passable
+   yellow 7, and a blank. It renders text well as INCIDENTAL detail (the blast
+   doors came back with legible SECTOR numbering nobody asked for) and badly as
+   the subject. Generating ten digits that way is ten chances to get a wrong,
+   inconsistent glyph.
+
+   `create_font` is the tool: 25 generations / $0.125 for a full glyph atlas AND
+   a .ttf — every digit, letter and punctuation mark, one style, one cost. That
+   covers level numbers, sector codes, contract dates and every sign the base
+   will ever need, and they will all match because they are one typeface.
 2. **On the lift indicator** — a dial or a lit number that ticks as you descend.
    One asset, reused every level.
 3. **In the HUD**, quietly, next to the wave counter.
