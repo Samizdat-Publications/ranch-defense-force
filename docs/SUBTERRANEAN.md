@@ -123,6 +123,86 @@ Every one of those is a map-object or a tileset, which are the cheapest things
 this project generates. The expensive item is the last one on the list, and it
 should not be designed until the layers above it have been played.
 
+### THE STRUCTURE — numbered levels, and the descent is the run
+
+The owner: *"all levels of the military base with prominent level numbers on
+each level."* This is the piece the rest of the document was missing, and it
+changes the game's shape rather than just its scenery.
+
+**A named layer is a set. A numbered level is a meter.** "The Coal Seam" tells
+you where you are; **LEVEL 7** tells you where you are, how far you have come,
+and that there is a LEVEL 8. One of those is decoration and the other is a
+progress bar the player reads without being taught.
+
+It also makes the aesthetic functional. Stencilled sector numbering, floor
+indicator dials, painted bulkhead markings — those stop being set dressing and
+become **the interface**. The number on the wall is the number that matters.
+
+#### The descent is the run
+
+The important consequence, and the one worth arguing about before it is built:
+
+Today a run is twenty-five waves on one map, and the difficulty curve is an
+invisible number going up. Instead — **every few waves, you take the lift down.**
+The level number increments, the palette shifts, the roster changes, and the
+same curve is now a place you can see.
+
+That is the whole pitch: *the difficulty curve becomes a depth gauge.* It costs
+almost nothing mechanically, because the wave/threat budget already escalates —
+this just gives the escalation a floor number and a door.
+
+It also answers a question the map system currently fudges. Five maps chosen at
+random are five flavours of the same run. Ten numbered levels visited in order
+are a **journey**, and the player's story after a loss is "I got to LEVEL 6",
+which is a far better thing to say than "I got to wave 19".
+
+#### What varies with depth
+
+Each level should change at least three of these, so the descent reads as
+descent and not as a palette swap:
+
+| axis | shallow (1–3) | mid (4–7) | deep (8+) |
+|---|---|---|---|
+| who built it | farm, then industry | government | not people |
+| light | daylight down a shaft | working fixtures | failing, then none but what you carry |
+| palette | earth, timber, rust | concrete grey-green, hazard yellow | wrong colours, bioluminescence |
+| enemies | the farm's own animals | staff, security, things in suits | what the tanks held |
+| hazards | dust, dark | gas, electrical, contamination | unknown |
+| ground fog | light | heavy | heaviest, and it moves |
+| arena | open, farm-shaped | corridors and chambers | large and wrong |
+
+**The blight gets stronger as you descend, because you are walking toward the
+source.** That is the fiction and the difficulty curve agreeing with each other,
+which is the cheapest kind of good design there is.
+
+#### Showing the number
+
+Three places, and all three are cheap:
+
+1. **Diegetically, large, on the wall.** A stencilled `LEVEL 07` painted on
+   concrete, big enough to read at a glance, placed where the lift opens. This
+   is the one that matters and it is a single tileable asset per digit.
+2. **On the lift indicator** — a dial or a lit number that ticks as you descend.
+   One asset, reused every level.
+3. **In the HUD**, quietly, next to the wave counter.
+
+The first one does the work. A player who steps out of a lift and sees **LEVEL
+09** stencilled ten feet tall on the wall opposite knows exactly how much
+trouble they are in, and nobody had to write a tutorial.
+
+#### What this means for the map system
+
+`maps.json` already carries everything a level needs — terrain, node mix, enemy
+bias, hazards, fog, overhead, breakable skins. **A level is a map.** The work is
+not new content plumbing, it is:
+
+- an ordered sequence rather than a weighted random pick
+- a descent trigger (clear the floor, the lift opens)
+- the level number as a first-class field, shown in-world and in the HUD
+- and the arena boundary, because a corridor needs walls — see below
+
+That last one is the only real engine work, and it is already specified.
+
 ### What that changes about the layers
 
 The five layers keep their shapes but gain a direction of travel: **the deeper
