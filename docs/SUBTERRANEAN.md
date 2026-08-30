@@ -46,10 +46,26 @@ has stared at that silo on the title screen for twenty runs gets to find out
 what it is. That is a reveal you cannot buy with art — it is free, and it is
 sitting there already.
 
-The blight follows from it. Not industrial waste somebody dumped: something the
-base was **keeping**. Which is what makes the drums in the vault frightening
-rather than merely toxic — the labels are inventory, and inventory implies a
-catalogue, and a catalogue implies whoever wrote it knew what was inside.
+The blight follows from it, and the owner's word for the shape of it is the
+right one: **a lab outbreak.**
+
+That is a better answer than "they stored something toxic" for three reasons,
+and they are all reasons that show up in play:
+
+- **It explains the animals specifically.** Chemicals poison; they do not turn a
+  hen into something that hunts. Something biological and transmissible does,
+  and every enemy in this game is an animal that used to be somebody's.
+- **It explains the spread upward.** A spill stays where it is spilled. An
+  outbreak climbs, which is exactly what the wave structure already models — the
+  farm getting worse over twenty-five waves is the thing arriving from below.
+- **It gives the drums a job.** Not waste: containment. Sixteen labelled drums
+  are frightening in a way sixteen toxic ones are not, because a label is
+  inventory, inventory implies a catalogue, and a catalogue implies somebody
+  knew exactly what was inside and wrote the number down.
+
+So the layers are a chain of custody read backwards. The player starts at the
+symptom, walks down through the industry that hid it, and ends at the room where
+somebody was working on it on purpose.
 
 Aliens are the floor of that shaft, and they should stay a rumour for a long
 time. The farm animals turning is the symptom; the base is the cause; whatever
