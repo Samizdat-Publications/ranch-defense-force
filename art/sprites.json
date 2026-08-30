@@ -1,1736 +1,1744 @@
 {
- "_note": "Source-of-truth asset manifest. The ONLY place a file path appears. tools/build-atlas.ts reads this and writes public/atlas.png + public/atlas.json; the game never reads assets/ at runtime.",
- "cell": 32,
- "humanoidRig": {
-  "_note": "All thirteen generator exports share one rig: 56 cols x 22 rows of 32px cells, and a character occupies TWO stacked rows (32 wide x 64 tall). Rows pair up: even row is the upper half, odd row the lower. Verified with tools/inspect-sheet.ts.",
-  "sheetWidth": 1792,
-  "sheetHeight": 704,
-  "frameWidth": 32,
-  "frameHeight": 64,
-  "directions": [
-   "down",
-   "up",
-   "left",
-   "right"
-  ],
-  "clips": {
-   "idle": {
-    "rowPair": 0,
-    "start": 0,
-    "framesPerDirection": 1
-   },
-   "walk": {
-    "rowPair": 1,
-    "start": 0,
-    "framesPerDirection": 6
-   }
+  "_note": "Source-of-truth asset manifest. The ONLY place a file path appears. tools/build-atlas.ts reads this and writes public/atlas.png + public/atlas.json; the game never reads assets/ at runtime.",
+  "cell": 32,
+  "humanoidRig": {
+    "_note": "All thirteen generator exports share one rig: 56 cols x 22 rows of 32px cells, and a character occupies TWO stacked rows (32 wide x 64 tall). Rows pair up: even row is the upper half, odd row the lower. Verified with tools/inspect-sheet.ts.",
+    "sheetWidth": 1792,
+    "sheetHeight": 704,
+    "frameWidth": 32,
+    "frameHeight": 64,
+    "directions": [
+      "down",
+      "up",
+      "left",
+      "right"
+    ],
+    "clips": {
+      "idle": {
+        "rowPair": 0,
+        "start": 0,
+        "framesPerDirection": 1
+      },
+      "walk": {
+        "rowPair": 1,
+        "start": 0,
+        "framesPerDirection": 6
+      }
+    },
+    "directionOrder": [
+      "right",
+      "up",
+      "left",
+      "down"
+    ],
+    "_directionNote": "SOURCE band order, which is NOT the canonical order in `directions`. The bands run right, up, left, down. Proved, not guessed: band 0 is a pixel-exact horizontal mirror of band 2, and the skin centroid sits +2px in band 0 and -2px in band 2 (a face is at the FRONT of a profile), while band 1 has no skin at all (back of the head) and band 3 has the most (front, two eyes). Assuming the bands matched `directions` meant `down` drew the right-facing sprite and `right` drew the front-facing one - which is exactly what a player reported: walking right showed the down sprite."
   },
-  "directionOrder": [
-   "right",
-   "up",
-   "left",
-   "down"
-  ],
-  "_directionNote": "SOURCE band order, which is NOT the canonical order in `directions`. The bands run right, up, left, down. Proved, not guessed: band 0 is a pixel-exact horizontal mirror of band 2, and the skin centroid sits +2px in band 0 and -2px in band 2 (a face is at the FRONT of a profile), while band 1 has no skin at all (back of the head) and band 3 has the most (front, two eyes). Assuming the bands matched `directions` meant `down` drew the right-facing sprite and `right` drew the front-facing one - which is exactly what a player reported: walking right showed the down sprite."
- },
- "humanoids": {
-  "_replacedNote": "EMPTY ON PURPOSE. Every character in the game is generated now and lives in pixellabStrips. The LimeZu entries were REMOVED rather than left alongside, because both groups write the same frame keys and the humanoid pass runs later, so it silently wins — the symptom last time was a walk with 6 frames instead of 8 and no error anywhere. The generator sheets in assets/generated/ are still built by npm run characters and are now unused by the atlas; leaving that pipeline in place costs nothing and is the way back if a generated character has to be replaced in a hurry."
- },
- "animals": {
-  "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it — a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
-  "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then — that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views — was wrong. Nothing is wrong with the art. All four facings are used now.",
-  "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it — which means it was previously drawing its right-facing side view whenever it walked down.",
-  "_base": "assets/modern-farm/32x32/Animals_32x32/",
-  "directionOrder": [
-   "right",
-   "up",
-   "left",
-   "down"
-  ],
-  "sheets": {
-   "duckFlight": {
-    "path": "Ducks_32x32/Duck_Brown_32x32.png",
-    "rows": 2,
-    "frameWidth": 64,
-    "walkRow": 2,
-    "framesPerDirection": 6
-   }
+  "humanoids": {
+    "_replacedNote": "EMPTY ON PURPOSE. Every character in the game is generated now and lives in pixellabStrips. The LimeZu entries were REMOVED rather than left alongside, because both groups write the same frame keys and the humanoid pass runs later, so it silently wins \u2014 the symptom last time was a walk with 6 frames instead of 8 and no error anywhere. The generator sheets in assets/generated/ are still built by npm run characters and are now unused by the atlas; leaving that pipeline in place costs nothing and is the way back if a generated character has to be replaced in a hurry."
   },
-  "_replacedNote": "feralDog, rooster, sickHog, blownSheep and prizeBull were REMOVED, not left alongside: they are generated now and live in pixellabObjects. Both groups write the same frame keys and whichever pass runs later silently wins, which is exactly the bug this rule exists for. duckFlight is still LimeZu — no duck was generated."
- },
- "vehicles": {
-  "_note": "The Duster (§9 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch — bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
-  "_directionNote": "Order is left, up, right, down — NOT the animals' right, up, left, down. Verified by eye against the sheet. Three sheet families in this project now use three different direction orders, which is why every one of them is measured rather than assumed.",
-  "_scaleNote": "§9 says tractor at x3. That was written assuming a 32px source; this tractor is drawn ~130px wide already, so x3 would be nearly 400px against a 520px camera. It is packed at native size and drawn at x1 — which is still about four times the player, and the heavy read comes from the slowed frame rate instead.",
-  "_base": "assets/modern-farm/32x32/Vehicles_32x32/",
-  "frameWidth": 192,
-  "frameHeight": 192,
-  "framesPerDirection": 6,
-  "directionOrder": [
-   "left",
-   "up",
-   "right",
-   "down"
-  ],
-  "sheets": {
-   "duster": {
-    "path": "Tractor_32x32.png",
-    "firstBand": 1
-   }
-  }
- },
- "singles": {
-  "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
-  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
-  "files": {}
- },
- "singlesExtra": {
-  "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. §11 wants gems readable above all else.",
-  "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
-  "files": {
-   "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
+  "animals": {
+    "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it \u2014 a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
+    "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then \u2014 that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views \u2014 was wrong. Nothing is wrong with the art. All four facings are used now.",
+    "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it \u2014 which means it was previously drawing its right-facing side view whenever it walked down.",
+    "_base": "assets/modern-farm/32x32/Animals_32x32/",
+    "directionOrder": [
+      "right",
+      "up",
+      "left",
+      "down"
+    ],
+    "sheets": {
+      "duckFlight": {
+        "path": "Ducks_32x32/Duck_Brown_32x32.png",
+        "rows": 2,
+        "frameWidth": 64,
+        "walkRow": 2,
+        "framesPerDirection": 6
+      }
+    },
+    "_replacedNote": "feralDog, rooster, sickHog, blownSheep and prizeBull were REMOVED, not left alongside: they are generated now and live in pixellabObjects. Both groups write the same frame keys and whichever pass runs later silently wins, which is exactly the bug this rule exists for. duckFlight is still LimeZu \u2014 no duck was generated."
   },
-  "_replacedNote": "pickup.feed was REMOVED here, not left alongside: it is generated now and lives in the pixellab group. Two groups writing one frame key means the later pass silently wins. pickup.heal is still LimeZu — no heal pickup was generated, and the sim only spawns xp and feed kinds today."
- },
- "crops": {
-  "_note": "The ten field crops, GENERATED, replacing the LimeZu pack crops whose keys these are. The pack entries are DELETED rather than left alongside -- two groups writing one frame key is the trap that has cost this project time before, and the later group wins silently.",
-  "_sizeNote": "32x32 where the pack crops were 32x64. The pack drew a whole plant with soil; these are the fruit alone, which is what a 13px harvest radius actually wants. Picked by contact sheet: chili_1 over _0 because _0 is two loose peppers with no plant, grain_1 over _0 because _0 is a single thin stalk that vanishes at field scale, pumpkin_1 over _0 for the stem, tomato_1 for the vine cluster.",
-  "_blightedNote": "field/ and field2/ also hold BLIGHTED variants for cabbage, corn, grain, pumpkin and tomato, picked but not wired. A blighted map should swap the crop art rather than remove the crop -- see docs/NEXT_SESSION.md. Left for the play session because it changes what a map looks like mid-run.",
-  "_base": "assets/pixellab/field/",
-  "files": {
-   "crop.cabbage": "crop_cabbage_0.png",
-   "crop.cauliflower": "crop_cauliflower_0.png",
-   "crop.chili": "crop_chili_1.png",
-   "crop.corn": "crop_corn_0.png",
-   "crop.grain": "crop_grain_1.png",
-   "crop.pumpkin": "crop_pumpkin_1.png",
-   "crop.strawberry": "crop_strawberry_0.png",
-   "crop.tomato": "crop_tomato_1.png",
-   "crop.watermelon": "crop_watermelon_0.png",
-   "crop.zucchini": "crop_zucchini_1.png"
-  }
- },
- "nodes": {
-  "_note": "Harvest rocks and ore, GENERATED. Replaces the LimeZu pack rocks, whose keys these are — the enemy of a swap like this is leaving both groups writing the same frame keys, so the LimeZu entries are gone rather than commented out. The ore read the pack was chosen for (\"minerals inside the rock\", visible before you swing) is preserved and made sicker: rust, bone-white crystal, diseased yellow-green, cold blue, and raw red flesh swelling out of a crack.",
-  "_sizeNote": "Content trims to 41x29 up to 57x54 against LimeZu 32x32 cells, so these read chunkier. Deliberate — the node radius is 13 and the sprite has always overhung its hitbox. Not scaled: integer zoom only.",
-  "_base": "assets/pixellab/env/",
-  "files": {
-   "node.rockSmall": "stone_rust_corrosion.png",
-   "node.rockMedium": "rock_damp_stained.png",
-   "node.rockBig": "boulder_rot_stained.png",
-   "node.oreBronze": "stone_rust_ore.png",
-   "node.oreSilver": "rock_bonewhite_crystal.png",
-   "node.oreGold": "boulder_yellowgreen_crystal.png",
-   "node.oreBlue": "boulder_pale_blue_crystal.png",
-   "node.oreRed": "boulder_flesh.png"
-  }
- },
- "biome": {
-  "_note": "Biome nodes and hazard art for the map system (src/content/maps.json). One frame each, no animation: a node is a static prop you swing at, and a hazard is a ground decal drawn under the translucent circle that carries the actual read of 'this hurts'. Keys are the ones maps.json and nodes.json name — pick a different candidate here and nothing else changes.",
-  "_pickNote": "Three candidates each were generated; these are the ones chosen by LOOKING at a contact sheet, not by filename. saltrock_2 over _1 because _1 is magenta and reads as amethyst rather than salt. scrapheap_0 over _2 because _2 is an entire fire truck — a vehicle, not a scatterable node. boneheap_2 over _0 because _0 is a single skull-and-crossbones icon and this wants a heap. ashstump_1 over _0 because _0's roots spread far past the 13px node radius. gas_1 over _0 and _2, which are flat mounds rather than clouds. mud_0 over _2, which is a cobble pile and not mud at all.",
-  "_base": "assets/pixellab/field/",
-  "files": {
-   "node.saltRock": "node_saltrock_2.png",
-   "node.scrapHeap": "node_scrapheap_0.png",
-   "node.boneHeap": "node_boneheap_2.png",
-   "node.ashStump": "node_ashstump_1.png",
-   "hazard.gas": "hazard_gas_1.png",
-   "hazard.mud": "hazard_mud_0.png",
-   "hazard.fire": "hazard_fire_0.png"
-  }
- },
- "nodeTrees": {
-  "_note": "Fellable trees, GENERATED. Replaces the LimeZu Tree_* files under the same keys. The three smallest of the recovered trees, because a harvest node is something you walk up to: dead_tree_snapped_128, dying_tree_split_b and the two huge oaks (171x165 and 184x171) are landmark scenery, not nodes, and are left unpacked for that.",
-  "_base": "assets/pixellab/env/",
-  "files": {
-   "node.treeSmall": "dead_sapling.png",
-   "node.treeMedium": "dead_tree_snapped_96.png",
-   "node.treeBig": "dying_tree_split_a.png"
-  }
- },
- "weapons": {
-  "_note": "One sprite per weapon, packed as weapon.<id> and keyed to the ids in src/content/weapons.json. These are what the player sees ringed around them and what the projectiles are drawn as. Nothing packed them before, so every weapon's `sprite` field pointed at a name the atlas had never heard of, every projectile fell through to the coloured-square fallback, and a melee arc drew as a ~100px white box.",
-  "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here — a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",
-  "_sizeNote": "Every entry must be ONE object at roughly one tile. Several files in this pack named *_Load_* or *_Stack_* are multi-tile piles — Bucket_Load is 58x64 of stacked buckets and rendered as an unreadable brown slab twice the player's size in the weapon ring. tools/build-atlas.ts asserts the packed size and fails the build naming the file.",
-  "_base": "assets/modern-farm/32x32/Single_Files_32x32/",
-  "files": {
-   "weapon.shovel": "Props_and_Buildings_32x32/Wooden_Shovel_1_Stone_Oven_32x32.png",
-   "weapon.seedSpitter": "Pickup_Items_32x32/Pickup_Crop_Corn_32x32.png",
-   "weapon.melonLob": "Pickup_Items_32x32/Pickup_Crop_Watermelon_32x32.png",
-   "weapon.chiliShot": "Pickup_Items_32x32/Pickup_Crop_Chili_Pepper_32x32.png",
-   "weapon.eggToss": "Props_and_Buildings_32x32/Egg_32x32.png",
-   "weapon.slopBucket": "Props_and_Buildings_32x32/Bucket_1_Single_32x32.png",
-   "weapon.framingHammer": "Props_and_Buildings_32x32/Hammer_1_Woodwork_Crafting_Table_32x32.png",
-   "weapon.grainLure": "Props_and_Buildings_32x32/Grain_1_32x32.png"
-  }
- },
- "weaponsFarmTools": {
-  "_note": "Caz Pixel Fantasy Icons: Farm Tools. The pack is 94 icons but 81 of them are seed packets — there are exactly FOUR tools in it, and three of them are weapons this project had no art for at all. farm-tool1 is a scythe, 2 a watering can, 3 a three-tine rake, 4 a fishing rod. They replace the hacksaw-as-axe, milk-can-as-watering-can and branch-as-rod stand-ins.",
-  "_styleNote": "Different hand from LimeZu: cool blue-grey metal against LimeZu's warm muted farm palette. Conformed on the way in for exactly the reason §10 step 3 gives.",
-  "_base": "assets/icons-farm/MV Icons Farm Tools/Individual Icons/",
-  "conform": true,
-  "files": {
-   "weapon.axe": "farm-tool1.png",
-   "weapon.wateringCan": "farm-tool2.png",
-   "weapon.rake": "farm-tool3.png",
-   "weapon.fishingRod": "farm-tool4.png"
-  }
- },
- "tools": {
-  "_note": "Pixcuit Medieval Tool Icons. The pickaxe and axe ladders the player actually carries — six tiers each, keyed to the tiers in src/content/nodes.json so the sprite is looked up straight from the tool's current tier. The pack's six materials are why nodes.json has six tiers rather than the five it started with: matching the art beat inventing a mapping from steel to titanium.",
-  "_spellingNote": "The pack spells shovel 'Showel'. Not used here, but it will bite whoever adds it.",
-  "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
-  "conform": true,
-  "files": {
-   "tool.pickaxe.wood": "Wooden_Pickaxe.png",
-   "tool.pickaxe.stone": "Stone_Pickaxe.png",
-   "tool.pickaxe.iron": "Iron_Pickaxe.png",
-   "tool.pickaxe.golden": "Golden_Pickaxe.png",
-   "tool.pickaxe.titanium": "Titanium_Pickaxe.png",
-   "tool.pickaxe.ruby": "Ruby_Pickaxe.png",
-   "tool.axe.wood": "Wooden_Axe.png",
-   "tool.axe.stone": "Stone_Axe.png",
-   "tool.axe.iron": "Iron_Axe.png",
-   "tool.axe.golden": "Golden_Axe.png",
-   "tool.axe.titanium": "Titanium_Axe.png",
-   "tool.axe.ruby": "Ruby_Axe.png"
-  }
- },
- "weaponTiers": {
-  "_note": "Melee weapon art per TIER, so merging a weapon is visible on the weapon. Weapons tier 1-4 and the Pixcuit pack ships six materials, so four are picked that read as an obvious escalation rather than adjacent shades nobody would notice.",
-  "_gapNote": "The pack is NOT complete per tool, which is why the four materials differ by weapon rather than being one shared list: there is no Iron Pitchfork and no Golden Sickle. Checked against the directory, not assumed.",
-  "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
-  "conform": true,
-  "files": {
-   "weapon.pitchfork.t1": "Wooden_Pitchfork.png",
-   "weapon.pitchfork.t2": "Stone_Pitchfork.png",
-   "weapon.pitchfork.t3": "Titanium_Pitchfork.png",
-   "weapon.pitchfork.t4": "Ruby_Pitchfork.png",
-   "weapon.scythe.t1": "Wooden_Sickle.png",
-   "weapon.scythe.t2": "Iron_Sickle.png",
-   "weapon.scythe.t3": "Titanium_Sickle.png",
-   "weapon.scythe.t4": "Ruby_Sickle.png",
-   "weapon.sledge.t1": "Wooden_Hammer.png",
-   "weapon.sledge.t2": "Iron_Hammer.png",
-   "weapon.sledge.t3": "Titanium_Hammer.png",
-   "weapon.sledge.t4": "Ruby_Hammer.png"
-  }
- },
- "gunSheet": {
-  "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed — rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
-  "_layoutNote": "rowTops and colLefts are the measured content bands. Cells are sliced generously and trimmed to content by the builder, so the varying gun widths inside a column do not need listing.",
-  "path": "assets/icons-guns/pixel guns transparent background no text.png",
-  "conform": true,
-  "cellWidth": 28,
-  "cellHeight": 9,
-  "categories": [
-   "pistol",
-   "smg",
-   "carbine",
-   "rifle",
-   "shotgun",
-   "lmg"
-  ],
-  "colLefts": [
-   45,
-   130,
-   216,
-   302,
-   388,
-   471
-  ],
-  "rowTops": [
-   36,
-   45,
-   54,
-   63,
-   72,
-   81,
-   90,
-   99,
-   108,
-   118,
-   126,
-   135,
-   144,
-   153,
-   162,
-   171,
-   180,
-   189,
-   198,
-   207,
-   217,
-   225
-  ]
- },
- "fx": {
-  "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (§10 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre — an explosion is centred on a point, it does not stand on the ground.",
-  "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",
-  "_base": "assets/effects-fx/Free/",
-  "cell": 64,
-  "clips": {
-   "hitSpark": {
-    "path": "Part 6/273.png",
-    "row": 5,
-    "frames": 8
-   },
-   "critStar": {
-    "path": "Part 10/486.png",
-    "row": 0,
-    "frames": 12
-   },
-   "shock": {
-    "path": "Part 9/436.png",
-    "row": 5,
-    "frames": 9
-   }
+  "vehicles": {
+    "_note": "The Duster (\u00a79 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch \u2014 bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
+    "_directionNote": "Order is left, up, right, down \u2014 NOT the animals' right, up, left, down. Verified by eye against the sheet. Three sheet families in this project now use three different direction orders, which is why every one of them is measured rather than assumed.",
+    "_scaleNote": "\u00a79 says tractor at x3. That was written assuming a 32px source; this tractor is drawn ~130px wide already, so x3 would be nearly 400px against a 520px camera. It is packed at native size and drawn at x1 \u2014 which is still about four times the player, and the heavy read comes from the slowed frame rate instead.",
+    "_base": "assets/modern-farm/32x32/Vehicles_32x32/",
+    "frameWidth": 192,
+    "frameHeight": 192,
+    "framesPerDirection": 6,
+    "directionOrder": [
+      "left",
+      "up",
+      "right",
+      "down"
+    ],
+    "sheets": {
+      "duster": {
+        "path": "Tractor_32x32.png",
+        "firstBand": 1
+      }
+    }
   },
-  "_replacedNote": "muzzle, gas, dust, explosion and slash were REMOVED here: they are generated and animated now and live in pixellabFx. Two groups writing one frame key means the later pass silently wins. hitSpark, critStar and shock are still the pack."
- },
- "projectiles": {
-  "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid — no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
-  "_choiceNote": "Every type ships in 6-8 colours and two sizes. The LARGE size is packed for the six signature rounds: small ones are 16-20px, which at the renderer's 0.55 projectile scale is a 10px smudge next to a 64px character - the reason six visibly different bullets read as one. One silhouette per weapon (burst, dart, shell, missile, glob, spear) so weapons are told apart by SHAPE, and each ships in three element colours so an element recolours without erasing that shape.",
-  "_base": "assets/projectiles/",
-  "clips": {
-   "proj.pellet": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_yellow"
-   },
-   "proj.pellet.fire": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_orange"
-   },
-   "proj.pellet.acid": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_green"
-   },
-   "proj.pellet.frost": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_blue"
-   },
-   "proj.dart": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_black"
-   },
-   "proj.dart.fire": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_orange"
-   },
-   "proj.dart.acid": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_green"
-   },
-   "proj.dart.frost": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_blue"
-   },
-   "proj.shell": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_red"
-   },
-   "proj.shell.fire": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_orange"
-   },
-   "proj.shell.acid": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_green"
-   },
-   "proj.shell.frost": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_blue"
-   },
-   "proj.slug": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_white"
-   },
-   "proj.slug.fire": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_orange"
-   },
-   "proj.slug.acid": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_green"
-   },
-   "proj.slug.frost": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_blue"
-   },
-   "proj.glob": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_black"
-   },
-   "proj.glob.fire": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_orange"
-   },
-   "proj.glob.acid": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_green"
-   },
-   "proj.glob.frost": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_blue"
-   },
-   "proj.spear": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_gray"
-   },
-   "proj.spear.fire": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_orange"
-   },
-   "proj.spear.acid": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_green"
-   },
-   "proj.spear.frost": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_blue"
-   },
-   "proj.shard": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_knife_small_gray"
-   },
-   "fx.shockwave": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ground_shockwave_small_white"
-   },
-   "fx.arrowImpact": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_orange"
-   },
-   "fx.bigImpact": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_red"
-   },
-   "fx.arrowImpact.fire": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_orange"
-   },
-   "fx.arrowImpact.acid": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_green"
-   },
-   "fx.arrowImpact.frost": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_blue"
-   },
-   "fx.bigImpact.fire": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_orange"
-   },
-   "fx.bigImpact.acid": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_green"
-   },
-   "fx.bigImpact.frost": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_blue"
-   },
-   "proj.crescent": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_death_wave_large_black"
-   },
-   "proj.claw": {
-    "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_loop_large_orange"
-   },
-   "proj.seed": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_yellow"
-   },
-   "proj.seed.fire": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_orange"
-   },
-   "proj.seed.acid": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_green"
-   },
-   "proj.seed.frost": {
-    "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_blue"
-   }
+  "singles": {
+    "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field \u2014 break one for feed.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
+    "files": {}
   },
-  "_elementNote": "Each bullet clip is packed in three extra colours, one per element. An element RECOLOURS the weapon's own round rather than replacing it: a fire Scattergun still throws sparks, orange ones. Replacing the clip outright made every weapon fire an identical bullet the moment you took an element, which erased the weapon identity the ring and the bullets exist to communicate."
- },
- "terrainSource": {
-  "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
-  "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used — anything with a blob edge will not tile. Found with tools/_scan.ts.",
-  "tiles": {
-   "grass": [
-    3,
-    2
-   ],
-   "dirt": [
-    1,
-    1
-   ],
-   "soil": [
-    1,
-    13
-   ],
-   "hay": [
-    1,
-    5
-   ]
+  "singlesExtra": {
+    "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. \u00a711 wants gems readable above all else.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
+    "files": {
+      "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
+    },
+    "_replacedNote": "pickup.feed was REMOVED here, not left alongside: it is generated now and lives in the pixellab group. Two groups writing one frame key means the later pass silently wins. pickup.heal is still LimeZu \u2014 no heal pickup was generated, and the sim only spawns xp and feed kinds today."
+  },
+  "crops": {
+    "_note": "The ten field crops, GENERATED, replacing the LimeZu pack crops whose keys these are. The pack entries are DELETED rather than left alongside -- two groups writing one frame key is the trap that has cost this project time before, and the later group wins silently.",
+    "_sizeNote": "32x32 where the pack crops were 32x64. The pack drew a whole plant with soil; these are the fruit alone, which is what a 13px harvest radius actually wants. Picked by contact sheet: chili_1 over _0 because _0 is two loose peppers with no plant, grain_1 over _0 because _0 is a single thin stalk that vanishes at field scale, pumpkin_1 over _0 for the stem, tomato_1 for the vine cluster.",
+    "_blightedNote": "field/ and field2/ also hold BLIGHTED variants for cabbage, corn, grain, pumpkin and tomato, picked but not wired. A blighted map should swap the crop art rather than remove the crop -- see docs/NEXT_SESSION.md. Left for the play session because it changes what a map looks like mid-run.",
+    "_base": "assets/pixellab/field/",
+    "files": {
+      "crop.cabbage": "crop_cabbage_0.png",
+      "crop.cauliflower": "crop_cauliflower_0.png",
+      "crop.chili": "crop_chili_1.png",
+      "crop.corn": "crop_corn_0.png",
+      "crop.grain": "crop_grain_1.png",
+      "crop.pumpkin": "crop_pumpkin_1.png",
+      "crop.strawberry": "crop_strawberry_0.png",
+      "crop.tomato": "crop_tomato_1.png",
+      "crop.watermelon": "crop_watermelon_0.png",
+      "crop.zucchini": "crop_zucchini_1.png"
+    }
+  },
+  "nodes": {
+    "_note": "Harvest rocks and ore, GENERATED. Replaces the LimeZu pack rocks, whose keys these are \u2014 the enemy of a swap like this is leaving both groups writing the same frame keys, so the LimeZu entries are gone rather than commented out. The ore read the pack was chosen for (\"minerals inside the rock\", visible before you swing) is preserved and made sicker: rust, bone-white crystal, diseased yellow-green, cold blue, and raw red flesh swelling out of a crack.",
+    "_sizeNote": "Content trims to 41x29 up to 57x54 against LimeZu 32x32 cells, so these read chunkier. Deliberate \u2014 the node radius is 13 and the sprite has always overhung its hitbox. Not scaled: integer zoom only.",
+    "_base": "assets/pixellab/env/",
+    "files": {
+      "node.rockSmall": "stone_rust_corrosion.png",
+      "node.rockMedium": "rock_damp_stained.png",
+      "node.rockBig": "boulder_rot_stained.png",
+      "node.oreBronze": "stone_rust_ore.png",
+      "node.oreSilver": "rock_bonewhite_crystal.png",
+      "node.oreGold": "boulder_yellowgreen_crystal.png",
+      "node.oreBlue": "boulder_pale_blue_crystal.png",
+      "node.oreRed": "boulder_flesh.png"
+    }
+  },
+  "biome": {
+    "_note": "Biome nodes and hazard art for the map system (src/content/maps.json). One frame each, no animation: a node is a static prop you swing at, and a hazard is a ground decal drawn under the translucent circle that carries the actual read of 'this hurts'. Keys are the ones maps.json and nodes.json name \u2014 pick a different candidate here and nothing else changes.",
+    "_pickNote": "Three candidates each were generated; these are the ones chosen by LOOKING at a contact sheet, not by filename. saltrock_2 over _1 because _1 is magenta and reads as amethyst rather than salt. scrapheap_0 over _2 because _2 is an entire fire truck \u2014 a vehicle, not a scatterable node. boneheap_2 over _0 because _0 is a single skull-and-crossbones icon and this wants a heap. ashstump_1 over _0 because _0's roots spread far past the 13px node radius. gas_1 over _0 and _2, which are flat mounds rather than clouds. mud_0 over _2, which is a cobble pile and not mud at all.",
+    "_base": "assets/pixellab/field/",
+    "files": {
+      "node.saltRock": "node_saltrock_2.png",
+      "node.scrapHeap": "node_scrapheap_0.png",
+      "node.boneHeap": "node_boneheap_2.png",
+      "node.ashStump": "node_ashstump_1.png",
+      "hazard.gas": "hazard_gas_1.png",
+      "hazard.mud": "hazard_mud_0.png",
+      "hazard.fire": "hazard_fire_0.png"
+    }
+  },
+  "nodeTrees": {
+    "_note": "Fellable trees, GENERATED. Replaces the LimeZu Tree_* files under the same keys. The three smallest of the recovered trees, because a harvest node is something you walk up to: dead_tree_snapped_128, dying_tree_split_b and the two huge oaks (171x165 and 184x171) are landmark scenery, not nodes, and are left unpacked for that.",
+    "_base": "assets/pixellab/env/",
+    "files": {
+      "node.treeSmall": "dead_sapling.png",
+      "node.treeMedium": "dead_tree_snapped_96.png",
+      "node.treeBig": "dying_tree_split_a.png"
+    }
+  },
+  "weapons": {
+    "_note": "One sprite per weapon, packed as weapon.<id> and keyed to the ids in src/content/weapons.json. These are what the player sees ringed around them and what the projectiles are drawn as. Nothing packed them before, so every weapon's `sprite` field pointed at a name the atlas had never heard of, every projectile fell through to the coloured-square fallback, and a melee arc drew as a ~100px white box.",
+    "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here \u2014 a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",
+    "_sizeNote": "Every entry must be ONE object at roughly one tile. Several files in this pack named *_Load_* or *_Stack_* are multi-tile piles \u2014 Bucket_Load is 58x64 of stacked buckets and rendered as an unreadable brown slab twice the player's size in the weapon ring. tools/build-atlas.ts asserts the packed size and fails the build naming the file.",
+    "_base": "assets/modern-farm/32x32/Single_Files_32x32/",
+    "files": {
+      "weapon.shovel": "Props_and_Buildings_32x32/Wooden_Shovel_1_Stone_Oven_32x32.png",
+      "weapon.seedSpitter": "Pickup_Items_32x32/Pickup_Crop_Corn_32x32.png",
+      "weapon.melonLob": "Pickup_Items_32x32/Pickup_Crop_Watermelon_32x32.png",
+      "weapon.chiliShot": "Pickup_Items_32x32/Pickup_Crop_Chili_Pepper_32x32.png",
+      "weapon.eggToss": "Props_and_Buildings_32x32/Egg_32x32.png",
+      "weapon.slopBucket": "Props_and_Buildings_32x32/Bucket_1_Single_32x32.png",
+      "weapon.framingHammer": "Props_and_Buildings_32x32/Hammer_1_Woodwork_Crafting_Table_32x32.png",
+      "weapon.grainLure": "Props_and_Buildings_32x32/Grain_1_32x32.png"
+    }
+  },
+  "weaponsFarmTools": {
+    "_note": "Caz Pixel Fantasy Icons: Farm Tools. The pack is 94 icons but 81 of them are seed packets \u2014 there are exactly FOUR tools in it, and three of them are weapons this project had no art for at all. farm-tool1 is a scythe, 2 a watering can, 3 a three-tine rake, 4 a fishing rod. They replace the hacksaw-as-axe, milk-can-as-watering-can and branch-as-rod stand-ins.",
+    "_styleNote": "Different hand from LimeZu: cool blue-grey metal against LimeZu's warm muted farm palette. Conformed on the way in for exactly the reason \u00a710 step 3 gives.",
+    "_base": "assets/icons-farm/MV Icons Farm Tools/Individual Icons/",
+    "conform": true,
+    "files": {
+      "weapon.axe": "farm-tool1.png",
+      "weapon.wateringCan": "farm-tool2.png",
+      "weapon.rake": "farm-tool3.png",
+      "weapon.fishingRod": "farm-tool4.png"
+    }
+  },
+  "tools": {
+    "_note": "Pixcuit Medieval Tool Icons. The pickaxe and axe ladders the player actually carries \u2014 six tiers each, keyed to the tiers in src/content/nodes.json so the sprite is looked up straight from the tool's current tier. The pack's six materials are why nodes.json has six tiers rather than the five it started with: matching the art beat inventing a mapping from steel to titanium.",
+    "_spellingNote": "The pack spells shovel 'Showel'. Not used here, but it will bite whoever adds it.",
+    "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
+    "conform": true,
+    "files": {
+      "tool.pickaxe.wood": "Wooden_Pickaxe.png",
+      "tool.pickaxe.stone": "Stone_Pickaxe.png",
+      "tool.pickaxe.iron": "Iron_Pickaxe.png",
+      "tool.pickaxe.golden": "Golden_Pickaxe.png",
+      "tool.pickaxe.titanium": "Titanium_Pickaxe.png",
+      "tool.pickaxe.ruby": "Ruby_Pickaxe.png",
+      "tool.axe.wood": "Wooden_Axe.png",
+      "tool.axe.stone": "Stone_Axe.png",
+      "tool.axe.iron": "Iron_Axe.png",
+      "tool.axe.golden": "Golden_Axe.png",
+      "tool.axe.titanium": "Titanium_Axe.png",
+      "tool.axe.ruby": "Ruby_Axe.png"
+    }
+  },
+  "weaponTiers": {
+    "_note": "Melee weapon art per TIER, so merging a weapon is visible on the weapon. Weapons tier 1-4 and the Pixcuit pack ships six materials, so four are picked that read as an obvious escalation rather than adjacent shades nobody would notice.",
+    "_gapNote": "The pack is NOT complete per tool, which is why the four materials differ by weapon rather than being one shared list: there is no Iron Pitchfork and no Golden Sickle. Checked against the directory, not assumed.",
+    "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
+    "conform": true,
+    "files": {
+      "weapon.pitchfork.t1": "Wooden_Pitchfork.png",
+      "weapon.pitchfork.t2": "Stone_Pitchfork.png",
+      "weapon.pitchfork.t3": "Titanium_Pitchfork.png",
+      "weapon.pitchfork.t4": "Ruby_Pitchfork.png",
+      "weapon.scythe.t1": "Wooden_Sickle.png",
+      "weapon.scythe.t2": "Iron_Sickle.png",
+      "weapon.scythe.t3": "Titanium_Sickle.png",
+      "weapon.scythe.t4": "Ruby_Sickle.png",
+      "weapon.sledge.t1": "Wooden_Hammer.png",
+      "weapon.sledge.t2": "Iron_Hammer.png",
+      "weapon.sledge.t3": "Titanium_Hammer.png",
+      "weapon.sledge.t4": "Ruby_Hammer.png"
+    }
+  },
+  "gunSheet": {
+    "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed \u2014 rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
+    "_layoutNote": "rowTops and colLefts are the measured content bands. Cells are sliced generously and trimmed to content by the builder, so the varying gun widths inside a column do not need listing.",
+    "path": "assets/icons-guns/pixel guns transparent background no text.png",
+    "conform": true,
+    "cellWidth": 28,
+    "cellHeight": 9,
+    "categories": [
+      "pistol",
+      "smg",
+      "carbine",
+      "rifle",
+      "shotgun",
+      "lmg"
+    ],
+    "colLefts": [
+      45,
+      130,
+      216,
+      302,
+      388,
+      471
+    ],
+    "rowTops": [
+      36,
+      45,
+      54,
+      63,
+      72,
+      81,
+      90,
+      99,
+      108,
+      118,
+      126,
+      135,
+      144,
+      153,
+      162,
+      171,
+      180,
+      189,
+      198,
+      207,
+      217,
+      225
+    ]
+  },
+  "fx": {
+    "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (\u00a710 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre \u2014 an explosion is centred on a point, it does not stand on the ground.",
+    "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",
+    "_base": "assets/effects-fx/Free/",
+    "cell": 64,
+    "clips": {
+      "hitSpark": {
+        "path": "Part 6/273.png",
+        "row": 5,
+        "frames": 8
+      },
+      "critStar": {
+        "path": "Part 10/486.png",
+        "row": 0,
+        "frames": 12
+      },
+      "shock": {
+        "path": "Part 9/436.png",
+        "row": 5,
+        "frames": 9
+      }
+    },
+    "_replacedNote": "muzzle, gas, dust, explosion and slash were REMOVED here: they are generated and animated now and live in pixellabFx. Two groups writing one frame key means the later pass silently wins. hitSpark, critStar and shock are still the pack."
+  },
+  "projectiles": {
+    "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid \u2014 no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
+    "_choiceNote": "Every type ships in 6-8 colours and two sizes. The LARGE size is packed for the six signature rounds: small ones are 16-20px, which at the renderer's 0.55 projectile scale is a 10px smudge next to a 64px character - the reason six visibly different bullets read as one. One silhouette per weapon (burst, dart, shell, missile, glob, spear) so weapons are told apart by SHAPE, and each ships in three element colours so an element recolours without erasing that shape.",
+    "_base": "assets/projectiles/",
+    "clips": {
+      "proj.pellet": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_yellow"
+      },
+      "proj.pellet.fire": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_orange"
+      },
+      "proj.pellet.acid": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_green"
+      },
+      "proj.pellet.frost": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_light_spark_large_blue"
+      },
+      "proj.dart": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_black"
+      },
+      "proj.dart.fire": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_orange"
+      },
+      "proj.dart.acid": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_green"
+      },
+      "proj.dart.frost": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_loop_large_blue"
+      },
+      "proj.shell": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_red"
+      },
+      "proj.shell.fire": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_orange"
+      },
+      "proj.shell.acid": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_green"
+      },
+      "proj.shell.frost": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_meteor_large_blue"
+      },
+      "proj.slug": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_white"
+      },
+      "proj.slug.fire": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_orange"
+      },
+      "proj.slug.acid": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_green"
+      },
+      "proj.slug.frost": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_scifi_missile_large_blue"
+      },
+      "proj.glob": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_black"
+      },
+      "proj.glob.fire": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_orange"
+      },
+      "proj.glob.acid": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_green"
+      },
+      "proj.glob.frost": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_acid_large_blue"
+      },
+      "proj.spear": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_gray"
+      },
+      "proj.spear.fire": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_orange"
+      },
+      "proj.spear.acid": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_green"
+      },
+      "proj.spear.frost": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_kunai_large_blue"
+      },
+      "proj.shard": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_knife_small_gray"
+      },
+      "fx.shockwave": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_ground_shockwave_small_white"
+      },
+      "fx.arrowImpact": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_orange"
+      },
+      "fx.bigImpact": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_red"
+      },
+      "fx.arrowImpact.fire": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_orange"
+      },
+      "fx.arrowImpact.acid": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_green"
+      },
+      "fx.arrowImpact.frost": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_arrow_impact_small_blue"
+      },
+      "fx.bigImpact.fire": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_orange"
+      },
+      "fx.bigImpact.acid": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_green"
+      },
+      "fx.bigImpact.frost": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_impact_small_blue"
+      },
+      "proj.crescent": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_death_wave_large_black"
+      },
+      "proj.claw": {
+        "path": "Super Pixel Projectiles Pack 3/spritesheet/pj3_demon_bite_loop_large_orange"
+      },
+      "proj.seed": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_yellow"
+      },
+      "proj.seed.fire": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_orange"
+      },
+      "proj.seed.acid": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_green"
+      },
+      "proj.seed.frost": {
+        "path": "Super Pixel Projectiles Pack 2/spritesheet/pj2_magic_missile_large_blue"
+      }
+    },
+    "_elementNote": "Each bullet clip is packed in three extra colours, one per element. An element RECOLOURS the weapon's own round rather than replacing it: a fire Scattergun still throws sparks, orange ones. Replacing the clip outright made every weapon fire an identical bullet the moment you took an element, which erased the weapon identity the ring and the bullets exist to communicate."
+  },
+  "terrainSource": {
+    "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
+    "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used \u2014 anything with a blob edge will not tile. Found with tools/_scan.ts.",
+    "tiles": {
+      "grass": [
+        3,
+        2
+      ],
+      "dirt": [
+        1,
+        1
+      ],
+      "soil": [
+        1,
+        13
+      ],
+      "hay": [
+        1,
+        5
+      ]
+    }
+  },
+  "pixellab": {
+    "_note": "Generated with PixelLab, style-anchored to assets/pixellab/limezu_style_256.png. Ours and commercially licensed, so unlike the purchased packs these CAN be committed. Card icons only -- they are 44-62px and exempt from the 32x32 field rule because a card draws at any integer zoom. Anything that reaches the game field must still be 32x32. See docs/PIXELLAB.md.",
+    "_base": "assets/pixellab/picked/",
+    "files": {
+      "item.ditchLight": "ditch_light.png",
+      "scene.oak": "oak_tree.png",
+      "scene.rooster": "rooster_big.png",
+      "item.strawHat": "straw_hat.png",
+      "meta.bunkhouse": "bunkhouse_sign.png",
+      "meta.feedStore": "feed_store_sign.png",
+      "meta.seedCatalog": "seed_catalogue.png",
+      "meta.countyFair": "prize_rosette.png",
+      "weapon.combineHead": "combine_head.png",
+      "weapon.postAuger": "post_auger.png",
+      "item.cropDuster": "crop_duster.png",
+      "item.whitacreBull": "whitacre_bull.png",
+      "weapon.barnDog": "barn_dog.png",
+      "weapon.postAuger.t1": "auger_t1.png",
+      "weapon.combineHead.t1": "combine_t1.png",
+      "weapon.postAuger.t2": "auger_t2.png",
+      "weapon.combineHead.t2": "combine_t2.png",
+      "weapon.postAuger.t3": "auger_t3.png",
+      "weapon.combineHead.t3": "combine_t3.png",
+      "weapon.postAuger.t4": "auger_t4.png",
+      "weapon.combineHead.t4": "combine_t4.png",
+      "item.bootKnife": "boot_knife.png",
+      "item.balingTwine": "twine.png",
+      "item.barbedWire": "barbed_wire.png",
+      "item.cattleProd": "cattle_prod.png",
+      "item.chalkLine": "chalk_line.png",
+      "item.coffeeThermos": "thermos.png",
+      "item.culvertPipe": "culvert_pipe.png",
+      "item.dogWhistle": "dog_whistle.png",
+      "item.feedSack": "feed_sack.png",
+      "item.fenceStaples": "staples.png",
+      "item.fourLeaf": "four_leaf.png",
+      "item.grainScoop": "grain_scoop.png",
+      "item.keroseneCan": "kerosene.png",
+      "item.lampOil": "lantern.png",
+      "item.postDriver": "post_driver.png",
+      "item.saltCircle": "salt_ring.png",
+      "item.saltLick": "salt_lick.png",
+      "item.slingBands": "sling_bands.png",
+      "item.splitRail": "split_rail.png",
+      "item.sundayBest": "sunday_best.png",
+      "item.tractorPlate": "tractor_plate.png",
+      "item.weatherVane": "weather_vane.png",
+      "item.wetRag": "wet_rag.png",
+      "item.whetstone": "whetstone.png",
+      "item.workBoots": "work_boots.png",
+      "weapon.crowBell": "cow_bell.png",
+      "weapon.seedDrill": "seed_drill.png",
+      "pickup.xp": "xp_seed_16.png",
+      "pickup.feed": "feed_token_16.png",
+      "pickup.magnet": "magnet.png",
+      "item.threshingFloor": "chain_lightning_arc.png",
+      "prop.fencePost": "fence_post_wire.png",
+      "prop.fenceRail": "fence_rail_broken.png",
+      "prop.gate": "gate_wooden.png",
+      "decal.tireRuts": "tire_ruts_decal.png",
+      "decal.scorch": "scorch_decal.png",
+      "decal.mud": "mud_puddle.png",
+      "decal.ash": "ash_pile.png",
+      "prop.hayBale": "hay_bale_round.png",
+      "prop.hayBaleRotted": "hay_bale_rotted.png",
+      "prop.trough": "water_trough.png",
+      "prop.troughFouled": "water_trough_fouled.png",
+      "prop.logPile": "log_pile.png",
+      "prop.bonePile": "bone_pile.png",
+      "prop.carcass": "carcass_picked.png",
+      "prop.oilDrum": "oil_drum.png",
+      "prop.milkCans": "milk_cans.png",
+      "prop.feedBin": "feed_bin.png",
+      "prop.wheelbarrow": "wheelbarrow.png",
+      "prop.plough": "plough_rusted.png",
+      "prop.graveMarker": "grave_marker.png",
+      "prop.treeStump": "tree_stump.png",
+      "prop.barbedWire": "barbed_wire_coil.png",
+      "prop.scarecrow": "scarecrow.png",
+      "prop.scarecrowRotted": "scarecrow_rotted.png",
+      "prop.burnBarrel": "burn_barrel.png"
+    },
+    "conform": true,
+    "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one \u2014 the yard rooster popped against a muted scene because he was never quantised to it.",
+    "_pickupNote": "pickup.xp and pickup.feed are the 16px generations, not the 32px ones. The renderer already looked for pickup.<kind> and fell back to a 5px coloured square. The 32px seed trims to 20x28, which against a 14px collect radius and hundreds of gems on screen is clutter; at 16px they trim to 12x14 \u2014 bigger than the square they replace, small enough to carry a wave of them. The 32px xp_seed and feed_token stay in picked/ as card art."
+  },
+  "gasMaskIcon": {
+    "_note": "The gas mask cropped from the generator accessory sheet rather than generated. docs/PIXELLAB.md: 'A gas mask already exists ... crop it from that sheet rather than generating one.' Uses the idle down cell, which is the only front-on view.",
+    "path": "assets/modern-farm/Farmer_Generator_Pieces/Character Pieces/Accessories/32x32/Accessory_Gas_Mask.png",
+    "cellX": 0,
+    "cellY": 0,
+    "cellW": 32,
+    "cellH": 64,
+    "name": "item.gasMask"
+  },
+  "pixellabStrips": {
+    "_note": "Generated characters, delivered ALREADY CUT to the game's grid: 32x64 cells, centred, feet on y=52, the same baseline the LimeZu farmer sheets use. So there is no trimming or re-placing to do here -- the raw PixelLab export needed all of that (rotations on 40x40, animation frames on 56x56, feet at a different y in every frame) and tools/pixellab-cut.ts is what does it. This block just names strips.",
+    "_idNote": "Keyed as `farmhand`, NOT `hand` as the delivered README says. `hand` is the PLAYER class id -- the farmer you control -- and packing an infected zombie under it would have silently replaced the player's own sprite. This is the infected farmhand ENEMY, which the content already calls farmhand.",
+    "_directionNote": "Eight compass directions generated, four used. The renderer only ever asks for four.",
+    "_base": "assets/pixellab/character/",
+    "compassToDirection": {
+      "south": "down",
+      "north": "up",
+      "west": "left",
+      "east": "right"
+    },
+    "sheets": {
+      "farmhand": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          },
+          "hit": {
+            "file": "hit_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "death_{compass}_strip.png",
+            "frames": 7
+          }
+        }
+      },
+      "hand": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
+      },
+      "kid": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
+      },
+      "widow": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
+      },
+      "vet": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
+      },
+      "agronomist": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
+      },
+      "drifter": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
+      },
+      "acidZombie": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          },
+          "hit": {
+            "file": "hit_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "death_{compass}_strip.png",
+            "frames": 7
+          }
+        }
+      },
+      "bloatedFarmhand": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          },
+          "hit": {
+            "file": "hit_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "death_{compass}_strip.png",
+            "frames": 7
+          }
+        }
+      },
+      "maskedSprayer": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          },
+          "hit": {
+            "file": "hit_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "death_{compass}_strip.png",
+            "frames": 7
+          }
+        }
+      },
+      "maskedHauler": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          },
+          "hit": {
+            "file": "hit_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "death_{compass}_strip.png",
+            "frames": 7
+          }
+        }
+      }
+    },
+    "_castNote": "The six player classes and the infected farmhand, all generated at size 64 (see docs/ART_STYLE.md \u2014 size is the CANVAS, and the figure fills about 76% of it) and cut by npm run character to a 32x64 cell with feet on y58. Four cardinals only: the renderer buckets facing into four, so the diagonals are generated and deliberately unused.",
+    "_clipNote": "Humanoids carry the same clip vocabulary as the generated animals now: idle, walk, hit, death. `hit` and `death` come from PixelLab TEMPLATE animations (`taking-punch`, `falling-back-death`) at 1 generation per direction, which is the cheap path -- roughly 2.4x under the v3 rate the animal objects pay. FOUR directions, not eight: `compassToDirection` here maps only the cardinals, because the humanoid rig has always been four-way. The renderer's clip chain falls through, so a humanoid without one of these behaves as it did before."
+  },
+  "scene": {
+    "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",
+    "_noTrimNote": "PACKED UNTRIMMED, and this is load-bearing. Design's scene coordinates are the top-left of the sprite's FULL BOX, so a trimmed frame is drawn at the right place and the wrong offset -- the scarecrow trimmed 96x96 to 84x78 and stood 12px left and 18px high of where it belongs, silently, on every prop in both scenes. Trimming is right for a field sprite drawn from a pivot; it is wrong for anything positioned by its box.",
+    "_base": "assets/scene/",
+    "noTrim": true,
+    "files": {
+      "scene.barn": "barn.png",
+      "scene.calf": "calf.png",
+      "scene.chick": "chick.png",
+      "scene.coop": "coop.png",
+      "scene.cow": "cow.png",
+      "scene.dogLab": "dog_lab.png",
+      "scene.doghouse": "doghouse.png",
+      "scene.farmer2Idle": "farmer2_idle.png",
+      "scene.farmerIdle": "farmer_idle.png",
+      "scene.fenceRail": "fence_rail.png",
+      "scene.hay": "hay.png",
+      "scene.house": "house.png",
+      "scene.milkcan": "milkcan.png",
+      "scene.nest": "nest.png",
+      "scene.penC1": "pen_c1.png",
+      "scene.penGate": "pen_gate.png",
+      "scene.penV": "pen_v.png",
+      "scene.scarecrow": "scarecrow.png",
+      "scene.sheep": "sheep.png",
+      "scene.signCow": "sign_cow.png",
+      "scene.silo": "silo.png",
+      "scene.tractorLeft": "tractor_left.png",
+      "scene.treeOak": "tree_oak.png",
+      "scene.trough": "trough.png",
+      "scene.well": "well.png"
+    },
+    "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent. The yard borrowed the game's own 32px rooster for a while; it is now `scene.rooster` in the pixellab group -- generated art, drawn at 1x, and visibly bigger than the hens pecking beside it, which is what a rooster in a yard should be."
+  },
+  "sceneStrips": {
+    "_generatedNote": "EVERY KEY INSIDE `files` IS A SPRITE NAME AND EVERY VALUE A PATH \u2014 an `_`-prefixed note belongs at THIS level, not in there. Putting one inside `files` makes the builder try to open a paragraph of prose as a PNG, which it does, and then fails naming it.  The strips below are generated by `animate_image` FROM the static sprite that was already standing in the scene, then assembled by `npm run anim`. Each cell is the source sprite's own size and every frame is composited BOTTOM-CENTRED onto it, so an actor's feet do not travel between frames. Frame counts differ per strip because the job keeps your input as frame 0: a `frame_count: 8` job is NINE cells, a `frame_count: 6` job is seven. The stripActor call in scene.ts carries the real number; do not assume six.",
+    "_sparesNote": "Generated and deliberately NOT packed, because nothing mounts them yet: rooster_idle, dog_walk, sheep_idle, cow_idle, calf_walk. They are in assets/scene/ and assets/pixellab/anim/. Add a line to `files` and they are one stripActor call from the screen \u2014 a walking dog or an ambling calf also wants a `travelling()` path, which is a placement decision rather than an art one.",
+    "_note": "Anything TILED or STEPPED, packed untrimmed. A strip animated with steps(n) divides its width by n and a repeating tile repeats at its packed size, so both need the real cell rather than the content bounds. Trimming a 192px six-frame strip to 188px makes 188/6 fractional; trimming a 32px wheat tile to 26px leaves a gap in every repeat.",
+    "_base": "assets/scene/",
+    "noTrim": true,
+    "files": {
+      "scene.chickenPeckStrip": "chicken_peck_strip.png",
+      "scene.chickenWalkLeftStrip": "chicken_walk_left_strip.png",
+      "scene.penH": "pen_h.png",
+      "scene.farmerWalkStrip": "farmer_walk_strip.png",
+      "scene.farmerWalkUpStrip": "farmer_walk_up_strip.png",
+      "scene.fencePicket": "fence_picket.png",
+      "scene.wheat": "wheat.png",
+      "scene.wheat2": "wheat2.png",
+      "scene.roosterWalkStrip": "rooster_walk_strip.png",
+      "scene.roosterPeckStrip": "rooster_peck_strip.png",
+      "scene.roosterCrowStrip": "rooster_crow_strip.png",
+      "scene.cowGrazeStrip": "cow_graze_strip.png",
+      "scene.sheepGrazeStrip": "sheep_graze_strip.png",
+      "scene.dogIdleStrip": "dog_idle_strip.png",
+      "scene.chickPeckStrip": "chick_peck_strip.png",
+      "scene.farmerIdleBreatheStrip": "farmer_idle_breathe_strip.png",
+      "scene.calfGrazeStrip": "calf_graze_strip.png",
+      "scene.farmer2IdleBreatheStrip": "farmer2_idle_breathe_strip.png",
+      "scene.scarecrowSwayStrip": "scarecrow_sway_strip.png"
+    },
+    "conform": true
+  },
+  "portraits": {
+    "_note": "Class card portraits, made by create_portrait_character from each class's own finished south sprite (direction: character_to_portrait). Derived rather than prompted, so a plate matches its character BY CONSTRUCTION \u2014 prompting a portrait and a sprite separately gives you two people who merely dress alike.",
+    "_base": "assets/pixellab/portrait/",
+    "cardArt": true,
+    "conform": true,
+    "files": {
+      "portrait.hand": "hand.png",
+      "portrait.kid": "kid.png",
+      "portrait.widow": "widow.png",
+      "portrait.vet": "vet.png",
+      "portrait.agronomist": "agronomist.png",
+      "portrait.drifter": "drifter.png"
+    }
+  },
+  "pixellabObjects": {
+    "_note": "Generated 8-direction animals \u2014 enemies and the two summons. Frame keys are id.clip.direction.frame, the same convention as every other sheet.",
+    "_generatedBy": "tools/object-manifest.ts \u2014 run `npm run objman -- --write` after downloading or regenerating an animal. The clip slugs are PixelLab folder names (the description, slugified and truncated) and must never be typed by hand.",
+    "_base": "assets/pixellab/object/",
+    "compassToDirection": {
+      "south": "down",
+      "south-west": "downLeft",
+      "west": "left",
+      "north-west": "upLeft",
+      "north": "up",
+      "north-east": "upRight",
+      "east": "right",
+      "south-east": "downRight"
+    },
+    "sheets": {
+      "feralDog": {
+        "dir": "barn_dog_cursed2",
+        "cell": 56,
+        "clips": {
+          "death": {
+            "slug": "dropping_to_the_ground_and_going_limp",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north-west",
+              "north",
+              "north-east",
+              "east",
+              "south-east"
+            ]
+          },
+          "attack": {
+            "slug": "lunging_forward_and_snapping_its_jaws",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "walk": {
+            "slug": "walking_with_a_low_skulking_prowl_head_hanging_do",
+            "frames": 9
+          }
+        }
+      },
+      "rooster": {
+        "dir": "infected_rooster_rotten",
+        "cell": 68,
+        "clips": {
+          "attack": {
+            "slug": "flaring_its_wings_and_lashing_out_with_its_spurs",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "death": {
+            "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
+            "frames": 9
+          },
+          "walk": {
+            "slug": "walking_with_a_jerky_twitching_strut",
+            "frames": 9
+          }
+        }
+      },
+      "sickHog": {
+        "dir": "infected_hog_rotten",
+        "cell": 68,
+        "clips": {
+          "attack": {
+            "slug": "charging_forward_and_swiping_with_its_tusks",
+            "frames": 9
+          },
+          "death": {
+            "slug": "collapsing_forward_and_rolling_onto_its_side_goin",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "walk": {
+            "slug": "walking_with_a_laboured_stagger",
+            "frames": 9
+          }
+        }
+      },
+      "blownSheep": {
+        "dir": "infected_sheep_rotten",
+        "cell": 68,
+        "clips": {
+          "death": {
+            "slug": "folding_at_the_legs_and_slumping_to_the_ground",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9
+          },
+          "attack": {
+            "slug": "lowering_its_head_and_ramming_forward",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "walk": {
+            "slug": "walking_with_a_slow_bloated_waddle",
+            "frames": 9
+          }
+        }
+      },
+      "prizeBull": {
+        "dir": "bull_cursed",
+        "cell": 68,
+        "clips": {
+          "death": {
+            "slug": "buckling_at_the_knees_and_collapsing_heavily_onto",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9,
+            "dirs": [
+              "south-west",
+              "west",
+              "north-west",
+              "north",
+              "north-east",
+              "east",
+              "south-east"
+            ]
+          },
+          "attack": {
+            "slug": "lowering_its_head_and_charging_forward_horns_firs",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "walk": {
+            "slug": "walking_with_a_heavy_dragging_stagger_head_swingi",
+            "frames": 9
+          }
+        }
+      },
+      "arabianCursed": {
+        "dir": "arabian_cursed",
+        "cell": 68,
+        "clips": {
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9
+          },
+          "attack": {
+            "slug": "rearing_up_and_striking_down_with_its_front_hooves",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "death": {
+            "slug": "stumbling_buckling_at_the_front_legs_and_falling",
+            "frames": 9
+          },
+          "walk": {
+            "slug": "walking_with_a_stiff_lurching_limp_head_hanging_l",
+            "frames": 9
+          }
+        }
+      },
+      "donkeyCursed": {
+        "dir": "donkey_cursed",
+        "cell": 68,
+        "clips": {
+          "death": {
+            "slug": "folding_at_the_legs_and_slumping_to_the_ground",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9
+          },
+          "attack": {
+            "slug": "lunging_forward_and_biting",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "walk": {
+            "slug": "walking_with_a_stiff_jerky_shamble",
+            "frames": 9
+          }
+        }
+      },
+      "draftMuleCursed": {
+        "dir": "draft_mule_cursed",
+        "cell": 68,
+        "clips": {
+          "death": {
+            "slug": "buckling_and_collapsing_onto_its_side_going_still",
+            "frames": 9
+          },
+          "attack": {
+            "slug": "kicking_out_hard_with_its_hind_legs",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "walk": {
+            "slug": "walking_with_a_slow_laboured_plod_head_swinging",
+            "frames": 9
+          }
+        }
+      },
+      "fjordPonyCursed": {
+        "dir": "fjord_pony_cursed2",
+        "cell": 56,
+        "clips": {
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "south-west",
+              "west",
+              "north",
+              "north-east",
+              "east",
+              "south-east"
+            ]
+          },
+          "attack": {
+            "slug": "rearing_up_and_stamping_down",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "death": {
+            "slug": "stumbling_and_collapsing_onto_its_side_going_stil",
+            "frames": 9
+          },
+          "walk": {
+            "slug": "walking_with_an_unsteady_lurching_stagger",
+            "frames": 9
+          }
+        }
+      },
+      "infectedHen": {
+        "dir": "infected_hen_rotten",
+        "cell": 68,
+        "clips": {
+          "attack": {
+            "slug": "darting_forward_and_pecking_hard",
+            "frames": 9
+          },
+          "walkHurt": {
+            "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "reeling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "death": {
+            "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
+            "frames": 9
+          },
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "whitacreBull": {
+        "dir": "whitacre_bull",
+        "cell": 68,
+        "clips": {
+          "attack": {
+            "slug": "lowering_its_head_and_charging_forward_horns_firs",
+            "frames": 9
+          },
+          "walk": {
+            "slug": "walking_at_a_steady_pace",
+            "frames": 9
+          }
+        }
+      },
+      "barnDog": {
+        "dir": "barn_dog",
+        "cell": 56,
+        "clips": {
+          "attack": {
+            "slug": "lunging_forward_and_snapping_its_jaws",
+            "frames": 9
+          },
+          "walk": {
+            "slug": "walking_at_a_steady_pace",
+            "frames": 9
+          }
+        }
+      },
+      "fjordPony": {
+        "dir": "fjordPony",
+        "cell": 68,
+        "clips": {
+          "graze": {
+            "slug": "grazing_with_head_lowered_to_the_grass_tail_swish",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "east",
+              "south-east"
+            ]
+          },
+          "walk": {
+            "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_man",
+            "frames": 9
+          }
+        }
+      },
+      "arabian": {
+        "dir": "arabian",
+        "cell": 68,
+        "clips": {
+          "graze": {
+            "slug": "grazing_with_head_lowered_to_the_grass_tail_swish",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "east",
+              "south-east"
+            ]
+          },
+          "walk": {
+            "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_man",
+            "frames": 9
+          }
+        }
+      },
+      "blackMule": {
+        "dir": "blackMule",
+        "cell": 68,
+        "clips": {
+          "walk": {
+            "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_ear",
+            "frames": 9
+          }
+        }
+      },
+      "beigeMule": {
+        "dir": "beigeMule",
+        "cell": 68,
+        "clips": {
+          "walk": {
+            "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_ear",
+            "frames": 9
+          }
+        }
+      },
+      "rosie": {
+        "dir": "rosie",
+        "cell": 56,
+        "clips": {
+          "graze": {
+            "slug": "grazing_with_head_lowered_to_the_grass_ears_twitc",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "east",
+              "south-east"
+            ]
+          },
+          "walk": {
+            "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_ear",
+            "frames": 9
+          }
+        }
+      },
+      "wiz": {
+        "dir": "wiz",
+        "cell": 56,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north",
+              "east"
+            ]
+          }
+        }
+      },
+      "ouiji": {
+        "dir": "ouiji",
+        "cell": 56,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north",
+              "east"
+            ]
+          }
+        }
+      },
+      "tabbyCat": {
+        "dir": "tabbyCat",
+        "cell": 56,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north",
+              "east"
+            ]
+          }
+        }
+      },
+      "siameseCat": {
+        "dir": "siameseCat",
+        "cell": 56,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west"
+            ]
+          }
+        }
+      },
+      "joy": {
+        "dir": "joy",
+        "cell": 56,
+        "clips": {
+          "attack": {
+            "slug": "The_dog_sits_like_a_good_boy_and_then_barks_in_pla",
+            "frames": 9,
+            "dirs": [
+              "east"
+            ]
+          },
+          "sit": {
+            "slug": "sitting_still_and_panting_chest_rising_and_fallin",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "east",
+              "south-east"
+            ]
+          },
+          "walk": {
+            "slug": "walking_at_a_slow_waddling_pace_short_legs_steppi",
+            "frames": 9
+          }
+        }
+      },
+      "brahmaHen": {
+        "dir": "brahmaHen",
+        "cell": 56,
+        "clips": {
+          "peck": {
+            "slug": "pecking_at_the_ground_head_bobbing_down_and_up",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "south-west",
+              "east",
+              "south-east"
+            ]
+          },
+          "walk": {
+            "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north",
+              "east"
+            ]
+          }
+        }
+      },
+      "beardedHen": {
+        "dir": "beardedHen",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north"
+            ]
+          }
+        }
+      },
+      "buffHen": {
+        "dir": "buffHen",
+        "cell": 56,
+        "clips": {}
+      },
+      "bantamHen": {
+        "dir": "bantamHen",
+        "cell": 42,
+        "clips": {}
+      },
+      "silkieHen": {
+        "dir": "silkieHen",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north"
+            ]
+          }
+        }
+      },
+      "polishHen": {
+        "dir": "polishHen",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north"
+            ]
+          }
+        }
+      },
+      "leghornHen": {
+        "dir": "leghornHen",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north"
+            ]
+          }
+        }
+      },
+      "barredHen": {
+        "dir": "barredHen",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west",
+              "north"
+            ]
+          }
+        }
+      },
+      "farmRooster": {
+        "dir": "farmRooster",
+        "cell": 56,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_short_strutting_steps_head_bobbing",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "west"
+            ]
+          }
+        }
+      },
+      "chick": {
+        "dir": "chick",
+        "cell": 34,
+        "clips": {}
+      },
+      "fjordPonyBlight": {
+        "dir": "fjordPonyBlight",
+        "cell": 68,
+        "clips": {}
+      },
+      "arabianBlight": {
+        "dir": "arabianBlight",
+        "cell": 68,
+        "clips": {}
+      },
+      "blackMuleBlight": {
+        "dir": "blackMuleBlight",
+        "cell": 68,
+        "clips": {}
+      },
+      "beigeMuleBlight": {
+        "dir": "beigeMuleBlight",
+        "cell": 68,
+        "clips": {}
+      },
+      "rosieBlight": {
+        "dir": "rosieBlight",
+        "cell": 56,
+        "clips": {}
+      },
+      "wizBlight": {
+        "dir": "wizBlight",
+        "cell": 56,
+        "clips": {}
+      },
+      "ouijiBlight": {
+        "dir": "ouijiBlight",
+        "cell": 56,
+        "clips": {}
+      },
+      "tabbyCatBlight": {
+        "dir": "tabbyCatBlight",
+        "cell": 56,
+        "clips": {}
+      },
+      "siameseCatBlight": {
+        "dir": "siameseCatBlight",
+        "cell": 56,
+        "clips": {}
+      },
+      "joyBlight": {
+        "dir": "joyBlight",
+        "cell": 56,
+        "clips": {}
+      },
+      "brahmaHenBlight": {
+        "dir": "brahmaHenBlight",
+        "cell": 56,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "beardedHenBlight": {
+        "dir": "beardedHenBlight",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "buffHenBlight": {
+        "dir": "buffHenBlight",
+        "cell": 56,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "bantamHenBlight": {
+        "dir": "bantamHenBlight",
+        "cell": 42,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9,
+            "dirs": [
+              "south",
+              "south-west",
+              "west",
+              "north",
+              "north-east",
+              "east",
+              "south-east"
+            ]
+          }
+        }
+      },
+      "silkieHenBlight": {
+        "dir": "silkieHenBlight",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "polishHenBlight": {
+        "dir": "polishHenBlight",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "leghornHenBlight": {
+        "dir": "leghornHenBlight",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "barredHenBlight": {
+        "dir": "barredHenBlight",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "walking_with_a_twitching_jerky_scuttle",
+            "frames": 9
+          }
+        }
+      },
+      "farmRoosterBlight": {
+        "dir": "farmRoosterBlight",
+        "cell": 56,
+        "clips": {}
+      }
+    }
+  },
+  "pixellabFx": {
+    "_note": "FX animated from a generated still via animate-with-text-v3 \u2014 one generation per 8-frame clip, which is the cheapest thing on the price list. Same frame keys and centre pivot as the pack fx group, so the renderer cannot tell them apart.",
+    "_base": "assets/pixellab/fx/",
+    "clips": {
+      "muzzle": {
+        "dir": "muzzle"
+      },
+      "gas": {
+        "dir": "gas"
+      },
+      "dust": {
+        "dir": "dust"
+      },
+      "explosion": {
+        "dir": "explosion"
+      },
+      "slash": {
+        "dir": "slash"
+      }
+    }
+  },
+  "cave": {
+    "_note": "Cave art. The stalactites are for the OVERHEAD layer -- they hang from the top of their own sprite, so the placement point is the ceiling attachment and the art falls away from it. That is why they are packed noTrim: trimming would move the anchor to the first opaque pixel and every one would hang from a different height.",
+    "_webNote": "The webs are corner-anchored, which is what a real web is. They are NOT overhead art: scattered in the air they read as floating rags. They belong ON something -- over a barrel, in the angle of a fence -- which the breakable variant system already expresses, so a cave map points its `breakables.sprites` at webbed variants rather than the renderer growing a second decal path.",
+    "_base": "assets/pixellab/cave/",
+    "noTrim": true,
+    "files": {
+      "cave.branches0": "branches_0.png",
+      "cave.branches1": "branches_1.png",
+      "cave.branches2": "branches_2.png",
+      "cave.branches3": "branches_3.png",
+      "cave.branches4": "branches_4.png",
+      "cave.branches5": "branches_5.png",
+      "cave.branches6": "branches_6.png",
+      "cave.stalactite0": "stalactite_0.png",
+      "cave.stalactite1": "stalactite_1.png",
+      "cave.stalactite2": "stalactite_2.png",
+      "cave.stalactite3": "stalactite_3.png",
+      "cave.stalactite4": "stalactite_4.png",
+      "cave.stalactite5": "stalactite_5.png",
+      "cave.web0": "web_0.png",
+      "cave.web1": "web_1.png",
+      "cave.web3": "web_3.png",
+      "cave.web4": "web_4.png",
+      "cave.web5": "web_5.png"
+    },
+    "_branchNote": "The dead branches are overhead art for the SURFACE maps -- a dead orchard has a canopy and the player walks under it. Drawn from directly below looking up, which is the only angle that works: a branch drawn in three-quarter view reads as a branch lying on the ground, and the whole point of this layer is that it is above you."
+  },
+  "ranch": {
+    "_note": "The generated ranch: buildings, vehicles, fencing and feed. These replace the LimeZu `scene.*` equivalents, which are the last purchased art in the title screen.",
+    "_whyThisExists": "Claimed in PixelLab four sessions ago and never DOWNLOADED, so they were invisible to anything reading the atlas -- and a scene can only draw atlas keys. Claude Design duly built a title screen on `scene.barn`, `scene.house` and `scene.silo`, because those were the only barn, house and silo that existed as far as the repo was concerned. The art had been bought the whole time. Claiming is not packing.",
+    "_base": "assets/pixellab/ranch/",
+    "noTrim": true,
+    "files": {
+      "ranch.barn": "barn.png",
+      "ranch.biplane": "biplane.png",
+      "ranch.bunkhouse": "bunkhouse.png",
+      "ranch.coop": "coop.png",
+      "ranch.coopBroken": "coopBroken.png",
+      "ranch.farmhouse": "farmhouse.png",
+      "ranch.feedBin": "feedBin.png",
+      "ranch.feedBucket": "feedBucket.png",
+      "ranch.fenceCorner": "fenceCorner.png",
+      "ranch.fencePost": "fencePost.png",
+      "ranch.fenceRail": "fenceRail.png",
+      "ranch.fenceRailBroken": "fenceRailBroken.png",
+      "ranch.hayWagon": "hayWagon.png",
+      "ranch.roundBale": "roundBale.png",
+      "ranch.roundBaleRotted": "roundBaleRotted.png",
+      "ranch.silo": "silo.png",
+      "ranch.squareBales": "squareBales.png",
+      "ranch.tractor": "tractor.png",
+      "ranch.tractorRed": "tractorRed.png",
+      "ranch.waterTrough": "waterTrough.png",
+      "ranch.well": "well.png",
+      "ranch.wellStone": "wellStone.png",
+      "ranch.windmill": "windmill.png",
+      "ranch.fenceCornerPost": "fenceCornerPost.png",
+      "ranch.fenceRun": "fenceRun.png",
+      "ranch.gateClosed": "gateClosed.png",
+      "ranch.gateOpen": "gateOpen.png",
+      "ranch.fenceBroken": "fenceBroken.png",
+      "ranch.doghouse": "doghouse.png",
+      "ranch.barnLantern": "barnLantern.png"
+    },
+    "_fenceNote": "`ranch.fencePost` measures 22x15 of actual content -- it is a squat STUB, not a post, and stretching it to post height is forcing a sprite to be something it is not. Claude Design found this by measuring the alpha box when its pens kept losing their corners. `ranch.fenceCornerPost` is the real tall post; `ranch.fenceRun` is a three-panel run drawn receding, which is what a pen side actually wants; `gateOpen`/`gateClosed` are a pair."
+  },
+  "base": {
+    "_note": "The military base under the farm -- see docs/SUBTERRANEAN.md. Blast doors with stencilled SECTOR numbering, lift cage gates with floor indicator dials, and specimen containment tanks.",
+    "_whyItLooksDifferent": "Deliberately the opposite visual language to the farm on every axis: cold not warm, metal not wood, rectilinear not organic, lit by fixtures not by the sun. That contrast IS the monotony break -- a player dropping from the field into the base should feel the change before reading a single label.",
+    "_viewNote": "Drawn front-on rather than top-down, and that is correct rather than a mistake: these mount on WALLS, and a wall in a top-down game is seen from the front. The floor pieces -- grating, pipe runs, concrete -- want top-down and are not generated yet.",
+    "_base": "assets/pixellab/base/",
+    "noTrim": true,
+    "files": {
+      "base.blastDoor0": "blastDoor0.png",
+      "base.blastDoor1": "blastDoor1.png",
+      "base.blastDoor2": "blastDoor2.png",
+      "base.blastDoor3": "blastDoor3.png",
+      "base.blastDoor4": "blastDoor4.png",
+      "base.blastDoor5": "blastDoor5.png",
+      "base.lift0": "lift0.png",
+      "base.lift1": "lift1.png",
+      "base.lift2": "lift2.png",
+      "base.lift3": "lift3.png",
+      "base.lift4": "lift4.png",
+      "base.tank0": "tank0.png",
+      "base.tank1": "tank1.png",
+      "base.tank2": "tank2.png",
+      "base.tank3": "tank3.png",
+      "base.tank4": "tank4.png",
+      "base.wallPipes": "wallPipes.png",
+      "base.wallHazard": "wallHazard.png",
+      "base.wallVent": "wallVent.png",
+      "base.wallStencil": "wallStencil.png",
+      "base.wallLamp": "wallLamp.png",
+      "base.wallPlain": "wallPlain.png",
+      "base.serverRack": "serverRack.png",
+      "base.lockers": "lockers.png",
+      "base.cratePallet": "cratePallet.png",
+      "base.filingSpill": "filingSpill.png",
+      "base.rubble": "rubble.png",
+      "base.cableSpool": "cableSpool.png",
+      "base.latrine": "latrine.png",
+      "base.warningSign": "warningSign.png",
+      "base.palletJack": "palletJack.png",
+      "base.medChair": "medChair.png",
+      "base.striplightLit": "striplightLit.png",
+      "base.striplightDead": "striplightDead.png",
+      "base.labBench": "labBench.png",
+      "base.ceilingPipes": "ceilingPipes.png",
+      "base.ceilingDuct": "ceilingDuct.png"
+    },
+    "_panelNote": "The six `base.wall*` panels are 32x48 things BOLTED TO a wall, not the wall itself. That distinction cost a generation to learn: every map-object comes back with an outline the whole way round, so eight in a row read as eight separate bricks and never as a continuous surface. The wall proper is a Wang TILESET (`concrete_to_wall`), because corner autotiling gives four correct corners for free and stamped sprites need a hand-written case for each. `wallCap*` were cut from the same misunderstanding and are not packed.",
+    "_nameNote": "Two of these are named for what they ARE and not for what was asked for, which is the rule this repo keeps relearning: `node_scrapheap_2` is a fire truck and `node_saltrock_1` is amethyst. `latrine` was prompted as an emergency eyewash station and came back an unmistakable toilet -- good art, wrong subject, and a bunker wants a latrine anyway. `medChair` was prompted as a wheeled gurney and came back a reclining examination chair. Both are kept; both are named for the picture. Three others (a lab bench, ceiling pipes and a ceiling duct) came back near-empty when asked for 'seen from below' and were deleted: the model has no ceiling view, so overhead art has to be asked for plainly and treated as overhead by the RENDERER."
+  },
+  "sceneClips": {
+    "_note": "Ambient loops for the title scenes. ONE-DIRECTION objects animated with animate_object and packed under the same `sheet.clip.dir.frame` keys everything else uses, with the single direction spelled `down`, so `clipsOf`, `stripUrl` and `groundActor` need no special case. Packed UNTRIMMED: `stripUrl` bottom-aligns and centres in a uniform cell, and a windmill's blades change their extents every frame, so a trimmed box would shift and the tower would wobble under its own vanes.",
+    "_base": "assets/pixellab/scene-anim/",
+    "sheets": {
+      "windmill": [
+        "spin"
+      ],
+      "wheat": [
+        "sway"
+      ],
+      "scarecrow": [
+        "sway"
+      ]
+    }
   }
- },
- "pixellab": {
-  "_note": "Generated with PixelLab, style-anchored to assets/pixellab/limezu_style_256.png. Ours and commercially licensed, so unlike the purchased packs these CAN be committed. Card icons only -- they are 44-62px and exempt from the 32x32 field rule because a card draws at any integer zoom. Anything that reaches the game field must still be 32x32. See docs/PIXELLAB.md.",
-  "_base": "assets/pixellab/picked/",
-  "files": {
-   "item.ditchLight": "ditch_light.png",
-   "scene.oak": "oak_tree.png",
-   "scene.rooster": "rooster_big.png",
-   "item.strawHat": "straw_hat.png",
-   "meta.bunkhouse": "bunkhouse_sign.png",
-   "meta.feedStore": "feed_store_sign.png",
-   "meta.seedCatalog": "seed_catalogue.png",
-   "meta.countyFair": "prize_rosette.png",
-   "weapon.combineHead": "combine_head.png",
-   "weapon.postAuger": "post_auger.png",
-   "item.cropDuster": "crop_duster.png",
-   "item.whitacreBull": "whitacre_bull.png",
-   "weapon.barnDog": "barn_dog.png",
-   "weapon.postAuger.t1": "auger_t1.png",
-   "weapon.combineHead.t1": "combine_t1.png",
-   "weapon.postAuger.t2": "auger_t2.png",
-   "weapon.combineHead.t2": "combine_t2.png",
-   "weapon.postAuger.t3": "auger_t3.png",
-   "weapon.combineHead.t3": "combine_t3.png",
-   "weapon.postAuger.t4": "auger_t4.png",
-   "weapon.combineHead.t4": "combine_t4.png",
-   "item.bootKnife": "boot_knife.png",
-   "item.balingTwine": "twine.png",
-   "item.barbedWire": "barbed_wire.png",
-   "item.cattleProd": "cattle_prod.png",
-   "item.chalkLine": "chalk_line.png",
-   "item.coffeeThermos": "thermos.png",
-   "item.culvertPipe": "culvert_pipe.png",
-   "item.dogWhistle": "dog_whistle.png",
-   "item.feedSack": "feed_sack.png",
-   "item.fenceStaples": "staples.png",
-   "item.fourLeaf": "four_leaf.png",
-   "item.grainScoop": "grain_scoop.png",
-   "item.keroseneCan": "kerosene.png",
-   "item.lampOil": "lantern.png",
-   "item.postDriver": "post_driver.png",
-   "item.saltCircle": "salt_ring.png",
-   "item.saltLick": "salt_lick.png",
-   "item.slingBands": "sling_bands.png",
-   "item.splitRail": "split_rail.png",
-   "item.sundayBest": "sunday_best.png",
-   "item.tractorPlate": "tractor_plate.png",
-   "item.weatherVane": "weather_vane.png",
-   "item.wetRag": "wet_rag.png",
-   "item.whetstone": "whetstone.png",
-   "item.workBoots": "work_boots.png",
-   "weapon.crowBell": "cow_bell.png",
-   "weapon.seedDrill": "seed_drill.png",
-   "pickup.xp": "xp_seed_16.png",
-   "pickup.feed": "feed_token_16.png",
-   "pickup.magnet": "magnet.png",
-   "item.threshingFloor": "chain_lightning_arc.png",
-   "prop.fencePost": "fence_post_wire.png",
-   "prop.fenceRail": "fence_rail_broken.png",
-   "prop.gate": "gate_wooden.png",
-   "decal.tireRuts": "tire_ruts_decal.png",
-   "decal.scorch": "scorch_decal.png",
-   "decal.mud": "mud_puddle.png",
-   "decal.ash": "ash_pile.png",
-   "prop.hayBale": "hay_bale_round.png",
-   "prop.hayBaleRotted": "hay_bale_rotted.png",
-   "prop.trough": "water_trough.png",
-   "prop.troughFouled": "water_trough_fouled.png",
-   "prop.logPile": "log_pile.png",
-   "prop.bonePile": "bone_pile.png",
-   "prop.carcass": "carcass_picked.png",
-   "prop.oilDrum": "oil_drum.png",
-   "prop.milkCans": "milk_cans.png",
-   "prop.feedBin": "feed_bin.png",
-   "prop.wheelbarrow": "wheelbarrow.png",
-   "prop.plough": "plough_rusted.png",
-   "prop.graveMarker": "grave_marker.png",
-   "prop.treeStump": "tree_stump.png",
-   "prop.barbedWire": "barbed_wire_coil.png",
-   "prop.scarecrow": "scarecrow.png",
-   "prop.scarecrowRotted": "scarecrow_rotted.png",
-   "prop.burnBarrel": "burn_barrel.png"
-  },
-  "conform": true,
-  "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one — the yard rooster popped against a muted scene because he was never quantised to it.",
-  "_pickupNote": "pickup.xp and pickup.feed are the 16px generations, not the 32px ones. The renderer already looked for pickup.<kind> and fell back to a 5px coloured square. The 32px seed trims to 20x28, which against a 14px collect radius and hundreds of gems on screen is clutter; at 16px they trim to 12x14 — bigger than the square they replace, small enough to carry a wave of them. The 32px xp_seed and feed_token stay in picked/ as card art."
- },
- "gasMaskIcon": {
-  "_note": "The gas mask cropped from the generator accessory sheet rather than generated. docs/PIXELLAB.md: 'A gas mask already exists ... crop it from that sheet rather than generating one.' Uses the idle down cell, which is the only front-on view.",
-  "path": "assets/modern-farm/Farmer_Generator_Pieces/Character Pieces/Accessories/32x32/Accessory_Gas_Mask.png",
-  "cellX": 0,
-  "cellY": 0,
-  "cellW": 32,
-  "cellH": 64,
-  "name": "item.gasMask"
- },
- "pixellabStrips": {
-  "_note": "Generated characters, delivered ALREADY CUT to the game's grid: 32x64 cells, centred, feet on y=52, the same baseline the LimeZu farmer sheets use. So there is no trimming or re-placing to do here -- the raw PixelLab export needed all of that (rotations on 40x40, animation frames on 56x56, feet at a different y in every frame) and tools/pixellab-cut.ts is what does it. This block just names strips.",
-  "_idNote": "Keyed as `farmhand`, NOT `hand` as the delivered README says. `hand` is the PLAYER class id -- the farmer you control -- and packing an infected zombie under it would have silently replaced the player's own sprite. This is the infected farmhand ENEMY, which the content already calls farmhand.",
-  "_directionNote": "Eight compass directions generated, four used. The renderer only ever asks for four.",
-  "_base": "assets/pixellab/character/",
-  "compassToDirection": {
-   "south": "down",
-   "north": "up",
-   "west": "left",
-   "east": "right"
-  },
-  "sheets": {
-   "farmhand": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     },
-     "hit": {
-      "file": "hit_{compass}_strip.png",
-      "frames": 6
-     },
-     "death": {
-      "file": "death_{compass}_strip.png",
-      "frames": 7
-     }
-    }
-   },
-   "hand": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     }
-    }
-   },
-   "kid": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     }
-    }
-   },
-   "widow": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     }
-    }
-   },
-   "vet": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     }
-    }
-   },
-   "agronomist": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     }
-    }
-   },
-   "drifter": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     }
-    }
-   },
-   "acidZombie": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     },
-     "hit": {
-      "file": "hit_{compass}_strip.png",
-      "frames": 6
-     },
-     "death": {
-      "file": "death_{compass}_strip.png",
-      "frames": 7
-     }
-    }
-   },
-   "bloatedFarmhand": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     },
-     "hit": {
-      "file": "hit_{compass}_strip.png",
-      "frames": 6
-     },
-     "death": {
-      "file": "death_{compass}_strip.png",
-      "frames": 7
-     }
-    }
-   },
-   "maskedSprayer": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     },
-     "hit": {
-      "file": "hit_{compass}_strip.png",
-      "frames": 6
-     },
-     "death": {
-      "file": "death_{compass}_strip.png",
-      "frames": 7
-     }
-    }
-   },
-   "maskedHauler": {
-    "cellWidth": 32,
-    "cellHeight": 64,
-    "clips": {
-     "idle": {
-      "file": "idle_{compass}.png",
-      "frames": 1
-     },
-     "walk": {
-      "file": "walk_{compass}_strip.png",
-      "frames": 8
-     },
-     "hit": {
-      "file": "hit_{compass}_strip.png",
-      "frames": 6
-     },
-     "death": {
-      "file": "death_{compass}_strip.png",
-      "frames": 7
-     }
-    }
-   }
-  },
-  "_castNote": "The six player classes and the infected farmhand, all generated at size 64 (see docs/ART_STYLE.md — size is the CANVAS, and the figure fills about 76% of it) and cut by npm run character to a 32x64 cell with feet on y58. Four cardinals only: the renderer buckets facing into four, so the diagonals are generated and deliberately unused.",
-  "_clipNote": "Humanoids carry the same clip vocabulary as the generated animals now: idle, walk, hit, death. `hit` and `death` come from PixelLab TEMPLATE animations (`taking-punch`, `falling-back-death`) at 1 generation per direction, which is the cheap path -- roughly 2.4x under the v3 rate the animal objects pay. FOUR directions, not eight: `compassToDirection` here maps only the cardinals, because the humanoid rig has always been four-way. The renderer's clip chain falls through, so a humanoid without one of these behaves as it did before."
- },
- "scene": {
-  "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",
-  "_noTrimNote": "PACKED UNTRIMMED, and this is load-bearing. Design's scene coordinates are the top-left of the sprite's FULL BOX, so a trimmed frame is drawn at the right place and the wrong offset -- the scarecrow trimmed 96x96 to 84x78 and stood 12px left and 18px high of where it belongs, silently, on every prop in both scenes. Trimming is right for a field sprite drawn from a pivot; it is wrong for anything positioned by its box.",
-  "_base": "assets/scene/",
-  "noTrim": true,
-  "files": {
-   "scene.barn": "barn.png",
-   "scene.calf": "calf.png",
-   "scene.chick": "chick.png",
-   "scene.coop": "coop.png",
-   "scene.cow": "cow.png",
-   "scene.dogLab": "dog_lab.png",
-   "scene.doghouse": "doghouse.png",
-   "scene.farmer2Idle": "farmer2_idle.png",
-   "scene.farmerIdle": "farmer_idle.png",
-   "scene.fenceRail": "fence_rail.png",
-   "scene.hay": "hay.png",
-   "scene.house": "house.png",
-   "scene.milkcan": "milkcan.png",
-   "scene.nest": "nest.png",
-   "scene.penC1": "pen_c1.png",
-   "scene.penGate": "pen_gate.png",
-   "scene.penV": "pen_v.png",
-   "scene.scarecrow": "scarecrow.png",
-   "scene.sheep": "sheep.png",
-   "scene.signCow": "sign_cow.png",
-   "scene.silo": "silo.png",
-   "scene.tractorLeft": "tractor_left.png",
-   "scene.treeOak": "tree_oak.png",
-   "scene.trough": "trough.png",
-   "scene.well": "well.png"
-  },
-  "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent. The yard borrowed the game's own 32px rooster for a while; it is now `scene.rooster` in the pixellab group -- generated art, drawn at 1x, and visibly bigger than the hens pecking beside it, which is what a rooster in a yard should be."
- },
- "sceneStrips": {
-  "_generatedNote": "EVERY KEY INSIDE `files` IS A SPRITE NAME AND EVERY VALUE A PATH — an `_`-prefixed note belongs at THIS level, not in there. Putting one inside `files` makes the builder try to open a paragraph of prose as a PNG, which it does, and then fails naming it.  The strips below are generated by `animate_image` FROM the static sprite that was already standing in the scene, then assembled by `npm run anim`. Each cell is the source sprite's own size and every frame is composited BOTTOM-CENTRED onto it, so an actor's feet do not travel between frames. Frame counts differ per strip because the job keeps your input as frame 0: a `frame_count: 8` job is NINE cells, a `frame_count: 6` job is seven. The stripActor call in scene.ts carries the real number; do not assume six.",
-  "_sparesNote": "Generated and deliberately NOT packed, because nothing mounts them yet: rooster_idle, dog_walk, sheep_idle, cow_idle, calf_walk. They are in assets/scene/ and assets/pixellab/anim/. Add a line to `files` and they are one stripActor call from the screen — a walking dog or an ambling calf also wants a `travelling()` path, which is a placement decision rather than an art one.",
-  "_note": "Anything TILED or STEPPED, packed untrimmed. A strip animated with steps(n) divides its width by n and a repeating tile repeats at its packed size, so both need the real cell rather than the content bounds. Trimming a 192px six-frame strip to 188px makes 188/6 fractional; trimming a 32px wheat tile to 26px leaves a gap in every repeat.",
-  "_base": "assets/scene/",
-  "noTrim": true,
-  "files": {
-   "scene.chickenPeckStrip": "chicken_peck_strip.png",
-   "scene.chickenWalkLeftStrip": "chicken_walk_left_strip.png",
-   "scene.penH": "pen_h.png",
-   "scene.farmerWalkStrip": "farmer_walk_strip.png",
-   "scene.farmerWalkUpStrip": "farmer_walk_up_strip.png",
-   "scene.fencePicket": "fence_picket.png",
-   "scene.wheat": "wheat.png",
-   "scene.wheat2": "wheat2.png",
-   "scene.roosterWalkStrip": "rooster_walk_strip.png",
-   "scene.roosterPeckStrip": "rooster_peck_strip.png",
-   "scene.roosterCrowStrip": "rooster_crow_strip.png",
-   "scene.cowGrazeStrip": "cow_graze_strip.png",
-   "scene.sheepGrazeStrip": "sheep_graze_strip.png",
-   "scene.dogIdleStrip": "dog_idle_strip.png",
-   "scene.chickPeckStrip": "chick_peck_strip.png",
-   "scene.farmerIdleBreatheStrip": "farmer_idle_breathe_strip.png",
-   "scene.calfGrazeStrip": "calf_graze_strip.png",
-   "scene.farmer2IdleBreatheStrip": "farmer2_idle_breathe_strip.png",
-   "scene.scarecrowSwayStrip": "scarecrow_sway_strip.png"
-  },
-  "conform": true
- },
- "portraits": {
-  "_note": "Class card portraits, made by create_portrait_character from each class's own finished south sprite (direction: character_to_portrait). Derived rather than prompted, so a plate matches its character BY CONSTRUCTION — prompting a portrait and a sprite separately gives you two people who merely dress alike.",
-  "_base": "assets/pixellab/portrait/",
-  "cardArt": true,
-  "conform": true,
-  "files": {
-   "portrait.hand": "hand.png",
-   "portrait.kid": "kid.png",
-   "portrait.widow": "widow.png",
-   "portrait.vet": "vet.png",
-   "portrait.agronomist": "agronomist.png",
-   "portrait.drifter": "drifter.png"
-  }
- },
- "pixellabObjects": {
-  "_note": "Generated 8-direction animals — enemies and the two summons. Frame keys are id.clip.direction.frame, the same convention as every other sheet.",
-  "_generatedBy": "tools/object-manifest.ts — run `npm run objman -- --write` after downloading or regenerating an animal. The clip slugs are PixelLab folder names (the description, slugified and truncated) and must never be typed by hand.",
-  "_base": "assets/pixellab/object/",
-  "compassToDirection": {
-   "south": "down",
-   "south-west": "downLeft",
-   "west": "left",
-   "north-west": "upLeft",
-   "north": "up",
-   "north-east": "upRight",
-   "east": "right",
-   "south-east": "downRight"
-  },
-  "sheets": {
-   "feralDog": {
-    "dir": "barn_dog_cursed2",
-    "cell": 56,
-    "clips": {
-     "death": {
-      "slug": "dropping_to_the_ground_and_going_limp",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north-west",
-       "north",
-       "north-east",
-       "east",
-       "south-east"
-      ]
-     },
-     "attack": {
-      "slug": "lunging_forward_and_snapping_its_jaws",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "walk": {
-      "slug": "walking_with_a_low_skulking_prowl_head_hanging_do",
-      "frames": 9
-     }
-    }
-   },
-   "rooster": {
-    "dir": "infected_rooster_rotten",
-    "cell": 68,
-    "clips": {
-     "attack": {
-      "slug": "flaring_its_wings_and_lashing_out_with_its_spurs",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "death": {
-      "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_a_jerky_twitching_strut",
-      "frames": 9
-     }
-    }
-   },
-   "sickHog": {
-    "dir": "infected_hog_rotten",
-    "cell": 68,
-    "clips": {
-     "attack": {
-      "slug": "charging_forward_and_swiping_with_its_tusks",
-      "frames": 9
-     },
-     "death": {
-      "slug": "collapsing_forward_and_rolling_onto_its_side_goin",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "walk": {
-      "slug": "walking_with_a_laboured_stagger",
-      "frames": 9
-     }
-    }
-   },
-   "blownSheep": {
-    "dir": "infected_sheep_rotten",
-    "cell": 68,
-    "clips": {
-     "death": {
-      "slug": "folding_at_the_legs_and_slumping_to_the_ground",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9
-     },
-     "attack": {
-      "slug": "lowering_its_head_and_ramming_forward",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "walk": {
-      "slug": "walking_with_a_slow_bloated_waddle",
-      "frames": 9
-     }
-    }
-   },
-   "prizeBull": {
-    "dir": "bull_cursed",
-    "cell": 68,
-    "clips": {
-     "death": {
-      "slug": "buckling_at_the_knees_and_collapsing_heavily_onto",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9,
-      "dirs": [
-       "south-west",
-       "west",
-       "north-west",
-       "north",
-       "north-east",
-       "east",
-       "south-east"
-      ]
-     },
-     "attack": {
-      "slug": "lowering_its_head_and_charging_forward_horns_firs",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "walk": {
-      "slug": "walking_with_a_heavy_dragging_stagger_head_swingi",
-      "frames": 9
-     }
-    }
-   },
-   "arabianCursed": {
-    "dir": "arabian_cursed",
-    "cell": 68,
-    "clips": {
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9
-     },
-     "attack": {
-      "slug": "rearing_up_and_striking_down_with_its_front_hooves",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "death": {
-      "slug": "stumbling_buckling_at_the_front_legs_and_falling",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_a_stiff_lurching_limp_head_hanging_l",
-      "frames": 9
-     }
-    }
-   },
-   "donkeyCursed": {
-    "dir": "donkey_cursed",
-    "cell": 68,
-    "clips": {
-     "death": {
-      "slug": "folding_at_the_legs_and_slumping_to_the_ground",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9
-     },
-     "attack": {
-      "slug": "lunging_forward_and_biting",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "walk": {
-      "slug": "walking_with_a_stiff_jerky_shamble",
-      "frames": 9
-     }
-    }
-   },
-   "draftMuleCursed": {
-    "dir": "draft_mule_cursed",
-    "cell": 68,
-    "clips": {
-     "death": {
-      "slug": "buckling_and_collapsing_onto_its_side_going_still",
-      "frames": 9
-     },
-     "attack": {
-      "slug": "kicking_out_hard_with_its_hind_legs",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "walk": {
-      "slug": "walking_with_a_slow_laboured_plod_head_swinging",
-      "frames": 9
-     }
-    }
-   },
-   "fjordPonyCursed": {
-    "dir": "fjord_pony_cursed2",
-    "cell": 56,
-    "clips": {
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "south-west",
-       "west",
-       "north",
-       "north-east",
-       "east",
-       "south-east"
-      ]
-     },
-     "attack": {
-      "slug": "rearing_up_and_stamping_down",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "death": {
-      "slug": "stumbling_and_collapsing_onto_its_side_going_stil",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_an_unsteady_lurching_stagger",
-      "frames": 9
-     }
-    }
-   },
-   "infectedHen": {
-    "dir": "infected_hen_rotten",
-    "cell": 68,
-    "clips": {
-     "attack": {
-      "slug": "darting_forward_and_pecking_hard",
-      "frames": 9
-     },
-     "walkHurt": {
-      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
-      "frames": 9
-     },
-     "hit": {
-      "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7
-     },
-     "death": {
-      "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "whitacreBull": {
-    "dir": "whitacre_bull",
-    "cell": 68,
-    "clips": {
-     "attack": {
-      "slug": "lowering_its_head_and_charging_forward_horns_firs",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_at_a_steady_pace",
-      "frames": 9
-     }
-    }
-   },
-   "barnDog": {
-    "dir": "barn_dog",
-    "cell": 56,
-    "clips": {
-     "attack": {
-      "slug": "lunging_forward_and_snapping_its_jaws",
-      "frames": 9
-     },
-     "walk": {
-      "slug": "walking_at_a_steady_pace",
-      "frames": 9
-     }
-    }
-   },
-   "fjordPony": {
-    "dir": "fjordPony",
-    "cell": 68,
-    "clips": {
-     "graze": {
-      "slug": "grazing_with_head_lowered_to_the_grass_tail_swish",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "east",
-       "south-east"
-      ]
-     },
-     "walk": {
-      "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_man",
-      "frames": 9
-     }
-    }
-   },
-   "arabian": {
-    "dir": "arabian",
-    "cell": 68,
-    "clips": {
-     "graze": {
-      "slug": "grazing_with_head_lowered_to_the_grass_tail_swish",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "east",
-       "south-east"
-      ]
-     },
-     "walk": {
-      "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_man",
-      "frames": 9
-     }
-    }
-   },
-   "blackMule": {
-    "dir": "blackMule",
-    "cell": 68,
-    "clips": {
-     "walk": {
-      "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_ear",
-      "frames": 9
-     }
-    }
-   },
-   "beigeMule": {
-    "dir": "beigeMule",
-    "cell": 68,
-    "clips": {
-     "walk": {
-      "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_ear",
-      "frames": 9
-     }
-    }
-   },
-   "rosie": {
-    "dir": "rosie",
-    "cell": 56,
-    "clips": {
-     "graze": {
-      "slug": "grazing_with_head_lowered_to_the_grass_ears_twitc",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "east",
-       "south-east"
-      ]
-     },
-     "walk": {
-      "slug": "walking_at_a_slow_relaxed_pace_legs_stepping_ear",
-      "frames": 9
-     }
-    }
-   },
-   "wiz": {
-    "dir": "wiz",
-    "cell": 56,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north",
-       "east"
-      ]
-     }
-    }
-   },
-   "ouiji": {
-    "dir": "ouiji",
-    "cell": 56,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north",
-       "east"
-      ]
-     }
-    }
-   },
-   "tabbyCat": {
-    "dir": "tabbyCat",
-    "cell": 56,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north",
-       "east"
-      ]
-     }
-    }
-   },
-   "siameseCat": {
-    "dir": "siameseCat",
-    "cell": 56,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west"
-      ]
-     }
-    }
-   },
-   "joy": {
-    "dir": "joy",
-    "cell": 56,
-    "clips": {
-     "attack": {
-      "slug": "The_dog_sits_like_a_good_boy_and_then_barks_in_pla",
-      "frames": 9,
-      "dirs": [
-       "east"
-      ]
-     },
-     "sit": {
-      "slug": "sitting_still_and_panting_chest_rising_and_fallin",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "east",
-       "south-east"
-      ]
-     },
-     "walk": {
-      "slug": "walking_at_a_slow_waddling_pace_short_legs_steppi",
-      "frames": 9
-     }
-    }
-   },
-   "brahmaHen": {
-    "dir": "brahmaHen",
-    "cell": 56,
-    "clips": {
-     "peck": {
-      "slug": "pecking_at_the_ground_head_bobbing_down_and_up",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "south-west",
-       "east",
-       "south-east"
-      ]
-     },
-     "walk": {
-      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north",
-       "east"
-      ]
-     }
-    }
-   },
-   "beardedHen": {
-    "dir": "beardedHen",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north"
-      ]
-     }
-    }
-   },
-   "buffHen": {
-    "dir": "buffHen",
-    "cell": 56,
-    "clips": {}
-   },
-   "bantamHen": {
-    "dir": "bantamHen",
-    "cell": 42,
-    "clips": {}
-   },
-   "silkieHen": {
-    "dir": "silkieHen",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north"
-      ]
-     }
-    }
-   },
-   "polishHen": {
-    "dir": "polishHen",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north"
-      ]
-     }
-    }
-   },
-   "leghornHen": {
-    "dir": "leghornHen",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north"
-      ]
-     }
-    }
-   },
-   "barredHen": {
-    "dir": "barredHen",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west",
-       "north"
-      ]
-     }
-    }
-   },
-   "farmRooster": {
-    "dir": "farmRooster",
-    "cell": 56,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_short_strutting_steps_head_bobbing",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "west"
-      ]
-     }
-    }
-   },
-   "chick": {
-    "dir": "chick",
-    "cell": 34,
-    "clips": {}
-   },
-   "fjordPonyBlight": {
-    "dir": "fjordPonyBlight",
-    "cell": 68,
-    "clips": {}
-   },
-   "arabianBlight": {
-    "dir": "arabianBlight",
-    "cell": 68,
-    "clips": {}
-   },
-   "blackMuleBlight": {
-    "dir": "blackMuleBlight",
-    "cell": 68,
-    "clips": {}
-   },
-   "beigeMuleBlight": {
-    "dir": "beigeMuleBlight",
-    "cell": 68,
-    "clips": {}
-   },
-   "rosieBlight": {
-    "dir": "rosieBlight",
-    "cell": 56,
-    "clips": {}
-   },
-   "wizBlight": {
-    "dir": "wizBlight",
-    "cell": 56,
-    "clips": {}
-   },
-   "ouijiBlight": {
-    "dir": "ouijiBlight",
-    "cell": 56,
-    "clips": {}
-   },
-   "tabbyCatBlight": {
-    "dir": "tabbyCatBlight",
-    "cell": 56,
-    "clips": {}
-   },
-   "siameseCatBlight": {
-    "dir": "siameseCatBlight",
-    "cell": 56,
-    "clips": {}
-   },
-   "joyBlight": {
-    "dir": "joyBlight",
-    "cell": 56,
-    "clips": {}
-   },
-   "brahmaHenBlight": {
-    "dir": "brahmaHenBlight",
-    "cell": 56,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "beardedHenBlight": {
-    "dir": "beardedHenBlight",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "buffHenBlight": {
-    "dir": "buffHenBlight",
-    "cell": 56,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "bantamHenBlight": {
-    "dir": "bantamHenBlight",
-    "cell": 42,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9,
-      "dirs": [
-       "south",
-       "south-west",
-       "west",
-       "north",
-       "north-east",
-       "east",
-       "south-east"
-      ]
-     }
-    }
-   },
-   "silkieHenBlight": {
-    "dir": "silkieHenBlight",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "polishHenBlight": {
-    "dir": "polishHenBlight",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "leghornHenBlight": {
-    "dir": "leghornHenBlight",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "barredHenBlight": {
-    "dir": "barredHenBlight",
-    "cell": 48,
-    "clips": {
-     "walk": {
-      "slug": "walking_with_a_twitching_jerky_scuttle",
-      "frames": 9
-     }
-    }
-   },
-   "farmRoosterBlight": {
-    "dir": "farmRoosterBlight",
-    "cell": 56,
-    "clips": {}
-   }
-  }
- },
- "pixellabFx": {
-  "_note": "FX animated from a generated still via animate-with-text-v3 — one generation per 8-frame clip, which is the cheapest thing on the price list. Same frame keys and centre pivot as the pack fx group, so the renderer cannot tell them apart.",
-  "_base": "assets/pixellab/fx/",
-  "clips": {
-   "muzzle": {
-    "dir": "muzzle"
-   },
-   "gas": {
-    "dir": "gas"
-   },
-   "dust": {
-    "dir": "dust"
-   },
-   "explosion": {
-    "dir": "explosion"
-   },
-   "slash": {
-    "dir": "slash"
-   }
-  }
- },
- "cave": {
-  "_note": "Cave art. The stalactites are for the OVERHEAD layer -- they hang from the top of their own sprite, so the placement point is the ceiling attachment and the art falls away from it. That is why they are packed noTrim: trimming would move the anchor to the first opaque pixel and every one would hang from a different height.",
-  "_webNote": "The webs are corner-anchored, which is what a real web is. They are NOT overhead art: scattered in the air they read as floating rags. They belong ON something -- over a barrel, in the angle of a fence -- which the breakable variant system already expresses, so a cave map points its `breakables.sprites` at webbed variants rather than the renderer growing a second decal path.",
-  "_base": "assets/pixellab/cave/",
-  "noTrim": true,
-  "files": {
-   "cave.branches0": "branches_0.png",
-   "cave.branches1": "branches_1.png",
-   "cave.branches2": "branches_2.png",
-   "cave.branches3": "branches_3.png",
-   "cave.branches4": "branches_4.png",
-   "cave.branches5": "branches_5.png",
-   "cave.branches6": "branches_6.png",
-   "cave.stalactite0": "stalactite_0.png",
-   "cave.stalactite1": "stalactite_1.png",
-   "cave.stalactite2": "stalactite_2.png",
-   "cave.stalactite3": "stalactite_3.png",
-   "cave.stalactite4": "stalactite_4.png",
-   "cave.stalactite5": "stalactite_5.png",
-   "cave.web0": "web_0.png",
-   "cave.web1": "web_1.png",
-   "cave.web3": "web_3.png",
-   "cave.web4": "web_4.png",
-   "cave.web5": "web_5.png"
-  },
-  "_branchNote": "The dead branches are overhead art for the SURFACE maps -- a dead orchard has a canopy and the player walks under it. Drawn from directly below looking up, which is the only angle that works: a branch drawn in three-quarter view reads as a branch lying on the ground, and the whole point of this layer is that it is above you."
- },
- "ranch": {
-  "_note": "The generated ranch: buildings, vehicles, fencing and feed. These replace the LimeZu `scene.*` equivalents, which are the last purchased art in the title screen.",
-  "_whyThisExists": "Claimed in PixelLab four sessions ago and never DOWNLOADED, so they were invisible to anything reading the atlas -- and a scene can only draw atlas keys. Claude Design duly built a title screen on `scene.barn`, `scene.house` and `scene.silo`, because those were the only barn, house and silo that existed as far as the repo was concerned. The art had been bought the whole time. Claiming is not packing.",
-  "_base": "assets/pixellab/ranch/",
-  "noTrim": true,
-  "files": {
-   "ranch.barn": "barn.png",
-   "ranch.biplane": "biplane.png",
-   "ranch.bunkhouse": "bunkhouse.png",
-   "ranch.coop": "coop.png",
-   "ranch.coopBroken": "coopBroken.png",
-   "ranch.farmhouse": "farmhouse.png",
-   "ranch.feedBin": "feedBin.png",
-   "ranch.feedBucket": "feedBucket.png",
-   "ranch.fenceCorner": "fenceCorner.png",
-   "ranch.fencePost": "fencePost.png",
-   "ranch.fenceRail": "fenceRail.png",
-   "ranch.fenceRailBroken": "fenceRailBroken.png",
-   "ranch.hayWagon": "hayWagon.png",
-   "ranch.roundBale": "roundBale.png",
-   "ranch.roundBaleRotted": "roundBaleRotted.png",
-   "ranch.silo": "silo.png",
-   "ranch.squareBales": "squareBales.png",
-   "ranch.tractor": "tractor.png",
-   "ranch.tractorRed": "tractorRed.png",
-   "ranch.waterTrough": "waterTrough.png",
-   "ranch.well": "well.png",
-   "ranch.wellStone": "wellStone.png",
-   "ranch.windmill": "windmill.png"
-  }
- },
- "base": {
-  "_note": "The military base under the farm -- see docs/SUBTERRANEAN.md. Blast doors with stencilled SECTOR numbering, lift cage gates with floor indicator dials, and specimen containment tanks.",
-  "_whyItLooksDifferent": "Deliberately the opposite visual language to the farm on every axis: cold not warm, metal not wood, rectilinear not organic, lit by fixtures not by the sun. That contrast IS the monotony break -- a player dropping from the field into the base should feel the change before reading a single label.",
-  "_viewNote": "Drawn front-on rather than top-down, and that is correct rather than a mistake: these mount on WALLS, and a wall in a top-down game is seen from the front. The floor pieces -- grating, pipe runs, concrete -- want top-down and are not generated yet.",
-  "_base": "assets/pixellab/base/",
-  "noTrim": true,
-  "files": {
-   "base.blastDoor0": "blastDoor0.png",
-   "base.blastDoor1": "blastDoor1.png",
-   "base.blastDoor2": "blastDoor2.png",
-   "base.blastDoor3": "blastDoor3.png",
-   "base.blastDoor4": "blastDoor4.png",
-   "base.blastDoor5": "blastDoor5.png",
-   "base.lift0": "lift0.png",
-   "base.lift1": "lift1.png",
-   "base.lift2": "lift2.png",
-   "base.lift3": "lift3.png",
-   "base.lift4": "lift4.png",
-   "base.tank0": "tank0.png",
-   "base.tank1": "tank1.png",
-   "base.tank2": "tank2.png",
-   "base.tank3": "tank3.png",
-   "base.tank4": "tank4.png",
-   "base.wallPipes": "wallPipes.png",
-   "base.wallHazard": "wallHazard.png",
-   "base.wallVent": "wallVent.png",
-   "base.wallStencil": "wallStencil.png",
-   "base.wallLamp": "wallLamp.png",
-   "base.wallPlain": "wallPlain.png",
-   "base.serverRack": "serverRack.png",
-   "base.lockers": "lockers.png",
-   "base.cratePallet": "cratePallet.png",
-   "base.filingSpill": "filingSpill.png",
-   "base.rubble": "rubble.png",
-   "base.cableSpool": "cableSpool.png",
-   "base.latrine": "latrine.png",
-   "base.warningSign": "warningSign.png",
-   "base.palletJack": "palletJack.png",
-   "base.medChair": "medChair.png",
-   "base.striplightLit": "striplightLit.png",
-   "base.striplightDead": "striplightDead.png",
-   "base.labBench": "labBench.png",
-   "base.ceilingPipes": "ceilingPipes.png",
-   "base.ceilingDuct": "ceilingDuct.png"
-  },
-  "_panelNote": "The six `base.wall*` panels are 32x48 things BOLTED TO a wall, not the wall itself. That distinction cost a generation to learn: every map-object comes back with an outline the whole way round, so eight in a row read as eight separate bricks and never as a continuous surface. The wall proper is a Wang TILESET (`concrete_to_wall`), because corner autotiling gives four correct corners for free and stamped sprites need a hand-written case for each. `wallCap*` were cut from the same misunderstanding and are not packed.",
-  "_nameNote": "Two of these are named for what they ARE and not for what was asked for, which is the rule this repo keeps relearning: `node_scrapheap_2` is a fire truck and `node_saltrock_1` is amethyst. `latrine` was prompted as an emergency eyewash station and came back an unmistakable toilet -- good art, wrong subject, and a bunker wants a latrine anyway. `medChair` was prompted as a wheeled gurney and came back a reclining examination chair. Both are kept; both are named for the picture. Three others (a lab bench, ceiling pipes and a ceiling duct) came back near-empty when asked for 'seen from below' and were deleted: the model has no ceiling view, so overhead art has to be asked for plainly and treated as overhead by the RENDERER."
- },
- "sceneClips": {
-  "_note": "Ambient loops for the title scenes. ONE-DIRECTION objects animated with animate_object and packed under the same `sheet.clip.dir.frame` keys everything else uses, with the single direction spelled `down`, so `clipsOf`, `stripUrl` and `groundActor` need no special case. Packed UNTRIMMED: `stripUrl` bottom-aligns and centres in a uniform cell, and a windmill's blades change their extents every frame, so a trimmed box would shift and the tower would wobble under its own vanes.",
-  "_base": "assets/pixellab/scene-anim/",
-  "sheets": {
-   "windmill": [
-    "spin"
-   ],
-   "wheat": [
-    "sway"
-   ],
-   "scarecrow": [
-    "sway"
-   ]
-  }
- }
 }
