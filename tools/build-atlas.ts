@@ -159,6 +159,7 @@ interface Manifest {
    * rather than left alongside.
    */
   pixellabFx?: { _base: string; clips: Record<string, { dir: string }> }
+  sceneClips?: { _base: string; sheets: Record<string, string[]> }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
 }
 
@@ -879,6 +880,58 @@ if (manifest.pixellabFx) {
     }
     if (!packed) { errors.push(`pixellabFx ${name}: no usable frames in ${dir}`); continue }
     clipLengths[`fx.${name}`] = { play: packed }
+  }
+}
+
+/**
+ * Ambient loops for the title scenes — a windmill turning, wheat swaying.
+ *
+ * These are ONE-DIRECTION objects, which nothing else here handles: the animal
+ * pipeline wants eight compass folders and the fx pipeline emits `fx.name.i`
+ * with a centre pivot. A scene wants neither. It wants the same
+ * `sheet.clip.dir.frame` keys everything else uses, so `clipsOf`, `stripUrl`
+ * and `groundActor` work on them with no special case — hence the single
+ * direction is spelled `down`, which is what a scene asks for anyway.
+ *
+ * **Packed UNTRIMMED, and that is the whole point.** `stripUrl` composes its
+ * strip by bottom-aligning and centring each frame in a uniform cell, which is
+ * right for a walking animal whose silhouette is roughly constant. A windmill's
+ * blades change their extents every frame, so trimming would shift the trim box
+ * frame to frame and the tower would wobble under its own vanes. An untrimmed
+ * 128x128 frame is the same rectangle every time and the thing sits still.
+ */
+const sceneClips = manifest.sceneClips
+if (sceneClips) {
+  for (const [sheet, clips] of Object.entries(sceneClips.sheets)) {
+    for (const clip of clips) {
+      const dir = `${sceneClips._base}${sheet}/${clip}`
+      let files: string[]
+      try {
+        files = readdirSync(dir).filter((f) => f.endsWith('.png')).sort()
+      } catch (e) {
+        errors.push(`${dir}: ${(e as Error).message}`)
+        continue
+      }
+      let packed = 0
+      for (const f of files) {
+        let img: Image
+        try {
+          img = decodePng(readFileSync(`${dir}/${f}`))
+        } catch (e) {
+          errors.push(`${dir}/${f}: ${(e as Error).message}`)
+          continue
+        }
+        pending.push({
+          name: `${sheet}.${clip}.down.${packed}`,
+          img,
+          sx: 0, sy: 0, sw: img.width, sh: img.height,
+          ox: 0, oy: 0,
+        })
+        packed++
+      }
+      if (!packed) { errors.push(`sceneClips ${sheet}.${clip}: no frames in ${dir}`); continue }
+      clipLengths[sheet] = { ...(clipLengths[sheet] ?? {}), [clip]: packed }
+    }
   }
 }
 
