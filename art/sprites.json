@@ -1786,5 +1786,23 @@
         "sway"
       ]
     }
+  },
+  "pens": {
+    "_note": "Complete enclosures, drawn as ONE sprite each with all four sides. A pen assembled from rail, post and corner pieces is where three rounds of the title screen went wrong: the sides never line up with the front and the pieces disagree about scale. The generator draws whole objects well and PIECES of one badly -- three attempts at a fence receding from the viewer all returned a single post -- so the fix is to stop asking for pieces. `npm run pens` measures each one's ground quad so a scene can stand animals inside it without guessing.",
+    "_base": "assets/pixellab/pens/",
+    "noTrim": true,
+    "files": {
+      "pen.paddockDirt": "paddockDirt.png",
+      "pen.chickenRunGreen": "chickenRunGreen.png"
+    }
+  },
+  "vault": {
+    "_note": "Scene-scale set pieces for the base, drawn as ONE sprite each for the same reason the pens are: individually placed drums is exactly where a scene mis-scales them. `vault.drumWeeping` is the story of the game in one asset -- a split containment drum and what came out of it -- so it is deliberately not two things to align by hand.",
+    "_base": "assets/pixellab/vault/",
+    "noTrim": true,
+    "files": {
+      "vault.drumRank": "drumRank.png",
+      "vault.drumWeeping": "drumWeeping.png"
+    }
   }
 }

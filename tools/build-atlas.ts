@@ -119,6 +119,10 @@ interface Manifest {
   cave?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** The generated ranch: buildings, vehicles, fencing, feed. See art/sprites.json. */
   ranch?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  /** Complete enclosures, one sprite per pen. See art/sprites.json. */
+  pens?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  /** Scene-scale set pieces for the base. See art/sprites.json. */
+  vault?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** The military base under the farm. See art/sprites.json and docs/SUBTERRANEAN.md. */
   base?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   weapons?: { _base: string; files: Record<string, string> }
@@ -692,6 +696,10 @@ const singleGroups = [
   // would be wrong by a different amount.
   manifest.ranch ? { ...manifest.ranch, cardArt: true } : undefined,
   manifest.base ? { ...manifest.base, cardArt: true } : undefined,
+  // Same rule as `ranch`: a pen is placed by its full box and by the ground quad
+  // measured against that box, so trimming would move both anchors.
+  manifest.pens ? { ...manifest.pens, cardArt: true } : undefined,
+  manifest.vault ? { ...manifest.vault, cardArt: true } : undefined,
   manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
   manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,
   manifest.portraits,
