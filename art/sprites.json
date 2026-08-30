@@ -921,6 +921,10 @@
     "dir": "arabian_cursed",
     "cell": 68,
     "clips": {
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+      "frames": 9
+     },
      "attack": {
       "slug": "rearing_up_and_striking_down_with_its_front_hooves",
       "frames": 9

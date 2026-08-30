@@ -101,8 +101,22 @@ and bring measurements.
 Cheaper alternative worth considering first: the `sheets` mechanism on
 `EnemyDef` lets ONE enemy draw from many sprite sheets, cycled per spawn. Ten
 blighted hens over one stat block is a varied flock for the cost of the art and
-zero balance risk. That path needs only `walk` per bird, which the flock mostly
-has.
+zero balance risk.
+
+**But it needs `death` per bird, not just `walk`, and that is not obvious.**
+Measured: the base `infectedHen` carries five clips (walk, attack, death, hit,
+walkHurt); the nine blighted variants carry `walk` and nothing else. Wiring
+`sheets` today would therefore trade one fully-animated hen for nine that fall
+back to the spin-and-shrink on death -- losing the death animation on roughly
+89% of hen spawns to gain plumage variety.
+
+That is a bad trade and the reason this is not wired yet. `attack` matters much
+less: a peck is 0.35s and falls back to the walk, which reads fine. **Death is
+the expensive gap** -- it is a full second of an enemy leaving the screen, and
+the spin is the stand-in the generated animals were bought to replace.
+
+So the order is: nine `death` clips (~$0.75, plus refills), THEN wire `sheets`.
+Eight of the nine walks are already packed; `farmRoosterBlight` still needs one.
 
 ### Tier 5 — ambient clips for the clean cast (~$0.53)
 
