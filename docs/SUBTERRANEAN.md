@@ -16,6 +16,108 @@ these a reason: somebody dug it, and then something went wrong down there.
 
 ---
 
+## What is actually down there — the spine
+
+The owner's direction, and it supersedes the "old mine" framing this document
+started with:
+
+> "Like we live above a giant military base with missile silos, and eventually
+> aliens etc that would be fun."
+
+**Not now.** He was explicit that this comes at the appropriate time, after the
+title screens land. It is written down here so it survives, and because knowing
+the ending changes what the earlier layers should look like.
+
+### Why this is the right answer
+
+Claude Design's first pass at an underground scene arrived at a bunker on its
+own — poured concrete, hazard striping, a lift gate, and stencilling that read
+**SEC 4 · LIFT 12 · CONTRACT 1971 · DO NOT OPEN**. That is a stronger idea than
+a mine, and the reason is intent: a mine is a place, a facility is a *decision*.
+Somebody built it, catalogued it, sealed it, and wrote a date on it.
+
+And the image the whole thing hangs on is already standing in the yard:
+
+**The grain silo above ground is a missile silo below.**
+
+Same shape, same word, one of them lying since 1971. `ranch.silo` is 224x400 and
+domed; the thing under it is the same cylinder going the other way. A player who
+has stared at that silo on the title screen for twenty runs gets to find out
+what it is. That is a reveal you cannot buy with art — it is free, and it is
+sitting there already.
+
+The blight follows from it. Not industrial waste somebody dumped: something the
+base was **keeping**. Which is what makes the drums in the vault frightening
+rather than merely toxic — the labels are inventory, and inventory implies a
+catalogue, and a catalogue implies whoever wrote it knew what was inside.
+
+Aliens are the floor of that shaft, and they should stay a rumour for a long
+time. The farm animals turning is the symptom; the base is the cause; whatever
+the base was holding is the reason. Three questions, answered in that order,
+over the depth progression below.
+
+### The asset vocabulary — this is where the monotony break comes from
+
+The owner: *"We could make a bunch of really cool assets around that and it
+would break up the monotony."* He is right, and it is worth being precise about
+WHY, because "more stuff" is not the reason.
+
+**The farm's visual language is warm, wooden, organic and curved.** Every asset
+in the atlas obeys it: barns, bales, troughs, animals, crops. Two hundred of
+them still read as one place, and after twenty-five waves that place is
+familiar in a way that stops being atmospheric and starts being wallpaper.
+
+**The base is the opposite language on every axis** — cold, metal, geometric,
+straight, lit by things that were installed rather than by the sun. That
+contrast is the break. A player who drops from the field into the base should
+feel the change before reading a single label.
+
+| axis | the farm | the base |
+|---|---|---|
+| palette | warm browns, greens, straw | grey-green, oxide, hazard yellow, sodium orange |
+| shape | curved, irregular, hand-built | rectilinear, repeated, machined |
+| light | one sun, soft | fixtures, pools, hard edges, dark between |
+| texture | grain, straw, rust on iron | poured concrete, painted steel, stencil |
+| sound (later) | open air | enclosed, reverberant, hum |
+
+What to generate when the time comes, roughly in order of how much each one
+buys:
+
+- **Blast door**, sealed and part-open. The single most useful asset: it is a
+  destination, a gate, and a reveal in one object.
+- **Missile silo interior** — the cylinder from inside, gantries, the thing
+  still in it. This is the reveal; it should be generated last and generated
+  well.
+- **Lift cage and shaft** — how you get down, and the only thing tying the
+  layers into a sequence rather than a set.
+- **Stencilled signage** as a tileable vocabulary: sector numbers, arrows,
+  hazard striping, DO NOT OPEN. Cheap, endlessly reusable, and it does most of
+  the storytelling.
+- **Fluorescent fixtures**, working and dead. Half of them dead is the whole
+  mood.
+- **Console banks, pipe runs, cable trays, floor grating, ventilation ducts** —
+  the connective tissue that makes a corridor read as a facility.
+- **Filing and inventory**: crates with contract numbers, clipboards, a
+  catalogue. The drums are already generated (sixteen variants) and are the
+  centrepiece; what they need is the paperwork that proves somebody KNEW.
+- **Concrete Wang tilesets** for the floor, and **wall band art** for the map
+  edge — see the boundary section below.
+
+Every one of those is a map-object or a tileset, which are the cheapest things
+this project generates. The expensive item is the last one on the list, and it
+should not be designed until the layers above it have been played.
+
+### What that changes about the layers
+
+The five layers keep their shapes but gain a direction of travel: **the deeper
+you go the less of it was made by farmers.** Root cellar is a farm building.
+Coal seam is industry. The vault is government. Below that, nothing human built.
+
+That progression is the level design. It is also the art budget in order —
+concrete, stencils and hazard striping are cheap and reusable; whatever is at
+the bottom is not, and it should not be designed until the layers above it have
+been played.
+
 ## The layers
 
 Ordered by depth, which is also the order they should unlock, because the
