@@ -469,6 +469,13 @@
           "base.wallPlain"
         ]
       },
+      "_exitNote": "The way down. A DOOR IN THE WALL and not a portal, and the ordering matters: everything about this place -- poured concrete, stencils, a cage lift -- says people built it with the engineering they had, and a portal on level two throws that away for a magic door. The lift earns the portal by going deep enough that engineering stops explaining what is down there. Placed on the wall band, which is the second reason that band exists: a door in the middle of an open field is a prop.",
+      "exit": {
+        "afterWave": 3,
+        "sprite": "base.blastDoor0",
+        "radius": 44,
+        "nextMap": "theLift"
+      },
       "_overheadNote": "A ceiling, so the room has a top. Strip lights and service runs rather than stalactites -- same layer, opposite vocabulary, which is the whole monotony break. `striplightDead` hangs at an angle off its cable and is the one that does the work: a room where SOME of the lights have failed reads as a place something happened to. It fades near the player like every overhead layer does, because a bullet-heaven player has to see what is about to hit them.",
       "overhead": {
         "sprites": [
@@ -496,6 +503,113 @@
           "logPile": 0,
           "troughFouled": 0,
           "bonePile": 3
+        }
+      }
+    },
+    "theLift": {
+      "name": "Sub-Level 2 \u2014 Lift Head",
+      "_note": "The second base level, and the proof that descending works: it shares theVault's arena EXACTLY, because `World.descendTo` refuses a map that would change it. The spatial grid, the camera and every canvas the renderer bakes are sized from the arena once, at construction, so levels of one facility share a footprint and a descent costs a re-bake instead of a rewrite. Rooms in one building; it costs the design nothing.",
+      "weight": 0,
+      "arena": {
+        "width": 1280,
+        "height": 1024
+      },
+      "terrain": {
+        "groundSet": "concrete_to_grating",
+        "soilSet": "concrete_to_grating",
+        "soilEdgeCols": 0,
+        "blight": []
+      },
+      "nodes": {
+        "initial": {},
+        "max": {},
+        "regrowPerWave": {},
+        "variantWeights": {}
+      },
+      "_biasNote": "Deeper, so the roster hardens: the chaff thins and the containment crews get commoner. The farm animals are gone entirely -- a cursed pony three floors under a missile silo is the sort of thing that makes a place feel randomly generated rather than built.",
+      "enemyBias": {
+        "farmhand": 0.7,
+        "acidZombie": 1.6,
+        "maskedSprayer": 1.6,
+        "bloatedFarmhand": 1.4,
+        "maskedHauler": 1.3,
+        "feralDog": 0.8,
+        "rooster": 0,
+        "infectedHen": 0,
+        "duckFlight": 0,
+        "blownSheep": 0,
+        "sickHog": 0,
+        "fjordPonyCursed": 0,
+        "arabianCursed": 0,
+        "donkeyCursed": 0,
+        "draftMuleCursed": 0
+      },
+      "hazards": null,
+      "fog": {
+        "alpha": 0.22,
+        "tint": "#7d8a86",
+        "drift": 3,
+        "scale": 1.35
+      },
+      "dressing": {
+        "scenery": [
+          "base.lift0",
+          "base.lift1",
+          "base.lift2",
+          "base.lift3",
+          "base.lift4",
+          "base.serverRack",
+          "base.cratePallet",
+          "base.rubble",
+          "base.warningSign",
+          "base.cableSpool",
+          "base.palletJack",
+          "base.lockers"
+        ],
+        "decals": [
+          "decal.scorch",
+          "decal.ash"
+        ]
+      },
+      "boundary": {
+        "kind": "wall",
+        "band": 64,
+        "inset": 64,
+        "wangSet": "concrete_to_steelwall",
+        "panels": [
+          "base.wallPipes",
+          "base.wallHazard",
+          "base.wallVent",
+          "base.wallStencil",
+          "base.wallLamp",
+          "base.wallPlain"
+        ]
+      },
+      "overhead": {
+        "sprites": [
+          "base.striplightDead",
+          "base.striplightLit",
+          "base.ceilingPipes",
+          "base.ceilingDuct"
+        ],
+        "perMillionPx": 11,
+        "fadeRadius": 150,
+        "minAlpha": 0.1,
+        "alpha": 0.8
+      },
+      "breakables": {
+        "weights": {
+          "oilDrum": 12,
+          "burnBarrel": 6,
+          "bonePile": 4,
+          "hayBale": 0,
+          "milkCans": 0,
+          "feedBin": 0,
+          "trough": 0,
+          "hayBaleRot": 0,
+          "wheelbarrow": 0,
+          "logPile": 0,
+          "troughFouled": 0
         }
       }
     }

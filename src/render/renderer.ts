@@ -238,6 +238,30 @@ export class Renderer {
   }
 
   /**
+   * The run descended: rebuild everything baked off the map.
+   *
+   * Terrain, fog, the ceiling and the scenery band are all baked ONCE at
+   * construction because they never used to change. A descent changes all four
+   * at the same moment, and none of them notice on their own -- the terrain
+   * re-bakes on a wave BAND, not on a map, so without this the player arrives
+   * on a new level standing on the old one's floor.
+   *
+   * The arena cannot have changed; `World.descendTo` refuses a map that would
+   * change it, precisely so the canvases, the camera and the draw list stay the
+   * size they were sized at construction. Only the CONTENTS are rebuilt.
+   */
+  onMapChanged(): void {
+    this.scenery.length = 0
+    this.buildScenery()
+    // Force the wave-band check to miss, so the next `draw` re-bakes rather
+    // than deciding the ground it already has is the ground it wants.
+    this.bakedSet = ''
+    this.bakeTerrain(this.groundSetFor(this.world.spawner.wave))
+    this.bakeFog()
+    this.buildOverhead()
+  }
+
+  /**
    * Scatter the scenery once, from a stream of its own.
    *
    * Seeded apart from the ground and the decals for the same reason those are
@@ -1077,6 +1101,40 @@ export class Renderer {
     const right = cam.x + cam.viewW + 64
     const top = cam.y - 96
     const bottom = cam.y + cam.viewH + 64
+
+    /*
+       The way down, when it is open.
+
+       Drawn through the sorted pass like everything else, so the player passes
+       BEHIND it walking up to it and in front of it standing below -- which is
+       what makes it read as a door in a wall rather than a decal on one.
+
+       Not baked into the terrain the way the fence and the decals are, for the
+       one reason those are safe to bake: they are things the player is always
+       inside of or on top of. This is a thing the player walks INTO.
+    */
+    if (this.world.exit) {
+      const e = this.world.exit
+      const f = this.atlas?.get(e.frame)
+      if (f) {
+        const it = this.push()
+        if (it) {
+          it.x = e.x
+          it.y = e.y
+          it.frame = f
+          it.colour = PALETTE.void
+          it.w = 0
+          it.h = 0
+          it.liftY = 0
+          it.scaleX = 1
+          it.scaleY = 1
+          it.rotation = 0
+          it.flash = false
+          it.outline = null
+          it.alpha = 1
+        }
+      }
+    }
 
     // Scenery goes through the same sorted pass as the crops, so a scarecrow
     // occludes what is behind it and not what is in front.

@@ -74,10 +74,12 @@ const CAST: [string, string][] = [
  */
 const scaleRaw = JSON.parse(readFileSync('art/scene-scale.json', 'utf8')) as {
   drawAt: Record<string, number>
-  tallOverrides: Record<string, number>
+  drawAtHeight: Record<string, number>
+  contentBox: Record<string, string>
 }
 const SCENE_SCALE = scaleRaw.drawAt
-const SCENE_TALL = scaleRaw.tallOverrides
+const SCENE_TALL = scaleRaw.drawAtHeight
+const SCENE_BOX = scaleRaw.contentBox
 
 /** Frame keys grouped by their dotted prefix. */
 const byPrefix = new Map<string, string[]>()
@@ -181,7 +183,7 @@ L.push('Six things within a few pixels of each other that are nothing like the s
 L.push('size in life. Drawn 1:1 they are a row of identical silhouettes — which is')
 L.push('exactly what the first title screens came out as, with a bulldog the size of')
 L.push('a pony. The buildings are on a THIRD scale again: `ranch.barn` is 400px wide')
-L.push('and `ranch.windmill` 128, when a windmill is taller than a barn is wide.')
+L.push('and `ranch.windmill` 128, which are canvases and not content boxes at all.')
 L.push('')
 L.push('So **every table below has a `draw at` column**, derived from what the thing')
 L.push('actually is against one reference:')
@@ -192,10 +194,20 @@ L.push('Small animals sit deliberately above life scale — a cat at true scale 
 L.push('and unreadable — but the ORDER is always right: hen < dog < pony < barn. Use')
 L.push('the `draw at` number and the scene composes itself.')
 L.push('')
-L.push('Two that are not square and are usually drawn wrong:')
+L.push('**Never infer height from the canvas.** The `ranch.*` group is packed')
+L.push('UNTRIMMED, so a frame rect is the generation canvas and the art floats inside')
+L.push('it: `ranch.farmhouse` is a 256x320 canvas holding 194x165 of house. Inferring')
+L.push('height from that canvas makes a 330-wide house 413 tall instead of 281, and the')
+L.push('farmhouse comes out taller than the barn. The `draw at` column gives BOTH')
+L.push('dimensions, measured off the alpha by `npm run scale`, and `content` is what was')
+L.push('measured.')
 L.push('')
-L.push('- `ranch.silo` — **146 wide, 440 tall.** As tall as the barn is wide.')
-L.push('- `ranch.windmill` — **100 wide, 366 tall.** Taller than the barn. Never square.')
+L.push('**Where the art and the world disagree, the art wins.** An earlier version of')
+L.push('this table said `ranch.windmill` was 100 x 366, derived from a real Aermotor')
+L.push('being about 10m tall and 2.5m wide. The sprite is 68x115 — a ratio of 1.7, not')
+L.push('4 — so 366 stretched it. A stretched sprite is a visible defect; a short')
+L.push('windmill is a style choice. Wanting a taller one is a regeneration, not a')
+L.push('multiplier.')
 L.push('')
 L.push('## How to draw one — USE THESE TWO, not `spriteEl`')
 L.push('')
@@ -271,7 +283,7 @@ L.push('single direction spelled `down`.')
 L.push('')
 L.push('| sheet | clip | draw at | note |')
 L.push('|---|---|---|---|')
-L.push('| `windmill` | `spin` (9f) | **100 wide, 366 tall** | blades turning. NOT `ranch.windmill`, which is the static one |')
+L.push('| `windmill` | `spin` (9f) | **100 x 169** | blades turning. NOT `ranch.windmill`, which is the static one |')
 L.push('| `wheat` | `sway` (9f) | ~55 tall | a stand swaying in the breeze |')
 L.push('| `scarecrow` | `sway` (9f) | ~90 tall | shifting and sagging in the wind |')
 L.push('')
@@ -321,14 +333,14 @@ for (const [prefix, title, img] of groups) {
   L.push('')
   L.push(`![${prefix}](catalog/${img}.png)`)
   L.push('')
-  L.push('| key | source | **draw at** |')
-  L.push('|---|---|---|')
+  L.push('| key | canvas | content | **draw at (w x h)** |')
+  L.push('|---|---|---|---|')
   for (const k of list) {
     const tall = SCENE_TALL[k]
     const draw = SCENE_SCALE[k]
-      ? (tall ? `**${SCENE_SCALE[k]} wide, ${tall} tall**` : `**${SCENE_SCALE[k]}px**`)
+      ? (tall ? `**${SCENE_SCALE[k]} x ${tall}**` : `**${SCENE_SCALE[k]}px**`)
       : ''
-    L.push(`| \`${k}\` | ${sizeOf(k)} | ${draw} |`)
+    L.push(`| \`${k}\` | ${sizeOf(k)} | ${SCENE_BOX[k] ?? ''} | ${draw} |`)
   }
   L.push('')
 }

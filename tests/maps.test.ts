@@ -194,14 +194,47 @@ describe('maps', () => {
       expect(new Set(shapes).size).toBe(MAP_IDS.length)
     })
 
-    it('gives every map its own arena proportions', () => {
-      const ratios = MAP_IDS.map((id) => (MAPS[id].arena.width / MAPS[id].arena.height).toFixed(2))
-      expect(new Set(ratios).size).toBe(MAP_IDS.length)
+    /*
+       A BIOME must be distinct. A LEVEL must not be.
+
+       These two rules were written for five surface maps and they were right:
+       "five maps" that share an arena shape and a ground set are five names for
+       one map. A descent chain is the opposite case on purpose -- levels of one
+       facility are rooms in one building, they SHOULD share a footprint (which
+       `World.descendTo` in fact requires) and they should share a floor, or the
+       place stops reading as one place.
+
+       So the uniqueness rules apply to everything a run can ARRIVE on, and skip
+       anything a run DESCENDS to. Being the target of an exit is what makes a
+       map a level rather than a biome.
+    */
+    const descendTargets = new Set(
+      MAP_IDS.map((id) => MAPS[id].exit?.nextMap).filter((x): x is string => !!x),
+    )
+    const biomes = MAP_IDS.filter((id) => !descendTargets.has(id))
+
+    it('gives every biome its own arena proportions', () => {
+      const ratios = biomes.map((id) => (MAPS[id].arena.width / MAPS[id].arena.height).toFixed(2))
+      expect(new Set(ratios).size).toBe(biomes.length)
     })
 
-    it('gives every map its own ground', () => {
-      const grounds = MAP_IDS.map((id) => MAPS[id].terrain.groundSet)
-      expect(new Set(grounds).size).toBe(MAP_IDS.length)
+    it('gives every biome its own ground', () => {
+      const grounds = biomes.map((id) => MAPS[id].terrain.groundSet)
+      expect(new Set(grounds).size).toBe(biomes.length)
+    })
+
+    it('still makes a descent level differ from the level above it', () => {
+      // Sharing an arena and a floor is the point; being the SAME ROOM is not.
+      // A level has to change the roster, the dressing or the walls, or the
+      // descent is a loading screen.
+      for (const [id, m] of Object.entries(MAPS)) {
+        const next = m.exit && MAPS[m.exit.nextMap]
+        if (!next) continue
+        const differs = JSON.stringify(m.enemyBias) !== JSON.stringify(next.enemyBias)
+          || JSON.stringify(m.dressing) !== JSON.stringify(next.dressing)
+          || m.boundary?.wangSet !== next.boundary?.wangSet
+        expect(differs, `${id} -> ${m.exit!.nextMap} is the same room twice`).toBe(true)
+      }
     })
 
     it('builds a different arena and field per map, in the sim and not just in the JSON', () => {
@@ -525,6 +558,113 @@ describe('the atmosphere layers', () => {
     const rolled = new World(7, 'hand')
     const bogus = new World(7, 'hand', {}, 1, 'noSuchMap')
     expect(bogus.mapId).toBe(rolled.mapId)
+  })
+
+  it('every exit names a real map, a packed door, and a reachable wave', () => {
+    if (!packed) return
+    for (const [id, m] of Object.entries(MAPS)) {
+      const x = m.exit
+      if (!x) continue
+      expect(MAPS[x.nextMap], `${id} exits to unknown map ${x.nextMap}`).toBeDefined()
+      expect(packed.has(x.sprite), `${id} door -> ${x.sprite}`).toBe(true)
+      expect(x.radius, `${id} exit radius`).toBeGreaterThan(16)
+      // A door that opens after the last wave is a door that never opens.
+      expect(x.afterWave, `${id} exit afterWave`).toBeGreaterThan(0)
+      expect(x.afterWave, `${id} exit is past the end of the run`).toBeLessThan(25)
+    }
+  })
+
+  it('a descent chain never changes the arena, because descendTo refuses to', () => {
+    /*
+       THE CONSTRAINT THAT MAKES DESCENDING CHEAP.
+
+       The spatial grid, the camera and every canvas the renderer bakes are
+       sized from the arena ONCE, at construction. `World.descendTo` therefore
+       refuses a map whose arena differs -- but a guard that silently declines
+       is a level that will not load, so this walks the chain in content and
+       fails at build time instead.
+    */
+    for (const [id, m] of Object.entries(MAPS)) {
+      let cur = m
+      let curId = id
+      const seen = new Set([id])
+      while (cur.exit) {
+        const nextId = cur.exit.nextMap
+        const next = MAPS[nextId]
+        if (!next) break
+        expect(next.arena.width, `${curId} -> ${nextId} width`).toBe(cur.arena.width)
+        expect(next.arena.height, `${curId} -> ${nextId} height`).toBe(cur.arena.height)
+        expect(seen.has(nextId), `descent loops at ${nextId}`).toBe(false)
+        seen.add(nextId)
+        cur = next
+        curId = nextId
+      }
+    }
+  })
+
+  it('descending keeps the run and swaps the room', () => {
+    const w = new World(11, 'hand', {}, 1, 'theVault')
+    expect(w.depth).toBe(0)
+    expect(w.exit).toBeNull()
+
+    const target = MAPS.theVault.exit!
+    // Run until the door opens.
+    for (let i = 0; i < 60 * 60 * 12 && !w.exit; i++) w.step(STEP, 0, 0, false)
+    expect(w.exit, 'the door never opened').not.toBeNull()
+    expect(w.spawner.wave).toBeGreaterThan(target.afterWave)
+
+    // Captured HERE and not at the top of the test: twelve simulated minutes of
+    // clearing waves levels the player up several times, so a "before" taken
+    // before the run measures nothing.
+    const levelBefore = w.player.level
+    const xpBefore = w.player.xp
+    const hpBefore = w.player.hp
+    const weaponsBefore = w.player.weapons.length
+    const waveBefore = w.spawner.wave
+
+    // Walk into it.
+    w.player.x = w.exit!.x
+    w.player.y = w.exit!.y
+    w.step(STEP, 0, 0, false)
+
+    expect(w.mapId).toBe(target.nextMap)
+    expect(w.depth).toBe(1)
+    expect(w.exit).toBeNull()
+    // The room changed; the run did not.
+    expect(w.player.level).toBe(levelBefore)
+    expect(w.player.xp).toBe(xpBefore)
+    expect(w.player.weapons.length).toBe(weaponsBefore)
+    expect(w.player.hp).toBeLessThanOrEqual(hpBefore + 1)
+    expect(w.spawner.wave).toBe(waveBefore)
+    // The old room's contents did not come along.
+    expect(w.enemies.live).toBe(0)
+    expect(w.projectiles.live).toBe(0)
+    // ...and the spawner is reading the NEW map, not the one it was built with.
+    expect(w.spawner.map).toBe(MAPS[target.nextMap])
+  })
+
+  it('refuses a descent that would resize the arena, and stays put', () => {
+    // The guard, tested directly: a level that will not load must not also
+    // break the one the player is standing in.
+    const w = new World(11, 'hand', {}, 1, 'theVault')
+    const before = w.mapId
+    expect(w.descendTo('homeField')).toBe(false)
+    expect(w.mapId).toBe(before)
+    expect(w.depth).toBe(0)
+    expect(w.descendTo('noSuchMap')).toBe(false)
+    expect(w.mapId).toBe(before)
+  })
+
+  it('no surface map spends an RNG draw on a door it does not have', () => {
+    // `openExitIfDue` draws the door's position off the run RNG. It must draw
+    // ONLY on a map that declares an exit, or every recorded surface seed moves.
+    const a = new World(5, 'hand')
+    const b = new World(5, 'hand')
+    expect(a.map.exit, 'this test needs a surface map').toBeUndefined()
+    for (let i = 0; i < 60 * 60 * 3; i++) a.step(STEP, 1, 0, false)
+    for (let i = 0; i < 60 * 60 * 3; i++) b.step(STEP, 1, 0, false)
+    expect(a.rng.next()).toBe(b.rng.next())
+    expect(a.exit).toBeNull()
   })
 
   it('the two renderers agree on the wall band', () => {

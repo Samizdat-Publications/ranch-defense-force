@@ -45,7 +45,12 @@ export class Spawner {
    *            Scrapyard run feels heavy and a Salt Flats run feels fast
    *            without either one changing a single number in enemies.json.
    */
-  constructor(private readonly rng: Rng, private readonly map: MapDef) {
+  /**
+   * `map` is NOT readonly, because a run can descend and the roster, the threat
+   * bias and the node mix all belong to the level you are standing in. `World.
+   * descendTo` reassigns it; nothing else may.
+   */
+  constructor(private readonly rng: Rng, public map: MapDef) {
     this.beginWave(1)
   }
 

@@ -148,6 +148,13 @@ function startRun(classId: string, seedText: string): void {
       void audio.setLayer((wave >= 11 ? 'combat' : 'field') as MusicLayer)
     },
     onBossWave: () => { void audio.setLayer('boss' as MusicLayer) },
+    // A descent is the same run in a new room: the sim has already swapped the
+    // map and kept the player's build, so all that is left up here is to rebuild
+    // what the renderer baked off the old one.
+    onDescend: () => {
+      renderer?.onMapChanged()
+      audio.play('waveStart' as SfxName)
+    },
     onPlayerDeath: () => finishRun(false),
   }
 

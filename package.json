@@ -41,8 +41,9 @@
     "objman": "vite-node tools/object-manifest.ts --",
     "contact": "vite-node tools/atlas-contact.ts --",
     "contactdir": "vite-node tools/contact-dir.ts --",
-    "scale": "vite-node tools/scale-check.ts --",
-    "pick": "vite-node tools/pick-props.ts --"
+    "scale": "vite-node tools/measure-scale.ts --",
+    "pick": "vite-node tools/pick-props.ts --",
+    "strips": "vite-node tools/export-strips.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

@@ -766,6 +766,11 @@ export class WorldPainter {
     const drawList: { y: number; f: Frame; x: number }[] = []
     // Scenery joins the same sorted list as everything else, as in the game.
     for (const sc of this.scenery(world)) drawList.push({ y: sc.y, x: sc.x, f: sc.f })
+    // The way down, sorted with everything else. Mirrors `Renderer.collectSprites`.
+    if (world.exit) {
+      const ef = frames[world.exit.frame]
+      if (ef) drawList.push({ y: world.exit.y, x: world.exit.x, f: ef })
+    }
     for (let i = 0; i < world.props.live; i++) {
       const c = world.props.items[i]
       // Animated if the atlas has a loop for it, static otherwise. Mirrors

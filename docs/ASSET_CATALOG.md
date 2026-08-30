@@ -24,7 +24,7 @@ Six things within a few pixels of each other that are nothing like the same
 size in life. Drawn 1:1 they are a row of identical silhouettes — which is
 exactly what the first title screens came out as, with a bulldog the size of
 a pony. The buildings are on a THIRD scale again: `ranch.barn` is 400px wide
-and `ranch.windmill` 128, when a windmill is taller than a barn is wide.
+and `ranch.windmill` 128, which are canvases and not content boxes at all.
 
 So **every table below has a `draw at` column**, derived from what the thing
 actually is against one reference:
@@ -35,10 +35,20 @@ Small animals sit deliberately above life scale — a cat at true scale is 9px
 and unreadable — but the ORDER is always right: hen < dog < pony < barn. Use
 the `draw at` number and the scene composes itself.
 
-Two that are not square and are usually drawn wrong:
+**Never infer height from the canvas.** The `ranch.*` group is packed
+UNTRIMMED, so a frame rect is the generation canvas and the art floats inside
+it: `ranch.farmhouse` is a 256x320 canvas holding 194x165 of house. Inferring
+height from that canvas makes a 330-wide house 413 tall instead of 281, and the
+farmhouse comes out taller than the barn. The `draw at` column gives BOTH
+dimensions, measured off the alpha by `npm run scale`, and `content` is what was
+measured.
 
-- `ranch.silo` — **146 wide, 440 tall.** As tall as the barn is wide.
-- `ranch.windmill` — **100 wide, 366 tall.** Taller than the barn. Never square.
+**Where the art and the world disagree, the art wins.** An earlier version of
+this table said `ranch.windmill` was 100 x 366, derived from a real Aermotor
+being about 10m tall and 2.5m wide. The sprite is 68x115 — a ratio of 1.7, not
+4 — so 366 stretched it. A stretched sprite is a visible defect; a short
+windmill is a style choice. Wanting a taller one is a regeneration, not a
+multiplier.
 
 ## How to draw one — USE THESE TWO, not `spriteEl`
 
@@ -122,7 +132,7 @@ single direction spelled `down`.
 
 | sheet | clip | draw at | note |
 |---|---|---|---|
-| `windmill` | `spin` (9f) | **100 wide, 366 tall** | blades turning. NOT `ranch.windmill`, which is the static one |
+| `windmill` | `spin` (9f) | **100 x 169** | blades turning. NOT `ranch.windmill`, which is the static one |
 | `wheat` | `sway` (9f) | ~55 tall | a stand swaying in the breeze |
 | `scarecrow` | `sway` (9f) | ~90 tall | shifting and sagging in the wind |
 
@@ -267,212 +277,212 @@ path and covers everything above; these still work.
 
 ![ranch](catalog/ranch.png)
 
-| key | source | **draw at** |
-|---|---|---|
-| `ranch.barn` | 400x224 | **440px** |
-| `ranch.biplane` | 128x128 | **293px** |
-| `ranch.bunkhouse` | 128x128 | **256px** |
-| `ranch.coop` | 128x160 | **92px** |
-| `ranch.coopBroken` | 96x96 | **80px** |
-| `ranch.farmhouse` | 256x320 | **330px** |
-| `ranch.feedBin` | 48x48 | **37px** |
-| `ranch.feedBucket` | 32x32 | **13px** |
-| `ranch.fenceCorner` | 32x32 | **20px** |
-| `ranch.fencePost` | 32x32 | **20px** |
-| `ranch.fenceRail` | 64x96 | **73px** |
-| `ranch.fenceRailBroken` | 64x64 | **73px** |
-| `ranch.hayWagon` | 96x96 | **146px** |
-| `ranch.roundBale` | 64x64 | **55px** |
-| `ranch.roundBaleRotted` | 64x64 | **55px** |
-| `ranch.silo` | 224x400 | **146 wide, 440 tall** |
-| `ranch.squareBales` | 64x32 | **37px** |
-| `ranch.tractor` | 160x112 | **146px** |
-| `ranch.tractorRed` | 96x96 | **128px** |
-| `ranch.waterTrough` | 64x64 | **73px** |
-| `ranch.well` | 96x96 | **55px** |
-| `ranch.wellStone` | 96x64 | **55px** |
-| `ranch.windmill` | 128x128 | **100 wide, 366 tall** |
+| key | canvas | content | **draw at (w x h)** |
+|---|---|---|---|
+| `ranch.barn` | 400x224 | 383x183 | **440 x 210** |
+| `ranch.biplane` | 128x128 | 120x90 | **293 x 220** |
+| `ranch.bunkhouse` | 128x128 | 113x91 | **256 x 206** |
+| `ranch.coop` | 128x160 | 86x84 | **92 x 90** |
+| `ranch.coopBroken` | 96x96 | 96x96 | **80 x 80** |
+| `ranch.farmhouse` | 256x320 | 194x165 | **330 x 281** |
+| `ranch.feedBin` | 48x48 | 40x40 | **37 x 37** |
+| `ranch.feedBucket` | 32x32 | 16x22 | **13 x 18** |
+| `ranch.fenceCorner` | 32x32 | 32x19 | **20 x 12** |
+| `ranch.fencePost` | 32x32 | 22x15 | **20 x 14** |
+| `ranch.fenceRail` | 64x96 | 64x43 | **73 x 49** |
+| `ranch.fenceRailBroken` | 64x64 | 54x58 | **73 x 78** |
+| `ranch.hayWagon` | 96x96 | 87x81 | **146 x 136** |
+| `ranch.roundBale` | 64x64 | 48x47 | **55 x 54** |
+| `ranch.roundBaleRotted` | 64x64 | 62x45 | **55 x 40** |
+| `ranch.silo` | 224x400 | 144x350 | **146 x 355** |
+| `ranch.squareBales` | 64x32 | 56x21 | **37 x 14** |
+| `ranch.tractor` | 160x112 | 116x74 | **146 x 93** |
+| `ranch.tractorRed` | 96x96 | 85x87 | **128 x 131** |
+| `ranch.waterTrough` | 64x64 | 62x44 | **73 x 52** |
+| `ranch.well` | 96x96 | 71x88 | **55 x 68** |
+| `ranch.wellStone` | 96x64 | 74x59 | **55 x 44** |
+| `ranch.windmill` | 128x128 | 68x115 | **100 x 169** |
 
 ## LimeZu yard furniture — purchased art, being retired. Prefer `ranch.*`. — 46
 
 ![scene](catalog/scene.png)
 
-| key | source | **draw at** |
-|---|---|---|
-| `scene.barn` | 480x224 |  |
-| `scene.calf` | 52x40 |  |
-| `scene.calfGrazeStrip` | 468x40 |  |
-| `scene.chick` | 32x32 |  |
-| `scene.chickPeckStrip` | 288x32 |  |
-| `scene.chickenPeckStrip` | 128x32 |  |
-| `scene.chickenWalkLeftStrip` | 192x32 |  |
-| `scene.coop` | 128x160 |  |
-| `scene.cow` | 90x54 |  |
-| `scene.cowGrazeStrip` | 810x54 |  |
-| `scene.dogIdleStrip` | 540x42 |  |
-| `scene.dogLab` | 60x42 |  |
-| `scene.doghouse` | 64x96 |  |
-| `scene.farmer2Idle` | 32x64 |  |
-| `scene.farmer2IdleBreatheStrip` | 224x64 |  |
-| `scene.farmerIdle` | 32x64 |  |
-| `scene.farmerIdleBreatheStrip` | 224x64 |  |
-| `scene.farmerWalkStrip` | 192x64 |  |
-| `scene.farmerWalkUpStrip` | 192x64 |  |
-| `scene.fencePicket` | 96x32 |  |
-| `scene.fenceRail` | 64x96 |  |
-| `scene.hay` | 64x32 |  |
-| `scene.house` | 256x320 |  |
-| `scene.milkcan` | 24x32 |  |
-| `scene.nest` | 64x96 |  |
-| `scene.oak` | 59x54 |  |
-| `scene.penC1` | 32x26 |  |
-| `scene.penGate` | 32x26 |  |
-| `scene.penH` | 24x26 |  |
-| `scene.penV` | 16x32 |  |
-| `scene.rooster` | 54x62 |  |
-| `scene.roosterCrowStrip` | 486x62 |  |
-| `scene.roosterPeckStrip` | 486x62 |  |
-| `scene.roosterWalkStrip` | 486x62 |  |
-| `scene.scarecrow` | 96x96 |  |
-| `scene.scarecrowSwayStrip` | 672x96 |  |
-| `scene.sheep` | 52x34 |  |
-| `scene.sheepGrazeStrip` | 468x34 |  |
-| `scene.signCow` | 32x30 |  |
-| `scene.silo` | 224x448 |  |
-| `scene.tractorLeft` | 160x114 |  |
-| `scene.treeOak` | 250x212 |  |
-| `scene.trough` | 64x32 |  |
-| `scene.well` | 96x64 |  |
-| `scene.wheat` | 32x32 |  |
-| `scene.wheat2` | 32x32 |  |
+| key | canvas | content | **draw at (w x h)** |
+|---|---|---|---|
+| `scene.barn` | 480x224 |  |  |
+| `scene.calf` | 52x40 |  |  |
+| `scene.calfGrazeStrip` | 468x40 |  |  |
+| `scene.chick` | 32x32 |  |  |
+| `scene.chickPeckStrip` | 288x32 |  |  |
+| `scene.chickenPeckStrip` | 128x32 |  |  |
+| `scene.chickenWalkLeftStrip` | 192x32 |  |  |
+| `scene.coop` | 128x160 |  |  |
+| `scene.cow` | 90x54 |  |  |
+| `scene.cowGrazeStrip` | 810x54 |  |  |
+| `scene.dogIdleStrip` | 540x42 |  |  |
+| `scene.dogLab` | 60x42 |  |  |
+| `scene.doghouse` | 64x96 |  |  |
+| `scene.farmer2Idle` | 32x64 |  |  |
+| `scene.farmer2IdleBreatheStrip` | 224x64 |  |  |
+| `scene.farmerIdle` | 32x64 |  |  |
+| `scene.farmerIdleBreatheStrip` | 224x64 |  |  |
+| `scene.farmerWalkStrip` | 192x64 |  |  |
+| `scene.farmerWalkUpStrip` | 192x64 |  |  |
+| `scene.fencePicket` | 96x32 |  |  |
+| `scene.fenceRail` | 64x96 |  |  |
+| `scene.hay` | 64x32 |  |  |
+| `scene.house` | 256x320 |  |  |
+| `scene.milkcan` | 24x32 |  |  |
+| `scene.nest` | 64x96 |  |  |
+| `scene.oak` | 59x54 |  |  |
+| `scene.penC1` | 32x26 |  |  |
+| `scene.penGate` | 32x26 |  |  |
+| `scene.penH` | 24x26 |  |  |
+| `scene.penV` | 16x32 |  |  |
+| `scene.rooster` | 54x62 |  |  |
+| `scene.roosterCrowStrip` | 486x62 |  |  |
+| `scene.roosterPeckStrip` | 486x62 |  |  |
+| `scene.roosterWalkStrip` | 486x62 |  |  |
+| `scene.scarecrow` | 96x96 |  |  |
+| `scene.scarecrowSwayStrip` | 672x96 |  |  |
+| `scene.sheep` | 52x34 |  |  |
+| `scene.sheepGrazeStrip` | 468x34 |  |  |
+| `scene.signCow` | 32x30 |  |  |
+| `scene.silo` | 224x448 |  |  |
+| `scene.tractorLeft` | 160x114 |  |  |
+| `scene.treeOak` | 250x212 |  |  |
+| `scene.trough` | 64x32 |  |  |
+| `scene.well` | 96x64 |  |  |
+| `scene.wheat` | 32x32 |  |  |
+| `scene.wheat2` | 32x32 |  |  |
 
 ## Field props — many with 16 variants each — 21
 
 ![prop](catalog/props.png)
 
-| key | source | **draw at** |
-|---|---|---|
-| `prop.barbedWire` | 40x39 |  |
-| `prop.bonePile` | 43x39 |  |
-| `prop.burnBarrel` | 29x63 |  |
-| `prop.carcass` | 62x52 |  |
-| `prop.feedBin` | 40x40 |  |
-| `prop.fencePost` | 46x44 |  |
-| `prop.fenceRail` | 62x44 |  |
-| `prop.gate` | 60x49 |  |
-| `prop.graveMarker` | 32x37 |  |
-| `prop.hayBale` | 62x61 |  |
-| `prop.hayBaleRotted` | 56x51 |  |
-| `prop.logPile` | 62x56 |  |
-| `prop.milkCans` | 43x41 |  |
-| `prop.oilDrum` | 32x45 |  |
-| `prop.plough` | 60x47 |  |
-| `prop.scarecrow` | 69x88 |  |
-| `prop.scarecrowRotted` | 80x94 |  |
-| `prop.treeStump` | 42x43 |  |
-| `prop.trough` | 62x47 |  |
-| `prop.troughFouled` | 62x42 |  |
-| `prop.wheelbarrow` | 57x52 |  |
+| key | canvas | content | **draw at (w x h)** |
+|---|---|---|---|
+| `prop.barbedWire` | 40x39 |  |  |
+| `prop.bonePile` | 43x39 |  |  |
+| `prop.burnBarrel` | 29x63 |  |  |
+| `prop.carcass` | 62x52 |  |  |
+| `prop.feedBin` | 40x40 |  |  |
+| `prop.fencePost` | 46x44 |  |  |
+| `prop.fenceRail` | 62x44 |  |  |
+| `prop.gate` | 60x49 |  |  |
+| `prop.graveMarker` | 32x37 |  |  |
+| `prop.hayBale` | 62x61 |  |  |
+| `prop.hayBaleRotted` | 56x51 |  |  |
+| `prop.logPile` | 62x56 |  |  |
+| `prop.milkCans` | 43x41 |  |  |
+| `prop.oilDrum` | 32x45 |  |  |
+| `prop.plough` | 60x47 |  |  |
+| `prop.scarecrow` | 69x88 |  |  |
+| `prop.scarecrowRotted` | 80x94 |  |  |
+| `prop.treeStump` | 42x43 |  |  |
+| `prop.trough` | 62x47 |  |  |
+| `prop.troughFouled` | 62x42 |  |  |
+| `prop.wheelbarrow` | 57x52 |  |  |
 
 ## Crops, healthy and rotted — 10
 
 ![crop](catalog/crops.png)
 
-| key | source | **draw at** |
-|---|---|---|
-| `crop.cabbage` | 28x25 |  |
-| `crop.cauliflower` | 29x28 |  |
-| `crop.chili` | 13x32 |  |
-| `crop.corn` | 20x29 |  |
-| `crop.grain` | 25x31 |  |
-| `crop.pumpkin` | 28x25 |  |
-| `crop.strawberry` | 23x24 |  |
-| `crop.tomato` | 27x26 |  |
-| `crop.watermelon` | 30x30 |  |
-| `crop.zucchini` | 16x27 |  |
+| key | canvas | content | **draw at (w x h)** |
+|---|---|---|---|
+| `crop.cabbage` | 28x25 |  |  |
+| `crop.cauliflower` | 29x28 |  |  |
+| `crop.chili` | 13x32 |  |  |
+| `crop.corn` | 20x29 |  |  |
+| `crop.grain` | 25x31 |  |  |
+| `crop.pumpkin` | 28x25 |  |  |
+| `crop.strawberry` | 23x24 |  |  |
+| `crop.tomato` | 27x26 |  |  |
+| `crop.watermelon` | 30x30 |  |  |
+| `crop.zucchini` | 16x27 |  |  |
 
 ## Harvest nodes — rocks, trees, seams — 15
 
 ![node](catalog/nodes.png)
 
-| key | source | **draw at** |
-|---|---|---|
-| `node.ashStump` | 36x42 |  |
-| `node.boneHeap` | 43x33 |  |
-| `node.oreBlue` | 47x48 |  |
-| `node.oreBronze` | 42x33 |  |
-| `node.oreGold` | 50x44 |  |
-| `node.oreRed` | 57x54 |  |
-| `node.oreSilver` | 40x47 |  |
-| `node.rockBig` | 43x50 |  |
-| `node.rockMedium` | 48x41 |  |
-| `node.rockSmall` | 41x29 |  |
-| `node.saltRock` | 32x43 |  |
-| `node.scrapHeap` | 37x32 |  |
-| `node.treeBig` | 107x118 |  |
-| `node.treeMedium` | 39x77 |  |
-| `node.treeSmall` | 22x104 |  |
+| key | canvas | content | **draw at (w x h)** |
+|---|---|---|---|
+| `node.ashStump` | 36x42 |  |  |
+| `node.boneHeap` | 43x33 |  |  |
+| `node.oreBlue` | 47x48 |  |  |
+| `node.oreBronze` | 42x33 |  |  |
+| `node.oreGold` | 50x44 |  |  |
+| `node.oreRed` | 57x54 |  |  |
+| `node.oreSilver` | 40x47 |  |  |
+| `node.rockBig` | 43x50 |  |  |
+| `node.rockMedium` | 48x41 |  |  |
+| `node.rockSmall` | 41x29 |  |  |
+| `node.saltRock` | 32x43 |  |  |
+| `node.scrapHeap` | 37x32 |  |  |
+| `node.treeBig` | 107x118 |  |  |
+| `node.treeMedium` | 39x77 |  |  |
+| `node.treeSmall` | 22x104 |  |  |
 
 ## Cave and canopy art — 18
 
 ![cave](catalog/cave.png)
 
-| key | source | **draw at** |
-|---|---|---|
-| `cave.branches0` | 64x64 |  |
-| `cave.branches1` | 64x64 |  |
-| `cave.branches2` | 64x64 |  |
-| `cave.branches3` | 64x64 |  |
-| `cave.branches4` | 64x64 |  |
-| `cave.branches5` | 64x64 |  |
-| `cave.branches6` | 64x64 |  |
-| `cave.stalactite0` | 64x64 |  |
-| `cave.stalactite1` | 64x64 |  |
-| `cave.stalactite2` | 64x64 |  |
-| `cave.stalactite3` | 64x64 |  |
-| `cave.stalactite4` | 64x64 |  |
-| `cave.stalactite5` | 64x64 |  |
-| `cave.web0` | 64x64 |  |
-| `cave.web1` | 64x64 |  |
-| `cave.web3` | 64x64 |  |
-| `cave.web4` | 64x64 |  |
-| `cave.web5` | 64x64 |  |
+| key | canvas | content | **draw at (w x h)** |
+|---|---|---|---|
+| `cave.branches0` | 64x64 |  |  |
+| `cave.branches1` | 64x64 |  |  |
+| `cave.branches2` | 64x64 |  |  |
+| `cave.branches3` | 64x64 |  |  |
+| `cave.branches4` | 64x64 |  |  |
+| `cave.branches5` | 64x64 |  |  |
+| `cave.branches6` | 64x64 |  |  |
+| `cave.stalactite0` | 64x64 |  |  |
+| `cave.stalactite1` | 64x64 |  |  |
+| `cave.stalactite2` | 64x64 |  |  |
+| `cave.stalactite3` | 64x64 |  |  |
+| `cave.stalactite4` | 64x64 |  |  |
+| `cave.stalactite5` | 64x64 |  |  |
+| `cave.web0` | 64x64 |  |  |
+| `cave.web1` | 64x64 |  |  |
+| `cave.web3` | 64x64 |  |  |
+| `cave.web4` | 64x64 |  |  |
+| `cave.web5` | 64x64 |  |  |
 
 ## Item card art — 31
 
 ![item](catalog/items.png)
 
-| key | source | **draw at** |
-|---|---|---|
-| `item.balingTwine` | 44x60 |  |
-| `item.barbedWire` | 60x54 |  |
-| `item.bootKnife` | 19x62 |  |
-| `item.cattleProd` | 54x58 |  |
-| `item.chalkLine` | 51x58 |  |
-| `item.coffeeThermos` | 28x60 |  |
-| `item.cropDuster` | 58x47 |  |
-| `item.culvertPipe` | 60x48 |  |
-| `item.ditchLight` | 55x54 |  |
-| `item.dogWhistle` | 61x58 |  |
-| `item.feedSack` | 44x54 |  |
-| `item.fenceStaples` | 55x50 |  |
-| `item.fourLeaf` | 56x60 |  |
-| `item.gasMask` | 28x30 |  |
-| `item.grainScoop` | 32x60 |  |
-| `item.keroseneCan` | 48x60 |  |
-| `item.lampOil` | 36x62 |  |
-| `item.postDriver` | 44x60 |  |
-| `item.saltCircle` | 44x44 |  |
-| `item.saltLick` | 56x60 |  |
-| `item.slingBands` | 58x56 |  |
-| `item.splitRail` | 59x23 |  |
-| `item.strawHat` | 58x59 |  |
-| `item.sundayBest` | 60x56 |  |
-| `item.threshingFloor` | 55x56 |  |
-| `item.tractorPlate` | 56x59 |  |
-| `item.weatherVane` | 50x61 |  |
-| `item.wetRag` | 60x50 |  |
-| `item.whetstone` | 60x46 |  |
-| `item.whitacreBull` | 63x50 |  |
-| `item.workBoots` | 56x46 |  |
+| key | canvas | content | **draw at (w x h)** |
+|---|---|---|---|
+| `item.balingTwine` | 44x60 |  |  |
+| `item.barbedWire` | 60x54 |  |  |
+| `item.bootKnife` | 19x62 |  |  |
+| `item.cattleProd` | 54x58 |  |  |
+| `item.chalkLine` | 51x58 |  |  |
+| `item.coffeeThermos` | 28x60 |  |  |
+| `item.cropDuster` | 58x47 |  |  |
+| `item.culvertPipe` | 60x48 |  |  |
+| `item.ditchLight` | 55x54 |  |  |
+| `item.dogWhistle` | 61x58 |  |  |
+| `item.feedSack` | 44x54 |  |  |
+| `item.fenceStaples` | 55x50 |  |  |
+| `item.fourLeaf` | 56x60 |  |  |
+| `item.gasMask` | 28x30 |  |  |
+| `item.grainScoop` | 32x60 |  |  |
+| `item.keroseneCan` | 48x60 |  |  |
+| `item.lampOil` | 36x62 |  |  |
+| `item.postDriver` | 44x60 |  |  |
+| `item.saltCircle` | 44x44 |  |  |
+| `item.saltLick` | 56x60 |  |  |
+| `item.slingBands` | 58x56 |  |  |
+| `item.splitRail` | 59x23 |  |  |
+| `item.strawHat` | 58x59 |  |  |
+| `item.sundayBest` | 60x56 |  |  |
+| `item.threshingFloor` | 55x56 |  |  |
+| `item.tractorPlate` | 56x59 |  |  |
+| `item.weatherVane` | 50x61 |  |  |
+| `item.wetRag` | 60x50 |  |  |
+| `item.whetstone` | 60x46 |  |  |
+| `item.whitacreBull` | 63x50 |  |  |
+| `item.workBoots` | 56x46 |  |  |
 

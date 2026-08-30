@@ -55,6 +55,13 @@ export interface WorldEvents {
   onMagnet?: (seconds: number) => void
   /** A gear card was picked up off the field, by item id. */
   onGear?: (itemId: string) => void
+  /**
+   * The player walked through the level exit. The argument is the map they
+   * arrived on -- `descendTo` has already run by the time this fires, so the
+   * presentation layer's job is to re-bake and say where they are, not to
+   * decide anything.
+   */
+  onDescend?: (mapId: string, depth: number) => void
 }
 
 export class World {
@@ -88,10 +95,38 @@ export class World {
    * constructor body — the arena has to exist before the spatial grid is sized
    * from it, and the map has to be picked before the arena exists.
    */
-  readonly mapId: string
-  readonly map: MapDef
+  /**
+   * NOT readonly, because a run can descend. `descendTo` swaps both.
+   *
+   * The ARENA stays readonly, and that is the constraint that makes descending
+   * cheap rather than a rewrite: the spatial grid, the camera and every canvas
+   * the renderer bakes are sized from it once. Levels in one facility are rooms
+   * in one building and can share a footprint, so a descent chain is required
+   * to hold its arena constant and `descendTo` refuses a map that would change
+   * it. `tests/maps.test.ts` asserts the chain rather than trusting the guard.
+   */
+  mapId: string
+  map: MapDef
   readonly arenaW: number
   readonly arenaH: number
+
+  /**
+   * How many levels down. 0 on the surface, and the number the player is shown.
+   *
+   * A named layer is a set; LEVEL 7 is a meter -- where you are, how far you
+   * came, and that there is a LEVEL 8. See docs/SUBTERRANEAN.md.
+   */
+  depth = 0
+
+  /**
+   * The way down, once it has opened. Null until this map's `exit.afterWave` is
+   * cleared, and null again the moment it is used.
+   *
+   * Sim-side rather than render-side, unlike the scenery and the ceiling,
+   * because unlike those it is a thing the player can REACH. Anything with a
+   * proximity test belongs in the sim.
+   */
+  exit: { x: number; y: number; frame: string; radius: number } | null = null
 
   readonly enemies: Pool<Enemy>
   readonly projectiles: Pool<Projectile>
@@ -402,6 +437,99 @@ export class World {
    * grave marker -- out there as wallpaper, and the containers live in here
    * where a stray shot finds them.
    */
+  /**
+   * Unseal the way down, once this level's wave has been cleared.
+   *
+   * ON THE WALL, and specifically on the TOP edge, which is the one the camera
+   * looks at the inner face of. A door in the middle of a field is a prop; a
+   * door in a wall is an exit, and that is the second reason the wall band
+   * exists at all. The horizontal position is drawn from the run's RNG so two
+   * runs of the same level do not put it in the same place -- but it is drawn
+   * ONCE, here, and only on a map that declares an exit, so no surface map
+   * spends a draw and no recorded seed moves.
+   */
+  private openExitIfDue(clearedWave: number): void {
+    const cfg = this.map.exit
+    if (!cfg || this.exit || clearedWave < cfg.afterWave) return
+    const band = this.map.boundary?.band ?? 0
+    // Kept clear of the corners, where a door would read as a mistake.
+    const x = this.rng.range(band + 120, this.arenaW - band - 120)
+    this.exit = { x, y: band, frame: cfg.sprite, radius: cfg.radius }
+    this.sound('waveStart')
+  }
+
+  /**
+   * Walk through it.
+   *
+   * Checked after the player has moved and before anything else looks at the
+   * field, so arriving on the next level is not preceded by a frame of being
+   * hit by enemies that no longer exist.
+   */
+  private checkExit(): void {
+    const e = this.exit
+    if (!e) return
+    const dx = this.player.x - e.x
+    const dy = this.player.y - e.y
+    if (dx * dx + dy * dy > e.radius * e.radius) return
+    const next = this.map.exit?.nextMap
+    if (!next || !MAPS[next]) return
+    this.descendTo(next)
+    this.events.onDescend?.(this.mapId, this.depth)
+  }
+
+  /**
+   * Go down a level: the same run, in a new room.
+   *
+   * NOT a new World. A descent must keep the player's build, level, weapons and
+   * wave -- that is the whole point of going deeper rather than starting again
+   * -- and every one of those lives on this object. Rebuilding would mean
+   * copying them across one by one, which is a list that silently grows every
+   * time the player gains a field.
+   *
+   * **The arena cannot change**, and that is what makes this cheap instead of a
+   * rewrite: the spatial grid, the camera and every canvas the renderer bakes
+   * are sized from it once, at construction. Levels of one facility are rooms
+   * in one building, so sharing a footprint costs the design nothing. A map
+   * that would change it is refused here and the run simply stays put -- a
+   * level that will not load must not also break the one you are standing in.
+   */
+  descendTo(mapId: string): boolean {
+    const next = MAPS[mapId]
+    if (!next) return false
+    if (next.arena.width !== this.arenaW || next.arena.height !== this.arenaH) return false
+
+    this.mapId = mapId
+    this.map = next
+    this.depth++
+    this.exit = null
+
+    // Everything standing in the old room stays there. `clear` returns the
+    // whole pool at once rather than freeing one index at a time, which is both
+    // faster and the only version that cannot leave a half-emptied pool behind
+    // if it is ever changed.
+    this.enemies.clear()
+    this.projectiles.clear()
+    this.pickups.clear()
+    this.hazards.clear()
+    this.props.clear()
+    this.breakables.clear()
+    this.particles.clear()
+    this.damageNumbers.clear()
+    this.effects.clear()
+
+    this.spawner.map = next
+
+    // Arriving in the middle of the new room, not wherever the door was.
+    this.player.x = this.arenaW / 2
+    this.player.y = this.arenaH / 2
+    this.player.px = this.player.x
+    this.player.py = this.player.y
+
+    this.scatterField()
+    this.scatterBreakables(BREAKABLES.field.initial)
+    return true
+  }
+
   private scatterBreakables(count: number): void {
     const f = BREAKABLES.field
     if (this.breakables.live >= f.max) return
@@ -639,6 +767,7 @@ export class World {
       // what keeps their replays byte-identical.
       this.map.boundary?.inset ?? 0,
     )
+    this.checkExit()
     this.player.updatePassive(dt)
     this.player.regen(dt)
     if (abilityPressed) this.tryAbility()
@@ -748,6 +877,7 @@ export class World {
       // early is not permanently out of crops to harvest.
       for (const [kind, n] of Object.entries(this.map.nodes.regrowPerWave)) this.scatterNodes(kind, n)
       this.scatterBreakables(BREAKABLES.field.regrowPerWave)
+      this.openExitIfDue(wasWave)
       this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
       if (bossId) {

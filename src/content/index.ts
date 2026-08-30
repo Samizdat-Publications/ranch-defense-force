@@ -455,6 +455,34 @@ export interface MapDef {
   dressing?: MapDressing
   /** What the arena edge is made of. Absent means the farm fence. */
   boundary?: MapBoundary
+  /** The way down, on a map that has one. Absent means the map is terminal. */
+  exit?: MapExit
+}
+
+/**
+ * The way to the next level.
+ *
+ * A door in the wall, not a portal, and that ordering is deliberate: everything
+ * about this facility -- poured concrete, stencils, dial indicators, a cage
+ * lift -- says *people built this with the engineering they had.* A portal on
+ * level two throws that away for a magic door. The lift earns the portal by
+ * going deep enough that engineering stops explaining what is down there.
+ *
+ * It appears only once `afterWave` has been cleared, so a level is a thing you
+ * survive rather than a corridor you walk. Placed ON the wall band, which is
+ * the other reason the band exists: a door standing in the middle of an open
+ * field is a prop, not an exit.
+ */
+export interface MapExit {
+  /** Cleared this wave, and the door unseals. */
+  afterWave: number
+  /** Atlas key for the door itself. */
+  sprite: string
+  /** How close the player must get. Generous on purpose -- this is a reward,
+   *  not a precision test, and the player has earned it by surviving. */
+  radius: number
+  /** Which map is through it. */
+  nextMap: string
 }
 
 /**
