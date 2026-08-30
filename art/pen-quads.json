@@ -3,45 +3,45 @@
   "_detectionNote": "Detected by flooding the interior fill from the sprite centre and taking the four extreme points, which ARE the corners because the quad is diamond-oriented in this projection. Nothing is hand-typed, so nothing goes stale when a pen is regenerated.",
   "_footLineNote": "footLine is the lowest opaque row of the whole sprite — where the near fence meets the ground. Place the pen by its foot line, not its top.",
   "pens": {
-    "pen.paddockFlat": {
+    "pen.paddockV3": {
       "far": [
-        331,
-        57
+        172,
+        51
       ],
       "near": [
-        198,
-        93
+        162,
+        147
       ],
       "left": [
-        40,
-        93
+        59,
+        54
       ],
       "right": [
-        359,
-        93
+        340,
+        54
       ],
-      "content": "360x93",
-      "footLine": 124
+      "content": "400x200",
+      "footLine": 199
     },
-    "pen.chickenRunFlat": {
+    "pen.chickenRunV3": {
       "far": [
-        169,
-        54
+        134,
+        0
       ],
       "near": [
-        167,
-        138
+        23,
+        199
       ],
       "left": [
-        166,
-        138
+        0,
+        0
       ],
       "right": [
-        173,
-        54
+        399,
+        0
       ],
-      "content": "296x118",
-      "footLine": 139
+      "content": "400x200",
+      "footLine": 199
     }
   }
 }

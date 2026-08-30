@@ -1793,8 +1793,12 @@
       ],
       "scarecrow": [
         "sway"
+      ],
+      "labConsole": [
+        "flicker"
       ]
-    }
+    },
+    "_labNote": "The lab set for the fifth scene. A flickering console is what makes a lab read as RUNNING rather than abandoned -- same principle as the windmill on the surface: a title screen lives on the things that move without being looked at.\nBUT: v3 ANIMATION DESTROYS A LARGE TRANSPARENT VOLUME. Both vat `bubble` clips came back with the glass cylinder GONE -- the alien standing on the base and the lid floating in mid-air -- and were unwired after being packed once. The console `flicker` from the same batch is perfect. The difference is the subject: v3 redraws every frame, so it holds opaque, solid, repeated structure (three steel boxes) and dissolves a tall glass tube of fluid with something suspended in it, because there is no hard edge for it to hold on to.\nSo: animate the CONTENTS of a vat, never the vat. Either generate a bubble/glow overlay as its own small sprite and composite it over the still tank, or accept a still tank with an animated console beside it. A re-roll with a longer prompt is worth one try; a third failure means the subject is wrong, not the prompt."
   },
   "pens": {
     "_note": "Complete enclosures, drawn as ONE sprite each with all four sides. A pen assembled from rail, post and corner pieces is where three rounds of the title screen went wrong: the sides never line up with the front and the pieces disagree about scale. The generator draws whole objects well and PIECES of one badly -- three attempts at a fence receding from the viewer all returned a single post -- so the fix is to stop asking for pieces. `npm run pens` measures each one's ground quad so a scene can stand animals inside it without guessing.",
@@ -1806,7 +1810,9 @@
       "pen.paddockGrass": "paddockGrass.png",
       "pen.chickenRunDirt": "chickenRunDirt.png",
       "pen.paddockFlat": "paddockFlat.png",
-      "pen.chickenRunFlat": "chickenRunFlat.png"
+      "pen.chickenRunFlat": "chickenRunFlat.png",
+      "pen.paddockV3": "paddockV3.png",
+      "pen.chickenRunV3": "chickenRunV3.png"
     },
     "_cardNote": "Every pen came back CARDED -- an opaque fill behind the sprite -- and so did the treeline. `npm run rmbg` fixes it and the repo already knew the rule: large subjects come back framed on a solid ground while the same prompt at 96px comes back clean. A carded pen would have drawn an opaque rectangle over the scene's own sky and ground. ALWAYS rmbg a scene-scale asset and verify the alpha afterwards rather than trusting the call.",
     "_hollowNote": "PENS CARRY NO GROUND OF THEIR OWN. `npm run pens` measures the ground quad and then PUNCHES THE INTERIOR OUT -- writes alpha 0 over every pixel of the fill it just flooded, back to the source png, so the next atlas build packs the hollow version.\nClaude Design's reasoning and it is right: the chicken run came back a golf-green against the ranch's olive-khaki ground, and a pen that brings its own floor only works on one surface. Transparent, and the scene's grass shows through and one pen works anywhere.\nAsking the generator for a transparent interior does NOT work -- it fills it regardless, three times out of three. But the fill is exactly what makes the quad detectable, so the answer is to keep it, measure with it, and delete it afterwards. Free and exact, because the flood already knows every interior pixel. The quad is taken BEFORE the punch, so it is unaffected. Re-running `npm run pens` on an already-hollow pen is a no-op: the flood finds nothing to fill.",
@@ -1822,7 +1828,13 @@
       "vault.drumWeeping": "drumWeeping.png",
       "vault.floorGrate": "floorGrate.png",
       "vault.drumScatter": "drumScatter.png",
-      "vault.drumStack": "drumStack.png"
+      "vault.drumStack": "drumStack.png",
+      "vault.vatBroken": "vatBroken.png",
+      "vault.examTable": "examTable.png",
+      "vault.vatAlien": "vatAlien.png",
+      "vault.vatSpecimen": "vatSpecimen.png",
+      "vault.labConsole": "labConsole.png",
+      "vault.jarRack": "jarRack.png"
     },
     "_varietyNote": "Three drum groupings, not one. Two copies of a single rank read as two neat lines and the scene lost the variety it had when drums were placed individually. `drumScatter` is six at different angles, `drumStack` is a pallet stacked two high, `drumRank` is the ordered row. Mix them."
   },

@@ -3495,6 +3495,11 @@
       "cell": 96,
       "frames": 9,
       "file": "scarecrow.sway.down.png"
+    },
+    "labConsole.flicker.down": {
+      "cell": 180,
+      "frames": 9,
+      "file": "labConsole.flicker.down.png"
     }
   }
 }
