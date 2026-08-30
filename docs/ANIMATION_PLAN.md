@@ -156,13 +156,58 @@ the spin is the stand-in the generated animals were bought to replace.
 So the order is: nine `death` clips (~$0.75, plus refills), THEN wire `sheets`.
 Eight of the nine walks are already packed; `farmRoosterBlight` still needs one.
 
-### Tier 5 — ambient clips for the clean cast (~$0.53)
+### Tier 5 — the clean cast — **THE ONE THAT WAS UNDERESTIMATED**
 
-Scene-only, three facings each, for the title screen: equines graze, cats sit,
-chickens peck, the rooster crows. Done: brahmaHen, fjordPony, arabian, rosie,
-joy. Seventeen animals remain at three directions each.
+Filed as "$0.53, scene-only, nice to have". That was wrong, and the title
+screens are what proved it.
 
-Not needed for gameplay at all. It is what stops the yard being a diorama.
+**Sixteen of the twenty clean animals are idle-only.** Against the enemies:
+
+    prizeBull    attack, death, hit, walk, walkHurt, idle    all 8 directions
+    fjordPony    graze (3 dir), idle
+    joy          attack (1 dir), sit (3 dir), idle
+    brahmaHen    peck (4 dir), idle
+    wiz, ouiji, tabbyCat, siameseCat, blackMule, beigeMule,
+    arabian, rosie, farmRooster, chick, and 7 more hens        idle ONLY
+
+So every enemy in the game is fully rigged and the cast the TITLE SCREEN is
+made of is not. When Claude Design was asked to lean on the animated assets it
+had four to choose from, and the catalog told it so honestly -- `*static*`
+against sixteen rows. That is not a brief problem, it is this gap.
+
+**Walk is the clip that matters**, not the ambient ones. A paddock of animals
+that never move is a diorama whatever else is in it, and walk is also the only
+clip that reads at any size or distance.
+
+Costed against the measured v3 rate (~$0.01/direction at 68x68, 8 frames):
+
+| | dirs | each | count | total |
+|---|---|---|---|---|
+| equines + dog — walk | 8 | $0.083 | 6 | $0.50 |
+| cats — walk | 4 | $0.042 | 4 | $0.17 |
+| hens + rooster — peck | 4 | $0.042 | 9 | $0.38 |
+| chick — peck | 4 | $0.042 | 1 | $0.04 |
+| | | | | **$1.09** |
+
+Done so far: `fjordPony` walk (8/8), `arabian` walk (8/8), `blackMule` walk.
+
+### Tier 6 — ambient motion for the title screen (~$0.30)
+
+Not creatures — the WORLD. A title screen lives on the things that move without
+being looked at, and every one of these is a 1-direction object that already
+exists, so it is an animate call and not a generation.
+
+| subject | object | clip | state |
+|---|---|---|---|
+| farm windmill | `6ee01191` | blades spinning | queued |
+| wheat stand | `54757790` | sway | queued |
+| scarecrow | `28c57910` | shift in the wind | queued |
+| burn barrel | `80a6ca26` | flames | to do |
+| perched crow | `b2e3fda1` | ruffle | **blocked: `status: review`** |
+
+The crow is the recurring trap in one line: it is generated and paid for and
+sitting unclaimed, and `animate_object` refuses a source that is not
+`completed`. Claiming is free. Claim before animating.
 
 ## Actual spend, measured
 
@@ -183,9 +228,10 @@ because templates are 1 gen/direction on a four-way rig.
 | 1 — animal enemy hit + injured | $1.41 | the enemies you actually fight |
 | 2 — humanoid enemies, full set | $1.66 | five enemies currently pop out of existence |
 | 3 — player recoil | $0.50 | on screen every second |
-| 5 — ambient cast | $0.53 | the title screen |
+| 5 — clean cast walk cycles | $1.09 | **raised from $0.53** — see above |
+| 6 — ambient world motion | $0.30 | windmill, wheat, scarecrow, fire |
 | 4 — blighted roster as enemies | $6.30 | biggest, and needs a balance session |
-| | **$10.40** | |
+| | **$11.26** | |
 
 ## The thing to not do
 
