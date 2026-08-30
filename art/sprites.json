@@ -82,8 +82,7 @@
  "singles": {
   "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
   "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
-  "files": {
-  }
+  "files": {}
  },
  "singlesExtra": {
   "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. §11 wants gems readable above all else.",
@@ -493,6 +492,7 @@
    "weapon.seedDrill": "seed_drill.png",
    "pickup.xp": "xp_seed_16.png",
    "pickup.feed": "feed_token_16.png",
+   "pickup.magnet": "magnet.png",
    "item.threshingFloor": "chain_lightning_arc.png",
    "prop.fencePost": "fence_post_wire.png",
    "prop.fenceRail": "fence_rail_broken.png",
@@ -1001,6 +1001,201 @@
       "frames": 9
      }
     }
+   },
+   "fjordPony": {
+    "dir": "fjordPony",
+    "cell": 68,
+    "clips": {}
+   },
+   "arabian": {
+    "dir": "arabian",
+    "cell": 68,
+    "clips": {}
+   },
+   "blackMule": {
+    "dir": "blackMule",
+    "cell": 68,
+    "clips": {}
+   },
+   "beigeMule": {
+    "dir": "beigeMule",
+    "cell": 68,
+    "clips": {}
+   },
+   "rosie": {
+    "dir": "rosie",
+    "cell": 56,
+    "clips": {}
+   },
+   "wiz": {
+    "dir": "wiz",
+    "cell": 56,
+    "clips": {}
+   },
+   "ouiji": {
+    "dir": "ouiji",
+    "cell": 56,
+    "clips": {}
+   },
+   "tabbyCat": {
+    "dir": "tabbyCat",
+    "cell": 56,
+    "clips": {}
+   },
+   "siameseCat": {
+    "dir": "siameseCat",
+    "cell": 56,
+    "clips": {}
+   },
+   "job": {
+    "dir": "job",
+    "cell": 56,
+    "clips": {}
+   },
+   "brahmaHen": {
+    "dir": "brahmaHen",
+    "cell": 56,
+    "clips": {}
+   },
+   "beardedHen": {
+    "dir": "beardedHen",
+    "cell": 48,
+    "clips": {}
+   },
+   "buffHen": {
+    "dir": "buffHen",
+    "cell": 56,
+    "clips": {}
+   },
+   "bantamHen": {
+    "dir": "bantamHen",
+    "cell": 42,
+    "clips": {}
+   },
+   "silkieHen": {
+    "dir": "silkieHen",
+    "cell": 48,
+    "clips": {}
+   },
+   "polishHen": {
+    "dir": "polishHen",
+    "cell": 48,
+    "clips": {}
+   },
+   "leghornHen": {
+    "dir": "leghornHen",
+    "cell": 48,
+    "clips": {}
+   },
+   "barredHen": {
+    "dir": "barredHen",
+    "cell": 48,
+    "clips": {}
+   },
+   "farmRooster": {
+    "dir": "farmRooster",
+    "cell": 56,
+    "clips": {}
+   },
+   "chick": {
+    "dir": "chick",
+    "cell": 34,
+    "clips": {}
+   },
+   "fjordPonyBlight": {
+    "dir": "fjordPonyBlight",
+    "cell": 68,
+    "clips": {}
+   },
+   "arabianBlight": {
+    "dir": "arabianBlight",
+    "cell": 68,
+    "clips": {}
+   },
+   "blackMuleBlight": {
+    "dir": "blackMuleBlight",
+    "cell": 68,
+    "clips": {}
+   },
+   "beigeMuleBlight": {
+    "dir": "beigeMuleBlight",
+    "cell": 68,
+    "clips": {}
+   },
+   "rosieBlight": {
+    "dir": "rosieBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "wizBlight": {
+    "dir": "wizBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "ouijiBlight": {
+    "dir": "ouijiBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "tabbyCatBlight": {
+    "dir": "tabbyCatBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "siameseCatBlight": {
+    "dir": "siameseCatBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "jobBlight": {
+    "dir": "jobBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "brahmaHenBlight": {
+    "dir": "brahmaHenBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "beardedHenBlight": {
+    "dir": "beardedHenBlight",
+    "cell": 48,
+    "clips": {}
+   },
+   "buffHenBlight": {
+    "dir": "buffHenBlight",
+    "cell": 56,
+    "clips": {}
+   },
+   "bantamHenBlight": {
+    "dir": "bantamHenBlight",
+    "cell": 42,
+    "clips": {}
+   },
+   "silkieHenBlight": {
+    "dir": "silkieHenBlight",
+    "cell": 48,
+    "clips": {}
+   },
+   "polishHenBlight": {
+    "dir": "polishHenBlight",
+    "cell": 48,
+    "clips": {}
+   },
+   "leghornHenBlight": {
+    "dir": "leghornHenBlight",
+    "cell": 48,
+    "clips": {}
+   },
+   "barredHenBlight": {
+    "dir": "barredHenBlight",
+    "cell": 48,
+    "clips": {}
+   },
+   "farmRoosterBlight": {
+    "dir": "farmRoosterBlight",
+    "cell": 56,
+    "clips": {}
    }
   }
  },

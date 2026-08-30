@@ -343,12 +343,19 @@ export class WorldPainter {
 
   /** The renderer's peripheral scenery band, restated. Same seed, same order. */
   private scenery(world: World): { x: number; y: number; f: Frame }[] {
+    // FIXTURES ONLY. Everything container-shaped -- drum, barrel, bale, bin,
+    // cans, barrow, trough, log and bone pile -- moved to breakables.json and
+    // is scattered by the sim through the interior instead.
+    //
+    // The split is what makes the mechanic legible without a tutorial: a
+    // container pays out and a fixture does not, and a player can tell which is
+    // which by looking. Leaving the containers here as well would have put an
+    // unbreakable oil drum in the same field as a breakable one, and no amount
+    // of feedback recovers from that.
     const kinds = [
-      'prop.hayBale', 'prop.hayBaleRotted', 'prop.trough', 'prop.troughFouled',
-      'prop.logPile', 'prop.bonePile', 'prop.carcass', 'prop.oilDrum',
-      'prop.milkCans', 'prop.feedBin', 'prop.wheelbarrow', 'prop.plough',
-      'prop.graveMarker', 'prop.treeStump', 'prop.barbedWire',
-      'prop.scarecrow', 'prop.scarecrowRotted', 'prop.burnBarrel',
+      'prop.carcass', 'prop.plough', 'prop.graveMarker', 'prop.treeStump',
+      'prop.barbedWire', 'prop.scarecrow', 'prop.scarecrowRotted',
+      'prop.fencePost', 'prop.fenceRail', 'prop.gate',
     ].map((k) => frames[k]).filter((f): f is Frame => !!f)
     const out: { x: number; y: number; f: Frame }[] = []
     if (!kinds.length) return out
@@ -546,13 +553,22 @@ export class WorldPainter {
         : frames[c.sprite]
       if (f) drawList.push({ y: c.y, x: c.x, f })
     }
+    // Breakables: a separate pool, so a separate loop, same as in the renderer.
+    for (let i = 0; i < world.breakables.live; i++) {
+      const b = world.breakables.items[i]
+      const len = clipLengths[b.sprite]?.play ?? 1
+      const f = len > 1
+        ? frames[`${b.sprite}.${((((world.elapsed * PROP_FPS) | 0) + ((b.x * 0.7 + b.y * 1.3) | 0)) % len)}`] ?? frames[b.sprite]
+        : frames[b.sprite]
+      if (f) drawList.push({ y: b.y, x: b.x, f })
+    }
     for (let i = 0; i < world.enemies.live; i++) {
       const e = world.enemies.items[i]
       const moving = e.stun <= 0 && e.dying <= 0 && (e.vx !== 0 || e.vy !== 0)
       const f = (e.attackT > 0 && e.dying <= 0
-        ? this.clipFrame(e.typeId, e.facing, 'attack', e.attackT / ATTACK_SECONDS)
+        ? this.clipFrame(e.sheetId, e.facing, 'attack', e.attackT / ATTACK_SECONDS)
         : undefined)
-        ?? this.sheetFrame(e.typeId, e.facing, e.travelled, moving)
+        ?? this.sheetFrame(e.sheetId, e.facing, e.travelled, moving)
       if (f) drawList.push({ y: e.y, x: e.x, f })
     }
     {

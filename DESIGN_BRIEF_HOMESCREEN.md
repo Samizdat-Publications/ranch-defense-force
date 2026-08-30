@@ -173,3 +173,78 @@ Worth saying what makes this cheap or expensive before it gets specced:
 Sequencing: this depends on item 1. Rebuilding the yard on the generated cast
 and then re-lighting it twice is one job done once; doing it in the other order
 is the placement pass done twice.
+
+---
+
+# Added session 18 — the owner's own farm, clean and blighted
+
+Twenty animals were generated from the owner's description of their real farm,
+and nineteen of them have a corrupted twin. They are packed and addressable
+now; nothing places them yet, which is the job.
+
+Every one is an eight-direction sheet packed as `<id>.idle.<dir>.0`, where
+`<dir>` is `down`, `downLeft`, `left`, `upLeft`, `up`, `upRight`, `right`,
+`downRight`. `spriteEl()` takes those keys directly, so a scene layer is
+`spriteEl('rosie.idle.downRight', 96)` and nothing new is needed to use them.
+
+| clean | blighted twin | who it is |
+|---|---|---|
+| `fjordPony` | `fjordPonyBlight` | white thick Fjord pony, blonde mane |
+| `arabian` | `arabianBlight` | Arabian, brown with a golden mane |
+| `blackMule` | `blackMuleBlight` | the black charge mule |
+| `beigeMule` | `beigeMuleBlight` | the beige charge mule |
+| `rosie` | `rosieBlight` | Rosie, small brown-and-white mule/donkey |
+| `wiz` | `wizBlight` | Wiz, black cat, **green** eyes |
+| `ouiji` | `ouijiBlight` | Ouiji, black cat, **yellow-green** eyes |
+| `tabbyCat` | `tabbyCatBlight` | the brown tabby |
+| `siameseCat` | `siameseCatBlight` | the white siamese |
+| `job` | `jobBlight` | Job, tan-and-white bulldog |
+| `brahmaHen` | `brahmaHenBlight` | light Brahma, feathered feet |
+| `beardedHen` | `beardedHenBlight` | bearded Ameraucana, slate blue |
+| `buffHen` | `buffHenBlight` | buff Orpington, the big one |
+| `bantamHen` | `bantamHenBlight` | bantam, the small one |
+| `silkieHen` | `silkieHenBlight` | Silkie, all puffy fur |
+| `polishHen` | `polishHenBlight` | Polish crested, the enormous head puff |
+| `leghornHen` | `leghornHenBlight` | white Leghorn, big floppy comb |
+| `barredHen` | `barredHenBlight` | barred Plymouth Rock |
+| `farmRooster` | `farmRoosterBlight` | the rooster, green-black sickle tail |
+| `chick` | *(none — see below)* | the yellow chick |
+
+**Wiz and Ouiji are told apart by eye colour and nothing else.** They are both
+black cats. If a scene shows only one, it does not matter which; if it shows
+both, they should be far enough apart that the reader is not asked to compare
+two near-identical sprites side by side.
+
+**The chick has no blighted twin on purpose.** A rotting baby chick is a tonal
+call that belongs to the owner rather than to whoever happened to be generating
+art, and it is one command away if they want it.
+
+## What this unblocks
+
+The clean/blighted pairs were made with `create_object_state`, which produces a
+variant of the *same* object rather than a new object that happens to be grey.
+That is exactly the relationship §2's lightning cut needs: the animal on the far
+side of the flash is provably the animal you were just looking at, in the same
+pose, at the same size, on the same canvas. A cross-fade between the two keys
+lands with no re-registration.
+
+So §2 is no longer blocked on art for the cast. It is still blocked on §1 —
+the buildings — and the sequencing note there still holds.
+
+## The fenced yard the owner asked for
+
+> "I want them all in our front scene in the fenced area with a chicken coop in
+> it."
+
+The scene already has `scene.coop` at (800, 478) and a stock pen at
+(1596, 646) holding a LimeZu cow, calf and sheep. The ask is a yard that holds
+*their* animals instead. Two notes for whoever places it:
+
+- **The flock is ten different birds, not one bird ten times.** That was the
+  explicit request. They differ in size as well as plumage — `chick` packs at
+  34px and `buffHen` at 56px — so a row of them at one scale already reads as a
+  real flock without any per-bird treatment.
+- **Sizes vary by animal**, 34px to 68px, because each was generated at the
+  size its subject wanted. `spriteEl` picks an integer zoom from the box you
+  give it, so a uniform box gives non-uniform zooms. Pass `forceZoom` where a
+  row needs to agree.

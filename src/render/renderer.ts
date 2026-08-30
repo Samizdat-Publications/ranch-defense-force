@@ -15,7 +15,9 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { ENEMIES, NODES, TUNING, WEAPONS, projectileScaleFor, type MapTerrain } from '../content'
+import {
+  ENEMIES, NODES, TUNING, WEAPONS, itemCardSprite, projectileScaleFor, type MapTerrain,
+} from '../content'
 import { Atlas, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 import { wangKey, type Corner } from './wang'
@@ -230,12 +232,19 @@ export class Renderer {
   private buildScenery(): void {
     const atlas = this.atlas
     if (!atlas) return
+    // FIXTURES ONLY. Everything container-shaped -- drum, barrel, bale, bin,
+    // cans, barrow, trough, log and bone pile -- moved to breakables.json and
+    // is scattered by the sim through the interior instead.
+    //
+    // The split is what makes the mechanic legible without a tutorial: a
+    // container pays out and a fixture does not, and a player can tell which is
+    // which by looking. Leaving the containers here as well would have put an
+    // unbreakable oil drum in the same field as a breakable one, and no amount
+    // of feedback recovers from that.
     const kinds = [
-      'prop.hayBale', 'prop.hayBaleRotted', 'prop.trough', 'prop.troughFouled',
-      'prop.logPile', 'prop.bonePile', 'prop.carcass', 'prop.oilDrum',
-      'prop.milkCans', 'prop.feedBin', 'prop.wheelbarrow', 'prop.plough',
-      'prop.graveMarker', 'prop.treeStump', 'prop.barbedWire',
-      'prop.scarecrow', 'prop.scarecrowRotted', 'prop.burnBarrel',
+      'prop.carcass', 'prop.plough', 'prop.graveMarker', 'prop.treeStump',
+      'prop.barbedWire', 'prop.scarecrow', 'prop.scarecrowRotted',
+      'prop.fencePost', 'prop.fenceRail', 'prop.gate',
     ].map((k) => atlas.get(k)).filter((f): f is AtlasFrame => !!f)
     if (!kinds.length) return
 
@@ -754,6 +763,30 @@ export class Renderer {
       }
     }
 
+    // Breakables draw exactly like nodes -- same struct, same y-sort, same pop
+    // -- but they are a separate population and so a separate loop. Merging the
+    // two loops would be the one place the two mechanics touch, and the whole
+    // point of the second pool is that they never do.
+    for (let i = 0; i < w.breakables.live; i++) {
+      const b = w.breakables.items[i]
+      if (b.x < left || b.x > right || b.y < top || b.y > bottom) continue
+      const it = this.push()
+      if (!it) break
+      it.x = b.x
+      it.y = b.y
+      it.frame = this.propFrame(b.sprite, b.x, b.y)
+      it.flash = b.flash > 0
+      it.colour = '#c9a97a'
+      it.w = b.radius * 2
+      it.h = b.radius * 2
+      if (b.dying > 0) {
+        const t = b.dying / TUNING.combat.deathSpinSeconds
+        it.scaleX = t
+        it.scaleY = t
+        it.rotation = (1 - t) * 3
+      }
+    }
+
     for (let i = 0; i < w.enemies.live; i++) {
       const e = w.enemies.items[i]
       const x = e.px + (e.x - e.px) * alpha
@@ -767,9 +800,9 @@ export class Renderer {
       // An attack pose outranks the walk: the wind-up is the thing the player
       // has to read, and a charging bull that keeps trotting reads as a bug.
       const frame = (e.attackT > 0 && e.dying <= 0
-        ? this.attackFrame(e.typeId, e.facing, e.attackT)
+        ? this.attackFrame(e.sheetId, e.facing, e.attackT)
         : undefined)
-        ?? this.humanoidFrame(e.typeId, e.facing, e.travelled, moving)
+        ?? this.humanoidFrame(e.sheetId, e.facing, e.travelled, moving)
 
       it.x = x
       it.y = y
@@ -802,7 +835,7 @@ export class Renderer {
         const total = (ENEMIES[e.typeId] as { deathSeconds?: number } | undefined)?.deathSeconds
           ?? TUNING.combat.deathSpinSeconds
         const t = e.dying / total
-        const dead = this.deathFrame(e.typeId, e.facing, 1 - t)
+        const dead = this.deathFrame(e.sheetId, e.facing, 1 - t)
         if (dead) {
           it.frame = dead
         } else {
@@ -1405,7 +1438,13 @@ export class Renderer {
       const x = g.px + (g.x - g.px) * alpha
       const y = g.py + (g.y - g.py) * alpha
       const bob = g.magnetised ? 0 : Math.sin(g.bob * 4) * 1.5
-      const f = this.atlas?.get(`pickup.${g.kind}`)
+      // A gear drop draws as the card it will hand over, not as a generic
+      // parcel. The player is being asked whether the walk is worth it while a
+      // wave is on top of them, and they cannot answer that without seeing
+      // which item it is.
+      const f = g.kind === 'gear' && g.itemId
+        ? this.atlas?.get(itemCardSprite(g.itemId)) ?? this.atlas?.get('pickup.feed')
+        : this.atlas?.get(`pickup.${g.kind}`)
       if (f && img) {
         ctx.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy + bob), f.w, f.h)
       } else {

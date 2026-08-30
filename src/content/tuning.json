@@ -52,6 +52,7 @@
   "particles": 2400,
   "hazards": 192,
   "props": 320,
+  "breakables": 64,
   "effects": 256
  },
  "fx": {

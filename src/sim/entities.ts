@@ -9,6 +9,20 @@
  */
 
 export interface Enemy {
+  /**
+   * Which ATLAS SHEET draws this one, as opposed to which enemy it is.
+   *
+   * Almost always the same string as `typeId`, and separate from it because a
+   * flock of ten identical hens reads as one hen drawn ten times. An enemy type
+   * may declare `sheets` in enemies.json and every spawn takes the next one in
+   * the list, so the flock is visibly mixed while remaining, to the sim, a
+   * single enemy with a single stat block.
+   *
+   * The three SPRITE lookups in both renderers read this. The stat lookups --
+   * `drawScale`, `deathSeconds`, the behaviour table -- must keep reading
+   * `typeId`, or a variant sheet would silently become a different enemy.
+   */
+  sheetId: string
   active: boolean
   typeId: string
   x: number
@@ -108,7 +122,7 @@ export interface Enemy {
 
 export function makeEnemy(): Enemy {
   return {
-    active: false, typeId: '', x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0,
+    active: false, typeId: '', sheetId: '', x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0,
     kx: 0, ky: 0, hp: 1, maxHp: 1, speed: 0, damage: 0, radius: 10, xp: 1,
     behaviour: 'chase', elite: false, flash: 0, flashLock: 0, stun: 0, facing: 0,
     t0: 0, t1: 0, s0: 0, s1: 0, touchCd: 0, knockbackImmune: false, attackT: 0,
@@ -226,16 +240,32 @@ export interface Prop {
    * and what The Hand's whole identity needs.
    */
   dwell: number
+  /**
+   * Name of the drop table rolled when this breaks, or `''` for a harvest node.
+   *
+   * Harvest nodes pay out every time, from `feed` and `xp` above -- that is the
+   * economy the tools buy into. A BREAKABLE pays out from a weighted table that
+   * is usually empty, which is a different promise and deliberately a different
+   * field: nothing reads both.
+   */
+  drops: string
 }
 
 export function makeProp(): Prop {
   return {
     active: false, sprite: 'crop.corn', kind: 'crop', x: 0, y: 0, hp: 1, maxHp: 1,
-    radius: 11, feed: 1, xp: 0, flash: 0, dying: 0, working: 0, dwell: 0,
+    radius: 11, feed: 1, xp: 0, flash: 0, dying: 0, working: 0, dwell: 0, drops: '',
   }
 }
 
-export type PickupKind = 'xp' | 'feed' | 'heal'
+/**
+ * `magnet` and `gear` are DROPS, not currency: they are collected the same way
+ * but resolve to an effect and an item rather than to a number. `collect` must
+ * therefore switch on the kind exhaustively -- it used to fall through to heal
+ * for anything that was not xp or feed, and a magnet landing in that branch
+ * would silently have healed the player instead.
+ */
+export type PickupKind = 'xp' | 'feed' | 'heal' | 'magnet' | 'gear'
 
 export interface Pickup {
   active: boolean
@@ -251,12 +281,14 @@ export interface Pickup {
   magnetised: boolean
   speed: number
   bob: number
+  /** For `gear`: which item id this hands over. Empty for every other kind. */
+  itemId: string
 }
 
 export function makePickup(): Pickup {
   return {
     active: false, kind: 'xp', x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0,
-    value: 1, magnetised: false, speed: 0, bob: 0,
+    value: 1, magnetised: false, speed: 0, bob: 0, itemId: '',
   }
 }
 

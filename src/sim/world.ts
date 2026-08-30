@@ -20,8 +20,9 @@ import { tierHpMultiplier } from './meta'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar } from './formulas'
 import {
-  ELEMENTS, ENEMIES, ITEMS, MAPS, NODES, TUNING, WAVES, WEAPONS,
-  pickMapId, type MapDef, type NodeVariant, type StatMods,
+  BREAKABLES, BREAKABLE_CLASSES, ELEMENTS, ENEMIES, FIELD_GEAR_POOL, ITEMS, MAPS,
+  NODES, TUNING, WAVES, WEAPONS, pickMapId,
+  type BreakableClass, type DropRow, type MapDef, type NodeVariant, type StatMods,
 } from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
 import { ENEMY_BEHAVIOURS, type SteerContext } from '../behaviours/enemies'
@@ -50,6 +51,10 @@ export interface WorldEvents {
   onWaveComplete?: (wave: number, income: number) => void
   onPlayerDeath?: () => void
   onBossWave?: (bossId: string) => void
+  /** The magnet power-up started; the argument is how long it runs. */
+  onMagnet?: (seconds: number) => void
+  /** A gear card was picked up off the field, by item id. */
+  onGear?: (itemId: string) => void
 }
 
 export class World {
@@ -57,6 +62,23 @@ export class World {
   readonly seed: number
   readonly player = new Player()
   readonly spawner: Spawner
+
+  /**
+   * Seconds left on the magnet power-up.
+   *
+   * Public so the HUD can show the window closing. A power-up whose only tell
+   * is that pickups behave oddly is a power-up the player never learns they
+   * have.
+   */
+  magnetSeconds = 0
+
+  /**
+   * How many enemies have been spawned this run, ever.
+   *
+   * Only used to cycle cosmetic sheet variants, so it deliberately never
+   * resets and deliberately never touches the RNG.
+   */
+  private spawnSeq = 0
 
   /**
    * The map this run is being played on, and the arena it brings with it.
@@ -78,6 +100,18 @@ export class World {
   readonly particles: Pool<Particle>
   readonly hazards: Pool<Hazard>
   readonly props: Pool<Prop>
+  /**
+   * Destructible scenery, in a pool of its OWN.
+   *
+   * Same struct as a harvest node and a different population, deliberately.
+   * The one rule that makes both mechanics work is that weapons break these and
+   * never those, and tools work those and never these; two pools make that rule
+   * something the type of the loop enforces rather than something every future
+   * loop has to remember. Sharing `props` with a boolean would have put the
+   * whole design one missing `if` away from the bug the harvest comment above
+   * `updateProps` describes.
+   */
+  readonly breakables: Pool<Prop>
   readonly effects: Pool<Effect>
 
   private readonly grid: SpatialGrid
@@ -222,6 +256,7 @@ export class World {
     this.particles = new Pool(T.pools.particles, makeParticle)
     this.hazards = new Pool(T.pools.hazards, makeHazard)
     this.props = new Pool(T.pools.props, makeProp)
+    this.breakables = new Pool(T.pools.breakables, makeProp)
     this.effects = new Pool(T.pools.effects, makeEffect)
 
     this.grid = new SpatialGrid(this.arenaW, this.arenaH, T.pools.enemies)
@@ -236,6 +271,7 @@ export class World {
     this.player.py = this.player.y
     this.refreshSpecialItems()
     this.scatterField()
+    this.scatterBreakables(BREAKABLES.field.initial)
   }
 
   /**
@@ -331,6 +367,198 @@ export class World {
     }
   }
 
+  /**
+   * Scatter destructible scenery through the playable interior.
+   *
+   * Deliberately not the peripheral band the renderer decorates: that band is
+   * outside where a fight happens, and a breakable nobody can reach pays out
+   * nothing. The renderer keeps the fixtures -- scarecrow, plough, fence,
+   * grave marker -- out there as wallpaper, and the containers live in here
+   * where a stray shot finds them.
+   */
+  private scatterBreakables(count: number): void {
+    const f = BREAKABLES.field
+    if (this.breakables.live >= f.max) return
+
+    let totalWeight = 0
+    for (const c of BREAKABLE_CLASSES) totalWeight += c.weight
+    if (totalWeight <= 0) return
+
+    for (let i = 0; i < count; i++) {
+      if (this.breakables.live >= f.max) return
+
+      let x = 0
+      let y = 0
+      for (let attempt = 0; attempt < 8; attempt++) {
+        x = this.rng.range(f.edgePad, this.arenaW - f.edgePad)
+        y = this.rng.range(f.edgePad, this.arenaH - f.edgePad)
+        if (Math.hypot(x - this.player.x, y - this.player.y) >= f.minDistanceFromPlayer) break
+      }
+
+      let roll = this.rng.next() * totalWeight
+      let cls: BreakableClass = BREAKABLE_CLASSES[0]
+      for (const c of BREAKABLE_CLASSES) {
+        if (c.weight <= 0) continue
+        cls = c
+        roll -= c.weight
+        if (roll <= 0) break
+      }
+
+      const b = this.breakables.acquire()
+      if (!b) return
+      b.kind = 'breakable'
+      b.sprite = cls.sprite
+      b.x = x
+      b.y = y
+      b.maxHp = cls.hp
+      b.hp = cls.hp
+      b.radius = cls.radius
+      b.feed = 0
+      b.xp = 0
+      b.flash = 0
+      b.dying = 0
+      b.working = 0
+      b.dwell = 0
+      b.drops = cls.drops
+    }
+  }
+
+  /**
+   * Projectiles against breakables.
+   *
+   * A direct scan, not the spatial grid: the grid indexes enemies, and there
+   * are tens of these against hundreds of those. It also runs only for
+   * projectiles that are already alive this tick, so the cost is bounded by the
+   * projectile pool rather than by the arena.
+   *
+   * **Pierce is never spent here.** See breakables.json `_pierceNote` -- a
+   * bullet that a crate eats is damage the crowd did not take, and scenery that
+   * taxes your DPS is scenery a player learns to resent.
+   */
+  private collideProjectilesWithBreakables(): void {
+    if (this.breakables.live === 0) return
+    for (let i = this.projectiles.live - 1; i >= 0; i--) {
+      const p = this.projectiles.items[i]
+      if (p.pierce === -1) continue
+      if (p.behaviour === 'tracer') continue
+      for (let j = this.breakables.live - 1; j >= 0; j--) {
+        const b = this.breakables.items[j]
+        if (b.dying > 0) continue
+        const dx = b.x - p.x
+        const dy = b.y - p.y
+        const want = b.radius + p.radius
+        if (dx * dx + dy * dy > want * want) continue
+        b.hp -= p.damage
+        b.flash = C.hitFlashSeconds
+        if (b.hp <= 0) this.breakOpen(j)
+        break
+      }
+    }
+  }
+
+  /** Timers only -- the flash and the break animation. */
+  private updateBreakables(dt: number): void {
+    for (let i = this.breakables.live - 1; i >= 0; i--) {
+      const b = this.breakables.items[i]
+      if (b.flash > 0) b.flash -= dt
+      if (b.dying > 0) {
+        b.dying -= dt
+        if (b.dying <= 0) this.breakables.free(i)
+      }
+    }
+  }
+
+  /**
+   * Roll a breakable's drop table and pay it out.
+   *
+   * One RNG draw for the row, and a second only if the row carries a range.
+   * Rolling the value unconditionally would cost a draw on every `nothing`,
+   * which is most of them, and would shift every downstream draw in the run for
+   * no visible effect.
+   */
+  private breakOpen(index: number): void {
+    const b = this.breakables.items[index]
+    b.dying = C.deathSpinSeconds
+    this.sound('nodeBreak')
+    this.burstParticles(b.x, b.y, 12, 0xc9a97a)
+
+    const table: DropRow[] | undefined = BREAKABLES.dropTables[b.drops]
+    if (!table) return
+    let total = 0
+    for (const r of table) total += r.weight
+    if (total <= 0) return
+
+    let roll = this.rng.next() * total
+    let row: DropRow = table[0]
+    for (const r of table) {
+      if (r.weight <= 0) continue
+      row = r
+      roll -= r.weight
+      if (roll <= 0) break
+    }
+    if (row.kind === 'nothing') return
+
+    if (row.kind === 'gear') { this.dropGear(b.x, b.y); return }
+
+    const value = row.min !== undefined && row.max !== undefined
+      ? Math.round(this.rng.range(row.min, row.max))
+      : 1
+    const g = this.pickups.acquire()
+    if (!g) return
+    g.kind = row.kind
+    g.x = b.x
+    g.y = b.y
+    g.px = g.x
+    g.py = g.y
+    g.value = value
+    g.magnetised = false
+    g.speed = 0
+    g.bob = 0
+    g.itemId = ''
+  }
+
+  /**
+   * Drop one item card on the ground.
+   *
+   * Eligibility is checked HERE rather than at collection: an item the player
+   * cannot take (already at `maxStacks`) must never become a pickup, because a
+   * reward that does nothing when you walk over it reads as a bug. If nothing
+   * is eligible -- a late run holding every stack -- the drop degrades to feed
+   * rather than to nothing, since the roll already promised something.
+   */
+  private dropGear(x: number, y: number): void {
+    let count = 0
+    for (const id of FIELD_GEAR_POOL) if (this.player.canTakeItem(id)) count++
+
+    const g = this.pickups.acquire()
+    if (!g) return
+    g.x = x
+    g.y = y
+    g.px = x
+    g.py = y
+    g.magnetised = false
+    g.speed = 0
+    g.bob = 0
+
+    if (count === 0) {
+      g.kind = 'feed'
+      g.value = 6
+      g.itemId = ''
+      return
+    }
+
+    let pick = this.rng.int(0, count - 1)
+    let chosen = ''
+    for (const id of FIELD_GEAR_POOL) {
+      if (!this.player.canTakeItem(id)) continue
+      if (pick === 0) { chosen = id; break }
+      pick--
+    }
+    g.kind = 'gear'
+    g.value = 0
+    g.itemId = chosen
+  }
+
   /** Lay out the whole field at the start of a run. */
   private scatterField(): void {
     for (const [kind, n] of Object.entries(this.map.nodes.initial)) this.scatterNodes(kind, n)
@@ -382,7 +610,9 @@ export class World {
 
     // 8-9. collisions, damage, deaths, drops
     this.collideProjectiles()
+    this.collideProjectilesWithBreakables()
     this.updateProps(dt)
+    this.updateBreakables(dt)
     this.harvestNearby(dt)
     this.collideEnemiesWithPlayer(dt)
     this.updateHazards(dt)
@@ -459,6 +689,7 @@ export class World {
       // The field grows back a little each wave, so a player who cleared it
       // early is not permanently out of crops to harvest.
       for (const [kind, n] of Object.entries(this.map.nodes.regrowPerWave)) this.scatterNodes(kind, n)
+      this.scatterBreakables(BREAKABLES.field.regrowPerWave)
       this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
       if (bossId) {
@@ -604,9 +835,21 @@ export class World {
     // nearest enemy, and twelve separate nearest-enemy scans a tick would be
     // twelve scans to reach the same answer.
     const aimTarget = this.findNearestEnemy(p.x, p.y, 900)
-    const ringAim = aimTarget >= 0
-      ? Math.atan2(this.enemies.items[aimTarget].y - p.y, this.enemies.items[aimTarget].x - p.x)
-      : p.facing
+    // Breakables are a FALLBACK target and never a competing one: the scan for
+    // one runs only after the enemy scan comes back empty. Letting them into
+    // the normal target set would have the guns turn away from a live wave to
+    // shoot a barrel, which is the weapons-damage-nodes bug in a new hat. As a
+    // fallback it costs the player nothing and fills exactly the dead seconds
+    // the harvest ramp was built for -- between waves, and the opening run-up.
+    const breakTarget = aimTarget >= 0 ? -1 : this.findNearestBreakable(p.x, p.y, 900)
+    let ringAim = p.facing
+    if (aimTarget >= 0) {
+      const e = this.enemies.items[aimTarget]
+      ringAim = Math.atan2(e.y - p.y, e.x - p.x)
+    } else if (breakTarget >= 0) {
+      const b = this.breakables.items[breakTarget]
+      ringAim = Math.atan2(b.y - p.y, b.x - p.x)
+    }
 
     for (const slot of p.weapons) {
       const def = WEAPONS[slot.id]
@@ -1360,7 +1603,14 @@ export class World {
 
   private updatePickups(dt: number): void {
     const pl = this.player
-    const magnetR = pl.stats.pickupRadius
+    // The magnet power-up widens the radius rather than magnetising everything
+    // every tick: a permanent sweep for its duration would collect a gem the
+    // instant it spawned anywhere on the map, which is not a power-up, it is
+    // the end of pickups. A big radius still leaves the greed curve intact.
+    if (this.magnetSeconds > 0) this.magnetSeconds -= dt
+    const magnetR = this.magnetSeconds > 0
+      ? pl.stats.pickupRadius * BREAKABLES.magnet.radiusMultiplier
+      : pl.stats.pickupRadius
     const collectR = T.pickups.collectRadius
 
     for (let i = this.pickups.live - 1; i >= 0; i--) {
@@ -1392,17 +1642,50 @@ export class World {
     }
   }
 
+  /**
+   * Switched exhaustively on the kind, not `xp / feed / else`.
+   *
+   * The old `else` meant heal, which was true while heal was the only third
+   * kind. A magnet or a gear card arriving in that branch would silently have
+   * healed the player for `value` instead -- zero, in the gear case -- and the
+   * pickup would have looked like it did nothing.
+   */
   private collect(g: Pickup): void {
-    if (g.kind === 'xp') {
-      const gained = g.value * (1 + this.player.stats.harvestPct / 100)
-      const levels = this.player.gainXp(gained)
-      if (levels > 0) this.events.onLevelUp?.(levels)
-    } else if (g.kind === 'feed') {
-      this.sound('pickupFeed')
-      this.player.feed += Math.round(g.value * (1 + this.player.stats.harvestPct / 100))
-    } else {
-      this.sound('pickupHeal')
-      this.player.hp = Math.min(this.player.stats.maxHp, this.player.hp + g.value)
+    switch (g.kind) {
+      case 'xp': {
+        const gained = g.value * (1 + this.player.stats.harvestPct / 100)
+        const levels = this.player.gainXp(gained)
+        if (levels > 0) this.events.onLevelUp?.(levels)
+        return
+      }
+      case 'feed':
+        this.sound('pickupFeed')
+        this.player.feed += Math.round(g.value * (1 + this.player.stats.harvestPct / 100))
+        return
+      case 'heal':
+        this.sound('pickupHeal')
+        this.player.hp = Math.min(this.player.stats.maxHp, this.player.hp + g.value)
+        return
+      case 'magnet':
+        this.sound('pickupFeed')
+        // Both halves of what the magnet promises: sweep what is already down,
+        // then hold the radius open so what drops during the window follows.
+        this.magnetiseAll()
+        this.magnetSeconds = BREAKABLES.magnet.seconds
+        this.events.onMagnet?.(BREAKABLES.magnet.seconds)
+        return
+      case 'gear':
+        // Eligibility was settled when it dropped, so this cannot no-op. A
+        // second check here would be the wrong place for it -- by now the
+        // player has walked to it, and refusing at the last step is worse than
+        // never having offered.
+        this.sound('pickupFeed')
+        if (g.itemId) {
+          this.player.addItem(g.itemId)
+          this.refreshSpecialItems()
+          this.events.onGear?.(g.itemId)
+        }
+        return
     }
   }
 
@@ -1657,6 +1940,20 @@ export class World {
 
     const scalar = waveScalar(this.spawner.wave)
     e.typeId = typeId
+    /*
+       Cycle the sheet where the type declares variants.
+
+       A COUNTER, not an RNG draw. Two reasons. It costs nothing, where a third
+       `next()` per spawn would reseat every draw after it and invalidate every
+       recorded seed for a change that is purely cosmetic. And a cycle actually
+       mixes a flock better than a roll does: ten rolls of ten will hand you the
+       same hen twice about as often as not, which is the exact complaint this
+       is here to answer.
+    */
+    const sheets = def.sheets
+    e.sheetId = sheets && sheets.length > 0
+      ? sheets[this.spawnSeq++ % sheets.length]
+      : typeId
     e.x = x
     e.y = y
     e.px = x
@@ -2401,6 +2698,24 @@ export class World {
   }
 
   // ------------------------------------------------------------- queries
+
+  /** Nearest breakable, or -1. Only ever called when no enemy is in range. */
+  findNearestBreakable(x: number, y: number, maxRange: number): number {
+    let best = -1
+    let bestD2 = maxRange * maxRange
+    for (let i = 0; i < this.breakables.live; i++) {
+      const b = this.breakables.items[i]
+      if (b.dying > 0) continue
+      const dx = b.x - x
+      const dy = b.y - y
+      const d2 = dx * dx + dy * dy
+      if (d2 < bestD2) {
+        bestD2 = d2
+        best = i
+      }
+    }
+    return best
+  }
 
   findNearestEnemy(x: number, y: number, maxRange: number): number {
     let best = -1

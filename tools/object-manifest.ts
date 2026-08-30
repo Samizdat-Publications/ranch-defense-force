@@ -66,6 +66,73 @@ const WANTED: Record<string, string> = {
   infected_hen_rotten: 'infectedHen',
   whitacre_bull: 'whitacreBull',
   barn_dog: 'barnDog',
+
+  /*
+     The owner's own animals, generated from life.
+     ------------------------------------------------------------------
+     These are the CLEAN versions -- the farm as it is, for the title scene
+     and the fenced yard. Their corrupted twins are separate objects and pack
+     under their own ids; a state is a different object to PixelLab and must be
+     a different sheet here, or the twin would overwrite the animal.
+
+     Downloaded directory names are camelCase here where every entry above is
+     snake_case, because these were downloaded with `npm run object -- <id>
+     <name>` under the id the game will address them by. The map exists so the
+     two can differ; it is not required that they match.
+  */
+  fjordPony: 'fjordPony',
+  arabian: 'arabian',
+  blackMule: 'blackMule',
+  beigeMule: 'beigeMule',
+  rosie: 'rosie',
+  wiz: 'wiz',
+  ouiji: 'ouiji',
+  tabbyCat: 'tabbyCat',
+  siameseCat: 'siameseCat',
+  job: 'job',
+  brahmaHen: 'brahmaHen',
+  beardedHen: 'beardedHen',
+  buffHen: 'buffHen',
+  bantamHen: 'bantamHen',
+  silkieHen: 'silkieHen',
+  polishHen: 'polishHen',
+  leghornHen: 'leghornHen',
+  barredHen: 'barredHen',
+  farmRooster: 'farmRooster',
+  chick: 'chick',
+
+  /*
+     The corrupted twins.
+     ------------------------------------------------------------------
+     Made with `create_object_state` rather than as new objects, so each one is
+     provably the SAME animal gone wrong rather than a different animal that
+     happens to be grey. That relationship is the whole point: the title screen
+     wants a clean farm that turns, and a transition only lands if the barn on
+     the far side is the barn you were just looking at.
+
+     The chick has no twin, deliberately. A rotting baby chick is a tonal call
+     that belongs to the owner, not to whoever was generating art at the time;
+     it is one command away if they want it.
+  */
+  fjordPonyBlight: 'fjordPonyBlight',
+  arabianBlight: 'arabianBlight',
+  blackMuleBlight: 'blackMuleBlight',
+  beigeMuleBlight: 'beigeMuleBlight',
+  rosieBlight: 'rosieBlight',
+  wizBlight: 'wizBlight',
+  ouijiBlight: 'ouijiBlight',
+  tabbyCatBlight: 'tabbyCatBlight',
+  siameseCatBlight: 'siameseCatBlight',
+  jobBlight: 'jobBlight',
+  brahmaHenBlight: 'brahmaHenBlight',
+  beardedHenBlight: 'beardedHenBlight',
+  buffHenBlight: 'buffHenBlight',
+  bantamHenBlight: 'bantamHenBlight',
+  silkieHenBlight: 'silkieHenBlight',
+  polishHenBlight: 'polishHenBlight',
+  leghornHenBlight: 'leghornHenBlight',
+  barredHenBlight: 'barredHenBlight',
+  farmRoosterBlight: 'farmRoosterBlight',
 }
 
 const DEATH = /^(buckling|toppling|folding|dropping|stumbling|collapsing)/
@@ -81,13 +148,34 @@ const report: string[] = []
 
 for (const [dir, id] of Object.entries(WANTED)) {
   const animDir = `${ROOT}/${dir}/animations`
-  if (!existsSync(animDir)) { report.push(`SKIP ${dir}: no animations/`); continue }
+  const probe = `${ROOT}/${dir}/rotations/south.png`
+  if (!existsSync(probe)) { report.push(`SKIP ${dir}: no rotations/`); continue }
 
   // Cell size is per-animal and uniform within it; read it, do not assume.
-  const probe = `${ROOT}/${dir}/rotations/south.png`
   const cell = decodePng(readFileSync(probe)).width
 
   const clips: Record<string, { slug: string; frames: number }> = {}
+
+  /*
+     An object with no animations is still worth packing. The eight rotations
+     ARE a sheet, and that is all a fence-line animal standing in the title
+     scene needs. Skipping it -- which is what this did before -- meant the
+     only way to get an animal into the atlas was to buy it a walk cycle first.
+
+     `clips` is left EMPTY, not given a synthetic `idle`. build-atlas.ts packs
+     `<id>.idle.<dir>.0` from `rotations/` for every sheet in this group
+     already, before it looks at clips at all; naming an idle here would send
+     that same rotation through the animation loop as well, hunting for
+     `animations//south/frame_000.png`, and the miss is an error, not a skip.
+  */
+  if (!existsSync(animDir)) {
+    const present = DIRS.filter((d) => existsSync(`${ROOT}/${dir}/rotations/${d}.png`))
+    if (present.length < 8) report.push(`  ${id}: WARNING only ${present.length}/8 rotations`)
+    sheets[id] = { dir, cell, clips: {} }
+    report.push(`${id.padEnd(18)} cell ${String(cell).padEnd(3)} idle:1f (rotations only, no clips)`)
+    continue
+  }
+
   for (const slug of readdirSync(animDir)) {
     if (!statSync(`${animDir}/${slug}`).isDirectory()) continue
     const present = DIRS.filter((d) => existsSync(`${animDir}/${slug}/${d}`))
@@ -104,9 +192,12 @@ for (const [dir, id] of Object.entries(WANTED)) {
   report.push(`${id.padEnd(18)} cell ${String(cell).padEnd(3)} ${Object.entries(clips).map(([k, v]) => `${k}:${v.frames}f`).join(' ')}`)
 }
 
+// The eight idle frames build-atlas.ts packs from `rotations/` are counted
+// here too. Leaving them out made a rotations-only animal report as zero
+// frames, which reads as "packed nothing" for a sheet that packs eight.
 const total = Object.values(sheets).reduce<number>((n, s) => {
   const sh = s as { clips: Record<string, { frames: number }> }
-  return n + Object.values(sh.clips).reduce((m, c) => m + c.frames * 8, 0)
+  return n + 8 + Object.values(sh.clips).reduce((m, c) => m + c.frames * 8, 0)
 }, 0)
 
 console.log(report.join('\n'))

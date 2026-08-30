@@ -14,6 +14,7 @@ import nodesRaw from './nodes.json'
 import elementsRaw from './elements.json'
 import audioRaw from './audio.json'
 import mapsRaw from './maps.json'
+import breakablesRaw from './breakables.json'
 
 /** Every stat the resolver knows about. Keys ending `Pct` are percentages
  *  summed additively; everything else is a flat addend. */
@@ -126,7 +127,28 @@ export interface ItemDef {
   [k: string]: unknown
 }
 
+/**
+ * The atlas frame that draws an item's card.
+ *
+ * `cardSprite` is declared per item and is the authority; `item.<icon>` is the
+ * fallback for the entries that predate the field. Kept here rather than in the
+ * renderer because both the card UI and the field pickup ask the same question,
+ * and answering it twice is how the two drift apart.
+ */
+export function itemCardSprite(id: string): string {
+  const def = ITEMS[id] as { cardSprite?: string; icon?: string } | undefined
+  return def?.cardSprite ?? `item.${def?.icon ?? id}`
+}
+
 export interface EnemyDef {
+  /**
+   * Optional atlas sheets to draw this enemy from, cycled per spawn.
+   *
+   * Purely cosmetic -- one stat block, many skins. Every sheet named here must
+   * carry a `walk` clip, because that is the only lookup with no graceful
+   * fallback; `attack` falls back to walk and `death` falls back to the spin.
+   */
+  sheets?: string[]
   name: string
   sheet: string
   hp: number
@@ -257,6 +279,67 @@ export const NODES = nodesRaw as unknown as {
   }
   mobDrops: { seedPackChance: number; seedPackFeed: number }
 }
+
+/**
+ * Destructible field objects and what falls out of them.
+ *
+ * A drop row's `min`/`max` are absent on the rows that carry no number --
+ * `nothing`, `gear` and `magnet` -- so the roll reads them only for the kinds
+ * that have a value. See breakables.json for why `nothing` is the heaviest row
+ * in every table.
+ */
+export interface DropRow {
+  kind: 'nothing' | 'xp' | 'feed' | 'heal' | 'gear' | 'magnet'
+  weight: number
+  min?: number
+  max?: number
+}
+export interface BreakableClass {
+  sprite: string
+  weight: number
+  hp: number
+  radius: number
+  drops: string
+}
+export const BREAKABLES = breakablesRaw as unknown as {
+  field: {
+    initial: number
+    regrowPerWave: number
+    max: number
+    minDistanceFromPlayer: number
+    edgePad: number
+  }
+  classes: Record<string, BreakableClass>
+  dropTables: Record<string, DropRow[]>
+  magnet: { sprite: string; radiusMultiplier: number; seconds: number }
+  gear: { sprite: string }
+}
+
+/**
+ * The breakable classes as a plain array, built once.
+ *
+ * The JSON is keyed for readability, but the scatter picks by weight and wants
+ * an ordered list. Building it per scatter would allocate inside a call the
+ * wave boundary makes.
+ */
+export const BREAKABLE_CLASSES: BreakableClass[] = Object.values(BREAKABLES.classes)
+
+/**
+ * Which item cards a breakable may hand over.
+ *
+ * Everything but the legendaries. A legendary reshapes a run -- The Reaper's
+ * Own makes melee infinitely piercing -- and finding one under a barrel would
+ * make the run about barrels. Those stay behind the level-up screen and the
+ * shop, where the player chose them over something else.
+ *
+ * It lives HERE and not in the sim because "which items may be found in the
+ * field" is a content decision, and because a rule that is only expressed
+ * inside a private function is a rule no test can reach without the sim
+ * growing a hole for it.
+ */
+export const FIELD_GEAR_POOL: string[] = Object.entries(ITEMS)
+  .filter(([id, def]) => !id.startsWith('_') && (def as { rarity?: string }).rarity !== 'legendary')
+  .map(([id]) => id)
 
 /**
  * Where a run happens. See maps.json — a map owns the ground it bakes from, the
