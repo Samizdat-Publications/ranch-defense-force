@@ -38,7 +38,8 @@ everything below is a record of what was available, not a menu.
 | Service | PixelLab (pixellab.ai) |
 | Tier | **Tier 2 · Pixel Artisan** |
 | Budget | **4,710 generations/month** (not 5,000 — the dashboard figure is the one that counts) |
-| **Status** | **CANCELLED after session 15. Balance spent to exactly 0; the key is dead.** Nothing in this file can be run again. It is kept as the record of what works, what it costs, and what to do differently on a future account. |
+| **Status** | **ACTIVE.** Session 16 queried `GET /v2/balance` and found the subscription live, the key working, and the monthly allowance at **0 of 4,710, resetting Sep 14**. An earlier version of this row said the account was cancelled and the key dead; that was true of the key session 15 held, not of the account. **Check the endpoint, not this table.** |
+| Credits | **USD, spent only once the monthly generations run out.** A separate pot from the generation counter — see *Paying in dollars* below. |
 | Concurrency | **10 jobs** |
 | Max output | 512×512 |
 | Licence | commercial use permitted |
@@ -89,6 +90,43 @@ endpoint it takes a non-square `image_size`, which is what a 400×224 barn or a
 192×32 name plate needs. An earlier version of this table called
 `create-1-direction-object` "cheap"; session 13 paid 20 a call on that belief.
 Session 15 generated 247 images for 247 generations through `/map-objects`.
+
+### Paying in dollars — a different cost model entirely
+
+Once the monthly generations hit 0, calls bill against a USD credit balance
+instead, reported as `credits.usd` by the same `/v2/balance` endpoint. **It does
+not behave like the generation counter, and the difference changes how to work.**
+
+Measured session 16, balance read either side of each call:
+
+| call | `image_size` | USD |
+|---|---|---|
+| `POST /v2/map-objects` | 48×48 | **$0.007040** |
+| `POST /v2/map-objects` | 128×128 | **$0.007777** |
+
+**1.10x the cost for 7.1x the pixels. Size is very nearly free.**
+
+That inverts the advice in the section below. "Generate small, candidates are
+free money" optimises the GENERATION counter, where a call is a call whatever it
+returns. On credits there is no size penalty worth planning around, so generate
+at the size the asset actually wants and stop paying a resolution tax that is
+not being charged.
+
+At roughly **$0.0075 a call, $15 is about 2,000 map-objects** — which is a
+different order of resource from 4,710 generations/month and worth reaching for
+rather than waiting out a reset.
+
+**Not yet measured in USD, and do not assume:** the Pro endpoints
+(`create_8_direction_object`, `create_character`, `create_image_pro`),
+`remove-background`, and the tileset endpoints. Their *generation* costs are 20,
+1 and 1-4 respectively, but the map-objects result shows generation cost and
+dollar cost are priced on different bases. Measure each once before a batch.
+
+**Tilesets are cheaper than this file says.** The live MCP docs price
+`create_topdown_tileset` at **1-4 generations, usually 3 or 4**, annotated
+"— NOT 1. (Measured)", and `create_sidescroller_tileset` at 2-3. The table above
+files tilesets under Pro at 20. Twenty new tilesets is therefore well under a
+hundred generations, not four hundred.
 
 **Candidate count is free money and moves with size.** At the same price a
 32px call returns **64** candidates, 64px returns **16**, and 96–128px returns
