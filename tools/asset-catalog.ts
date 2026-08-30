@@ -129,6 +129,7 @@ const castBlight = CAST.map(([id]) => `${id}Blight.idle.down.0`).filter((k) => a
 contactSheet('cast-clean', castClean, 3, 5)
 contactSheet('cast-blighted', castBlight, 3, 5)
 contactSheet('scene', (byPrefix.get('scene') ?? []).sort(), 2, 8)
+contactSheet('ranch', (byPrefix.get('ranch') ?? []).sort(), 1, 6)
 contactSheet('props', (byPrefix.get('prop') ?? []).sort(), 3, 8)
 contactSheet('crops', (byPrefix.get('crop') ?? []).sort(), 3, 8)
 contactSheet('nodes', (byPrefix.get('node') ?? []).sort(), 3, 8)
@@ -211,7 +212,8 @@ for (const k of keys.filter((k) => k.includes('Strip')).sort()) L.push(`- \`${k}
 L.push('')
 
 const groups: [string, string, string][] = [
-  ['scene', 'Buildings and yard furniture', 'scene'],
+  ['ranch', 'THE RANCH — generated buildings, vehicles, fencing, feed. USE THESE.', 'ranch'],
+  ['scene', 'LimeZu yard furniture — purchased art, being retired. Prefer `ranch.*`.', 'scene'],
   ['prop', 'Field props — many with 16 variants each', 'props'],
   ['crop', 'Crops, healthy and rotted', 'crops'],
   ['node', 'Harvest nodes — rocks, trees, seams', 'nodes'],

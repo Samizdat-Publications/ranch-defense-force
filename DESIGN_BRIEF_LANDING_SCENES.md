@@ -175,44 +175,99 @@ it does not. So it renders a still yard rather than an empty one while
 animations are still being generated. Build the same way and nothing you make
 can break on a missing clip.
 
-## Some starting ideas
+## THE ASK — four unique scenes, and no LimeZu
 
-Genuinely just starting points.
+The first pass used `scene.barn`, `scene.house` and `scene.silo`. **That was our
+fault, not yours** — the generated buildings were claimed in PixelLab and never
+downloaded, so those LimeZu keys were the only barn, house and silo in the atlas.
+They are packed now, under `ranch.*`. See `docs/catalog/ranch.png`.
 
-**1. The turn.** The yard, clean, mid-afternoon, everything where it should be —
-Joy on the porch, the flock scratching around the coop, the ponies at the rail.
-Then it turns. Not a jump: a *slow* wrongness, the palette draining first, the
-animals swapping to their twins one at a time rather than all at once, the barn
-sagging last. The horror is that you watch it happen to animals you were just
-enjoying looking at.
+**Do not use any `scene.*` key.** Every one of them is purchased LimeZu art that
+is being retired. Everything you need has a `ranch.*` or a generated equivalent:
 
-**2. Two windows, one farm.** Split the screen and run both versions
-simultaneously — clean left, blighted right, the same composition, the same
-animals in the same places. Let the eye do the work. No transition needed at
-all, which sidesteps the photosensitivity problem entirely.
+| instead of | use |
+|---|---|
+| `scene.barn` | `ranch.barn` — 400x224, weathered red, gambrel roof |
+| `scene.house` | `ranch.farmhouse` — 256x320, two storey clapboard with a porch |
+| `scene.silo` | `ranch.silo` — 224x400, corrugated, domed cap |
+| `scene.coop` | `ranch.coop` (on stilts with a ramp) or `ranch.coopBroken` |
+| `scene.well` | `ranch.well` or `ranch.wellStone` |
+| `scene.trough` | `ranch.waterTrough` |
+| `scene.hay` | `ranch.roundBale`, `ranch.roundBaleRotted`, `ranch.squareBales` |
+| `scene.fenceRail` / `penH` / `penV` | `ranch.fenceRail`, `ranch.fenceRailBroken`, `ranch.fencePost`, `ranch.fenceCorner` |
+| `scene.tractorLeft` | `ranch.tractor` (160x112), `ranch.tractorRed`, `ranch.hayWagon` |
+| — | `ranch.windmill`, `ranch.bunkhouse`, `ranch.biplane`, `ranch.feedBin`, `ranch.feedBucket` |
 
-**3. The last normal evening.** Play it entirely straight. A warm, quiet,
-completely un-haunted farm at dusk, no corruption anywhere, and let the *title*
-carry the dread. The most unsettling version might be the one with nothing
-wrong in it.
+The **props** group has sixteen variants each of barrels, drums, crates, milk
+cans, ploughs and pumps. The **crops** group has healthy and rotted versions of
+cabbage, pumpkin, wheat and corn. Use the range — a yard where every barrel is
+the same barrel is the tell that a machine placed it.
 
-**4. A rotation.** Several scenes that cycle per visit — the yard, the field at
-night, the burnt orchard, the flooded low ground. Different times of day,
-different weather, same farm. Rewards coming back.
+### The layout is a real ranch, and it is the owner's
 
-**5. Something underground.** `docs/SUBTERRANEAN.md` has where the game is
-going: a coal seam, a waste vault full of drums, a bone layer older than the
-farm. A title screen that hints at what is under the field would be doing
-narrative work no other surface does.
+This is the single most important note in this brief. The first pass put every
+animal in one long row behind one fence. **That is a lineup, not a ranch.** The
+owner's actual place is separate paddocks:
 
-Combine them, ignore them, do something better.
+- **The pony field** — three Fjords together, with a **round bale**.
+- **The mule field** — the two mules (`blackMule`, `beigeMule`) and the donkey
+  (`rosie`) together, with a round bale that is a **different variant** to the
+  ponies' one. Two identical bales in two fields is the machine showing again.
+- **Phantom, on his own** — one horse, his own field, no round bale. He gets an
+  **alfalfa bucket / feed** (`ranch.feedBucket`, `ranch.feedBin`) and **loose
+  hay on the ground** (`ranch.squareBales`, or scattered — not a round bale).
+- **The chickens, fenced off in their own run**, with the coop
+  (`ranch.coop`). Ten different birds. Not in with the horses.
 
----
+Fields need real fences between them: `ranch.fenceRail` in runs, with
+`ranch.fencePost` and `ranch.fenceCorner` at the ends.
+
+The cats and Joy are loose — that is what cats and a bulldog do. Joy has a name
+and a role (she is the level-up companion); treat her as a character, not set
+dressing.
+
+### Leave room for the interface
+
+The first pass had nowhere for the cards. The title screen needs space for the
+menu AND for the card/upgrade UI this game runs on. Compose around a reserved
+region rather than filling the frame and hoping. Ask the owner where he wants it
+if that changes your composition.
+
+### Four scenes
+
+Four **unique** ones, not one scene relit four times. Different places, different
+times, different weather. Some directions worth taking or discarding:
+
+1. **The yard, clean.** The ranch as it is: separate paddocks as described
+   above, warm light, nothing wrong. This is the baseline and the one the
+   corruption is measured against.
+2. **The turn.** The same yard going wrong — but *slowly*, animal by animal
+   rather than all at once, palette draining first, the barn sagging last. Every
+   animal has a `Blight` twin at the same size and pose, so a cross-fade lands
+   with nothing to re-register.
+3. **Under the field.** Your waste-vault pass was the strongest thing in the
+   first round — keep going. `docs/SUBTERRANEAN.md` has five layers, and the
+   coal seam, the flooded level and the bone layer are all unbuilt. Suggestions:
+   give it a way IN (a lift cage, a shaft of daylight from far above, a ladder
+   the eye can follow) so it reads as *beneath the farm* rather than as a
+   basement; and the drums are the story — stencil them, rank them, let one be
+   split and weeping. `cave.stalactite*` and `cave.web*` are packed.
+4. **Your call.** Somewhere on this farm we have not thought of. The burnt
+   orchard, the flooded low ground, the barn interior at night, the road in.
+   `ranch.biplane` and `ranch.bunkhouse` have never been used by anything.
 
 ## Questions worth asking the owner
 
 Rather than guessing:
 
+- **Which horse is Phantom?** The brief above says he stands alone with feed. The
+  packed equines are `fjordPony`, `arabian`, `blackMule`, `beigeMule` and
+  `rosie`, and the owner has not said which one he is — the Arabian is the
+  likely read, but ask rather than assume. There is also only ONE Fjord sprite
+  and the pony field wants three, so confirm placing it three times is
+  acceptable rather than generating two more.
+- Where should the card/upgrade UI sit? It needs reserved space and that
+  constrains the composition.
 - One scene or a rotation? If a rotation, on what — per visit, per session, time
   of day?
 - How much motion does he want on a screen he will see hundreds of times?

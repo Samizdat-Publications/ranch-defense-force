@@ -1449,5 +1449,36 @@
    "cave.web5": "web_5.png"
   },
   "_branchNote": "The dead branches are overhead art for the SURFACE maps -- a dead orchard has a canopy and the player walks under it. Drawn from directly below looking up, which is the only angle that works: a branch drawn in three-quarter view reads as a branch lying on the ground, and the whole point of this layer is that it is above you."
+ },
+ "ranch": {
+  "_note": "The generated ranch: buildings, vehicles, fencing and feed. These replace the LimeZu `scene.*` equivalents, which are the last purchased art in the title screen.",
+  "_whyThisExists": "Claimed in PixelLab four sessions ago and never DOWNLOADED, so they were invisible to anything reading the atlas -- and a scene can only draw atlas keys. Claude Design duly built a title screen on `scene.barn`, `scene.house` and `scene.silo`, because those were the only barn, house and silo that existed as far as the repo was concerned. The art had been bought the whole time. Claiming is not packing.",
+  "_base": "assets/pixellab/ranch/",
+  "noTrim": true,
+  "files": {
+   "ranch.barn": "barn.png",
+   "ranch.biplane": "biplane.png",
+   "ranch.bunkhouse": "bunkhouse.png",
+   "ranch.coop": "coop.png",
+   "ranch.coopBroken": "coopBroken.png",
+   "ranch.farmhouse": "farmhouse.png",
+   "ranch.feedBin": "feedBin.png",
+   "ranch.feedBucket": "feedBucket.png",
+   "ranch.fenceCorner": "fenceCorner.png",
+   "ranch.fencePost": "fencePost.png",
+   "ranch.fenceRail": "fenceRail.png",
+   "ranch.fenceRailBroken": "fenceRailBroken.png",
+   "ranch.hayWagon": "hayWagon.png",
+   "ranch.roundBale": "roundBale.png",
+   "ranch.roundBaleRotted": "roundBaleRotted.png",
+   "ranch.silo": "silo.png",
+   "ranch.squareBales": "squareBales.png",
+   "ranch.tractor": "tractor.png",
+   "ranch.tractorRed": "tractorRed.png",
+   "ranch.waterTrough": "waterTrough.png",
+   "ranch.well": "well.png",
+   "ranch.wellStone": "wellStone.png",
+   "ranch.windmill": "windmill.png"
+  }
  }
 }
