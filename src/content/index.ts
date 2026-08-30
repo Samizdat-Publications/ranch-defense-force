@@ -13,6 +13,7 @@ import tuningRaw from './tuning.json'
 import nodesRaw from './nodes.json'
 import elementsRaw from './elements.json'
 import audioRaw from './audio.json'
+import mapsRaw from './maps.json'
 
 /** Every stat the resolver knows about. Keys ending `Pct` are percentages
  *  summed additively; everything else is a flat addend. */
@@ -239,6 +240,91 @@ export const NODES = nodesRaw as unknown as {
     minDistanceFromPlayer: number
   }
   mobDrops: { seedPackChance: number; seedPackFeed: number }
+}
+
+/**
+ * Where a run happens. See maps.json — a map owns the ground it bakes from, the
+ * node and enemy mix standing on it, the arena's size and shape, and whatever
+ * hazards vent out of it.
+ */
+export interface MapTerrain {
+  groundSet: string
+  soilSet: string
+  soilEdgeCols: number
+  blight: { fromWave: number; groundSet: string }[]
+}
+export interface MapHazards {
+  kind: HazardKindName
+  /** Atlas frame drawn under the hazard circle. Optional — a hazard without
+   *  art still reads, because the circle is what carries the warning. */
+  sprite?: string
+  fromWave: number
+  everySeconds: number
+  maxLive: number
+  radius: number
+  growth: number
+  life: number
+  /** Damage per second to enemies standing inside. */
+  dps: number
+  /** Damage per second to the player. Separate, so a map can make a hazard a
+   *  tool rather than only a tax. */
+  playerDps: number
+  /** Slow applied to enemies standing inside, 0-100. */
+  slowPct: number
+  /** Slow applied to the player standing inside, 0-100. */
+  playerSlowPct: number
+  /** Vents no closer than this to the player. */
+  minDistanceFromPlayer: number
+  /** ...and no further than this, so a hazard is something you walk into
+   *  rather than a lottery held somewhere on a four-million-pixel field. */
+  maxDistanceFromPlayer: number
+}
+/** Mirrors `HazardKind` in sim/entities.ts. Duplicated rather than imported
+ *  because content must not depend on the sim; `maps.test.ts` asserts the two
+ *  lists stay identical, which is the check that makes the duplication safe. */
+export type HazardKindName = 'slow' | 'lure' | 'damage' | 'gas' | 'acid'
+
+export interface MapDef {
+  name: string
+  blurb: string
+  /** Relative draw weight when the run picks its map. */
+  weight: number
+  arena: { width: number; height: number }
+  terrain: MapTerrain
+  nodes: {
+    initial: Record<string, number>
+    max: Record<string, number>
+    regrowPerWave: Record<string, number>
+    /** Raises a node variant's draw weight for this map only. Biome variants
+     *  sit at weight 0 in nodes.json and only appear where a map asks. */
+    variantWeights?: Record<string, number>
+  }
+  /** Multiplies an enemy's spawn weight on this map. Absent means 1. */
+  enemyBias: Record<string, number>
+  hazards: MapHazards | null
+}
+
+export const MAPS = defsOf<MapDef>(
+  (mapsRaw as unknown as { maps: Record<string, MapDef> }).maps,
+)
+export const MAP_IDS = Object.keys(MAPS)
+
+/**
+ * Pick a run's map.
+ *
+ * The caller MUST call this as the first draw off a run's RNG — see the
+ * `_rngNote` in maps.json. It takes the raw `next()` rather than an Rng method
+ * so the cost in stream position is exactly one draw, whatever the map count.
+ */
+export function pickMapId(roll: number): string {
+  let total = 0
+  for (const id of MAP_IDS) total += MAPS[id].weight
+  let r = roll * total
+  for (const id of MAP_IDS) {
+    r -= MAPS[id].weight
+    if (r <= 0) return id
+  }
+  return MAP_IDS[MAP_IDS.length - 1]
 }
 
 export const CLASS_IDS = Object.keys(CLASSES)

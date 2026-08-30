@@ -19,7 +19,10 @@ import { Player } from './player'
 import { tierHpMultiplier } from './meta'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar } from './formulas'
-import { ELEMENTS, ENEMIES, ITEMS, NODES, TUNING, WAVES, WEAPONS, type StatMods } from '../content'
+import {
+  ELEMENTS, ENEMIES, ITEMS, MAPS, NODES, TUNING, WAVES, WEAPONS,
+  pickMapId, type MapDef, type NodeVariant, type StatMods,
+} from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
 import { ENEMY_BEHAVIOURS, type SteerContext } from '../behaviours/enemies'
 
@@ -55,8 +58,18 @@ export class World {
   readonly player = new Player()
   readonly spawner: Spawner
 
-  readonly arenaW = WAVES.arena.width
-  readonly arenaH = WAVES.arena.height
+  /**
+   * The map this run is being played on, and the arena it brings with it.
+   *
+   * Both are assigned in the constructor rather than initialised here, because
+   * the map is chosen off the RNG and a field initialiser runs before the
+   * constructor body — the arena has to exist before the spatial grid is sized
+   * from it, and the map has to be picked before the arena exists.
+   */
+  readonly mapId: string
+  readonly map: MapDef
+  readonly arenaW: number
+  readonly arenaH: number
 
   readonly enemies: Pool<Enemy>
   readonly projectiles: Pool<Projectile>
@@ -112,6 +125,10 @@ export class World {
    * guarantee would be hostage to the art. Accumulating the rate gives the exact
    * same frequency, spread evenly across hits rather than clumped by tick.
    */
+  /** Seconds until this map vents its next ambient hazard. Maps without a
+   *  `hazards` block never touch it. */
+  private ambientHazardIn = 0
+
   /** Set when a boss spawns; purely informational for the UI. */
   bossIndexHint: string | null = null
 
@@ -186,7 +203,17 @@ export class World {
   constructor(seed: number, classId: string, metaMods: StatMods = {}, readonly tier = 1) {
     this.seed = seed
     this.rng = new Rng(seed)
-    this.spawner = new Spawner(this.rng)
+
+    // THE FIRST DRAW OFF THE RUN'S RNG. Exactly one `next()`, before anything
+    // else touches the stream — see the `_rngNote` in maps.json. Moving this
+    // later does not just change which map you get, it reseats every draw after
+    // it, and every recorded seed replays as a different run.
+    this.mapId = pickMapId(this.rng.next())
+    this.map = MAPS[this.mapId]
+    this.arenaW = this.map.arena.width
+    this.arenaH = this.map.arena.height
+
+    this.spawner = new Spawner(this.rng, this.map)
 
     this.enemies = new Pool(T.pools.enemies, makeEnemy)
     this.projectiles = new Pool(T.pools.projectiles, makeProjectile)
@@ -222,18 +249,31 @@ export class World {
    * the occasional gold seam rather than an even spread — the point of ore is
    * that spotting it is worth something.
    */
+  /**
+   * This map's draw weight for a node variant.
+   *
+   * Biome variants (salt rock, scrap heap, bone heap, ash stump) are declared
+   * in nodes.json at weight 0 and raised here by whichever map wants them, so
+   * the numbers stay in one file and a map that says nothing gets exactly the
+   * field the game always had.
+   */
+  private variantWeight(v: NodeVariant): number {
+    return this.map.nodes.variantWeights?.[v.sprite] ?? v.weight
+  }
+
   private scatterNodes(kind: string, count: number): void {
     const def = NODES.kinds[kind]
     if (!def) return
     const field = NODES.field
-    const cap = field.max[kind] ?? 0
+    const cap = this.map.nodes.max[kind] ?? field.max[kind] ?? 0
     const pad = 80
 
     let live = 0
     for (let i = 0; i < this.props.live; i++) if (this.props.items[i].kind === kind) live++
 
     let totalWeight = 0
-    for (const v of def.variants) totalWeight += v.weight
+    for (const v of def.variants) totalWeight += this.variantWeight(v)
+    if (totalWeight <= 0) return
 
     for (let i = 0; i < count; i++) {
       if (live >= cap) return
@@ -246,11 +286,30 @@ export class World {
         if (Math.hypot(x - this.player.x, y - this.player.y) >= field.minDistanceFromPlayer) break
       }
 
+      // Skip weight-0 variants rather than relying on the running total to
+      // step past them, and seed the fallback with the FIRST variant rather
+      // than the last.
+      //
+      // Biome variants sit at weight 0 in nodes.json until a map asks, and they
+      // are at the END of the array, so the previous `variants[length - 1]`
+      // fallback pointed straight at one. This is defensive, not a bug fix:
+      // `roll` is `next() * totalWeight` and `next()` is [0, 1), so with the
+      // integer weights every map uses today the loop always breaks on the last
+      // weighted entry and the fallback cannot fire. It is deliberately NOT
+      // covered by a test — the two versions only diverge when float error
+      // across the subtractions exceeds the gap to `totalWeight`, which needs
+      // `next()` to land in the last ~1e-16 of its range, and a test that
+      // sampled for that would pass under both. Kept because maps.json is a
+      // content file and `"weight": 2.5` is one edit away from making the
+      // arithmetic argument stop holding.
       let roll = this.rng.next() * totalWeight
-      let variant = def.variants[def.variants.length - 1]
+      let variant = def.variants[0]
       for (const v of def.variants) {
-        roll -= v.weight
-        if (roll <= 0) { variant = v; break }
+        const w = this.variantWeight(v)
+        if (w <= 0) continue
+        variant = v
+        roll -= w
+        if (roll <= 0) break
       }
 
       const p = this.props.acquire()
@@ -274,7 +333,7 @@ export class World {
 
   /** Lay out the whole field at the start of a run. */
   private scatterField(): void {
-    for (const [kind, n] of Object.entries(NODES.field.initial)) this.scatterNodes(kind, n)
+    for (const [kind, n] of Object.entries(this.map.nodes.initial)) this.scatterNodes(kind, n)
   }
 
   // ---------------------------------------------------------------- tick
@@ -293,7 +352,7 @@ export class World {
     this.elapsed += dt
 
     // 2. player
-    this.player.move(moveX, moveY, dt, this.arenaW, this.arenaH)
+    this.player.move(moveX, moveY, dt, this.arenaW, this.arenaH, this.playerHazardSlow())
     this.player.updatePassive(dt)
     this.player.regen(dt)
     if (abilityPressed) this.tryAbility()
@@ -302,8 +361,12 @@ export class World {
     this.updatePlayerSpecials(dt)
     this.updateBull(dt)
 
-    // 3. spawner
+    // 3. spawner — the wave director, then the map's own. Ambient hazards are
+    // spawning, so they belong in this step rather than with the vfx at 11:
+    // they damage, they block ground, and an enemy steering next tick has to
+    // see one that appeared this tick.
     this.updateSpawner(dt)
+    this.updateAmbientHazards(dt)
 
     // 4. enemy steering + separation
     this.steerEnemies(dt)
@@ -395,7 +458,7 @@ export class World {
       s.beginWave(next)
       // The field grows back a little each wave, so a player who cleared it
       // early is not permanently out of crops to harvest.
-      for (const [kind, n] of Object.entries(NODES.field.regrowPerWave)) this.scatterNodes(kind, n)
+      for (const [kind, n] of Object.entries(this.map.nodes.regrowPerWave)) this.scatterNodes(kind, n)
       this.events.onWaveComplete?.(wasWave, income)
       const bossId = (WAVES.bossWaves as Record<string, string>)[String(next)]
       if (bossId) {
@@ -1072,6 +1135,91 @@ export class World {
     }
   }
 
+  /**
+   * The worst slow the player is standing in, 0-1.
+   *
+   * Max rather than sum: two overlapping sumps are one sump as far as being
+   * stuck in them goes, and stacking them would let a map reach a total stop.
+   */
+  private playerHazardSlow(): number {
+    let worst = 0
+    for (let i = 0; i < this.hazards.live; i++) {
+      const h = this.hazards.items[i]
+      if (h.playerSlowPct <= 0) continue
+      if (Math.hypot(this.player.x - h.x, this.player.y - h.y) > h.radius) continue
+      const s = h.playerSlowPct / 100
+      if (s > worst) worst = s
+    }
+    return worst
+  }
+
+  /**
+   * Vent the map's own hazards.
+   *
+   * These differ from every other hazard in the game in that they hurt BOTH
+   * sides — `dps` and `playerDps` are separate numbers in maps.json and both
+   * are usually non-zero. That is the point of putting hazards on the map
+   * rather than on a weapon: a burning patch on The Burn is somewhere you can
+   * drag a hog to die, not only somewhere you must not stand. A map that makes
+   * them pure punishment is one edit away, and is not what any of the five do.
+   */
+  private updateAmbientHazards(dt: number): void {
+    const cfg = this.map.hazards
+    if (!cfg) return
+    if (this.spawner.wave < cfg.fromWave) return
+
+    this.ambientHazardIn -= dt
+    if (this.ambientHazardIn > 0) return
+    this.ambientHazardIn = cfg.everySeconds
+
+    // Count only the map's own; a Watering Can slick must not starve the field
+    // of the hazards the map is supposed to be venting.
+    let live = 0
+    for (let i = 0; i < this.hazards.live; i++) {
+      if (this.hazards.items[i].sprite === cfg.sprite) live++
+    }
+    if (live >= cfg.maxLive) return
+
+    // In a RING around the player, not anywhere on the field.
+    //
+    // Scattering uniformly over the arena was the first version and it made the
+    // hazards invisible: the view is about 520x330 and the arena is nearer four
+    // million square pixels, so a handful of live hazards spread evenly were
+    // essentially never on screen and never walked into. They were a tax rolled
+    // somewhere over the horizon. The annulus puts them just past the edge of
+    // sight and within a short walk, which is the only arrangement where "this
+    // map vents gas" is a thing the player can learn rather than suffer.
+    //
+    // Angle-and-distance rather than rejection sampling in a box: two draws,
+    // always succeeds, and costs the RNG stream a fixed amount however full the
+    // arena is. The clamp keeps it inside the fence; a hazard shoved back
+    // against a wall is still on ground the player uses.
+    const angle = this.rng.range(0, Math.PI * 2)
+    const dist = this.rng.range(cfg.minDistanceFromPlayer, cfg.maxDistanceFromPlayer)
+    const lo = cfg.radius
+    let x = this.player.x + Math.cos(angle) * dist
+    let y = this.player.y + Math.sin(angle) * dist
+    if (x < lo) x = lo
+    else if (x > this.arenaW - lo) x = this.arenaW - lo
+    if (y < lo) y = lo
+    else if (y > this.arenaH - lo) y = this.arenaH - lo
+
+    const h = this.spawnHazard()
+    if (!h) return
+    h.kind = cfg.kind
+    h.x = x
+    h.y = y
+    h.radius = cfg.radius
+    h.growth = cfg.growth
+    h.life = cfg.life
+    h.maxLife = cfg.life
+    h.dps = cfg.dps
+    h.playerDps = cfg.playerDps
+    h.slowPct = cfg.slowPct
+    h.playerSlowPct = cfg.playerSlowPct
+    h.sprite = cfg.sprite ?? ''
+  }
+
   private updateHazards(dt: number): void {
     for (let i = this.hazards.live - 1; i >= 0; i--) {
       const h = this.hazards.items[i]
@@ -1608,7 +1756,9 @@ export class World {
     h.growth = 0
     h.dps = 0
     h.slowPct = 0
+    h.playerSlowPct = 0
     h.pullForce = 0
+    h.sprite = ''
     return h
   }
 

@@ -275,18 +275,35 @@ export interface Hazard {
    *  slop puddle is the other way round. */
   playerDps: number
   slowPct: number
+  /**
+   * How much this hazard slows the PLAYER, 0-100. Separate from `slowPct`,
+   * which has only ever slowed enemies — the Watering Can's rind slick is a
+   * player tool and must keep behaving exactly as it did. Only the map's own
+   * ambient hazards set this.
+   */
+  playerSlowPct: number
   pullForce: number
   /** Accumulates so damage-over-time applies in whole points, not fractions
    *  that round to zero every tick. */
   tickAcc: number
   playerAcc: number
+  /**
+   * Atlas frame drawn under the hazard's circle, or '' for none.
+   *
+   * A string on a pooled struct rather than a lookup, because the alternative
+   * is the render layer asking the map what kind of hazard this is on every
+   * hazard every frame. Assigned once at spawn from content; the hot loop only
+   * ever reads it. Weapon-made hazards leave it empty and keep the plain circle
+   * they have always had — art here marks the ones the MAP put down.
+   */
+  sprite: string
 }
 
 export function makeHazard(): Hazard {
   return {
     active: false, kind: 'slow', x: 0, y: 0, radius: 0, growth: 0,
-    life: 0, maxLife: 1, dps: 0, playerDps: 0, slowPct: 0, pullForce: 0,
-    tickAcc: 0, playerAcc: 0,
+    life: 0, maxLife: 1, dps: 0, playerDps: 0, slowPct: 0, playerSlowPct: 0,
+    pullForce: 0, tickAcc: 0, playerAcc: 0, sprite: '',
   }
 }
 

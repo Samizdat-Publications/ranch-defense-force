@@ -118,6 +118,20 @@
    "node.oreRed": "boulder_flesh.png"
   }
  },
+ "biome": {
+  "_note": "Biome nodes and hazard art for the map system (src/content/maps.json). One frame each, no animation: a node is a static prop you swing at, and a hazard is a ground decal drawn under the translucent circle that carries the actual read of 'this hurts'. Keys are the ones maps.json and nodes.json name — pick a different candidate here and nothing else changes.",
+  "_pickNote": "Three candidates each were generated; these are the ones chosen by LOOKING at a contact sheet, not by filename. saltrock_2 over _1 because _1 is magenta and reads as amethyst rather than salt. scrapheap_0 over _2 because _2 is an entire fire truck — a vehicle, not a scatterable node. boneheap_2 over _0 because _0 is a single skull-and-crossbones icon and this wants a heap. ashstump_1 over _0 because _0's roots spread far past the 13px node radius. gas_1 over _0 and _2, which are flat mounds rather than clouds. mud_0 over _2, which is a cobble pile and not mud at all.",
+  "_base": "assets/pixellab/field/",
+  "files": {
+   "node.saltRock": "node_saltrock_2.png",
+   "node.scrapHeap": "node_scrapheap_0.png",
+   "node.boneHeap": "node_boneheap_2.png",
+   "node.ashStump": "node_ashstump_1.png",
+   "hazard.gas": "hazard_gas_1.png",
+   "hazard.mud": "hazard_mud_0.png",
+   "hazard.fire": "hazard_fire_0.png"
+  }
+ },
  "nodeTrees": {
   "_note": "Fellable trees, GENERATED. Replaces the LimeZu Tree_* files under the same keys. The three smallest of the recovered trees, because a harvest node is something you walk up to: dead_tree_snapped_128, dying_tree_split_b and the two huge oaks (171x165 and 184x171) are landmark scenery, not nodes, and are left unpacked for that.",
   "_base": "assets/pixellab/env/",

@@ -1,8 +1,5 @@
 {
-  "arena": {
-    "width": 2400,
-    "height": 1600
-  },
+  "_arenaNote": "Arena size used to live here as `arena: {width, height}`. It moved to src/content/maps.json, because size and shape are the map's to choose and a run now picks a map before it builds its spatial grid. Nothing reads `WAVES.arena` any more; `World.arenaW/arenaH` come from the chosen map.",
   "waveCount": 25,
   "waveDuration": 40,
   "continuous": true,

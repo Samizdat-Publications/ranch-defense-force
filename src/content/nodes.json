@@ -139,6 +139,28 @@
           "feed": 30,
           "xp": 40,
           "weight": 2
+        },
+        {
+          "_note": "Biome variants. Weight 0 means they never appear on a map that does not ask for them — maps.json raises the weight, so adding a map is a content edit and the default field is exactly what it was.",
+          "sprite": "node.saltRock",
+          "hp": 48,
+          "feed": 7,
+          "xp": 6,
+          "weight": 0
+        },
+        {
+          "sprite": "node.scrapHeap",
+          "hp": 130,
+          "feed": 4,
+          "xp": 16,
+          "weight": 0
+        },
+        {
+          "sprite": "node.boneHeap",
+          "hp": 66,
+          "feed": 11,
+          "xp": 9,
+          "weight": 0
         }
       ]
     },
@@ -167,6 +189,14 @@
           "feed": 7,
           "xp": 10,
           "weight": 10
+        },
+        {
+          "_note": "Biome variant, weight 0 by default. See the rock note above.",
+          "sprite": "node.ashStump",
+          "hp": 55,
+          "feed": 3,
+          "xp": 9,
+          "weight": 0
         }
       ]
     },

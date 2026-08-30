@@ -1,0 +1,237 @@
+{
+  "_note": "Where a run happens. A map changes all four of the things the owner asked for: the ground and its tileset, the node and enemy mix, the arena's size and shape, and the hazards standing on it. Everything here is content — adding a sixth map is this file plus nothing.",
+
+  "_rngNote": "THE MAP IS THE FIRST DRAW OFF THE RUN'S SEEDED RNG. World's constructor picks it immediately after `new Rng(seed)` and before anything else touches the stream. That position is load-bearing and must not move: insert the choice anywhere later and every draw after it shifts, so every existing seed replays as a different run. It is first rather than last because it is the only decision the whole rest of the run is conditioned on — arena size feeds the spatial grid, which is built before the field is scattered.",
+
+  "_areaConfoundNote": "Arena AREA is held near the Home Field's 3.84M on every map except the Scrapyard, which is small on purpose. Shape is the feature; area is a confound. The first pass varied both, and the two largest maps (theBurn at 4.75M, boneOrchard at 4.32M) measurably inverted The Kid's class identity in run.test.ts — a class whose damage scales with velocity needs enemies to run PAST, and on a big enough field a kiting bot just runs into empty ground and deals nothing. Holding area roughly constant keeps five genuinely different shapes without turning arena size into a stealth difficulty knob.",
+
+  "_shapeNote": "'Shape' here means the rectangle's proportions, not a non-rectangular arena. A 3200x1200 flat and a 1600x2600 corridor play very differently — sightlines, how far a kite can run before a wall, how much of the field the camera holds — and they cost nothing in the collision or clamping code, which stays a rectangle. A genuinely non-rectangular arena would touch the spatial grid, the edge spawner and the player clamp; it is not what this is.",
+
+  "_areaNote": "Node counts are per-map rather than scaled from area, because density is the design lever and area is only one input to it. The Scrapyard is the smallest arena AND the sparsest field: cramped and stripped, nowhere to run and little to harvest. The Bone Orchard is the largest AND the densest, which is what makes it the map you go to for feed.",
+
+  "_densityNote": "HOW MANY are standing at once is `life / everySeconds`, NOT `maxLive`. The first pass set maxLive to 9-14 and everySeconds to 5-13 and got one to three live hazards, because one spawn per interval that lives `life` seconds settles at that ratio long before it reaches any cap. maxLive is a safety cap, not a target. Every map below now sets `everySeconds` to about `life / (intended live count)` so the two numbers agree, and maxLive sits a little above the equilibrium to absorb the jitter. Change `life` and you have changed the density — come back and change `everySeconds` with it.",
+
+  "_hazardNote": "Ambient hazards belong to the map, not the wave. They damage ENEMIES as well as the player (`dps` and `playerDps` are separate), so a burning patch is a tool as much as a tax — the fight becomes about where you stand, which is the whole reason a map should own hazards. The Home Field has none on purpose: it is the baseline the game has always played as, and it stays exactly that.",
+
+  "maps": {
+    "homeField": {
+      "name": "The Home Field",
+      "blurb": "Your own ground, going wrong on schedule.",
+      "weight": 2,
+      "arena": { "width": 2400, "height": 1600 },
+      "terrain": {
+        "groundSet": "dirt_to_grass_plain",
+        "soilSet": "grass_to_soil_v2",
+        "soilEdgeCols": 4,
+        "blight": [
+          { "fromWave": 9, "groundSet": "grass_to_witheredgrass" },
+          { "fromWave": 15, "groundSet": "grass_to_rot" },
+          { "fromWave": 21, "groundSet": "grass_to_coldash" }
+        ]
+      },
+      "nodes": {
+        "initial": { "rock": 26, "tree": 18, "crop": 30 },
+        "max": { "rock": 40, "tree": 28, "crop": 46 },
+        "regrowPerWave": { "rock": 2, "tree": 2, "crop": 4 }
+      },
+      "enemyBias": {},
+      "hazards": null
+    },
+
+    "saltFlats": {
+      "name": "The Salt Flats",
+      "blurb": "Nothing grows and nothing hides. Neither do you.",
+      "weight": 1,
+      "arena": { "width": 2900, "height": 1300 },
+      "terrain": {
+        "groundSet": "grass_to_palegreygreen",
+        "soilSet": "grass_to_soil",
+        "soilEdgeCols": 3,
+        "blight": [
+          { "fromWave": 9, "groundSet": "grass_to_greyearth" },
+          { "fromWave": 15, "groundSet": "grass_to_deadground" },
+          { "fromWave": 21, "groundSet": "grass_to_coldash" }
+        ]
+      },
+      "nodes": {
+        "initial": { "rock": 30, "tree": 5, "crop": 14 },
+        "max": { "rock": 44, "tree": 8, "crop": 22 },
+        "regrowPerWave": { "rock": 3, "tree": 0, "crop": 2 },
+        "variantWeights": { "node.saltRock": 34 }
+      },
+      "_biasNote": "Open ground with long sightlines rewards speed and punishes anything that lumbers. The fast roster gets commoner and the two slowest heavies get rarer — a maskedHauler crossing 3200px of flat is a slow-motion telegraph rather than a threat.",
+      "_tuningNote": "First pass was a 3200x1200 flat with rooster and duckFlight at 1.8, which measured 40% cleared against the Home Field's 55% over 60 headless runs. Two compounding costs: the longest walk in the game between anything worth killing, and a roster stripped of the slow things a kiting bot farms. Pulled in to 2900x1300 and the multipliers toward 1. Still the widest arena and still the fast map.",
+      "enemyBias": {
+        "rooster": 1.5,
+        "duckFlight": 1.5,
+        "feralDog": 1.3,
+        "maskedHauler": 0.6,
+        "sickHog": 0.8
+      },
+      "hazards": {
+        "_note": "Salt pans vent. Small, frequent, short-lived, and they expand — you get pushed off ground rather than denied it outright.",
+        "kind": "gas",
+        "sprite": "hazard.gas",
+        "fromWave": 3,
+        "everySeconds": 1.8,
+        "maxLive": 8,
+        "radius": 38,
+        "growth": 3,
+        "life": 11,
+        "dps": 9,
+        "playerDps": 4,
+        "slowPct": 0,
+        "playerSlowPct": 0,
+        "minDistanceFromPlayer": 240,
+        "maxDistanceFromPlayer": 520
+      }
+    },
+
+    "scrapyard": {
+      "name": "The Scrapyard",
+      "blurb": "Square, close, and full of things that were machines.",
+      "weight": 1,
+      "arena": { "width": 1700, "height": 1700 },
+      "terrain": {
+        "groundSet": "dirt_to_gravel",
+        "soilSet": "grass_to_gravel_v2",
+        "soilEdgeCols": 3,
+        "blight": [
+          { "fromWave": 9, "groundSet": "grass_to_greybrown" },
+          { "fromWave": 15, "groundSet": "grass_to_darkgrey" },
+          { "fromWave": 21, "groundSet": "grass_to_coldash" }
+        ]
+      },
+      "nodes": {
+        "initial": { "rock": 20, "tree": 3, "crop": 8 },
+        "max": { "rock": 30, "tree": 5, "crop": 14 },
+        "regrowPerWave": { "rock": 2, "tree": 0, "crop": 1 },
+        "variantWeights": { "node.scrapHeap": 40 }
+      },
+      "_biasNote": "The smallest arena in the game, so the roster goes heavy. There is nowhere to kite a maskedHauler to, which is the point — this is the map where you have to kill the thing in front of you. Fliers get rare because a lane needs somewhere to go.",
+      "enemyBias": {
+        "maskedHauler": 2.0,
+        "sickHog": 1.7,
+        "blownSheep": 1.6,
+        "bloatedFarmhand": 1.3,
+        "duckFlight": 0.35,
+        "rooster": 0.6
+      },
+      "hazards": {
+        "_note": "Oil sumps. Big, long-lived, and they slow rather than burn — the damage is that you are still standing there when the next group arrives.",
+        "kind": "slow",
+        "sprite": "hazard.mud",
+        "fromWave": 2,
+        "everySeconds": 5.2,
+        "maxLive": 7,
+        "radius": 68,
+        "growth": 0,
+        "life": 26,
+        "dps": 4,
+        "playerDps": 0,
+        "slowPct": 45,
+        "playerSlowPct": 30,
+        "minDistanceFromPlayer": 200,
+        "maxDistanceFromPlayer": 460
+      }
+    },
+
+    "theBurn": {
+      "name": "The Burn",
+      "blurb": "A tall strip of field somebody already set fire to.",
+      "weight": 1,
+      "arena": { "width": 1700, "height": 2350 },
+      "terrain": {
+        "groundSet": "ash_to_dyinggrass_v2",
+        "soilSet": "soil_to_croprows",
+        "soilEdgeCols": 4,
+        "blight": [
+          { "fromWave": 8, "groundSet": "grass_to_ash_v2" },
+          { "fromWave": 14, "groundSet": "grass_to_ash" },
+          { "fromWave": 20, "groundSet": "grass_to_coldash" }
+        ]
+      },
+      "nodes": {
+        "initial": { "rock": 14, "tree": 22, "crop": 16 },
+        "max": { "rock": 22, "tree": 32, "crop": 26 },
+        "regrowPerWave": { "rock": 1, "tree": 3, "crop": 2 },
+        "variantWeights": { "node.ashStump": 46 }
+      },
+      "_biasNote": "Burnt ground grows the things that thrive on rot. The acid and spray roster gets commoner, and plain farmhand chaff gets rarer — this map is about hazards you can be pushed into, so the enemies that push are the ones worth having.",
+      "_tuningNote": "First pass was acidZombie 2.0 / bloatedFarmhand 1.8 / maskedSprayer 1.6 / farmhand 0.7 in a 1600x2600 arena, which measured 21% cleared against the Home Field's 32% over the headless bot — the only map in the set below baseline. Stripping the cheap chaff out of the roster and replacing it with 40hp acid in the narrowest arena in the game compounded: nothing to kill quickly, nowhere to go. Widened to 1900 and the multipliers pulled toward 1. This wants a human playtest, not more bot passes; see NOTES.md.",
+      "enemyBias": {
+        "acidZombie": 1.5,
+        "bloatedFarmhand": 1.35,
+        "maskedSprayer": 1.25,
+        "farmhand": 0.9
+      },
+      "hazards": {
+        "_note": "Live fire. Small, hot and it hurts enemies more than it hurts you — the tall arena means you are usually able to choose which side of one to be on.",
+        "kind": "damage",
+        "sprite": "hazard.fire",
+        "fromWave": 2,
+        "everySeconds": 2.3,
+        "maxLive": 8,
+        "radius": 34,
+        "growth": 0,
+        "life": 14,
+        "dps": 26,
+        "playerDps": 6,
+        "slowPct": 0,
+        "playerSlowPct": 0,
+        "minDistanceFromPlayer": 190,
+        "maxDistanceFromPlayer": 480
+      }
+    },
+
+    "boneOrchard": {
+      "name": "The Bone Orchard",
+      "blurb": "The biggest field, the best harvest, and it is a graveyard.",
+      "weight": 1,
+      "arena": { "width": 2300, "height": 1700 },
+      "terrain": {
+        "groundSet": "earth_to_pasture",
+        "soilSet": "grass_to_soil_v2",
+        "soilEdgeCols": 5,
+        "blight": [
+          { "fromWave": 9, "groundSet": "grass_to_olivegrey" },
+          { "fromWave": 15, "groundSet": "grass_to_deadground" },
+          { "fromWave": 21, "groundSet": "grass_to_darkgrey" }
+        ]
+      },
+      "nodes": {
+        "initial": { "rock": 30, "tree": 24, "crop": 42 },
+        "max": { "rock": 46, "tree": 34, "crop": 60 },
+        "regrowPerWave": { "rock": 3, "tree": 3, "crop": 6 },
+        "variantWeights": { "node.boneHeap": 26 }
+      },
+      "_biasNote": "Bone meal makes things grow, which is why this is the feed map. What it grows is the shambling half of the roster — nothing fast, everything that used to be a person.",
+      "_tuningNote": "First pass was a 2600x1900 field with the fast half of the roster cut to 0.6-0.7, which measured 29% cleared against the Home Field's 55% over 60 headless runs — the worst map in the set. The biggest arena and the slowest enemies is a bad pair: the field never comes to you, so the run under-levels and arrives at wave 20 three tiers short. Pulled in to 2400x1800 and the multipliers toward 1.",
+      "enemyBias": {
+        "farmhand": 1.3,
+        "acidZombie": 1.2,
+        "blownSheep": 1.15,
+        "bloatedFarmhand": 1.1,
+        "rooster": 0.85,
+        "duckFlight": 0.8
+      },
+      "hazards": {
+        "_note": "Grave damp. Rare, wide and slow — barely lethal on its own, but it sits on the ground you wanted to harvest.",
+        "kind": "gas",
+        "sprite": "hazard.gas",
+        "fromWave": 5,
+        "everySeconds": 6.6,
+        "maxLive": 5,
+        "radius": 62,
+        "growth": 1,
+        "life": 20,
+        "dps": 5,
+        "playerDps": 2,
+        "slowPct": 0,
+        "playerSlowPct": 0,
+        "minDistanceFromPlayer": 260,
+        "maxDistanceFromPlayer": 560
+      }
+    }
+  }
+}

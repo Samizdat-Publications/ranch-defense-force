@@ -23,7 +23,7 @@ atlas costs the art, not the game.
 
 | Command | What |
 |---|---|
-| `npm test` | 66 tests, including a headless full-run acceptance test |
+| `npm test` | 154 tests, including a headless full-run acceptance test |
 | `npm run typecheck` | game and tools (they have separate tsconfigs) |
 | `npm run atlas` | slice + pack `art/sprites.json` → `public/atlas.*` |
 | `npm run shot -- [ticks] [out] [seed] [class]` | headless screenshot: runs the sim, draws it, writes a PNG. No browser. |
@@ -51,6 +51,12 @@ engine-level constants the design never specified (base move speed, camera lerp,
 pool sizes, crop density). Both are content — the no-balance-constants-in-code
 rule covers both.
 
+`src/content/maps.json` is where a run happens: ground and blight chain, node
+and enemy mix, arena size and shape, hazards. **The map is the first draw off
+the run's seeded RNG** and must stay first and stay one draw — see the
+`_rngNote` at the top of that file. Ground lives there and nowhere else;
+`tuning.json` used to carry a `terrain` block and now carries only a pointer.
+
 ## Non-negotiables
 
 - **Fixed 1/60s simulation step** with an accumulator; the renderer
@@ -61,7 +67,9 @@ rule covers both.
 - **Collision is circle-vs-circle** against a 64px uniform hash grid. No AABB
   trees, no physics library.
 - **All randomness goes through the seeded RNG** (mulberry32) so any run
-  replays from its seed. No bare `Math.random()` anywhere.
+  replays from its seed. No bare `Math.random()` anywhere. The map choice is
+  the first draw and costs exactly one; anything inserted before it invalidates
+  every seed.
 - **Stat resolution is one pass:** sum flat bonuses, sum percentage bonuses
   additively, apply once. No multiplicative stacking anywhere, ever.
 - **Sim and render never import each other's internals.**

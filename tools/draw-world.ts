@@ -20,26 +20,25 @@ import { wangKey, type Corner } from '../src/render/wang.ts'
 
 /** Default zoom. The game derives its own; see `zoomFor` in the renderer. */
 export const ZOOM = 2
-const TERRAIN = (TUNING as unknown as {
-  terrain?: {
-    groundSet?: string; soilSet?: string; soilEdgeCols?: number
-    blight?: { fromWave: number; groundSet: string }[]
-  }
-}).terrain ?? {}
-const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
 /**
  * The wave-banded ground, matching the renderer. Without this a screenshot of
  * wave 20 shows a healthy pasture the game never draws — and a screenshot that
  * disagrees with the game is the thing this file exists to avoid.
+ *
+ * Read off the WORLD's map, not off tuning.json, for exactly that reason: once
+ * the ground became a per-map choice, a painter still reading one global would
+ * have drawn every map as the Home Field and the screenshots would have quietly
+ * stopped being evidence.
  */
-const BLIGHT = (TERRAIN.blight ?? []).slice().sort((a, b) => a.fromWave - b.fromWave)
-function groundSetFor(wave: number): string {
-  let set = GROUND_SET
-  for (const b of BLIGHT) if (wave >= b.fromWave) set = b.groundSet
+function groundSetFor(world: World, wave: number): string {
+  const t = world.map.terrain
+  let set = t.groundSet
+  let best = -Infinity
+  for (const b of t.blight) {
+    if (wave >= b.fromWave && b.fromWave > best) { best = b.fromWave; set = b.groundSet }
+  }
   return set
 }
-const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
-const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
 const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROJECTILE_SCALE` in the renderer; per-weapon multiplier on top. */
 const PROJECTILE_SCALE = 0.55
@@ -206,6 +205,19 @@ export class WorldPainter {
   }
 
   /** Draw an atlas frame at a world position, honouring the zoom. */
+  /**
+   * Draw a frame CENTRED on a world point, ignoring its bottom-centre pivot.
+   *
+   * Everything that stands on the ground is drawn from that pivot, which is
+   * what makes a tree's base sit where the tree is. A hazard is not standing on
+   * the ground, it IS a patch of ground, so it wants its middle over the disc's
+   * middle. The renderer centres it the same way; the two painters agreeing is
+   * the only reason a screenshot is worth taking.
+   */
+  private drawFrameCentred(f: Frame, worldX: number, worldY: number): void {
+    this.drawFrame(f, worldX - f.w / 2 - f.ox, worldY - f.h / 2 - f.oy)
+  }
+
   private drawFrame(f: Frame, worldX: number, worldY: number): void {
     const dx = Math.round((worldX - this.camX) * this.zoom + f.ox * this.zoom)
     const dy = Math.round((worldY - this.camY) * this.zoom + f.oy * this.zoom)
@@ -442,8 +454,8 @@ export class WorldPainter {
    * the naming cannot drift even if the field generation does.
    */
   private wangTerrain(world: World): boolean {
-    const ground = frames[wangKey(groundSetFor(world.spawner.wave), 0, 0, 0, 0)]
-      ? groundSetFor(world.spawner.wave) : GROUND_SET
+    const banded = groundSetFor(world, world.spawner.wave)
+    const ground = frames[wangKey(banded, 0, 0, 0, 0)] ? banded : world.map.terrain.groundSet
     const probe = frames[wangKey(ground, 0, 0, 0, 0)]
     if (!probe) return false
 
@@ -468,10 +480,12 @@ export class WorldPainter {
         }
       }
     }
+    const soilSet = world.map.terrain.soilSet
+    const soilEdgeCols = world.map.terrain.soilEdgeCols
     const soil = new Uint8Array(vw * vh)
     for (let vy = 0; vy < vh; vy++) {
       for (let vx = 0; vx < vw; vx++) {
-        if (vx < SOIL_EDGE_COLS || vx >= vw - SOIL_EDGE_COLS) soil[vy * vw + vx] = 1
+        if (vx < soilEdgeCols || vx >= vw - soilEdgeCols) soil[vy * vw + vx] = 1
       }
     }
 
@@ -489,7 +503,7 @@ export class WorldPainter {
         if (g) this.drawFrame(g, tx * tile, ty * tile)
         const sc = corners(soil, tx, ty)
         if (sc[0] || sc[1] || sc[2] || sc[3]) {
-          const sf = frames[wangKey(SOIL_SET, ...sc)]
+          const sf = frames[wangKey(soilSet, ...sc)]
           if (sf) this.drawFrame(sf, tx * tile, ty * tile)
         }
       }
@@ -586,8 +600,10 @@ export class WorldPainter {
         h.kind === 'slow' ? [0x5e4a2e, 0x8c7046]
         : h.kind === 'lure' ? [0xd6b054, 0xecce80]
         : h.kind === 'gas' ? [0xc4d66c, 0xe2f096]
+        // Matches PALETTE.hazardBurn in the renderer; see the note there.
+        : h.kind === 'damage' ? [0xe27a2e, 0xffb054]
         : [0x96e24a, 0xc6fa78]
-      const alpha = h.kind === 'slow' ? 0.55 : h.kind === 'lure' ? 0.35 : 0.38
+      const alpha = h.kind === 'slow' ? 0.55 : h.kind === 'lure' ? 0.35 : h.kind === 'damage' ? 0.34 : 0.38
       // Scanned as a filled disc over the bounding box, not swept by angle.
       // Sweeping leaves moire rings that get denser toward the centre, which
       // turned a 260px lure into an opaque dithered pancake covering the tile.
@@ -600,6 +616,14 @@ export class WorldPainter {
           const onRim = d > rim2
           this.tint(h.x + dx, h.y + dy, onRim ? rim : fill, onRim ? 0.9 : alpha)
         }
+      }
+      // The map's own hazards carry art. Same order as the renderer — over the
+      // fill, under nothing else here, because the painter draws the rim in the
+      // same pass above. A screenshot that omitted this would show the Burn's
+      // fires as plain orange discs.
+      if (h.sprite) {
+        const f = frames[h.sprite]
+        if (f) this.drawFrameCentred(f, h.x, h.y)
       }
     }
 

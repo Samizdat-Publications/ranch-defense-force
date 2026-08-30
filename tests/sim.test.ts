@@ -8,7 +8,7 @@ import { Player } from '../src/sim/player'
 import { Spawner } from '../src/sim/spawner'
 import { OfferPool } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
-import { ITEMS, TUNING, RARITY_ORDER, WAVES } from '../src/content'
+import { ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES } from '../src/content'
 
 describe('stat resolution', () => {
   it('sums percentages additively, never multiplicatively', () => {
@@ -338,7 +338,7 @@ describe('OfferPool', () => {
 
 describe('Spawner', () => {
   it('withholds spawns at the pressure ceiling', () => {
-    const s = new Spawner(new Rng(1))
+    const s = new Spawner(new Rng(1), MAPS.homeField)
     // Read the ceiling rather than restating it: pinned at 400 this passed only
     // while the ceiling happened to be below it, and went quiet when it rose.
     s.update(1, WAVES.pressureCeiling)
@@ -348,7 +348,7 @@ describe('Spawner', () => {
   })
 
   it('only offers enemies unlocked at the current wave', () => {
-    const s = new Spawner(new Rng(4))
+    const s = new Spawner(new Rng(4), MAPS.homeField)
     s.beginWave(1)
     for (let i = 0; i < 200; i++) {
       s.update(0.2, 0)
@@ -357,7 +357,7 @@ describe('Spawner', () => {
   })
 
   it('keeps spawn points away from the player when it can', () => {
-    const s = new Spawner(new Rng(9))
+    const s = new Spawner(new Rng(9), MAPS.homeField)
     const out = { x: 0, y: 0 }
     for (let i = 0; i < 100; i++) {
       s.pickSpawnPoint(1200, 800, 2400, 1600, out)
@@ -366,7 +366,7 @@ describe('Spawner', () => {
   })
 
   it('completes a wave once the clock runs out', () => {
-    const s = new Spawner(new Rng(2))
+    const s = new Spawner(new Rng(2), MAPS.homeField)
     expect(s.waveComplete).toBe(false)
     for (let i = 0; i < 60 * 41; i++) s.update(1 / 60, 0)
     expect(s.waveComplete).toBe(true)

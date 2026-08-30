@@ -9,7 +9,7 @@
  * wave 15 and the run would be decided long before it ended. Above 380 live
  * enemies the director simply withholds.
  */
-import { ENEMIES, ENEMY_IDS, WAVES, type EnemyDef } from '../content'
+import { ENEMIES, ENEMY_IDS, WAVES, type EnemyDef, type MapDef } from '../content'
 import { threatBudget } from './formulas'
 import type { Rng } from '../core/rng'
 
@@ -39,7 +39,13 @@ export class Spawner {
   private readonly available: string[] = []
   private readonly weights: number[] = []
 
-  constructor(private readonly rng: Rng) {
+  /**
+   * @param map The run's map. Its `enemyBias` multiplies the roster weights —
+   *            the only thing the spawner reads off it, and the reason a
+   *            Scrapyard run feels heavy and a Salt Flats run feels fast
+   *            without either one changing a single number in enemies.json.
+   */
+  constructor(private readonly rng: Rng, private readonly map: MapDef) {
     this.beginWave(1)
   }
 
@@ -111,10 +117,14 @@ export class Spawner {
     for (const id of ENEMY_IDS) {
       const def: EnemyDef = ENEMIES[id]
       if (def.firstWave > this.wave) continue
-      this.available.push(id)
       // Cheaper enemies appear more often; the 1/sqrt keeps heavies rare
-      // without making them vanish once the budget grows.
-      this.weights.push(1 / Math.sqrt(def.threatCost))
+      // without making them vanish once the budget grows. The map then biases
+      // that curve — a multiplier rather than a replacement, so an unbiased
+      // map is bit-for-bit the roster the game always had.
+      const bias = this.map.enemyBias[id] ?? 1
+      if (bias <= 0) continue
+      this.available.push(id)
+      this.weights.push(bias / Math.sqrt(def.threatCost))
     }
   }
 

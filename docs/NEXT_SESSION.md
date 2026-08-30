@@ -1,4 +1,12 @@
-# Next session — finish retiring LimeZu, then maps, then tune
+# Next session — finish retiring LimeZu, then play and tune TOGETHER
+
+> **Maps (section 2) were built in session 16.** Five of them, in
+> `src/content/maps.json`, changing ground, node and enemy mix, arena shape and
+> hazards. Section 2 below is kept as the record of what was asked for, with
+> what actually happened marked inline. Read the Session 16 entry in NOTES.md
+> before touching any of it — particularly the two measurements that cost real
+> time: arena AREA is a stealth difficulty knob, and hazard density is
+> `life / everySeconds` and not `maxLive`.
 
 **This is the owner's own order, in their words:**
 
@@ -82,7 +90,28 @@ be drawn wrong because its key is not the one the renderer asks for. Then
 
 ---
 
-## 2. Maps
+## 2. Maps — DONE (session 16)
+
+Built. Five maps in `src/content/maps.json`: the Home Field (the old game,
+unchanged, weighted 2x and kept as the control), the Salt Flats, the Scrapyard,
+the Burn and the Bone Orchard. All four axes move. The map choice is the first
+draw off the run RNG, as required below, and two tests pin it there.
+
+Three things below turned out differently and are worth reading before
+extending it:
+
+- **Arena size is not a free axis.** Varying area along with shape inverted The
+  Kid's class identity in `run.test.ts` — a velocity-damage class deals nothing
+  on a field big enough to run into empty ground. Shape is the feature; area is
+  held near the Home Field's 3.84M px² on every map but the Scrapyard.
+- **`maxLive` is not hazard density.** It is `life / everySeconds`. The first
+  pass ran at 1-3 live hazards against an intended 9-14, and they were on
+  screen 0% of the time. They now spawn in a ring around the player rather than
+  anywhere on the arena, which is what makes them learnable.
+- **`tuning.json`'s `terrain` block is gone**, moved into the maps. Both the
+  renderer and `tools/draw-world.ts` read `world.map.terrain` now.
+
+What was originally asked for, kept for the record:
 
 The owner wants a map to change **all four** of: ground and tileset, node and
 enemy mix, arena size and shape, and hazards.
@@ -107,7 +136,16 @@ moving into the map descriptor is a content-shape change, not just an addition.
 
 ---
 
-## 3. Play and tune
+## 3. Play and tune — THIS IS THE NEXT SESSION, AND IT IS A JOINT ONE
+
+Session 16 deliberately stopped short of this. It made three tuning passes to
+get the new maps into a survivable band against the unchanged Home Field, and
+that is all — bringing new content up to the existing bar, not tuning the game.
+The list below is untouched, and NOTES.md adds two map-specific items to it
+(ambient hazards measure as a net *help* to a kiting bot; the Bone Orchard may
+simply be the easy map).
+
+
 
 **Carry the owner's note verbatim:**
 
@@ -147,7 +185,7 @@ items only, elites being spawn-time only, and global hitstop.
 
 ```bash
 npm run atlas      # and READ THE PRINTED DIMENSIONS, not just the exit code
-npm test           # 131 tests, incl. the headless full run and the seed replay
+npm test           # 154 tests, incl. the headless full run and the seed replay
 npm run typecheck  # game and tools have separate tsconfigs
 npm run shot       # a real run, rendered headlessly, no browser
 ```

@@ -323,7 +323,14 @@ export class Player {
    * Movement, clamped to the arena (tick order step 2). `moveX/moveY` come
    * straight off the sampled input and are already normalised.
    */
-  move(moveX: number, moveY: number, dt: number, arenaW: number, arenaH: number): void {
+  /**
+   * @param slow 0-1, from any map hazard the player is standing in. Defaults to
+   *             0, so every caller that predates map hazards is unchanged.
+   *             `velocityFraction` stays measured against the UNSLOWED move
+   *             speed on purpose — The Kid's damage scales with it, and a Kid
+   *             bogged down in an oil sump should read as slow, because it is.
+   */
+  move(moveX: number, moveY: number, dt: number, arenaW: number, arenaH: number, slow = 0): void {
     this.px = this.x
     this.py = this.y
 
@@ -331,7 +338,7 @@ export class Player {
       this.vx = 0
       this.vy = 0
     } else {
-      const speed = this.stats.moveSpeed
+      const speed = this.stats.moveSpeed * (1 - slow)
       this.vx = moveX * speed
       this.vy = moveY * speed
       this.x += this.vx * dt

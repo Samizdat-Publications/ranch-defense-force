@@ -4,6 +4,284 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 16 — maps
+
+Five maps. A run picks one, and it changes the ground, the field, the roster
+and the arena's shape. Plus the merge that was not a merge.
+
+## The brief was wrong about the repository, and checking cost four commands
+
+The session opened with an instruction to merge three divergent heads using a
+file-by-file map in `docs/MERGE.md`, then a warning: *a document about the world
+is evidence, not the world.* The warning applied to the instruction.
+
+```
+git branch -a                  # 3 branches, none named session-14-16-maps-caves-archive
+git cat-file -t 6c379013       # not a valid object name
+git diff ec41be6a 18ec1b03     # empty. identical trees: 249538987b62b6…
+ls docs/MERGE.md               # does not exist, and never has in any commit
+```
+
+`origin/main` and `origin/claude/pixel-labs-credit-plan-ufnx41` are the same two
+commits authored twice — same messages, same trees, different SHAs. There was
+nothing to merge, and nothing was lost by not merging. Also checked and already
+true: the GitHub description no longer says "private", the homepage already
+points at the Pages URL, and `assets/pixellab/yard_picked/` (barn, farmhouse,
+silo, oak) was already on `main`, added by `77158591`.
+
+The named-but-absent work was substantial: a `groundLayers` layer system, a
+`src/render/blight.ts`, `npm run maps`, `npm run snap`, a `docs/progress/`
+archive, 147 tests. None of it exists in the tree, in any commit, in the reflog,
+in a stash, or among the unreachable objects (`git fsck` finds one dangling
+commit — an August 14 home-screen fix, superseded). The owner's call was that it
+was never built. **This session built the maps part from
+`docs/NEXT_SESSION.md` §2, from scratch.**
+
+The general lesson is the one already written down, so this is only a second
+data point: the cost of checking was four commands, and the cost of not checking
+would have been a day of trying to resolve conflicts in files that do not exist.
+
+## What a map is
+
+`src/content/maps.json`. Five of them, each changing all four things §2 asked
+for: ground and tileset, node and enemy mix, arena size and shape, hazards.
+
+| map | arena | ratio | ground | biome node | hazard |
+|---|---|---|---|---|---|
+| The Home Field | 2400x1600 | 1.50 | dirt_to_grass_plain | — | none |
+| The Salt Flats | 2900x1300 | 2.23 | grass_to_palegreygreen | salt rock | gas |
+| The Scrapyard | 1700x1700 | 1.00 | dirt_to_gravel | scrap heap | oil sump (slow) |
+| The Burn | 1700x2350 | 0.72 | ash_to_dyinggrass_v2 | ash stump | fire (damage) |
+| The Bone Orchard | 2300x1700 | 1.35 | earth_to_pasture | bone heap | grave gas |
+
+The Home Field is weighted 2 against 1 for the others, and is **exactly** the
+game that was played and liked — same arena, same nodes, same roster, no
+hazards. It is the control, deliberately, so that "is this map worse" always has
+an answer.
+
+Each map carries its own blight chain, so the ground degrades differently: the
+Salt Flats goes pale grey-green to grey earth to dead ground to cold ash, the
+Burn is already ash at wave 1 and is cold ash by 20.
+
+## The map is the first draw off the run RNG
+
+`docs/NEXT_SESSION.md` called this the one hard constraint, and it is:
+
+```ts
+this.rng = new Rng(seed)
+this.mapId = pickMapId(this.rng.next())   // exactly one draw, before anything else
+```
+
+Exactly one `next()`, before the spawner, the pools or the field scatter. It has
+to be first because arena size feeds the spatial grid, which is built before the
+field is scattered; and it has to be exactly one draw because the cost in stream
+position is what every later draw is measured from.
+
+`arenaW`/`arenaH` stopped being field initialisers and became constructor
+assignments to make this possible — a field initialiser runs before the
+constructor body, so it cannot see a map that the constructor picks.
+
+Two tests pin it, and both fail if the pick moves or costs a second draw. They
+were checked by mutation, not by assumption: inserting one extra `rng.next()`
+before the pick fails both.
+
+**Every pre-existing seed now replays as a different run.** That is unavoidable
+— a draw at the front reseats the whole stream — and `NEXT_SESSION.md` had
+already granted it. `run.test.ts`'s "replays a whole run identically from its
+seed" still passes, because it compares two runs of the same seed rather than a
+recorded transcript.
+
+## Three things measured that were not guesses
+
+### The maps did not break the acceptance test; the sample size did
+
+After wiring, `run.test.ts` failed at 2 of 6 seeds cleared against a bar of 3.
+The reflex reading is "maps are too hard". The measurement says otherwise —
+60 runs of the real harness:
+
+```
+homeField    11/20  (55%)   <- unchanged content, the control
+theBurn       7/13  (54%)
+saltFlats     5/10  (50%)
+scrapyard     7/10  (70%)
+boneOrchard   6/7   (86%)
+TOTAL        36/60  (60%)
+```
+
+The **unchanged** map clears 55%. The whole game, with maps, clears 60%. The
+test asks 6 seeds to resolve a ~55% rate against a 50% bar, which is a coin
+flip with extra steps — at p=0.55, six samples fail the bar about one time in
+five, and always did. Reseeding the stream simply moved which fifth we were in.
+`run.test.ts` was not touched: it is byte-identical to `origin/main` and it
+passes.
+
+The first pass genuinely was too hard on two maps, and those were fixed — see
+the `_tuningNote` in each. theBurn measured 21% against a 32% baseline on the
+first pass, boneOrchard 29% against 55%. Both are now in band.
+
+### Arena AREA was a stealth difficulty knob, and it inverted a class
+
+The one real regression maps introduced. `run.test.ts`'s crossover test — each
+class does better at its own game — inverted: The Kid, whose damage scales with
+velocity, started preferring to stand still.
+
+```
+                         handStand  handRun  kidRun  kidStand
+original code (16 seeds)     12        7       12       7      correct
+maps, first pass (32)        20       19       15      20      INVERTED
+maps, area held (32)         22       16       20      23      passes
+```
+
+The cause was not hazards and not the enemy mix. It was that the first pass
+varied arena **area** along with shape — theBurn at 4.75M px² and boneOrchard at
+4.32M against the Home Field's 3.84M — and a class that needs enemies to run
+past deals nothing on a field big enough to run into empty ground.
+
+**Shape is the feature; area is a confound.** Every map now sits within about 4%
+of 3.84M except the Scrapyard, which is small on purpose. The five ratios are
+0.72 / 1.00 / 1.35 / 1.50 / 2.23, so the maps still play completely differently.
+
+### `maxLive` was not the hazard density, and the hazards were invisible
+
+Both painters were drawing the ambient hazards correctly and there were almost
+none to draw. Two separate mistakes:
+
+1. **Density is `life / everySeconds`, not `maxLive`.** One spawn per interval
+   living `life` seconds settles at that ratio and never approaches a cap of 9.
+   The maps were configured for 9–14 and were running 1–3.
+2. **They spawned anywhere on the arena.** The view is about 520x330 and the
+   arena is nearly four million square pixels. Measured: an ambient hazard was
+   on screen **0% of sampled seconds**. It was a tax rolled over the horizon.
+
+Fixed by making the density relationship explicit in the content file — and
+writing it down there, because the next person will otherwise set `maxLive`
+again — and by spawning in a **ring** around the player rather than uniformly:
+
+```
+theBurn      avgLive 5.4   on screen 80% of the time
+saltFlats    avgLive 4.9   on screen 80%
+scrapyard    avgLive 4.5   on screen 85%
+```
+
+The ring is the load-bearing half. At this density a uniform scatter would still
+be invisible; putting hazards just past the edge of sight and within a short
+walk is what makes "this map vents gas" learnable instead of merely survivable.
+
+## Hazards damage both sides, and that is the design
+
+`dps` and `playerDps` are separate numbers and both are usually non-zero. A fire
+on the Burn does 26 to enemies and 6 to the player. That is deliberate: a hazard
+that only punishes is a tax, and a hazard you can drag a hog into is a tool. It
+also means the ambient maps measure *easier* than the Home Field for a kiting
+bot, which is worth watching in a real playtest — a human who fights rather than
+runs may find them the opposite.
+
+`playerSlowPct` is new and separate from `slowPct`. `slowPct` has only ever
+slowed enemies; the Watering Can's rind slick is a player tool and had to keep
+behaving exactly as it did. Only the Scrapyard's oil sumps set the player one
+(45 to enemies, 30 to the player). `Player.move` gained a `slow` parameter that
+defaults to 0, so every existing caller is untouched, and `velocityFraction`
+stays measured against the *unslowed* move speed — a Kid bogged in a sump should
+read as slow, because it is.
+
+## One source of truth for the ground
+
+`TUNING.terrain` is gone. It moved into each map rather than being copied,
+because two content files naming the same ground is the same trap as two art
+groups writing one frame key: the later one silently wins and nothing tells you
+which is live. `tuning.json` keeps a pointer and the reasoning that picked the
+Home Field's pair.
+
+`tools/draw-world.ts` had its **own** copy of the terrain constants — its own
+`GROUND_SET`, its own `BLIGHT`, its own `groundSetFor`. Its file header says a
+screenshot that disagrees with the game is the thing it exists to avoid, and it
+was one edit from doing exactly that: still reading `tuning.json`, it would have
+painted all five maps as the Home Field. Both painters now read
+`world.map.terrain`.
+
+## Art
+
+Seven frames added, all from candidates already on disk — nothing generated,
+the subscription is still dead. Picked by looking at a contact sheet, not by
+filename, and the filenames would have picked wrong three times out of seven:
+
+- `node_scrapheap_2` is an entire fire truck. A vehicle, not a scatterable node.
+- `node_saltrock_1` is magenta and reads as amethyst, not salt.
+- `node_boneheap_0` is a single skull-and-crossbones icon; this wanted a heap.
+
+The four biome nodes are declared in `nodes.json` at **weight 0** and raised by
+whichever map wants them, so all the numbers stay in one file and a map that
+says nothing gets exactly the field the game always had.
+
+`damage` hazards had no colour of their own and fell through to the acid green,
+which had never mattered because nothing in the game raised a bare `damage`
+hazard. The Burn's fires do, and an acid-green fire is a lie about what is
+hurting you. They burn orange now, in both painters.
+
+## A test that could not fail, and was deleted
+
+While hardening the scatter loop against picking a weight-0 variant, a test was
+written to cover it and then **mutation-checked**: reverting the fix left the
+test passing. The reason is arithmetic — `roll` is `next() * totalWeight` with
+`next()` in [0, 1), so with integer weights the loop always breaks on the last
+weighted entry and the old fallback was unreachable. A second attempt using
+fractional weights also could not fail: the two versions diverge only when float
+error exceeds the gap to `totalWeight`, which needs `next()` to land in the last
+~1e-16 of its range.
+
+The test was deleted rather than kept. A test that passes under the bug it names
+is worse than no test, because it reads like coverage. The hardened code stayed
+— `maps.json` is a content file and `"weight": 2.5` is one edit from making the
+arithmetic argument stop holding — and the code comment now says plainly that it
+is defensive and deliberately untested.
+
+Every other new test was mutation-checked too. Moving the map pick one draw
+later fails two of them.
+
+## What is now open
+
+**The whole balance conversation, and it is explicitly not for a session alone.**
+`NEXT_SESSION.md` says play it *with* the owner, and three tuning passes were
+already needed just to get the maps into a sane band. Those passes were about
+making new content not-broken, not about tuning the game, and the line should
+stay there.
+
+Carried forward, in the order they will matter:
+
+1. **Density is still the top ask**, from the playtest note that predates this
+   session: *"Needs more enemies per wave to balance."* Untouched. `enemyBias`
+   now gives a per-map lever that did not exist before, which may be a better
+   place to spend the change than `pressureCeiling`.
+2. **Ambient hazards measure as a net help to a kiting bot**, because they
+   damage enemies and a bot that never stops rarely stands in one. A human who
+   holds ground will experience the opposite. Worth an early look — if it holds
+   up, `playerDps` is the knob, not density.
+3. **The Bone Orchard clears 86% on a small sample.** It may simply be the easy
+   map. Wanted: more samples, or a human.
+4. **The `threatBudget` split is still there** — hardcoded in `formulas.ts`
+   while `waves.json` carries a `formula` string nothing reads. This session did
+   not touch it, and it is still the thing that turns the next balance session
+   from editing code into editing content.
+5. **The Salt Flats' ground reads as stripes** at 32px. Same wallpaper problem
+   `tuning.json` recorded about `dirt_to_grass`; `grass_to_greyearth` has a
+   visible horizontal repeat. A different set from the packed 29 would fix it.
+6. **The mud sprite is brown-on-brown** inside a brown sump disc and barely
+   reads. Legibility, not correctness.
+
+## Verification
+
+```
+npm run atlas      4283 frames, 2048x8192 — +7, dimensions unchanged
+npm run typecheck  clean, game and tools
+npm test           154 passed (131 before, +23 maps)
+npm run shot       all five maps, looked at, all five draw
+```
+
+`run.test.ts` is byte-identical to `origin/main`. The acceptance bar was not
+moved to land this.
+
+---
+
 # Session 15 — the account is spent, and the handoff is honest again
 
 Two jobs: convert the last of a dying subscription into art, and leave the

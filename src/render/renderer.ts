@@ -15,7 +15,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import { ENEMIES, NODES, TUNING, WEAPONS, projectileScaleFor } from '../content'
+import { ENEMIES, NODES, TUNING, WEAPONS, projectileScaleFor, type MapTerrain } from '../content'
 import { Atlas, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
 import { wangKey, type Corner } from './wang'
@@ -58,35 +58,18 @@ const PROJECTILE_SCALE = 0.55
 const PROJECTILE_FPS = 15
 
 /**
- * Which Wang sets the ground bakes from. Content, not code — choosing a ground
- * is a content decision, and a map descriptor will want to pick its own pair.
- */
-const TERRAIN = (TUNING as unknown as {
-  terrain?: {
-    groundSet?: string; soilSet?: string; soilEdgeCols?: number
-    blight?: { fromWave: number; groundSet: string }[]
-  }
-}).terrain ?? {}
-const GROUND_SET = TERRAIN.groundSet ?? 'dirt_to_grass'
-const SOIL_SET = TERRAIN.soilSet ?? 'grass_to_soil'
-const SOIL_EDGE_COLS = TERRAIN.soilEdgeCols ?? 4
-/**
- * Ground that gets worse as the run goes on: pasture giving way to withered
- * grass, then rot, then ash.
+ * Which Wang sets the ground bakes from — now the MAP's, not a global.
  *
- * Content, not code, and bands rather than a blend because a Wang set is a
- * whole terrain pair — you cannot cross-fade between two of them, you swap and
- * re-bake. Empty or absent means the ground never changes, which is what every
- * run did before this.
+ * This used to be `TUNING.terrain`, one ground for every run. It moved into
+ * src/content/maps.json when maps arrived, and it moved rather than being
+ * copied: two content files naming the same ground would be the same trap as
+ * two art groups writing one frame key, where the later one silently wins and
+ * nothing tells you which is live. `tuning.json` now carries only a pointer.
+ *
+ * Blight is still BANDS rather than a blend, for the reason it always was: a
+ * Wang set is a whole terrain pair and you cannot cross-fade two of them, you
+ * swap and re-bake. A map with an empty `blight` array never changes ground.
  */
-const BLIGHT = (TERRAIN.blight ?? []).slice().sort((a, b) => a.fromWave - b.fromWave)
-
-/** The ground set for a wave: the last band whose `fromWave` has been reached. */
-function groundSetFor(wave: number): string {
-  let set = GROUND_SET
-  for (const b of BLIGHT) if (wave >= b.fromWave) set = b.groundSet
-  return set
-}
 
 interface DrawItem {
   x: number
@@ -136,6 +119,12 @@ const PALETTE = {
   hazardGasRim: 'rgba(226, 240, 150, 0.85)',
   hazardAcid: 'rgba(150, 226, 74, 0.40)',
   hazardAcidRim: 'rgba(198, 250, 120, 0.9)',
+  /** 'damage' used to fall through to the acid colours, which was invisible
+   *  while the only hazards were weapon-made — nothing in the game raised a
+   *  bare `damage` hazard. The Burn's fires do, and an acid-green fire is a
+   *  lie about what is hurting you. */
+  hazardBurn: 'rgba(226, 122, 46, 0.34)',
+  hazardBurnRim: 'rgba(255, 176, 84, 0.9)',
   telegraph: 'rgba(220, 90, 90, 0.28)',
   blood: '#a02c2c',
 }
@@ -149,8 +138,9 @@ export class Renderer {
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
   /** Which ground set the baked terrain currently holds, so it re-bakes once
-   *  per band rather than once per frame. */
-  private bakedSet: string = GROUND_SET
+   *  per band rather than once per frame. Empty until the first bake — the
+   *  map is not readable from a field initialiser. */
+  private bakedSet = ''
 
   /**
    * Static decorative props, y-sorted with everything else.
@@ -276,7 +266,26 @@ export class Renderer {
    * frame — never per-tile draws (§13). Deterministic from the run seed, so a
    * replayed run gets the same field.
    */
-  private bakeTerrain(groundSet: string = GROUND_SET): void {
+  /** This run's map terrain. */
+  private get terrainCfg(): MapTerrain {
+    return this.world.map.terrain
+  }
+
+  /** The ground set for a wave: the last band whose `fromWave` has been reached. */
+  private groundSetFor(wave: number): string {
+    const t = this.terrainCfg
+    let set = t.groundSet
+    let best = -Infinity
+    // Scan for the highest reached `fromWave` rather than trusting array order:
+    // bands are authored per map now, and one written out of order would
+    // otherwise silently pick the wrong ground.
+    for (const b of t.blight) {
+      if (wave >= b.fromWave && b.fromWave > best) { best = b.fromWave; set = b.groundSet }
+    }
+    return set
+  }
+
+  private bakeTerrain(groundSet: string = this.terrainCfg.groundSet): void {
     this.bakedSet = groundSet
     const c = document.createElement('canvas')
     c.width = this.world.arenaW
@@ -447,14 +456,15 @@ export class Renderer {
    */
   private bakeWangGround(
     g: CanvasRenderingContext2D, cols: number, rows: number, tile: number,
-    groundSet: string = GROUND_SET,
+    groundSet: string = this.terrainCfg.groundSet,
   ): boolean {
     const atlas = this.atlas
+    const base = this.terrainCfg.groundSet
     // A band naming a set that is not packed falls back rather than failing:
     // a missing tileset costs the ground, not the game.
     if (!atlas || !atlas.get(wangKey(groundSet, 0, 0, 0, 0))) {
-      if (groundSet !== GROUND_SET && atlas?.get(wangKey(GROUND_SET, 0, 0, 0, 0))) {
-        return this.bakeWangGround(g, cols, rows, tile, GROUND_SET)
+      if (groundSet !== base && atlas?.get(wangKey(base, 0, 0, 0, 0))) {
+        return this.bakeWangGround(g, cols, rows, tile, base)
       }
       return false
     }
@@ -502,12 +512,14 @@ export class Renderer {
 
     // The tilled edges the spawner calls `cornTile`. Upper is soil here, so the
     // field is inverted relative to the pass above: 0 everywhere, 1 at the ends.
-    if (atlas.get(wangKey(SOIL_SET, 1, 1, 1, 1))) {
+    const soilSet = this.terrainCfg.soilSet
+    const soilEdgeCols = this.terrainCfg.soilEdgeCols
+    if (atlas.get(wangKey(soilSet, 1, 1, 1, 1))) {
       const soil = new Uint8Array(vw * vh)
       let any = false
       for (let vy = 0; vy < vh; vy++) {
         for (let vx = 0; vx < vw; vx++) {
-          if (vx < SOIL_EDGE_COLS || vx >= vw - SOIL_EDGE_COLS) { soil[vy * vw + vx] = 1; any = true }
+          if (vx < soilEdgeCols || vx >= vw - soilEdgeCols) { soil[vy * vw + vx] = 1; any = true }
         }
       }
       if (any) {
@@ -520,7 +532,7 @@ export class Renderer {
             const sw = soil[(y + 1) * vw + x] as Corner
             const se = soil[(y + 1) * vw + x + 1] as Corner
             if (!(nw || ne || sw || se)) continue
-            const f = atlas.get(wangKey(SOIL_SET, nw, ne, sw, se))
+            const f = atlas.get(wangKey(soilSet, nw, ne, sw, se))
             if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
           }
         }
@@ -538,8 +550,8 @@ export class Renderer {
     // The ground degrades with the wave. Re-baking is a full-arena paint, so it
     // happens only when the band actually changes — three times in a long run,
     // never per frame. §13's "never per-tile draws" is about the frame loop.
-    if (BLIGHT.length) {
-      const want = groundSetFor(w.spawner.wave)
+    {
+      const want = this.groundSetFor(w.spawner.wave)
       if (want !== this.bakedSet) this.bakeTerrain(want)
     }
 
@@ -1283,17 +1295,19 @@ export class Renderer {
     const w = this.world
     for (let i = 0; i < w.hazards.live; i++) {
       const h = w.hazards.items[i]
-      const harmful = h.kind === 'gas' || h.kind === 'acid'
+      const harmful = h.kind === 'gas' || h.kind === 'acid' || h.kind === 'damage'
 
       const fill =
         h.kind === 'slow' ? PALETTE.hazardSlow
         : h.kind === 'lure' ? PALETTE.hazardLure
         : h.kind === 'gas' ? PALETTE.hazardGas
+        : h.kind === 'damage' ? PALETTE.hazardBurn
         : PALETTE.hazardAcid
       const rim =
         h.kind === 'slow' ? PALETTE.hazardSlowRim
         : h.kind === 'lure' ? PALETTE.hazardLureRim
         : h.kind === 'gas' ? PALETTE.hazardGasRim
+        : h.kind === 'damage' ? PALETTE.hazardBurnRim
         : PALETTE.hazardAcidRim
 
       // Fade out over the last half second rather than vanishing on a frame.
@@ -1307,6 +1321,22 @@ export class Renderer {
       ctx.beginPath()
       ctx.arc(h.x, h.y, h.radius, 0, Math.PI * 2)
       ctx.fill()
+
+      // The map's own hazards carry art, centred in the disc and drawn OVER the
+      // fill but UNDER the rim. Under the rim on purpose: the rim and its pulse
+      // are what say "this hurts", and a sprite allowed to cover them would
+      // turn a warning into decoration. Weapon-made hazards have no sprite and
+      // are untouched.
+      if (h.sprite) {
+        const f = this.atlas?.get(h.sprite)
+        if (f) {
+          ctx.drawImage(
+            this.atlas!.image, f.x, f.y, f.w, f.h,
+            Math.round(h.x - f.w / 2), Math.round(h.y - f.h / 2), f.w, f.h,
+          )
+          this.drawCalls++
+        }
+      }
 
       ctx.globalAlpha = fade * pulse
       ctx.strokeStyle = rim
