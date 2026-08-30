@@ -34,12 +34,12 @@
   "_directionNote": "SOURCE band order, which is NOT the canonical order in `directions`. The bands run right, up, left, down. Proved, not guessed: band 0 is a pixel-exact horizontal mirror of band 2, and the skin centroid sits +2px in band 0 and -2px in band 2 (a face is at the FRONT of a profile), while band 1 has no skin at all (back of the head) and band 3 has the most (front, two eyes). Assuming the bands matched `directions` meant `down` drew the right-facing sprite and `right` drew the front-facing one - which is exactly what a player reported: walking right showed the down sprite."
  },
  "humanoids": {
-  "_replacedNote": "EMPTY ON PURPOSE. Every character in the game is generated now and lives in pixellabStrips. The LimeZu entries were REMOVED rather than left alongside, because both groups write the same frame keys and the humanoid pass runs later, so it silently wins — the symptom last time was a walk with 6 frames instead of 8 and no error anywhere. The generator sheets in assets/generated/ are still built by npm run characters and are now unused by the atlas; leaving that pipeline in place costs nothing and is the way back if a generated character has to be replaced in a hurry."
+  "_replacedNote": "EMPTY ON PURPOSE. Every character in the game is generated now and lives in pixellabStrips. The LimeZu entries were REMOVED rather than left alongside, because both groups write the same frame keys and the humanoid pass runs later, so it silently wins \u2014 the symptom last time was a walk with 6 frames instead of 8 and no error anywhere. The generator sheets in assets/generated/ are still built by npm run characters and are now unused by the atlas; leaving that pipeline in place costs nothing and is the way back if a generated character has to be replaced in a hurry."
  },
  "animals": {
-  "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it — a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
-  "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then — that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views — was wrong. Nothing is wrong with the art. All four facings are used now.",
-  "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it — which means it was previously drawing its right-facing side view whenever it walked down.",
+  "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it \u2014 a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
+  "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then \u2014 that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views \u2014 was wrong. Nothing is wrong with the art. All four facings are used now.",
+  "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it \u2014 which means it was previously drawing its right-facing side view whenever it walked down.",
   "_base": "assets/modern-farm/32x32/Animals_32x32/",
   "directionOrder": [
    "right",
@@ -56,12 +56,12 @@
     "framesPerDirection": 6
    }
   },
-  "_replacedNote": "feralDog, rooster, sickHog, blownSheep and prizeBull were REMOVED, not left alongside: they are generated now and live in pixellabObjects. Both groups write the same frame keys and whichever pass runs later silently wins, which is exactly the bug this rule exists for. duckFlight is still LimeZu — no duck was generated."
+  "_replacedNote": "feralDog, rooster, sickHog, blownSheep and prizeBull were REMOVED, not left alongside: they are generated now and live in pixellabObjects. Both groups write the same frame keys and whichever pass runs later silently wins, which is exactly the bug this rule exists for. duckFlight is still LimeZu \u2014 no duck was generated."
  },
  "vehicles": {
-  "_note": "The Duster (§9 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch — bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
-  "_directionNote": "Order is left, up, right, down — NOT the animals' right, up, left, down. Verified by eye against the sheet. Three sheet families in this project now use three different direction orders, which is why every one of them is measured rather than assumed.",
-  "_scaleNote": "§9 says tractor at x3. That was written assuming a 32px source; this tractor is drawn ~130px wide already, so x3 would be nearly 400px against a 520px camera. It is packed at native size and drawn at x1 — which is still about four times the player, and the heavy read comes from the slowed frame rate instead.",
+  "_note": "The Duster (\u00a79 wave 25 boss). This sheet is laid out differently AGAIN: 192x192 frames on a 6x5 grid, with ONE ROW BAND PER DIRECTION rather than four clips side by side in a single band like the animals. Band 0 is reference poses and is skipped. Measured with npm run pitch \u2014 bands 2 and 4 report exactly 192.0px; bands 1 and 3 report noisy runs only because the exhaust puffs detach from the body.",
+  "_directionNote": "Order is left, up, right, down \u2014 NOT the animals' right, up, left, down. Verified by eye against the sheet. Three sheet families in this project now use three different direction orders, which is why every one of them is measured rather than assumed.",
+  "_scaleNote": "\u00a79 says tractor at x3. That was written assuming a 32px source; this tractor is drawn ~130px wide already, so x3 would be nearly 400px against a 520px camera. It is packed at native size and drawn at x1 \u2014 which is still about four times the player, and the heavy read comes from the slowed frame rate instead.",
   "_base": "assets/modern-farm/32x32/Vehicles_32x32/",
   "frameWidth": 192,
   "frameHeight": 192,
@@ -80,17 +80,17 @@
   }
  },
  "singles": {
-  "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field — break one for feed.",
+  "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field \u2014 break one for feed.",
   "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
   "files": {}
  },
  "singlesExtra": {
-  "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. §11 wants gems readable above all else.",
+  "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. \u00a711 wants gems readable above all else.",
   "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
   "files": {
    "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
   },
-  "_replacedNote": "pickup.feed was REMOVED here, not left alongside: it is generated now and lives in the pixellab group. Two groups writing one frame key means the later pass silently wins. pickup.heal is still LimeZu — no heal pickup was generated, and the sim only spawns xp and feed kinds today."
+  "_replacedNote": "pickup.feed was REMOVED here, not left alongside: it is generated now and lives in the pixellab group. Two groups writing one frame key means the later pass silently wins. pickup.heal is still LimeZu \u2014 no heal pickup was generated, and the sim only spawns xp and feed kinds today."
  },
  "crops": {
   "_note": "The ten field crops, GENERATED, replacing the LimeZu pack crops whose keys these are. The pack entries are DELETED rather than left alongside -- two groups writing one frame key is the trap that has cost this project time before, and the later group wins silently.",
@@ -111,8 +111,8 @@
   }
  },
  "nodes": {
-  "_note": "Harvest rocks and ore, GENERATED. Replaces the LimeZu pack rocks, whose keys these are — the enemy of a swap like this is leaving both groups writing the same frame keys, so the LimeZu entries are gone rather than commented out. The ore read the pack was chosen for (\"minerals inside the rock\", visible before you swing) is preserved and made sicker: rust, bone-white crystal, diseased yellow-green, cold blue, and raw red flesh swelling out of a crack.",
-  "_sizeNote": "Content trims to 41x29 up to 57x54 against LimeZu 32x32 cells, so these read chunkier. Deliberate — the node radius is 13 and the sprite has always overhung its hitbox. Not scaled: integer zoom only.",
+  "_note": "Harvest rocks and ore, GENERATED. Replaces the LimeZu pack rocks, whose keys these are \u2014 the enemy of a swap like this is leaving both groups writing the same frame keys, so the LimeZu entries are gone rather than commented out. The ore read the pack was chosen for (\"minerals inside the rock\", visible before you swing) is preserved and made sicker: rust, bone-white crystal, diseased yellow-green, cold blue, and raw red flesh swelling out of a crack.",
+  "_sizeNote": "Content trims to 41x29 up to 57x54 against LimeZu 32x32 cells, so these read chunkier. Deliberate \u2014 the node radius is 13 and the sprite has always overhung its hitbox. Not scaled: integer zoom only.",
   "_base": "assets/pixellab/env/",
   "files": {
    "node.rockSmall": "stone_rust_corrosion.png",
@@ -126,8 +126,8 @@
   }
  },
  "biome": {
-  "_note": "Biome nodes and hazard art for the map system (src/content/maps.json). One frame each, no animation: a node is a static prop you swing at, and a hazard is a ground decal drawn under the translucent circle that carries the actual read of 'this hurts'. Keys are the ones maps.json and nodes.json name — pick a different candidate here and nothing else changes.",
-  "_pickNote": "Three candidates each were generated; these are the ones chosen by LOOKING at a contact sheet, not by filename. saltrock_2 over _1 because _1 is magenta and reads as amethyst rather than salt. scrapheap_0 over _2 because _2 is an entire fire truck — a vehicle, not a scatterable node. boneheap_2 over _0 because _0 is a single skull-and-crossbones icon and this wants a heap. ashstump_1 over _0 because _0's roots spread far past the 13px node radius. gas_1 over _0 and _2, which are flat mounds rather than clouds. mud_0 over _2, which is a cobble pile and not mud at all.",
+  "_note": "Biome nodes and hazard art for the map system (src/content/maps.json). One frame each, no animation: a node is a static prop you swing at, and a hazard is a ground decal drawn under the translucent circle that carries the actual read of 'this hurts'. Keys are the ones maps.json and nodes.json name \u2014 pick a different candidate here and nothing else changes.",
+  "_pickNote": "Three candidates each were generated; these are the ones chosen by LOOKING at a contact sheet, not by filename. saltrock_2 over _1 because _1 is magenta and reads as amethyst rather than salt. scrapheap_0 over _2 because _2 is an entire fire truck \u2014 a vehicle, not a scatterable node. boneheap_2 over _0 because _0 is a single skull-and-crossbones icon and this wants a heap. ashstump_1 over _0 because _0's roots spread far past the 13px node radius. gas_1 over _0 and _2, which are flat mounds rather than clouds. mud_0 over _2, which is a cobble pile and not mud at all.",
   "_base": "assets/pixellab/field/",
   "files": {
    "node.saltRock": "node_saltrock_2.png",
@@ -150,8 +150,8 @@
  },
  "weapons": {
   "_note": "One sprite per weapon, packed as weapon.<id> and keyed to the ids in src/content/weapons.json. These are what the player sees ringed around them and what the projectiles are drawn as. Nothing packed them before, so every weapon's `sprite` field pointed at a name the atlas had never heard of, every projectile fell through to the coloured-square fallback, and a melee arc drew as a ~100px white box.",
-  "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here — a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",
-  "_sizeNote": "Every entry must be ONE object at roughly one tile. Several files in this pack named *_Load_* or *_Stack_* are multi-tile piles — Bucket_Load is 58x64 of stacked buckets and rendered as an unreadable brown slab twice the player's size in the weapon ring. tools/build-atlas.ts asserts the packed size and fails the build naming the file.",
+  "_substitutionNote": "The farm pack is an environment pack, not an item-icon set: it has no axe, watering can or fishing rod anywhere at 32x32. Closest readable stand-ins are used and named honestly here \u2014 a hacksaw blade for the axe (it reads well spinning), a milk can for the watering can, a fishing branch for the rod. Swap them the moment better art exists; only this block needs to change.",
+  "_sizeNote": "Every entry must be ONE object at roughly one tile. Several files in this pack named *_Load_* or *_Stack_* are multi-tile piles \u2014 Bucket_Load is 58x64 of stacked buckets and rendered as an unreadable brown slab twice the player's size in the weapon ring. tools/build-atlas.ts asserts the packed size and fails the build naming the file.",
   "_base": "assets/modern-farm/32x32/Single_Files_32x32/",
   "files": {
    "weapon.shovel": "Props_and_Buildings_32x32/Wooden_Shovel_1_Stone_Oven_32x32.png",
@@ -165,8 +165,8 @@
   }
  },
  "weaponsFarmTools": {
-  "_note": "Caz Pixel Fantasy Icons: Farm Tools. The pack is 94 icons but 81 of them are seed packets — there are exactly FOUR tools in it, and three of them are weapons this project had no art for at all. farm-tool1 is a scythe, 2 a watering can, 3 a three-tine rake, 4 a fishing rod. They replace the hacksaw-as-axe, milk-can-as-watering-can and branch-as-rod stand-ins.",
-  "_styleNote": "Different hand from LimeZu: cool blue-grey metal against LimeZu's warm muted farm palette. Conformed on the way in for exactly the reason §10 step 3 gives.",
+  "_note": "Caz Pixel Fantasy Icons: Farm Tools. The pack is 94 icons but 81 of them are seed packets \u2014 there are exactly FOUR tools in it, and three of them are weapons this project had no art for at all. farm-tool1 is a scythe, 2 a watering can, 3 a three-tine rake, 4 a fishing rod. They replace the hacksaw-as-axe, milk-can-as-watering-can and branch-as-rod stand-ins.",
+  "_styleNote": "Different hand from LimeZu: cool blue-grey metal against LimeZu's warm muted farm palette. Conformed on the way in for exactly the reason \u00a710 step 3 gives.",
   "_base": "assets/icons-farm/MV Icons Farm Tools/Individual Icons/",
   "conform": true,
   "files": {
@@ -177,7 +177,7 @@
   }
  },
  "tools": {
-  "_note": "Pixcuit Medieval Tool Icons. The pickaxe and axe ladders the player actually carries — six tiers each, keyed to the tiers in src/content/nodes.json so the sprite is looked up straight from the tool's current tier. The pack's six materials are why nodes.json has six tiers rather than the five it started with: matching the art beat inventing a mapping from steel to titanium.",
+  "_note": "Pixcuit Medieval Tool Icons. The pickaxe and axe ladders the player actually carries \u2014 six tiers each, keyed to the tiers in src/content/nodes.json so the sprite is looked up straight from the tool's current tier. The pack's six materials are why nodes.json has six tiers rather than the five it started with: matching the art beat inventing a mapping from steel to titanium.",
   "_spellingNote": "The pack spells shovel 'Showel'. Not used here, but it will bite whoever adds it.",
   "_base": "assets/icons-tools/Pixcuit_Medieval_Tool_Icons(32x32)/Assets/",
   "conform": true,
@@ -217,7 +217,7 @@
   }
  },
  "gunSheet": {
-  "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed — rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
+  "_note": "132 firearms on one 512x256 sheet: six category columns of 22. Grid derived with tools/sprite-pitch.ts and a band scan, not guessed \u2014 rows are on a 9px pitch and columns on 85.2px, and the guns themselves are 14-25px wide by 7-8px tall. They are drawn to be HELD by a 32px character rather than to fill a 32px icon cell, which is why they need almost no downscaling in the weapon ring.",
   "_layoutNote": "rowTops and colLefts are the measured content bands. Cells are sliced generously and trimmed to content by the builder, so the varying gun widths inside a column do not need listing.",
   "path": "assets/icons-guns/pixel guns transparent background no text.png",
   "conform": true,
@@ -265,7 +265,7 @@
   ]
  },
  "fx": {
-  "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (§10 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre — an explosion is centred on a point, it does not stand on the ground.",
+  "_note": "The FX pack, conformed. Its filenames are meaningless numbers, so they are named semantically here and never referred to any other way (\u00a710 step 3). Every sheet is 64px cells: columns are animation frames, and the nine ROWS are colour variants of the same animation. `row` picks the variant whose hue is already closest to the effect's job, so the quantiser has the least distance to travel; `tools/conform-fx.ts` then snaps every pixel to the LimeZu palette in Oklab. Pivot is the cell CENTRE, not bottom-centre \u2014 an explosion is centred on a point, it does not stand on the ground.",
   "_rowNote": "Row hues, consistent across the pack: 0 orange, 1 magenta, 2 cyan, 3 green, 4 tan, 5 white, 6 mauve, 7 red, 8 blue.",
   "_base": "assets/effects-fx/Free/",
   "cell": 64,
@@ -289,7 +289,7 @@
   "_replacedNote": "muzzle, gas, dust, explosion and slash were REMOVED here: they are generated and animated now and live in pixellabFx. Two groups writing one frame key means the later pass silently wins. hitSpark, critStar and shock are still the pack."
  },
  "projectiles": {
-  "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid — no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
+  "_note": "unTied Games Super Pixel Projectiles 2 and 3. Each variant directory holds a spritesheet.png plus a spritesheet.txt naming the exact rect of every frame, so the builder reads the artist's own metadata rather than guessing a grid \u2014 no pitch archaeology needed here. Conformed to the LimeZu palette on the way in, same as the fx clips.",
   "_choiceNote": "Every type ships in 6-8 colours and two sizes. The LARGE size is packed for the six signature rounds: small ones are 16-20px, which at the renderer's 0.55 projectile scale is a 10px smudge next to a 64px character - the reason six visibly different bullets read as one. One silhouette per weapon (burst, dart, shell, missile, glob, spear) so weapons are told apart by SHAPE, and each ships in three element colours so an element recolours without erasing that shape.",
   "_base": "assets/projectiles/",
   "clips": {
@@ -418,7 +418,7 @@
  },
  "terrainSource": {
   "path": "assets/modern-farm/32x32/1_Terrains_32x32.png",
-  "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used — anything with a blob edge will not tile. Found with tools/_scan.ts.",
+  "_note": "[column, row] into the sheet. Only fully-opaque uniform cells are used \u2014 anything with a blob edge will not tile. Found with tools/_scan.ts.",
   "tiles": {
    "grass": [
     3,
@@ -521,8 +521,8 @@
    "prop.burnBarrel": "burn_barrel.png"
   },
   "conform": true,
-  "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one — the yard rooster popped against a muted scene because he was never quantised to it.",
-  "_pickupNote": "pickup.xp and pickup.feed are the 16px generations, not the 32px ones. The renderer already looked for pickup.<kind> and fell back to a 5px coloured square. The 32px seed trims to 20x28, which against a 14px collect radius and hundreds of gems on screen is clutter; at 16px they trim to 12x14 — bigger than the square they replace, small enough to carry a wave of them. The 32px xp_seed and feed_token stay in picked/ as card art."
+  "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one \u2014 the yard rooster popped against a muted scene because he was never quantised to it.",
+  "_pickupNote": "pickup.xp and pickup.feed are the 16px generations, not the 32px ones. The renderer already looked for pickup.<kind> and fell back to a 5px coloured square. The 32px seed trims to 20x28, which against a 14px collect radius and hundreds of gems on screen is clutter; at 16px they trim to 12x14 \u2014 bigger than the square they replace, small enough to carry a wave of them. The 32px xp_seed and feed_token stay in picked/ as card art."
  },
  "gasMaskIcon": {
   "_note": "The gas mask cropped from the generator accessory sheet rather than generated. docs/PIXELLAB.md: 'A gas mask already exists ... crop it from that sheet rather than generating one.' Uses the idle down cell, which is the only front-on view.",
@@ -556,6 +556,14 @@
      "walk": {
       "file": "walk_{compass}_strip.png",
       "frames": 8
+     },
+     "hit": {
+      "file": "hit_{compass}_strip.png",
+      "frames": 6
+     },
+     "death": {
+      "file": "death_{compass}_strip.png",
+      "frames": 7
      }
     }
    },
@@ -700,7 +708,8 @@
     }
    }
   },
-  "_castNote": "The six player classes and the infected farmhand, all generated at size 64 (see docs/ART_STYLE.md — size is the CANVAS, and the figure fills about 76% of it) and cut by npm run character to a 32x64 cell with feet on y58. Four cardinals only: the renderer buckets facing into four, so the diagonals are generated and deliberately unused."
+  "_castNote": "The six player classes and the infected farmhand, all generated at size 64 (see docs/ART_STYLE.md \u2014 size is the CANVAS, and the figure fills about 76% of it) and cut by npm run character to a 32x64 cell with feet on y58. Four cardinals only: the renderer buckets facing into four, so the diagonals are generated and deliberately unused.",
+  "_clipNote": "Humanoids carry the same clip vocabulary as the generated animals now: idle, walk, hit, death. `hit` and `death` come from PixelLab TEMPLATE animations (`taking-punch`, `falling-back-death`) at 1 generation per direction, which is the cheap path -- roughly 2.4x under the v3 rate the animal objects pay. FOUR directions, not eight: `compassToDirection` here maps only the cardinals, because the humanoid rig has always been four-way. The renderer's clip chain falls through, so a humanoid without one of these behaves as it did before."
  },
  "scene": {
   "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",
@@ -737,8 +746,8 @@
   "_droppedNote": "scene/rooster.png in the handoff crops is entirely transparent. The yard borrowed the game's own 32px rooster for a while; it is now `scene.rooster` in the pixellab group -- generated art, drawn at 1x, and visibly bigger than the hens pecking beside it, which is what a rooster in a yard should be."
  },
  "sceneStrips": {
-  "_generatedNote": "EVERY KEY INSIDE `files` IS A SPRITE NAME AND EVERY VALUE A PATH — an `_`-prefixed note belongs at THIS level, not in there. Putting one inside `files` makes the builder try to open a paragraph of prose as a PNG, which it does, and then fails naming it.  The strips below are generated by `animate_image` FROM the static sprite that was already standing in the scene, then assembled by `npm run anim`. Each cell is the source sprite's own size and every frame is composited BOTTOM-CENTRED onto it, so an actor's feet do not travel between frames. Frame counts differ per strip because the job keeps your input as frame 0: a `frame_count: 8` job is NINE cells, a `frame_count: 6` job is seven. The stripActor call in scene.ts carries the real number; do not assume six.",
-  "_sparesNote": "Generated and deliberately NOT packed, because nothing mounts them yet: rooster_idle, dog_walk, sheep_idle, cow_idle, calf_walk. They are in assets/scene/ and assets/pixellab/anim/. Add a line to `files` and they are one stripActor call from the screen — a walking dog or an ambling calf also wants a `travelling()` path, which is a placement decision rather than an art one.",
+  "_generatedNote": "EVERY KEY INSIDE `files` IS A SPRITE NAME AND EVERY VALUE A PATH \u2014 an `_`-prefixed note belongs at THIS level, not in there. Putting one inside `files` makes the builder try to open a paragraph of prose as a PNG, which it does, and then fails naming it.  The strips below are generated by `animate_image` FROM the static sprite that was already standing in the scene, then assembled by `npm run anim`. Each cell is the source sprite's own size and every frame is composited BOTTOM-CENTRED onto it, so an actor's feet do not travel between frames. Frame counts differ per strip because the job keeps your input as frame 0: a `frame_count: 8` job is NINE cells, a `frame_count: 6` job is seven. The stripActor call in scene.ts carries the real number; do not assume six.",
+  "_sparesNote": "Generated and deliberately NOT packed, because nothing mounts them yet: rooster_idle, dog_walk, sheep_idle, cow_idle, calf_walk. They are in assets/scene/ and assets/pixellab/anim/. Add a line to `files` and they are one stripActor call from the screen \u2014 a walking dog or an ambling calf also wants a `travelling()` path, which is a placement decision rather than an art one.",
   "_note": "Anything TILED or STEPPED, packed untrimmed. A strip animated with steps(n) divides its width by n and a repeating tile repeats at its packed size, so both need the real cell rather than the content bounds. Trimming a 192px six-frame strip to 188px makes 188/6 fractional; trimming a 32px wheat tile to 26px leaves a gap in every repeat.",
   "_base": "assets/scene/",
   "noTrim": true,
@@ -766,7 +775,7 @@
   "conform": true
  },
  "portraits": {
-  "_note": "Class card portraits, made by create_portrait_character from each class's own finished south sprite (direction: character_to_portrait). Derived rather than prompted, so a plate matches its character BY CONSTRUCTION — prompting a portrait and a sprite separately gives you two people who merely dress alike.",
+  "_note": "Class card portraits, made by create_portrait_character from each class's own finished south sprite (direction: character_to_portrait). Derived rather than prompted, so a plate matches its character BY CONSTRUCTION \u2014 prompting a portrait and a sprite separately gives you two people who merely dress alike.",
   "_base": "assets/pixellab/portrait/",
   "cardArt": true,
   "conform": true,
@@ -780,8 +789,8 @@
   }
  },
  "pixellabObjects": {
-  "_note": "Generated 8-direction animals — enemies and the two summons. Frame keys are id.clip.direction.frame, the same convention as every other sheet.",
-  "_generatedBy": "tools/object-manifest.ts — run `npm run objman -- --write` after downloading or regenerating an animal. The clip slugs are PixelLab folder names (the description, slugified and truncated) and must never be typed by hand.",
+  "_note": "Generated 8-direction animals \u2014 enemies and the two summons. Frame keys are id.clip.direction.frame, the same convention as every other sheet.",
+  "_generatedBy": "tools/object-manifest.ts \u2014 run `npm run objman -- --write` after downloading or regenerating an animal. The clip slugs are PixelLab folder names (the description, slugified and truncated) and must never be typed by hand.",
   "_base": "assets/pixellab/object/",
   "compassToDirection": {
    "south": "down",
@@ -1394,7 +1403,7 @@
   }
  },
  "pixellabFx": {
-  "_note": "FX animated from a generated still via animate-with-text-v3 — one generation per 8-frame clip, which is the cheapest thing on the price list. Same frame keys and centre pivot as the pack fx group, so the renderer cannot tell them apart.",
+  "_note": "FX animated from a generated still via animate-with-text-v3 \u2014 one generation per 8-frame clip, which is the cheapest thing on the price list. Same frame keys and centre pivot as the pack fx group, so the renderer cannot tell them apart.",
   "_base": "assets/pixellab/fx/",
   "clips": {
    "muzzle": {

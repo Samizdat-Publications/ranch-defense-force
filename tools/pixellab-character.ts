@@ -30,7 +30,7 @@
  * diagonals are generated and sit in the zip unused, which is deliberate and is
  * the four-vs-eight decision recorded in the queue.
  */
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { unzipTo } from './unzip.ts'
 import { decodePng, encodePng, blankImage, blit, type Image } from './png.ts'
 
@@ -113,9 +113,32 @@ if (!root) {
   process.exit(1)
 }
 
+/*
+   EVERY animation in the download, not just `walk`.
+
+   This used to look for one hardcoded folder called `walk`, which was true when
+   a humanoid had a walk and nothing else. It is what blocked the whole
+   hit/attack/death tier for the five humanoid enemies: the art could be
+   generated and would simply never be cut, so the pipeline appeared to work and
+   produced nothing.
+
+   Scanning means a clip added upstream lands here with no edit. The folder name
+   IS the clip name -- PixelLab names it after the template or the description --
+   and `_slug` on the manifest sheet maps whatever came back to the clip name the
+   renderer asks for.
+
+   Frame count is read per clip rather than assumed: `walk` is eight,
+   `taking-punch` is whatever the template says, and a hardcoded 8 would silently
+   refuse to write a six-frame recoil.
+*/
 let idles = 0
-let strips = 0
+const written: Record<string, number> = {}
 const report: string[] = []
+const animRoot = `${root}/animations`
+const clipDirs = existsSync(animRoot)
+  ? readdirSync(animRoot).filter((d) => statSync(`${animRoot}/${d}`).isDirectory())
+  : []
+
 for (const dir of CARDINALS) {
   const rot = `${root}/rotations/${dir}.png`
   if (existsSync(rot)) {
@@ -124,20 +147,46 @@ for (const dir of CARDINALS) {
     idles++
   }
 
-  const frames: Image[] = []
-  for (let i = 0; i < WALK_FRAMES; i++) {
-    const f = `${root}/animations/walk/${dir}/frame_${String(i).padStart(3, '0')}.png`
-    if (existsSync(f)) frames.push(decodePng(readFileSync(f)))
-  }
-  if (frames.length === WALK_FRAMES) {
+  for (const clip of clipDirs) {
+    const src = `${animRoot}/${clip}/${dir}`
+    if (!existsSync(src)) continue
+    const files = readdirSync(src).filter((f) => f.endsWith('.png')).sort()
+    if (!files.length) continue
+    const frames = files.map((f) => decodePng(readFileSync(`${src}/${f}`)))
+    // One shared baseline PER CLIP, never across clips: a recoil is a
+    // different pose family to a walk, and forcing them to one baseline would
+    // sink the recoil into the ground.
     const s = strip(cells(frames))
-    writeFileSync(`${outDir}/walk_${dir}_strip.png`, encodePng(s))
-    strips++
-  } else if (frames.length > 0) {
-    report.push(`  walk ${dir}: only ${frames.length}/${WALK_FRAMES} frames — NOT written`)
+    writeFileSync(`${outDir}/${clip}_${dir}_strip.png`, encodePng(s))
+    written[clip] = (written[clip] ?? 0) + 1
+    if (clip === 'walk' && frames.length !== WALK_FRAMES) {
+      report.push(`  walk ${dir}: ${frames.length} frames, expected ${WALK_FRAMES}`)
+    }
   }
 }
 
-console.log(`${name}: ${idles}/4 idles, ${strips}/4 walk strips, feet on y${BASELINE_Y}`)
+const summary = Object.entries(written).map(([c, n]) => `${c} ${n}/4`).join(', ')
+console.log(`${name}: ${idles}/4 idles, ${summary || 'no clips'}, feet on y${BASELINE_Y}`)
+
+/*
+   Print the manifest block, with the frame counts READ off the strips.
+
+   `pixellabStrips` slices a strip by the `frames` number in the manifest, so a
+   wrong one does not error -- it slices at the wrong width and the animation
+   slides instead of stepping. Template clips are whatever length the template
+   is (taking-punch came back 6, falling-back-death 7, walk 8), so hand-typing
+   this is three chances to be silently wrong per character.
+*/
+const blocks = Object.keys(written).map((clip) => {
+  const probe = `${outDir}/${clip}_south_strip.png`
+  const frames = existsSync(probe) ? decodePng(readFileSync(probe)).width / CELL_W : 0
+  return `    "${clip}": { "file": "${clip}_{compass}_strip.png", "frames": ${frames} }`
+})
+if (blocks.length) {
+  console.log(`\n  art/sprites.json -> pixellabStrips.sheets.${name}.clips:`)
+  console.log(blocks.join(',\n'))
+}
 for (const line of report) console.log(line)
-if (strips < 4) console.log('  (a missing walk usually means the animation is still generating)')
+for (const [clip, n] of Object.entries(written)) {
+  if (n < 4) console.log(`  ${clip}: only ${n}/4 directions — still generating, or lost by v3`)
+}
