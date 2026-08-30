@@ -662,6 +662,14 @@
      "walk": {
       "file": "walk_{compass}_strip.png",
       "frames": 8
+     },
+     "hit": {
+      "file": "hit_{compass}_strip.png",
+      "frames": 6
+     },
+     "death": {
+      "file": "death_{compass}_strip.png",
+      "frames": 7
      }
     }
    },
