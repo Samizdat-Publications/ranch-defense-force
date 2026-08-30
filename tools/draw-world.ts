@@ -42,6 +42,10 @@ function groundSetFor(world: World, wave: number): string {
 const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROP_FPS` in the renderer. Ambient loops run slower than combat art. */
 const PROP_FPS = 8
+
+/** Must match src/render/renderer.ts -- a shot that fogs differently is a lie. */
+const FOG_TILE = 512
+const FOG_BLOBS = 26
 /** Matches `PROJECTILE_SCALE` in the renderer; per-weapon multiplier on top. */
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile and FX clips are authored at 15fps. */
@@ -327,6 +331,83 @@ export class WorldPainter {
    * Same RNG seeds as the renderer, kept apart from the ground's stream for the
    * same reason it keeps them apart: scattering scenery must not move a tile.
    */
+  /**
+   * Ground fog, matching `Renderer.bakeFog`/`drawFog` in structure and seed.
+   *
+   * The browser gets radial gradients from the canvas API; there is no canvas
+   * here, so the falloff is evaluated per pixel. Same blob count, same stream,
+   * same nine-way wrap for seamlessness, so a shot and the game agree -- which
+   * is the whole reason this exists rather than a note saying shots have no fog.
+   *
+   * A screenshot that quietly omits a layer is worse than no screenshot: this
+   * repo's verification step is `npm run shot` and LOOK, and a layer the shot
+   * cannot show is a layer nobody ever looks at.
+   */
+  private fog(world: World): void {
+    const cfg = world.map.fog
+    if (!cfg) return
+
+    const size = FOG_TILE
+    const tint = parseInt(cfg.tint.slice(1), 16)
+    const tr = (tint >> 16) & 0xff
+    const tg = (tint >> 8) & 0xff
+    const tb = tint & 0xff
+
+    // The tile, as a coverage field in [0,1]. Built once per shot.
+    const cov = new Float32Array(size * size)
+    const rng = new Rng(world.seed ^ 0xf0_9c1a)
+    for (let i = 0; i < FOG_BLOBS; i++) {
+      const bx = rng.range(0, size)
+      const by = rng.range(0, size)
+      const r = rng.range(size * 0.10, size * 0.30) * cfg.scale
+      const a = rng.range(0.25, 1)
+      for (let wy = -1; wy <= 1; wy++) {
+        for (let wx = -1; wx <= 1; wx++) {
+          const cx = bx + wx * size
+          const cy = by + wy * size
+          if (cx + r < 0 || cx - r > size || cy + r < 0 || cy - r > size) continue
+          const x0 = Math.max(0, Math.floor(cx - r))
+          const x1 = Math.min(size - 1, Math.ceil(cx + r))
+          const y0 = Math.max(0, Math.floor(cy - r))
+          const y1 = Math.min(size - 1, Math.ceil(cy + r))
+          for (let y = y0; y <= y1; y++) {
+            for (let x = x0; x <= x1; x++) {
+              const d = Math.hypot(x - cx, y - cy)
+              if (d >= r) continue
+              // Linear falloff, which is what a two-stop radial gradient is.
+              const v = cov[y * size + x] + a * (1 - d / r)
+              cov[y * size + x] = v > 1 ? 1 : v
+            }
+          }
+        }
+      }
+    }
+
+    const img = this.canvas
+    const t = world.elapsed
+    for (let bank = 0; bank < 2; bank++) {
+      const speed = bank === 0 ? cfg.drift : -cfg.drift * 1.7
+      const alpha = bank === 0 ? cfg.alpha : cfg.alpha * 0.55
+      const dx = ((t * speed) % size + size) % size
+      const dy = ((t * speed * 0.35) % size + size) % size
+      for (let py = 0; py < img.height; py++) {
+        const wy = py + this.camY - dy
+        const sy = ((wy % size) + size) % size | 0
+        for (let px = 0; px < img.width; px++) {
+          const wx = px + this.camX - dx
+          const sx = ((wx % size) + size) % size | 0
+          const c = cov[sy * size + sx]
+          if (c <= 0) continue
+          const k = c * alpha
+          const i = (py * img.width + px) * 4
+          img.data[i] = img.data[i] * (1 - k) + tr * k
+          img.data[i + 1] = img.data[i + 1] * (1 - k) + tg * k
+          img.data[i + 2] = img.data[i + 2] * (1 - k) + tb * k
+        }
+      }
+    }
+  }
+
   private decals(world: World): void {
     const kinds = ['decal.tireRuts', 'decal.scorch', 'decal.mud', 'decal.ash']
       .map((k) => frames[k]).filter((f): f is Frame => !!f)
@@ -417,7 +498,7 @@ export class WorldPainter {
 
   private terrain(world: World): void {
     fillRect(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0x479757)
-    if (this.wangTerrain(world)) { this.decals(world); this.fence(world); return }
+    if (this.wangTerrain(world)) { this.decals(world); this.fence(world); this.fog(world); return }
 
     const grass = frames['terrain.grass']
     const dirt = frames['terrain.dirt']

@@ -1,72 +1,213 @@
 {
-  "_note": "Destructible field objects. NOT harvest nodes -- see src/sim/entities.ts on Prop.drops, and world.ts on why weapons must never touch a node. These are the other half of that rule: weapons DO break these, tools never do.",
-
-  "_spriteNote": "Every sprite here is one the renderer already scattered as inert peripheral scenery. The list was split by whether the thing LOOKS LIKE IT HOLDS SOMETHING -- drum, barrel, bale, bin, cans, crate, barrow, trough, log and bone pile are breakable; the scarecrow, plough, grave marker, fence and barbed wire stay wallpaper. That split is the whole tutorial: a player never has to be told which scenery pays out, because containers do and fixtures do not.",
-
-  "_pierceNote": "Breaking one costs the player NOTHING. A projectile that hits a breakable damages it and keeps its pierce, so a drum standing between the gun and the crowd is never a DPS tax. Consuming pierce here was the obvious implementation and would have made scenery a punishment -- the wave does not pause while you shoot furniture, so any bullet a crate ate would be damage the crowd did not take.",
-
-  "_aimNote": "Breakables are a FALLBACK aim target, never a competing one. `findNearestEnemy` is asked first and only when it comes back empty does the aim fall to a breakable. Letting them into the normal target set would have weapons turn away from the wave to shoot a barrel, which is the same bug as the old weapons-damage-nodes one wearing a different hat.",
-
-  "_dropNote": "The owner's brief: 'usually nothing, sometimes XP or food, rarely gear'. Held to literally -- `nothing` is the single heaviest row in every table. A breakable that always paid would be a node, and the game already has nodes.",
-
-  "field": {
-    "initial": 12,
-    "regrowPerWave": 2,
-    "max": 26,
-    "minDistanceFromPlayer": 150,
-    "edgePad": 90
+ "_note": "Destructible field objects. NOT harvest nodes -- see src/sim/entities.ts on Prop.drops, and world.ts on why weapons must never touch a node. These are the other half of that rule: weapons DO break these, tools never do.",
+ "_spriteNote": "Every sprite here is one the renderer already scattered as inert peripheral scenery. The list was split by whether the thing LOOKS LIKE IT HOLDS SOMETHING -- drum, barrel, bale, bin, cans, crate, barrow, trough, log and bone pile are breakable; the scarecrow, plough, grave marker, fence and barbed wire stay wallpaper. That split is the whole tutorial: a player never has to be told which scenery pays out, because containers do and fixtures do not.",
+ "_pierceNote": "Breaking one costs the player NOTHING. A projectile that hits a breakable damages it and keeps its pierce, so a drum standing between the gun and the crowd is never a DPS tax. Consuming pierce here was the obvious implementation and would have made scenery a punishment -- the wave does not pause while you shoot furniture, so any bullet a crate ate would be damage the crowd did not take.",
+ "_aimNote": "Breakables are a FALLBACK aim target, never a competing one. `findNearestEnemy` is asked first and only when it comes back empty does the aim fall to a breakable. Letting them into the normal target set would have weapons turn away from the wave to shoot a barrel, which is the same bug as the old weapons-damage-nodes one wearing a different hat.",
+ "_dropNote": "The owner's brief: 'usually nothing, sometimes XP or food, rarely gear'. Held to literally -- `nothing` is the single heaviest row in every table. A breakable that always paid would be a node, and the game already has nodes.",
+ "field": {
+  "initial": 12,
+  "regrowPerWave": 2,
+  "max": 26,
+  "minDistanceFromPlayer": 150,
+  "edgePad": 90
+ },
+ "classes": {
+  "oilDrum": {
+   "sprites": [
+    "prop.oilDrum"
+   ],
+   "weight": 5,
+   "hp": 14,
+   "radius": 12,
+   "drops": "common"
   },
-
-  "classes": {
-    "oilDrum":     { "sprite": "prop.oilDrum",       "weight": 5, "hp": 14, "radius": 12, "drops": "common" },
-    "burnBarrel":  { "sprite": "prop.burnBarrel",    "weight": 4, "hp": 14, "radius": 12, "drops": "common" },
-    "milkCans":    { "sprite": "prop.milkCans",      "weight": 4, "hp": 10, "radius": 11, "drops": "food" },
-    "feedBin":     { "sprite": "prop.feedBin",       "weight": 4, "hp": 12, "radius": 12, "drops": "food" },
-    "hayBale":     { "sprite": "prop.hayBale",       "weight": 5, "hp": 10, "radius": 13, "drops": "food" },
-    "hayBaleRot":  { "sprite": "prop.hayBaleRotted", "weight": 3, "hp": 10, "radius": 13, "drops": "common" },
-    "logPile":     { "sprite": "prop.logPile",       "weight": 4, "hp": 16, "radius": 13, "drops": "common" },
-    "wheelbarrow": { "sprite": "prop.wheelbarrow",   "weight": 3, "hp": 12, "radius": 12, "drops": "rich" },
-    "trough":      { "sprite": "prop.trough",        "weight": 3, "hp": 14, "radius": 13, "drops": "food" },
-    "troughFouled":{ "sprite": "prop.troughFouled",  "weight": 2, "hp": 14, "radius": 13, "drops": "common" },
-    "bonePile":    { "sprite": "prop.bonePile",      "weight": 2, "hp": 12, "radius": 12, "drops": "rich" }
+  "burnBarrel": {
+   "sprites": [
+    "prop.burnBarrel"
+   ],
+   "weight": 4,
+   "hp": 14,
+   "radius": 12,
+   "drops": "common"
   },
-
-  "_hpNote": "Flat hp, no per-wave scaling. Nodes scale because the pickaxe ladder scales with them; nothing the player buys makes them break breakables faster, so scaling these would just make late scenery unbreakable.",
-
-  "dropTables": {
-    "common": [
-      { "kind": "nothing", "weight": 62 },
-      { "kind": "xp",      "weight": 24, "min": 4,  "max": 9 },
-      { "kind": "feed",    "weight": 11, "min": 2,  "max": 5 },
-      { "kind": "gear",    "weight": 2 },
-      { "kind": "magnet",  "weight": 1 }
-    ],
-    "food": [
-      { "kind": "nothing", "weight": 55 },
-      { "kind": "feed",    "weight": 26, "min": 3,  "max": 7 },
-      { "kind": "heal",    "weight": 12, "min": 6,  "max": 12 },
-      { "kind": "xp",      "weight": 5,  "min": 3,  "max": 6 },
-      { "kind": "gear",    "weight": 1 },
-      { "kind": "magnet",  "weight": 1 }
-    ],
-    "rich": [
-      { "kind": "nothing", "weight": 48 },
-      { "kind": "xp",      "weight": 26, "min": 8,  "max": 16 },
-      { "kind": "feed",    "weight": 15, "min": 4,  "max": 9 },
-      { "kind": "gear",    "weight": 7 },
-      { "kind": "magnet",  "weight": 4 }
-    ]
+  "milkCans": {
+   "sprites": [
+    "prop.milkCans"
+   ],
+   "weight": 4,
+   "hp": 10,
+   "radius": 11,
+   "drops": "food"
   },
-
-  "magnet": {
-    "_note": "The owner asked for 'a magnet object that drops occasionally and collects all items, power up to go with it'. Both halves: collecting it sweeps the field NOW (the same call a cleared wave makes), and then leaves the pickup radius hugely enlarged for a few seconds so everything that drops during the window walks itself in.",
-    "sprite": "pickup.magnet",
-    "radiusMultiplier": 6,
-    "seconds": 8
+  "feedBin": {
+   "sprites": [
+    "prop.feedBin"
+   ],
+   "weight": 4,
+   "hp": 12,
+   "radius": 12,
+   "drops": "food"
   },
-
-  "gear": {
-    "_note": "A field-dropped item card. It is drawn from the SAME pool the shop and level-up offers use, and it respects maxStacks -- a gear drop that handed over a fourth copy of a three-stack item would be a dead pickup that looked like a reward.",
-    "sprite": "pickup.gear"
+  "hayBale": {
+   "sprites": [
+    "prop.hayBale"
+   ],
+   "weight": 5,
+   "hp": 10,
+   "radius": 13,
+   "drops": "food"
+  },
+  "hayBaleRot": {
+   "sprites": [
+    "prop.hayBaleRotted"
+   ],
+   "weight": 3,
+   "hp": 10,
+   "radius": 13,
+   "drops": "common"
+  },
+  "logPile": {
+   "sprites": [
+    "prop.logPile"
+   ],
+   "weight": 4,
+   "hp": 16,
+   "radius": 13,
+   "drops": "common"
+  },
+  "wheelbarrow": {
+   "sprites": [
+    "prop.wheelbarrow"
+   ],
+   "weight": 3,
+   "hp": 12,
+   "radius": 12,
+   "drops": "rich"
+  },
+  "trough": {
+   "sprites": [
+    "prop.trough"
+   ],
+   "weight": 3,
+   "hp": 14,
+   "radius": 13,
+   "drops": "food"
+  },
+  "troughFouled": {
+   "sprites": [
+    "prop.troughFouled"
+   ],
+   "weight": 2,
+   "hp": 14,
+   "radius": 13,
+   "drops": "common"
+  },
+  "bonePile": {
+   "sprites": [
+    "prop.bonePile"
+   ],
+   "weight": 2,
+   "hp": 12,
+   "radius": 12,
+   "drops": "rich"
   }
+ },
+ "_hpNote": "Flat hp, no per-wave scaling. Nodes scale because the pickaxe ladder scales with them; nothing the player buys makes them break breakables faster, so scaling these would just make late scenery unbreakable.",
+ "dropTables": {
+  "common": [
+   {
+    "kind": "nothing",
+    "weight": 62
+   },
+   {
+    "kind": "xp",
+    "weight": 24,
+    "min": 4,
+    "max": 9
+   },
+   {
+    "kind": "feed",
+    "weight": 11,
+    "min": 2,
+    "max": 5
+   },
+   {
+    "kind": "gear",
+    "weight": 2
+   },
+   {
+    "kind": "magnet",
+    "weight": 1
+   }
+  ],
+  "food": [
+   {
+    "kind": "nothing",
+    "weight": 55
+   },
+   {
+    "kind": "feed",
+    "weight": 26,
+    "min": 3,
+    "max": 7
+   },
+   {
+    "kind": "heal",
+    "weight": 12,
+    "min": 6,
+    "max": 12
+   },
+   {
+    "kind": "xp",
+    "weight": 5,
+    "min": 3,
+    "max": 6
+   },
+   {
+    "kind": "gear",
+    "weight": 1
+   },
+   {
+    "kind": "magnet",
+    "weight": 1
+   }
+  ],
+  "rich": [
+   {
+    "kind": "nothing",
+    "weight": 48
+   },
+   {
+    "kind": "xp",
+    "weight": 26,
+    "min": 8,
+    "max": 16
+   },
+   {
+    "kind": "feed",
+    "weight": 15,
+    "min": 4,
+    "max": 9
+   },
+   {
+    "kind": "gear",
+    "weight": 7
+   },
+   {
+    "kind": "magnet",
+    "weight": 4
+   }
+  ]
+ },
+ "magnet": {
+  "_note": "The owner asked for 'a magnet object that drops occasionally and collects all items, power up to go with it'. Both halves: collecting it sweeps the field NOW (the same call a cleared wave makes), and then leaves the pickup radius hugely enlarged for a few seconds so everything that drops during the window walks itself in.",
+  "sprite": "pickup.magnet",
+  "radiusMultiplier": 6,
+  "seconds": 8
+ },
+ "gear": {
+  "_note": "A field-dropped item card. It is drawn from the SAME pool the shop and level-up offers use, and it respects maxStacks -- a gear drop that handed over a fourth copy of a three-stack item would be a dead pickup that looked like a reward.",
+  "sprite": "pickup.gear"
+ },
+ "_variantNote": "A class holds a LIST of sprites, not one. Every one of these was generated as a 16-candidate pack -- sixteen oil drums, sixteen troughs, sixteen crates -- and the candidates are genuinely different objects rather than sixteen renders of one, so a field that draws from the list stops reading as the same barrel stamped forty times. The variant is drawn per instance when the field is scattered. A MAP MAY OVERRIDE the list per class (see maps.json `breakables.sprites`), which is what makes a map a place rather than a palette swap: the scrapyard can run the dented industrial drums and the burn can run the scorched ones off the same class."
 }

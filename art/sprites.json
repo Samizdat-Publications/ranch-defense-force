@@ -1047,8 +1047,8 @@
     "cell": 56,
     "clips": {}
    },
-   "job": {
-    "dir": "job",
+   "joy": {
+    "dir": "joy",
     "cell": 56,
     "clips": {}
    },
@@ -1147,8 +1147,8 @@
     "cell": 56,
     "clips": {}
    },
-   "jobBlight": {
-    "dir": "jobBlight",
+   "joyBlight": {
+    "dir": "joyBlight",
     "cell": 56,
     "clips": {}
    },

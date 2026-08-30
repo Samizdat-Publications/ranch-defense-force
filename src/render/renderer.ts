@@ -66,6 +66,11 @@ const PROJECTILE_FPS = 15
  */
 const PROP_FPS = 8
 
+/** Fog tile edge, in world pixels. A power of two so the wrap arithmetic is exact. */
+const FOG_TILE = 512
+/** Blobs per fog tile. More is not denser, only slower -- alpha carries density. */
+const FOG_BLOBS = 26
+
 /**
  * Which Wang sets the ground bakes from — now the MAP's, not a global.
  *
@@ -143,6 +148,8 @@ export class Renderer {
   /** Integer world-to-screen scale, recomputed on every resize. */
   private zoom: number
   private ctx: CanvasRenderingContext2D
+  /** The baked fog tile, or null on a map that declares no fog. */
+  private fog: HTMLCanvasElement | null = null
   private decals: HTMLCanvasElement
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
@@ -220,6 +227,7 @@ export class Renderer {
     this.order = new Int32Array(cap)
 
     this.bakeTerrain()
+    this.bakeFog()
   }
 
   /**
@@ -421,6 +429,104 @@ export class Renderer {
   }
 
   /**
+   * Bake the fog tile.
+   *
+   * ONE seamless tile, drawn once at init, then blitted twice a frame at two
+   * offsets. The alternative -- compositing blobs live -- is per-frame work
+   * proportional to the blob count, and the whole point of this layer is that
+   * it costs almost nothing: two hundred enemies are already on screen.
+   *
+   * Seamlessness is the only fiddly part, and it is bought by drawing every
+   * blob NINE times, once per neighbouring wrap. A blob near an edge therefore
+   * has its other half painted on the far side, and the tile abuts itself with
+   * no seam. Blurring a non-seamless tile does not fix this; it just makes the
+   * seam soft, and a soft straight line across a field is more obviously wrong
+   * than a hard one.
+   */
+  private bakeFog(): void {
+    const cfg = this.world.map.fog
+    if (!cfg) { this.fog = null; return }
+
+    const size = FOG_TILE
+    const c = document.createElement('canvas')
+    c.width = size
+    c.height = size
+    const g = c.getContext('2d')
+    if (!g) { this.fog = null; return }
+
+    // Seeded off the run, and off its OWN stream, for the same reason the
+    // ground and the decals are: nothing decorative may move a spawn.
+    const rng = new Rng(this.world.seed ^ 0xf0_9c1a)
+    g.fillStyle = cfg.tint
+    for (let i = 0; i < FOG_BLOBS; i++) {
+      const x = rng.range(0, size)
+      const y = rng.range(0, size)
+      const r = rng.range(size * 0.10, size * 0.30) * cfg.scale
+      const a = rng.range(0.25, 1)
+      for (let wy = -1; wy <= 1; wy++) {
+        for (let wx = -1; wx <= 1; wx++) {
+          const cx = x + wx * size
+          const cy = y + wy * size
+          // Skip the wraps that cannot reach the tile at all.
+          if (cx + r < 0 || cx - r > size || cy + r < 0 || cy - r > size) continue
+          const grad = g.createRadialGradient(cx, cy, 0, cx, cy, r)
+          grad.addColorStop(0, cfg.tint)
+          grad.addColorStop(1, 'transparent')
+          g.globalAlpha = a
+          g.fillStyle = grad
+          g.beginPath()
+          g.arc(cx, cy, r, 0, Math.PI * 2)
+          g.fill()
+        }
+      }
+    }
+    g.globalAlpha = 1
+    this.fog = c
+  }
+
+  /**
+   * Two banks of fog, drifting at different speeds.
+   *
+   * Drawn in WORLD space, above the ground and decals and below every sprite,
+   * so it lies on the floor rather than over the fight. One bank would read as
+   * a moving texture; two at different rates read as depth, which is the only
+   * reason there are two.
+   *
+   * The loop covers the visible rect only, so the cost is a handful of blits
+   * regardless of how big the arena is.
+   */
+  private drawFog(ctx: CanvasRenderingContext2D, ox: number, oy: number): void {
+    const cfg = this.world.map.fog
+    const tile = this.fog
+    if (!cfg || !tile) return
+
+    const vw = this.canvas.width / this.zoom
+    const vh = this.canvas.height / this.zoom
+    const t = this.world.elapsed
+
+    for (let bank = 0; bank < 2; bank++) {
+      // The second bank runs faster and against the first, and carries less of
+      // the alpha budget -- a near layer that is as solid as the far one reads
+      // as two textures rather than as one volume.
+      const speed = bank === 0 ? cfg.drift : -cfg.drift * 1.7
+      const alpha = bank === 0 ? cfg.alpha : cfg.alpha * 0.55
+      const dx = ((t * speed) % FOG_TILE + FOG_TILE) % FOG_TILE
+      const dy = ((t * speed * 0.35) % FOG_TILE + FOG_TILE) % FOG_TILE
+
+      ctx.globalAlpha = alpha
+      const x0 = Math.floor((ox - dx) / FOG_TILE) * FOG_TILE + dx
+      const y0 = Math.floor((oy - dy) / FOG_TILE) * FOG_TILE + dy
+      for (let y = y0; y < oy + vh; y += FOG_TILE) {
+        for (let x = x0; x < ox + vw; x += FOG_TILE) {
+          ctx.drawImage(tile, Math.round(x), Math.round(y))
+          this.drawCalls++
+        }
+      }
+    }
+    ctx.globalAlpha = 1
+  }
+
+  /**
    * Flat scenery scattered on the ground: ruts, scorch, mud, ash.
    *
    * Baked, and only FLAT things are, which is the whole rule. A decal lies on
@@ -608,6 +714,9 @@ export class Renderer {
     this.flushStains()
     ctx.drawImage(this.decals, 0, 0)
     this.drawCalls++
+    // Above the ground and the decals, below every sprite and every warning:
+    // fog on the floor, never over the fight.
+    this.drawFog(ctx, ox, oy)
 
     this.drawArenaBurn(ctx)
     this.drawHazards(ctx)

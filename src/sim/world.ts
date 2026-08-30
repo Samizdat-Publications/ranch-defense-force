@@ -380,8 +380,13 @@ export class World {
     const f = BREAKABLES.field
     if (this.breakables.live >= f.max) return
 
+    // This map's say over which classes stand on it and what they wear.
+    const over = this.map.breakables
+    const weightOf = (id: string, c: BreakableClass): number =>
+      over?.weights?.[id] ?? c.weight
+
     let totalWeight = 0
-    for (const c of BREAKABLE_CLASSES) totalWeight += c.weight
+    for (const [id, c] of BREAKABLE_CLASSES) totalWeight += weightOf(id, c)
     if (totalWeight <= 0) return
 
     for (let i = 0; i < count; i++) {
@@ -396,18 +401,39 @@ export class World {
       }
 
       let roll = this.rng.next() * totalWeight
-      let cls: BreakableClass = BREAKABLE_CLASSES[0]
-      for (const c of BREAKABLE_CLASSES) {
-        if (c.weight <= 0) continue
+      let cls: BreakableClass = BREAKABLE_CLASSES[0][1]
+      let clsId = BREAKABLE_CLASSES[0][0]
+      for (const [id, c] of BREAKABLE_CLASSES) {
+        const w = weightOf(id, c)
+        if (w <= 0) continue
         cls = c
-        roll -= c.weight
+        clsId = id
+        roll -= w
         if (roll <= 0) break
       }
+
+      /*
+         Which skin this one wears.
+
+         A second draw, deliberately, rather than deriving the variant from the
+         position the way the prop animation phase does. Position-derived would
+         be free, but two breakables that happen to land on the same parity
+         would always agree, and the whole reason a class carries sixteen skins
+         is that a field of forty should not show the same barrel twice in a
+         row.
+
+         The map's list wins over the class's, so a map can run the scorched
+         drums while another runs the painted ones off one class.
+      */
+      const skins = over?.sprites?.[clsId] ?? cls.sprites
+      const sprite = skins.length > 1
+        ? skins[this.rng.int(0, skins.length - 1)]
+        : skins[0]
 
       const b = this.breakables.acquire()
       if (!b) return
       b.kind = 'breakable'
-      b.sprite = cls.sprite
+      b.sprite = sprite
       b.x = x
       b.y = y
       b.maxHp = cls.hp

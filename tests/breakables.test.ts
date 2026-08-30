@@ -38,7 +38,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { World } from '../src/sim/world'
 import { STEP } from '../src/core/loop'
 import {
-  BREAKABLES, BREAKABLE_CLASSES, FIELD_GEAR_POOL, ITEMS, NODES, TUNING,
+  BREAKABLES, BREAKABLE_CLASSES, FIELD_GEAR_POOL, ITEMS, MAPS, NODES, TUNING,
 } from '../src/content'
 
 const atlas: { frames: Record<string, unknown> } | null = existsSync('public/atlas.json')
@@ -47,10 +47,34 @@ const atlas: { frames: Record<string, unknown> } | null = existsSync('public/atl
 const packed = atlas ? new Set(Object.keys(atlas.frames ?? atlas)) : null
 
 describe('breakables: content', () => {
-  it('every class names a sprite that is actually packed', () => {
+  it('every class names sprites that are actually packed', () => {
     if (!packed) return // atlas not built; maps.test.ts carries the same skip
     for (const [id, c] of Object.entries(BREAKABLES.classes)) {
-      expect(packed.has(c.sprite), `${id} -> ${c.sprite}`).toBe(true)
+      expect(c.sprites.length, `${id} has no sprites`).toBeGreaterThan(0)
+      for (const sprite of c.sprites) {
+        expect(packed.has(sprite), `${id} -> ${sprite}`).toBe(true)
+      }
+    }
+  })
+
+  it('every per-map sprite override names a real class and a packed sprite', () => {
+    // A map naming a class that does not exist, or a skin that never packed, is
+    // silent: the override is simply never found and the map quietly gets the
+    // default. That is the failure this catches.
+    if (!packed) return
+    for (const [mapId, m] of Object.entries(MAPS)) {
+      const over = m.breakables
+      if (!over) continue
+      for (const id of Object.keys(over.weights ?? {})) {
+        expect(BREAKABLES.classes[id], `${mapId} weights unknown class ${id}`).toBeTruthy()
+      }
+      for (const [id, list] of Object.entries(over.sprites ?? {})) {
+        expect(BREAKABLES.classes[id], `${mapId} skins unknown class ${id}`).toBeTruthy()
+        expect(list.length, `${mapId}.${id} override is empty`).toBeGreaterThan(0)
+        for (const sprite of list) {
+          expect(packed.has(sprite), `${mapId}.${id} -> ${sprite}`).toBe(true)
+        }
+      }
     }
   })
 
@@ -351,7 +375,7 @@ describe('breakables: the scenery split', () => {
     // breakable class list must stay disjoint.
     const renderer = readFileSync('src/render/renderer.ts', 'utf8')
     const headless = readFileSync('tools/draw-world.ts', 'utf8')
-    const breakableSprites = new Set(BREAKABLE_CLASSES.map((c) => c.sprite))
+    const breakableSprites = new Set(BREAKABLE_CLASSES.flatMap(([, c]) => c.sprites))
     for (const [name, src] of [['renderer', renderer], ['draw-world', headless]] as const) {
       const block = src.slice(src.indexOf('const kinds = ['))
       const list = block.slice(0, block.indexOf(']'))

@@ -295,11 +295,25 @@ export interface DropRow {
   max?: number
 }
 export interface BreakableClass {
-  sprite: string
+  /** Every skin this class may wear. One is drawn per instance. */
+  sprites: string[]
   weight: number
   hp: number
   radius: number
   drops: string
+}
+
+/**
+ * A map's say over the breakables standing on it.
+ *
+ * `weights` replaces a class's draw weight -- 0 removes it from this map
+ * entirely -- and `sprites` replaces its skin list. Both are per class and both
+ * are optional, so a map that says nothing gets the defaults, which is what
+ * every map did before this existed.
+ */
+export interface MapBreakables {
+  weights?: Record<string, number>
+  sprites?: Record<string, string[]>
 }
 export const BREAKABLES = breakablesRaw as unknown as {
   field: {
@@ -316,13 +330,14 @@ export const BREAKABLES = breakablesRaw as unknown as {
 }
 
 /**
- * The breakable classes as a plain array, built once.
+ * The breakable classes as ordered ENTRIES, built once.
  *
- * The JSON is keyed for readability, but the scatter picks by weight and wants
- * an ordered list. Building it per scatter would allocate inside a call the
- * wave boundary makes.
+ * Entries rather than values because a map's overrides are keyed by class id,
+ * so the scatter needs the id alongside the definition. Building this per
+ * scatter would allocate inside a call the wave boundary makes.
  */
-export const BREAKABLE_CLASSES: BreakableClass[] = Object.values(BREAKABLES.classes)
+export const BREAKABLE_CLASSES: [string, BreakableClass][] =
+  Object.entries(BREAKABLES.classes)
 
 /**
  * Which item cards a breakable may hand over.
@@ -351,6 +366,18 @@ export interface MapTerrain {
   soilSet: string
   soilEdgeCols: number
   blight: { fromWave: number; groundSet: string }[]
+}
+/**
+ * Drifting ground fog. Absent means a map has none, which is the default.
+ *
+ * `alpha` caps the whole layer; `drift` is pixels per second of the slow bank,
+ * and the fast bank moves at a different rate so the parallax reads as depth.
+ */
+export interface MapFog {
+  alpha: number
+  tint: string
+  drift: number
+  scale: number
 }
 export interface MapHazards {
   kind: HazardKindName
@@ -401,6 +428,10 @@ export interface MapDef {
   /** Multiplies an enemy's spawn weight on this map. Absent means 1. */
   enemyBias: Record<string, number>
   hazards: MapHazards | null
+  /** Drifting ground fog, or absent for none. */
+  fog?: MapFog
+  /** This map's overrides for the breakable classes standing on it. */
+  breakables?: MapBreakables
 }
 
 export const MAPS = defsOf<MapDef>(

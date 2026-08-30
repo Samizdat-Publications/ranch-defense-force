@@ -198,7 +198,7 @@ Every one is an eight-direction sheet packed as `<id>.idle.<dir>.0`, where
 | `ouiji` | `ouijiBlight` | Ouiji, black cat, **yellow-green** eyes |
 | `tabbyCat` | `tabbyCatBlight` | the brown tabby |
 | `siameseCat` | `siameseCatBlight` | the white siamese |
-| `job` | `jobBlight` | Job, tan-and-white bulldog |
+| `joy` | `joyBlight` | Joy, tan-and-white bulldog |
 | `brahmaHen` | `brahmaHenBlight` | light Brahma, feathered feet |
 | `beardedHen` | `beardedHenBlight` | bearded Ameraucana, slate blue |
 | `buffHen` | `buffHenBlight` | buff Orpington, the big one |
@@ -214,6 +214,13 @@ Every one is an eight-direction sheet packed as `<id>.idle.<dir>.0`, where
 black cats. If a scene shows only one, it does not matter which; if it shows
 both, they should be far enough apart that the reader is not asked to compare
 two near-identical sprites side by side.
+
+**Joy is the companion, not just a resident.** The owner's call on seeing her:
+she is the dog you get as a level-up pick, and the blighted ones are what you
+fight. The mechanic already exists -- `weapon.barnDog` is a summon with walk and
+attack clips -- so this is a content change rather than new code. Whichever
+scene shows the yard should treat her as the animal with a name, not one of the
+set.
 
 **The chick has no blighted twin on purpose.** A rotting baby chick is a tonal
 call that belongs to the owner rather than to whoever happened to be generating
