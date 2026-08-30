@@ -395,6 +395,50 @@
     "minAlpha": 0.14,
     "alpha": 0.8
    }
+  },
+  "_previewNote": "theVault below is a preview map, not part of the run rotation. It exists so `npm run shot` can render the base's floor and props before the level system is built. It carries weight 0 -- `pickMapId` never selects it -- so it changes no seed and no test.",
+  "theVault": {
+   "name": "The Vault",
+   "weight": 0,
+   "arena": {
+    "width": 1800,
+    "height": 1400
+   },
+   "terrain": {
+    "groundSet": "concrete_to_grating",
+    "soilSet": "concrete_to_grating",
+    "soilEdgeCols": 0,
+    "blight": []
+   },
+   "nodes": {
+    "initial": {},
+    "max": {},
+    "regrowPerWave": {},
+    "variantWeights": {}
+   },
+   "enemyBias": {},
+   "hazards": null,
+   "fog": {
+    "alpha": 0.3,
+    "tint": "#8d9490",
+    "drift": 4,
+    "scale": 1.2
+   },
+   "breakables": {
+    "weights": {
+     "oilDrum": 10,
+     "burnBarrel": 8,
+     "hayBale": 0,
+     "milkCans": 0,
+     "feedBin": 0,
+     "trough": 0,
+     "hayBaleRot": 0,
+     "wheelbarrow": 0,
+     "logPile": 0,
+     "troughFouled": 0,
+     "bonePile": 3
+    }
+   }
   }
  },
  "_fogNote": "Ground fog is per-map and OFF by default -- a map that says nothing gets none. It is drawn above the ground and decals and below every sprite, so it lies on the floor rather than over the fight: two hundred enemies and their bullets are read against this ground, and ART_STYLE is explicit that the floor should be boring for exactly that reason. Fog is how a floor gets atmosphere WITHOUT getting contrast -- it lowers the ground's local contrast while adding depth, where a busier tile would raise it and start competing with the things the player has to read. `alpha` is the ceiling on the whole layer and is the number to turn down first if anything ever gets hard to see. Two banks drift at different speeds so the parallax reads as depth instead of as a moving texture.",

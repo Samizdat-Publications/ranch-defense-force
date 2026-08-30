@@ -503,6 +503,32 @@ These mount on WALLS, and a wall in a top-down game is seen from the front.
 runs, cable trays, concrete tilesets — want top-down and are not generated yet.
 Do not mix the two up: a floor grating drawn in elevation reads as a fence.
 
+### The preview exposed a real gap: scenery is hardcoded to the farm
+
+`theVault` is a weight-0 map added so `npm run shot` can render the concrete
+floor before the level system exists. `pickMapId` never selects it, so it costs
+no seed and no test — and the maps tests now assert that a weight-0 map is
+NEVER drawn, which is what makes adding one safe.
+
+Rendering it showed the floor working: plain, low contrast, not competing with
+the sprites, which is the "ask for less" lesson applied correctly.
+
+It also showed **pumpkins, a cabbage, a tree, ore nodes and farm rocks sitting
+on a bunker floor.** Two separate causes, both of which the level system has to
+fix:
+
+1. **`Renderer.buildScenery` has a hardcoded list of `prop.*` farm fixtures.**
+   Ground fog, the overhead layer and the breakable skins are all per-map
+   already; this one is not, and it needs the same treatment — a map should
+   name its own peripheral scenery, or name none.
+2. **`paintDecals` is likewise hardcoded** to tyre ruts, scorch, mud and ash.
+   A base floor wants oil stains, scuff marks and drain grates instead.
+
+Neither is hard — both mirror what `maps.json` already does for four other
+layers — but a level built before they are fixed will have a farm growing out of
+its concrete. **Do these with the wall band**, as one pass over the renderer's
+remaining hardcoded farm assumptions.
+
 ### What is still missing, in order
 
 1. **A concrete Wang tileset** for the floor. This is the biggest single gap —

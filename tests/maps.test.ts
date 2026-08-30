@@ -68,10 +68,21 @@ describe('maps', () => {
     }
   })
 
-  it('reaches every map across seeds', () => {
+  it('reaches every map in the rotation, and never one outside it', () => {
+    // ROTATION means weight > 0. A map at weight 0 is deliberately unreachable
+    // -- `theVault` exists so a screenshot can render the base's floor before
+    // the level system is built -- and asserting the full MAP_IDS list here
+    // would make adding any such map a test failure rather than a no-op.
+    //
+    // The second half is the useful new guarantee: a weight-0 map must NEVER
+    // be selected. That is what makes it safe to add one, and it would catch a
+    // weight typo that quietly puts a preview map into the run rotation.
+    const rotation = MAP_IDS.filter((id) => (MAPS[id].weight ?? 0) > 0)
+    const parked = MAP_IDS.filter((id) => (MAPS[id].weight ?? 0) <= 0)
     const seen = new Set<string>()
     for (let seed = 0; seed < 400; seed++) seen.add(new World(seed, 'hand').mapId)
-    expect([...seen].sort()).toEqual([...MAP_IDS].sort())
+    expect([...seen].sort()).toEqual([...rotation].sort())
+    for (const id of parked) expect(seen.has(id), `${id} is weight 0`).toBe(false)
   })
 
   it('draws maps roughly in proportion to their weights', () => {
@@ -192,20 +203,23 @@ describe('maps', () => {
 
     it('builds a different arena and field per map, in the sim and not just in the JSON', () => {
       // The JSON differing proves nothing if World ignores it.
+      // Only the rotation: a weight-0 map is never drawn, so it can never be
+      // sampled here and its absence is not a defect.
+      const rotation = MAP_IDS.filter((id) => (MAPS[id].weight ?? 0) > 0)
       const byMap = new Map<string, { w: number; h: number; props: number }>()
-      for (let seed = 0; seed < 300 && byMap.size < MAP_IDS.length; seed++) {
+      for (let seed = 0; seed < 300 && byMap.size < rotation.length; seed++) {
         const w = new World(seed, 'hand')
         if (byMap.has(w.mapId)) continue
         byMap.set(w.mapId, { w: w.arenaW, h: w.arenaH, props: w.props.live })
       }
-      expect(byMap.size).toBe(MAP_IDS.length)
+      expect(byMap.size).toBe(rotation.length)
       for (const [id, got] of byMap) {
         expect(got.w, `${id} width`).toBe(MAPS[id].arena.width)
         expect(got.h, `${id} height`).toBe(MAPS[id].arena.height)
         expect(got.props, `${id} scattered nothing`).toBeGreaterThan(0)
       }
       const sizes = [...byMap.values()].map((v) => `${v.w}x${v.h}`)
-      expect(new Set(sizes).size).toBe(MAP_IDS.length)
+      expect(new Set(sizes).size).toBe(rotation.length)
     })
   })
 
