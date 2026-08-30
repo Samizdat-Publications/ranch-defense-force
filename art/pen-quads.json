@@ -62,6 +62,26 @@
       ],
       "content": "280x195",
       "footLine": 207
+    },
+    "pen.chickenRunDirt": {
+      "far": [
+        158,
+        19
+      ],
+      "near": [
+        154,
+        181
+      ],
+      "left": [
+        21,
+        109
+      ],
+      "right": [
+        286,
+        120
+      ],
+      "content": "268x163",
+      "footLine": 181
     }
   }
 }

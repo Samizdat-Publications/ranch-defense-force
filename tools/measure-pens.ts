@@ -23,7 +23,7 @@
  * region in two and the near corner would be measured against a rail.
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { decodePng } from './png.ts'
+import { decodePng, encodePng } from './png.ts'
 
 interface Frame { x: number; y: number; w: number; h: number }
 const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
@@ -33,6 +33,16 @@ const sheet = decodePng(readFileSync('public/atlas.png'))
 const OUT = 'art/pen-quads.json'
 
 const PENS = Object.keys(atlas.frames).filter((k) => k.startsWith('pen.'))
+
+/** Where each pen's SOURCE png lives, so the interior can be punched out of it. */
+const manifest = JSON.parse(readFileSync('art/sprites.json', 'utf8')) as {
+  pens?: { _base: string; files: Record<string, string> }
+}
+const penFiles: Record<string, string> = {}
+for (const [k, v] of Object.entries(manifest.pens?.files ?? {})) {
+  penFiles[k] = `${manifest.pens!._base}${v}`
+}
+const hollowed: Record<string, number> = {}
 
 interface Quad { far: [number, number]; near: [number, number]; left: [number, number]; right: [number, number] }
 const quads: Record<string, Quad & { content: string; footLine: number }> = {}
@@ -96,6 +106,38 @@ for (const key of PENS) {
     }
   }
 
+  /*
+     PUNCH THE INTERIOR OUT.
+
+     A pen must carry no ground of its own. Claude Design's point, and it is
+     right: the chicken run's fill came back a golf-green against the ranch's
+     olive-khaki, and a pen that brings its own floor only works on one surface.
+     Transparent, and the scene's grass shows through and one pen works anywhere.
+
+     Asking the generator for a transparent interior does not work -- it fills it
+     regardless, three times out of three. But the fill is exactly what makes the
+     quad detectable, so the answer is to keep it, measure with it, and delete it
+     afterwards. The flood above already knows every interior pixel; writing
+     alpha 0 over that set is free and exact.
+
+     Rewritten to the SOURCE png, so the next `npm run atlas` packs the hollow
+     version. The measured quad is unaffected -- it was taken before the punch.
+  */
+  const src = penFiles[key]
+  if (src && existsSync(src)) {
+    const img = decodePng(readFileSync(src))
+    if (img.width === f.w && img.height === f.h) {
+      let punched = 0
+      for (let i = 0; i < seen.length; i++) {
+        if (!seen[i]) continue
+        img.data[i * 4 + 3] = 0
+        punched++
+      }
+      writeFileSync(src, encodePng(img))
+      hollowed[key] = punched
+    }
+  }
+
   quads[key] = {
     far: [farX, minY],
     near: [nearX, maxY],
@@ -127,6 +169,9 @@ writeFileSync(OUT, `${JSON.stringify({
 }, null, 2)}\n`)
 
 console.log(`${Object.keys(quads).length} pen quads -> ${OUT}`)
+for (const [k, n] of Object.entries(hollowed)) {
+  console.log(`  hollowed ${k}: ${n} interior pixels -> alpha 0`)
+}
 for (const [k, q] of Object.entries(quads)) {
   console.log(`  ${k}  far${q.far} near${q.near} left${q.left} right${q.right}  content ${q.content}`)
 }
