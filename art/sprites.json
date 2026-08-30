@@ -890,6 +890,19 @@
       "slug": "buckling_at_the_knees_and_collapsing_heavily_onto",
       "frames": 9
      },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+      "frames": 9,
+      "dirs": [
+       "south-west",
+       "west",
+       "north-west",
+       "north",
+       "north-east",
+       "east",
+       "south-east"
+      ]
+     },
      "attack": {
       "slug": "lowering_its_head_and_charging_forward_horns_firs",
       "frames": 9
@@ -960,18 +973,13 @@
       "slug": "kicking_out_hard_with_its_hind_legs",
       "frames": 9
      },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
+      "frames": 9
+     },
      "hit": {
       "slug": "reeling_backward_from_a_blow_head_snapping_back",
-      "frames": 7,
-      "dirs": [
-       "south",
-       "south-west",
-       "west",
-       "north",
-       "north-east",
-       "east",
-       "south-east"
-      ]
+      "frames": 7
      },
      "walk": {
       "slug": "walking_with_a_slow_laboured_plod_head_swinging",
@@ -1007,6 +1015,10 @@
     "clips": {
      "attack": {
       "slug": "darting_forward_and_pecking_hard",
+      "frames": 9
+     },
+     "walkHurt": {
+      "slug": "limping_badly_with_a_dragging_leg_body_hunched_lo",
       "frames": 9
      },
      "hit": {
