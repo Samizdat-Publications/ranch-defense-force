@@ -352,3 +352,59 @@ describe('maps', () => {
     })
   })
 })
+
+describe('the atmosphere layers', () => {
+  it('every fog tint is a parseable hex colour', () => {
+    // `drawFog` feeds this straight to a canvas fillStyle and `draw-world.ts`
+    // parses it with parseInt. A malformed one is silent in the browser (the
+    // fill is simply skipped) and NaN in the shot -- two different wrong
+    // pictures from one typo.
+    for (const [id, m] of Object.entries(MAPS)) {
+      if (!m.fog) continue
+      expect(m.fog.tint, `${id}`).toMatch(/^#[0-9a-fA-F]{6}$/)
+      expect(m.fog.alpha, `${id} fog alpha`).toBeGreaterThan(0)
+      expect(m.fog.alpha, `${id} fog alpha`).toBeLessThanOrEqual(0.6)
+      expect(m.fog.scale, `${id} fog scale`).toBeGreaterThan(0)
+    }
+  })
+
+  it('every overhead sprite is actually packed', () => {
+    if (!packed) return
+    for (const [id, m] of Object.entries(MAPS)) {
+      if (!m.overhead) continue
+      expect(m.overhead.sprites.length, `${id} overhead is empty`).toBeGreaterThan(0)
+      for (const sprite of m.overhead.sprites) {
+        expect(packed.has(sprite), `${id} -> ${sprite}`).toBe(true)
+      }
+    }
+  })
+
+  it('the overhead layer always fades to something you can see through', () => {
+    // This is the rule that keeps the ceiling from being a bug. A bullet-heaven
+    // player has to see what is about to hit them, and "the player should move"
+    // is never the answer when a hundred enemies decide where they can stand.
+    for (const [id, m] of Object.entries(MAPS)) {
+      if (!m.overhead) continue
+      expect(m.overhead.minAlpha, `${id} minAlpha`).toBeLessThanOrEqual(0.35)
+      expect(m.overhead.minAlpha, `${id} minAlpha`).toBeLessThan(m.overhead.alpha)
+      expect(m.overhead.fadeRadius, `${id} fadeRadius`).toBeGreaterThanOrEqual(96)
+    }
+  })
+
+  it('the two renderers agree on the fog and overhead constants', () => {
+    // They are separate copies on purpose -- sim and render never import each
+    // other's internals, and draw-world is a tool. Separate copies drift, and a
+    // shot that fogs differently to the game is a shot of a different program.
+    const game = readFileSync('src/render/renderer.ts', 'utf8')
+    const head = readFileSync('tools/draw-world.ts', 'utf8')
+    for (const decl of ['FOG_TILE = 512', 'FOG_BLOBS = 26']) {
+      expect(game.includes(decl), `renderer lost ${decl}`).toBe(true)
+      expect(head.includes(decl), `draw-world lost ${decl}`).toBe(true)
+    }
+    // Both derive their placement from the same stream.
+    for (const [name, src] of [['renderer', game], ['draw-world', head]] as const) {
+      expect(src.includes('0xf0_9c1a'), `${name} fog seed`).toBe(true)
+      expect(src.includes('0x0ce1_1a6'), `${name} overhead seed`).toBe(true)
+    }
+  })
+})

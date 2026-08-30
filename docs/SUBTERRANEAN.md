@@ -109,18 +109,41 @@ are three of the most load-bearing things in the sim.
 Do (a) now. Do (b) only when a level design actually needs a corridor, and
 budget it as its own milestone, not as part of an art pass.
 
-### An overhead layer — this is what sells "underground"
+### An overhead layer — BUILT
 
-**Stalactites hang from a ceiling, and the renderer has no ceiling.** Every
-sprite y-sorts against the ground; there is no pass that draws *over* the
-player regardless of position. That pass is small — one more loop after
-`sortAndDraw` — and it is the single cheapest thing on this list that makes a
-space read as enclosed rather than as a dark field.
+**Stalactites hang from a ceiling, and the renderer had no ceiling.** Every
+sprite y-sorts against the ground, so there was no pass that drew *over* the
+player regardless of position. There is now: `Renderer.drawOverhead`, mirrored
+in `tools/draw-world.ts` so screenshots show it.
+
+Per map, in `maps.json`, absent on a map with open sky. Placement is
+render-side and seeded off its own stream, the same rule as the scenery band
+and the decals — nothing decorative may move a tile, a decal or a spawn.
+
+**It fades where the player is**, to `minAlpha` within `fadeRadius`, on a
+smoothstep. That is not polish, it is the difference between atmosphere and a
+bug: this is a bullet-heaven, the player has to see what is about to hit them,
+and *"the player should move"* is never the answer when a hundred enemies decide
+where they can stand. The smoothstep matters too — a linear ramp reads as a
+circle sliding around under the art, which draws the eye to exactly the thing
+that should go unnoticed.
+
+Enemies are deliberately ignored by the fade. A stalactite that thinned for
+every enemy under it would flicker constantly at a late wave, and the crowd is
+the one thing on screen already impossible to lose.
 
 It buys more than stalactites: hanging roots, a broken ladder, a shaft of light
-from a grate, the underside of floorboards.
+from a grate, the underside of floorboards. Sixteen stalactite variants are
+packed under `cave.stalactite*`.
 
-### Sight radius
+**On webs.** Sixteen are packed under `cave.web*`, and they are *not* overhead
+art — they are corner-anchored, which is what a real web is, and scattered in
+the air they read as floating rags. A web belongs ON something: over a barrel,
+in the angle of a fence. The breakable variant system already expresses that,
+so a cave map points `breakables.sprites` at webbed variants of the props
+rather than the renderer growing a second decal path for it.
+
+### Sight radius — still open
 
 A cave wants the dark to matter. A radial mask centred on the player, drawn
 over the ground and under the HUD, is a handful of lines.
@@ -171,3 +194,24 @@ fog, the overhead layer, the sight radius and the props — the things that sit
 above the floor — and the floor itself has to stay quiet.
 
 Ask for less. Get the mood from the layers.
+
+---
+
+## Session 18 status
+
+| piece | state |
+|---|---|
+| overhead draw layer, with proximity fade | **built**, both renderers, tested |
+| ground fog, per map | **built**, both renderers, tested |
+| stalactites (16 variants) | packed, `cave.stalactite*` |
+| spider webs (16 variants) | packed, `cave.web*` — for props, not overhead |
+| per-map breakable skins | **built** — how a cave reskins the drums |
+| cave floor tilesets | **41 tilesets already in the account** — inventory first |
+| wall band for the map edge | not started, and it is the cheap one |
+| walkable mask | not started, deliberately — own milestone |
+| sight radius | not started — it is a balance change, so it is joint |
+
+**Before generating any cave art, run `grep -i cave docs/PIXELLAB_INVENTORY.md`.**
+The account holds 41 tilesets and 797 objects. The odds that the floor you are
+about to generate already exists are not small — that is how the barn, the
+farmhouse and the silo sat unclaimed for four sessions.

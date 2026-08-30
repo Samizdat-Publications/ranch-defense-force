@@ -115,6 +115,8 @@ interface Manifest {
   gasMaskIcon?: {
     path: string; cellX: number; cellY: number; cellW: number; cellH: number; name: string
   }
+  /** Cave art: overhead stalactites and the corner webs. See art/sprites.json. */
+  cave?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   weapons?: { _base: string; files: Record<string, string> }
   weaponsFarmTools?: { _base: string; files: Record<string, string>; conform?: boolean }
   nodes?: { _base: string; files: Record<string, string> }
@@ -660,6 +662,11 @@ const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
   manifest.nodes, manifest.biome, manifest.crops, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
+  // `cardArt` because these are 64px, well over the field's 32x32 rule -- and
+  // legitimately so: an overhead sprite is not read at the player's scale, it is
+  // read as the thing above the player, and shrinking it to 32 would make a
+  // stalactite the size of a chicken.
+  manifest.cave ? { ...manifest.cave, cardArt: true } : undefined,
   manifest.scene ? { ...manifest.scene, cardArt: true } : undefined,
   manifest.sceneStrips ? { ...manifest.sceneStrips, cardArt: true, noTrim: true } : undefined,
   manifest.portraits,

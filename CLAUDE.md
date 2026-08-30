@@ -28,6 +28,7 @@ atlas costs the art, not the game.
 | `npm run atlas` | slice + pack `art/sprites.json` → `public/atlas.*` |
 | `npm run shot -- [ticks] [out] [seed] [class]` | headless screenshot: runs the sim, draws it, writes a PNG. No browser. |
 | `npm run inspect -- <sheet.png>` | report a sprite sheet's frame grid |
+| `npm run inventory` | refresh `docs/PIXELLAB_INVENTORY.md` — **grep that before generating art** |
 | `npm run build` | atlas + typecheck + production build |
 
 `F1` in game toggles the dev overlay; `N` skips a wave.
@@ -56,6 +57,36 @@ and enemy mix, arena size and shape, hazards. **The map is the first draw off
 the run's seeded RNG** and must stay first and stay one draw — see the
 `_rngNote` at the top of that file. Ground lives there and nowhere else;
 `tuning.json` used to carry a `terrain` block and now carries only a pointer.
+
+## Before you generate any art, read the inventory
+
+`docs/PIXELLAB_INVENTORY.md` is a committed list of everything the PixelLab
+account already holds — 797 objects, 41 tilesets, 23 characters at the last
+count, across every session this project has had.
+
+**Grep it before generating. Every time.**
+
+```bash
+grep -i barn docs/PIXELLAB_INVENTORY.md
+npm run inventory          # refresh it (needs PIXELLAB_API_KEY)
+```
+
+This is not bookkeeping hygiene, it is the single most expensive mistake this
+project repeats. Session 18 generated a farm roster and then found the barn,
+farmhouse, silo, chicken coop, windmill and well — the exact assets
+`DESIGN_BRIEF_HOMESCREEN.md` names as blocking the homescreen rebuild — already
+generated and paid for, sitting unclaimed. Every session before it made the same
+discovery about something else.
+
+Two things follow from that:
+
+- **A document saying art is missing is not evidence that it is.** The briefs in
+  this repo describe gaps that were filled sessions ago. Check the inventory,
+  not the prose.
+- **`status: review` means bought but never picked up.** A generation that
+  returned 4, 16 or 64 candidates parks them until someone selects. Claiming
+  costs nothing — measured, balance identical either side — so an unclaimed pack
+  is finished work, not pending work.
 
 ## Non-negotiables
 

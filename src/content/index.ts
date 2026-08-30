@@ -379,6 +379,22 @@ export interface MapFog {
   drift: number
   scale: number
 }
+/**
+ * Art hanging above the field, drawn over everything and fading when the player
+ * walks under it. Absent means a map has none.
+ *
+ * `perMillionPx` keeps density independent of arena size, which the scenery band
+ * learned the hard way: a fixed count is sparse on a big map and a thicket on a
+ * small one.
+ */
+export interface MapOverhead {
+  sprites: string[]
+  perMillionPx: number
+  fadeRadius: number
+  minAlpha: number
+  /** Base opacity when the player is nowhere near. */
+  alpha: number
+}
 export interface MapHazards {
   kind: HazardKindName
   /** Atlas frame drawn under the hazard circle. Optional — a hazard without
@@ -432,6 +448,8 @@ export interface MapDef {
   fog?: MapFog
   /** This map's overrides for the breakable classes standing on it. */
   breakables?: MapBreakables
+  /** Ceiling art drawn over everything, or absent for open sky. */
+  overhead?: MapOverhead
 }
 
 export const MAPS = defsOf<MapDef>(

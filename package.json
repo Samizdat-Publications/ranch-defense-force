@@ -17,6 +17,7 @@
     "audio": "npm run sfx && npm run music",
     "balance": "vite-node tools/balance.ts --",
     "inspect": "vite-node tools/inspect-sheet.ts --",
+    "inventory": "vite-node tools/pixellab-inventory.ts --",
     "pitch": "vite-node tools/sprite-pitch.ts --",
     "shot": "vite-node tools/screenshot.ts --",
     "typecheck": "tsc --noEmit && tsc -p tools --noEmit",

@@ -1,0 +1,216 @@
+/**
+ * What the PixelLab account already holds, written to a file in the repo.
+ *
+ *     PIXELLAB_API_KEY=... npm run inventory
+ *
+ * WHY THIS EXISTS, and it is not a nicety.
+ *
+ * The account has accumulated over a thousand generated assets across many
+ * sessions, and no session can see what the previous ones made. The failure
+ * mode is not hypothetical and it is not rare: session 18 generated twenty farm
+ * animals, and then discovered that the barn, farmhouse, silo, chicken coop,
+ * windmill and well -- the exact assets `DESIGN_BRIEF_HOMESCREEN.md` names as
+ * blocking the homescreen rebuild -- had been generated and PAID FOR in an
+ * earlier session and were sitting unclaimed the whole time.
+ *
+ * Every session so far has rediscovered this the same way: generate first, find
+ * out later. Money is the smaller half of the cost; the larger half is that the
+ * repo's own documents describe art as missing when it is not, and decisions
+ * get made on that.
+ *
+ * THE FIX IS A COMMITTED FILE, NOT A HABIT. `docs/PIXELLAB_INVENTORY.md` is
+ * checked in, so a session can grep it for "barn" at zero cost and with no API
+ * key, before it generates anything. Refreshing it needs the key; reading it
+ * does not. That asymmetry is the whole design -- an inventory you must call an
+ * API to consult is an inventory nobody consults.
+ *
+ * It also writes `docs/pixellab-inventory.json`, the same data unsummarised,
+ * for anything that wants to query rather than read.
+ *
+ * STALENESS IS VISIBLE ON PURPOSE. The file carries the timestamp it was taken
+ * and the totals at that moment. If the totals in the file disagree with what
+ * `npm run inventory` reports, it is out of date -- and out of date is fine, so
+ * long as it is obvious. A file that silently rots is worse than none.
+ */
+import { writeFileSync } from 'node:fs'
+
+const key = process.env.PIXELLAB_API_KEY
+if (!key) throw new Error('PIXELLAB_API_KEY is not set')
+const H = { Authorization: `Bearer ${key}` }
+const BASE = 'https://api.pixellab.ai/v2'
+
+interface Asset {
+  id: string
+  name?: string
+  prompt?: string
+  state_name?: string
+  size?: { width: number; height: number }
+  directions?: number
+  created_at?: string
+  tags?: string[]
+  status?: string
+  n_animations?: number
+}
+
+/** Page through a listing endpoint until it stops giving new rows. */
+async function listAll(path: string, field: string): Promise<Asset[]> {
+  const out: Asset[] = []
+  const seen = new Set<string>()
+  for (let page = 0; page < 200; page++) {
+    const url = `${BASE}/${path}?limit=100&offset=${page * 100}`
+    const r = await fetch(url, { headers: H })
+    if (!r.ok) {
+      console.error(`  ${path}: HTTP ${r.status}, stopping at ${out.length}`)
+      break
+    }
+    const body = await r.json() as Record<string, unknown>
+    const rows = (body[field] ?? []) as Asset[]
+    if (!rows.length) break
+    let fresh = 0
+    for (const row of rows) {
+      if (seen.has(row.id)) continue
+      seen.add(row.id)
+      out.push(row)
+      fresh++
+    }
+    // Some endpoints ignore `offset` and keep returning page one. Stopping on
+    // "nothing new" rather than on "fewer than a full page" means a listing
+    // that does that terminates instead of spinning two hundred times.
+    if (fresh === 0) break
+  }
+  return out
+}
+
+/**
+ * A short human label for a row.
+ *
+ * `name` is the description truncated to 30 characters by the API, which is
+ * frequently cut mid-word and sometimes identical across a dozen rows. The
+ * prompt's first clause is what a person actually recognises.
+ */
+function label(a: Asset): string {
+  const src = a.prompt ?? a.name ?? a.id
+  const clause = src.split(/[,.]/)[0].trim()
+  return clause.length > 64 ? `${clause.slice(0, 61)}...` : clause
+}
+
+function dims(a: Asset): string {
+  if (!a.size) return ''
+  return `${a.size.width}x${a.size.height}`
+}
+
+const [objects, characters, tilesets, isoTiles] = await Promise.all([
+  listAll('objects', 'objects'),
+  listAll('characters', 'characters'),
+  listAll('tilesets', 'tilesets'),
+  listAll('isometric-tiles', 'isometric_tiles'),
+])
+
+const balance = await (await fetch(`${BASE}/balance`, { headers: H })).json() as {
+  credits?: { usd?: number }
+}
+
+const review = objects.filter((o) => o.status === 'review')
+const done = objects.filter((o) => o.status !== 'review')
+
+/** Group by tag, since tags are how this project labels a claimed batch. */
+function byTag(rows: Asset[]): Map<string, Asset[]> {
+  const m = new Map<string, Asset[]>()
+  for (const r of rows) {
+    for (const t of r.tags?.length ? r.tags : ['(untagged)']) {
+      const list = m.get(t) ?? []
+      list.push(r)
+      m.set(t, list)
+    }
+  }
+  return new Map([...m].sort((a, b) => b[1].length - a[1].length))
+}
+
+const taken = new Date().toISOString()
+const L: string[] = []
+
+L.push('# PixelLab inventory')
+L.push('')
+L.push('**Generated by `npm run inventory`. Do not hand-edit — it is overwritten.**')
+L.push('')
+L.push(`Taken: \`${taken}\``)
+L.push('')
+L.push('## Read this before generating anything')
+L.push('')
+L.push('This file exists because sessions kept generating art the account already')
+L.push('held. It is committed so you can grep it for free — no API key, no call.')
+L.push('')
+L.push('```')
+L.push('grep -i barn docs/PIXELLAB_INVENTORY.md')
+L.push('```')
+L.push('')
+L.push('If the totals below look wrong, it is stale: run `npm run inventory` to')
+L.push('refresh it. Stale is fine. Silently stale is not, which is why the')
+L.push('timestamp and the totals are both at the top.')
+L.push('')
+L.push('| what | count |')
+L.push('|---|---|')
+L.push(`| objects, completed | ${done.length} |`)
+L.push(`| objects, **awaiting review** | ${review.length} |`)
+L.push(`| characters | ${characters.length} |`)
+L.push(`| tilesets | ${tilesets.length} |`)
+L.push(`| isometric tiles | ${isoTiles.length} |`)
+L.push(`| credit balance | $${(balance.credits?.usd ?? 0).toFixed(2)} |`)
+L.push('')
+
+if (review.length) {
+  L.push('## Awaiting review — already paid for, not yet claimed')
+  L.push('')
+  L.push('These are candidate packs from a generation that nobody picked from.')
+  L.push('**The generation is already paid; claiming costs nothing** — measured, ')
+  L.push('balance unchanged either side. Each pack holds 4, 16 or 64 candidates')
+  L.push('depending on the size it was generated at (<=42px gives 64, <=85 gives')
+  L.push('16, <=170 gives 4).')
+  L.push('')
+  L.push('Claim with `select_object_frames(object_id, indices=[...])`.')
+  L.push('')
+  L.push('| id | size | what |')
+  L.push('|---|---|---|')
+  for (const a of review) L.push(`| \`${a.id}\` | ${dims(a)} | ${label(a)} |`)
+  L.push('')
+}
+
+L.push('## Objects')
+L.push('')
+for (const [tag, rows] of byTag(done)) {
+  L.push(`### ${tag} — ${rows.length}`)
+  L.push('')
+  L.push('| id | size | dirs | anims | what |')
+  L.push('|---|---|---|---|---|')
+  for (const a of rows) {
+    L.push(`| \`${a.id}\` | ${dims(a)} | ${a.directions ?? ''} | ${a.n_animations ?? 0} | ${label(a)} |`)
+  }
+  L.push('')
+}
+
+L.push('## Characters')
+L.push('')
+L.push('| id | size | dirs | what |')
+L.push('|---|---|---|---|')
+for (const a of characters) {
+  L.push(`| \`${a.id}\` | ${dims(a)} | ${a.directions ?? ''} | ${label(a)} |`)
+}
+L.push('')
+
+if (tilesets.length) {
+  L.push('## Tilesets')
+  L.push('')
+  L.push('| id | what |')
+  L.push('|---|---|')
+  for (const a of tilesets) L.push(`| \`${a.id}\` | ${label(a)} |`)
+  L.push('')
+}
+
+writeFileSync('docs/PIXELLAB_INVENTORY.md', L.join('\n') + '\n')
+writeFileSync('docs/pixellab-inventory.json', JSON.stringify({
+  taken, objects, characters, tilesets, isoTiles,
+}, null, 1) + '\n')
+
+console.log(`objects ${done.length} done / ${review.length} in review`)
+console.log(`characters ${characters.length}, tilesets ${tilesets.length}, iso ${isoTiles.length}`)
+console.log('-> docs/PIXELLAB_INVENTORY.md and docs/pixellab-inventory.json')

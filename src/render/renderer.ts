@@ -150,6 +150,8 @@ export class Renderer {
   private ctx: CanvasRenderingContext2D
   /** The baked fog tile, or null on a map that declares no fog. */
   private fog: HTMLCanvasElement | null = null
+  /** Ceiling art placements, empty on a map with open sky. */
+  private overhead: { x: number; y: number; frame: AtlasFrame }[] = []
   private decals: HTMLCanvasElement
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
@@ -228,6 +230,7 @@ export class Renderer {
 
     this.bakeTerrain()
     this.bakeFog()
+    this.buildOverhead()
   }
 
   /**
@@ -275,6 +278,97 @@ export class Renderer {
       }
       this.scenery.push({ x, y, frame: f })
     }
+  }
+
+  /**
+   * Place the ceiling art, once, from a stream of its own.
+   *
+   * Same seeding rule as the scenery and the decals: nothing decorative may
+   * move a tile, a decal or a spawn. Render-side rather than in the sim because
+   * nothing above the player can ever be collided with, shot, or harvested --
+   * it is the one layer that is honestly pure decoration.
+   */
+  private buildOverhead(): void {
+    this.overhead.length = 0
+    const cfg = this.world.map.overhead
+    const atlas = this.atlas
+    if (!cfg || !atlas) return
+
+    const kinds = cfg.sprites
+      .map((k) => atlas.get(k))
+      .filter((f): f is AtlasFrame => !!f)
+    if (!kinds.length) return
+
+    const rng = new Rng(this.world.seed ^ 0x0ce1_1a6)
+    const W = this.world.arenaW
+    const H = this.world.arenaH
+    const count = Math.round((W * H) / 1_000_000 * cfg.perMillionPx)
+    for (let i = 0; i < count; i++) {
+      this.overhead.push({
+        x: rng.int(0, W),
+        y: rng.int(0, H),
+        frame: kinds[rng.int(0, kinds.length - 1)],
+      })
+    }
+  }
+
+  /**
+   * The ceiling: drawn last, over everything, including the player.
+   *
+   * A top-down game has no other way to say "there is something above you",
+   * because every other sprite y-sorts against the ground. This is the pass
+   * that makes a space read as enclosed rather than as a dark field.
+   *
+   * IT FADES WHERE THE PLAYER IS. That is not polish, it is the difference
+   * between atmosphere and a bug: this is a bullet-heaven, the player has to
+   * see what is about to hit them, and "the player should move" is never the
+   * answer when a hundred enemies decide where they can stand. The fade is a
+   * smoothstep on distance so the transition has no visible edge -- a linear
+   * ramp reads as a circle sliding around under the art, which draws attention
+   * to exactly the thing that should go unnoticed.
+   *
+   * Only the enemies are ignored. A stalactite that thinned out for every
+   * enemy under it would flicker constantly at a late wave, and the crowd is
+   * the one thing on screen already impossible to lose.
+   */
+  private drawOverhead(ctx: CanvasRenderingContext2D, alphaT: number, ox: number, oy: number): void {
+    const cfg = this.world.map.overhead
+    const img = this.atlas?.image
+    if (!cfg || !img || !this.overhead.length) return
+
+    // Own cull bounds, derived from the camera the same way drawFog does. The
+    // sprite pass computes its own inside collectSprites and does not hand them
+    // out, and reaching for them here would couple two passes for four numbers.
+    const pad = 96
+    const left = ox - pad
+    const top = oy - pad
+    const right = ox + this.canvas.width / this.zoom + pad
+    const bottom = oy + this.canvas.height / this.zoom + pad
+
+    const p = this.world.player
+    const px = p.px + (p.x - p.px) * alphaT
+    const py = p.py + (p.y - p.py) * alphaT
+    const r2 = cfg.fadeRadius * cfg.fadeRadius
+
+    for (const o of this.overhead) {
+      if (o.x < left || o.x > right || o.y < top || o.y > bottom) continue
+      const dx = o.x - px
+      const dy = o.y - py
+      const d2 = dx * dx + dy * dy
+      let a = cfg.alpha
+      if (d2 < r2) {
+        // smoothstep from fully faded at the centre to full at the radius.
+        const t = Math.sqrt(d2) / cfg.fadeRadius
+        const e = t * t * (3 - 2 * t)
+        a = cfg.minAlpha + (cfg.alpha - cfg.minAlpha) * e
+      }
+      if (a <= 0.01) continue
+      ctx.globalAlpha = a
+      const f = o.frame
+      ctx.drawImage(img, f.x, f.y, f.w, f.h, Math.round(o.x + f.ox), Math.round(o.y + f.oy), f.w, f.h)
+      this.drawCalls++
+    }
+    ctx.globalAlpha = 1
   }
 
   resize(w: number, h: number): void {
@@ -734,6 +828,9 @@ export class Renderer {
     this.drawEffects(ctx, false)
     this.drawPickups(ctx, alpha)
     this.drawParticles(ctx)
+    // The ceiling goes over the sprites and the pickups but UNDER the damage
+    // numbers: a number you cannot read is a number that did not happen.
+    this.drawOverhead(ctx, alpha, ox, oy)
     this.drawDamageNumbers(ctx)
 
     ctx.setTransform(1, 0, 0, 1, 0, 0)

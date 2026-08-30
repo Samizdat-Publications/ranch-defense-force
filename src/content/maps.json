@@ -379,8 +379,24 @@
     "tint": "#c6ccc4",
     "drift": 3,
     "scale": 1.25
+   },
+   "overhead": {
+    "sprites": [
+     "cave.branches0",
+     "cave.branches1",
+     "cave.branches2",
+     "cave.branches3",
+     "cave.branches4",
+     "cave.branches5",
+     "cave.branches6"
+    ],
+    "perMillionPx": 7,
+    "fadeRadius": 150,
+    "minAlpha": 0.14,
+    "alpha": 0.8
    }
   }
  },
- "_fogNote": "Ground fog is per-map and OFF by default -- a map that says nothing gets none. It is drawn above the ground and decals and below every sprite, so it lies on the floor rather than over the fight: two hundred enemies and their bullets are read against this ground, and ART_STYLE is explicit that the floor should be boring for exactly that reason. Fog is how a floor gets atmosphere WITHOUT getting contrast -- it lowers the ground's local contrast while adding depth, where a busier tile would raise it and start competing with the things the player has to read. `alpha` is the ceiling on the whole layer and is the number to turn down first if anything ever gets hard to see. Two banks drift at different speeds so the parallax reads as depth instead of as a moving texture."
+ "_fogNote": "Ground fog is per-map and OFF by default -- a map that says nothing gets none. It is drawn above the ground and decals and below every sprite, so it lies on the floor rather than over the fight: two hundred enemies and their bullets are read against this ground, and ART_STYLE is explicit that the floor should be boring for exactly that reason. Fog is how a floor gets atmosphere WITHOUT getting contrast -- it lowers the ground's local contrast while adding depth, where a busier tile would raise it and start competing with the things the player has to read. `alpha` is the ceiling on the whole layer and is the number to turn down first if anything ever gets hard to see. Two banks drift at different speeds so the parallax reads as depth instead of as a moving texture.",
+ "_overheadNote": "The overhead layer: art that hangs from a ceiling and draws OVER everything, including the player. Absent means a map has none, which every surface map is. It is the thing that makes a space read as enclosed rather than as a dark field -- a top-down game has no other way to say 'there is something above you', because every other sprite y-sorts against the ground. IT FADES WHEN THE PLAYER IS UNDER IT, to `minAlpha` within `fadeRadius`. Without that, a stalactite that covers the player is not atmosphere, it is an occluder in a game where you must see what is about to hit you -- and in a bullet-heaven the answer is never 'the player should move'. `minAlpha` is the number to raise if anything is ever lost under it. Placement is RENDER-SIDE and seeded off its own stream, the same rule as the scenery band and the decals: nothing decorative may move a tile, a decal or a spawn."
 }

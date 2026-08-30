@@ -224,6 +224,73 @@ export class WorldPainter {
     this.drawFrame(f, worldX - f.w / 2 - f.ox, worldY - f.h / 2 - f.oy)
   }
 
+  /**
+   * `drawFrame` with a constant opacity, for the overhead layer.
+   *
+   * Separate from `drawFrame` rather than a parameter on it, because that one
+   * is the hot path for every sprite in the shot and must keep writing straight
+   * bytes with no per-pixel multiply.
+   */
+  private drawFrameAlpha(f: Frame, worldX: number, worldY: number, alpha: number): void {
+    if (alpha <= 0.01) return
+    const dx = Math.round((worldX - this.camX) * this.zoom + f.ox * this.zoom)
+    const dy = Math.round((worldY - this.camY) * this.zoom + f.oy * this.zoom)
+    const { canvas } = this
+    for (let y = 0; y < f.h; y++) {
+      for (let x = 0; x < f.w; x++) {
+        const si = ((f.y + y) * atlasImg.width + (f.x + x)) * 4
+        const sa = atlasImg.data[si + 3]
+        if (sa === 0) continue
+        const k = (sa / 255) * alpha
+        for (let py = 0; py < this.zoom; py++) {
+          for (let px = 0; px < this.zoom; px++) {
+            const tx = dx + x * this.zoom + px
+            const ty = dy + y * this.zoom + py
+            if (tx < 0 || ty < 0 || tx >= canvas.width || ty >= canvas.height) continue
+            const di = (ty * canvas.width + tx) * 4
+            canvas.data[di] = canvas.data[di] * (1 - k) + atlasImg.data[si] * k
+            canvas.data[di + 1] = canvas.data[di + 1] * (1 - k) + atlasImg.data[si + 1] * k
+            canvas.data[di + 2] = canvas.data[di + 2] * (1 - k) + atlasImg.data[si + 2] * k
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * The ceiling, matching `Renderer.buildOverhead`/`drawOverhead` exactly --
+   * same stream, same placement, same smoothstep fade. A shot that omits the
+   * layer, or draws it at a different opacity, is a shot of a different program.
+   */
+  private overhead(world: World): void {
+    const cfg = world.map.overhead
+    if (!cfg) return
+    const kinds = cfg.sprites.map((k) => frames[k]).filter((f): f is Frame => !!f)
+    if (!kinds.length) return
+
+    const rng = new Rng(world.seed ^ 0x0ce1_1a6)
+    const count = Math.round((world.arenaW * world.arenaH) / 1_000_000 * cfg.perMillionPx)
+    const px = world.player.x
+    const py = world.player.y
+    const r2 = cfg.fadeRadius * cfg.fadeRadius
+
+    for (let i = 0; i < count; i++) {
+      const x = rng.int(0, world.arenaW)
+      const y = rng.int(0, world.arenaH)
+      const f = kinds[rng.int(0, kinds.length - 1)]
+      const dx = x - px
+      const dy = y - py
+      const d2 = dx * dx + dy * dy
+      let a = cfg.alpha
+      if (d2 < r2) {
+        const t = Math.sqrt(d2) / cfg.fadeRadius
+        const e = t * t * (3 - 2 * t)
+        a = cfg.minAlpha + (cfg.alpha - cfg.minAlpha) * e
+      }
+      this.drawFrameAlpha(f, x, y, a)
+    }
+  }
+
   private drawFrame(f: Frame, worldX: number, worldY: number): void {
     const dx = Math.round((worldX - this.camX) * this.zoom + f.ox * this.zoom)
     const dy = Math.round((worldY - this.camY) * this.zoom + f.oy * this.zoom)
@@ -765,6 +832,9 @@ export class WorldPainter {
         )
       }
     }
+
+    // The ceiling, last: over the sprites and the pickups, same as the game.
+    this.overhead(world)
   }
 
   /**
