@@ -1230,7 +1230,18 @@
    "wiz": {
     "dir": "wiz",
     "cell": 56,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north",
+       "east"
+      ]
+     }
+    }
    },
    "ouiji": {
     "dir": "ouiji",
@@ -1240,12 +1251,32 @@
    "tabbyCat": {
     "dir": "tabbyCat",
     "cell": 56,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north",
+       "east"
+      ]
+     }
+    }
    },
    "siameseCat": {
     "dir": "siameseCat",
     "cell": 56,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_a_slow_soft_padding_gait_tail_up_and",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west"
+      ]
+     }
+    }
    },
    "joy": {
     "dir": "joy",
@@ -1285,6 +1316,16 @@
        "south-west",
        "east",
        "south-east"
+      ]
+     },
+     "walk": {
+      "slug": "walking_with_short_quick_steps_head_bobbing_forwa",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west",
+       "north",
+       "east"
       ]
      }
     }
@@ -1327,7 +1368,16 @@
    "farmRooster": {
     "dir": "farmRooster",
     "cell": 56,
-    "clips": {}
+    "clips": {
+     "walk": {
+      "slug": "walking_with_short_strutting_steps_head_bobbing",
+      "frames": 9,
+      "dirs": [
+       "south",
+       "west"
+      ]
+     }
+    }
    },
    "chick": {
     "dir": "chick",

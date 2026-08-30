@@ -64,71 +64,20 @@ const CAST: [string, string][] = [
 ]
 
 /**
- * WHAT SIZE TO DRAW IT AT. This table is the most useful thing in this file.
+ * WHAT SIZE TO DRAW IT AT — read from `art/scene-scale.json`.
  *
- * THE SOURCE ART IS NOT TO SCALE, and nothing about the atlas says so. Every
- * animal is authored on the game's 32x64 grid because in the game every entity
- * IS a grid cell -- so `wiz` (a cat) is 16x42, `brahmaHen` is 26x43, `joy` (a
- * bulldog) is 29x42, `blackMule` is 28x63 and `hand` (a grown man) is 30x52.
- * Five things within a few pixels of each other that are nothing like the same
- * size in life. Drawn at 1:1 in a scene they make a lineup of identical
- * silhouettes, and that is exactly what the first title screens came out as: a
- * bulldog the size of a pony and hens the size of cats.
- *
- * The buildings are on a THIRD scale with no relation to either family:
- * `ranch.barn` is 400px wide, `ranch.coop` 128 and `ranch.windmill` 128 -- a
- * chicken coop drawn at a third of a barn, and a windmill drawn the same as the
- * coop when it should be taller than the barn is wide.
- *
- * So the numbers below are NOT canvas sizes. They are derived from what the
- * thing actually is, against one stated reference:
- *
- *     A GROWN PERSON IS 64 PIXELS TALL.  =>  36.6 px per metre.
- *
- * A barn is about 12m wide, so 440. A round bale is 1.5m, so 55. A cat is
- * about 25cm at the shoulder, which would be 9px and unreadable, so the small
- * animals are deliberately drawn ABOVE life scale -- readability wins over
- * arithmetic, and the numbers here are the stylised ones to actually use.
- * What matters is that they are CONSISTENT: a hen is smaller than a dog is
- * smaller than a pony is smaller than a barn, always, in every scene.
- *
- * Pass the number to `spriteEl(key, size)`. For the cast it is a HEIGHT; for
- * buildings and vehicles, whichever dimension the entry names.
+ * The table lives in JSON rather than here for the reason every tunable number
+ * in this project does: it is content, and more than one reader wants it. This
+ * file prints it, `tests/content.test.ts` asserts its ordering, and a scene
+ * reads it directly. The `_note` at the top of that file is the long version of
+ * why raw canvas size is the wrong number to draw anything at.
  */
-const SCENE_SCALE: Record<string, number> = {
-  // --- the cast, by height ---------------------------------------------
-  arabian: 104, blackMule: 100, beigeMule: 100, fjordPony: 96, rosie: 76,
-  farmRooster: 46, joy: 40, brahmaHen: 40, buffHen: 40, leghornHen: 36,
-  wiz: 36, ouiji: 36, tabbyCat: 36, siameseCat: 36,
-  beardedHen: 34, barredHen: 34, polishHen: 34, silkieHen: 30,
-  bantamHen: 26, chick: 16,
-  // The playable classes, and the reference every other number is against.
-  hand: 64, vet: 64, widow: 64, drifter: 64, kid: 64, agronomist: 64,
-  // --- buildings and vehicles, by WIDTH unless noted --------------------
-  'ranch.barn': 440,
-  'ranch.farmhouse': 330,
-  'ranch.bunkhouse': 256,
-  'ranch.biplane': 293,
-  'ranch.silo': 146,        // ...and ~440 TALL. A silo is as tall as a barn is wide.
-  'ranch.windmill': 100,    // ...and ~366 TALL. Taller than the barn. Never draw it square.
-  'ranch.tractor': 146,
-  'ranch.tractorRed': 128,
-  'ranch.hayWagon': 146,
-  'ranch.coop': 92,
-  'ranch.coopBroken': 80,
-  'ranch.waterTrough': 73,
-  'ranch.fenceRail': 73,
-  'ranch.fenceRailBroken': 73,
-  'ranch.well': 55,
-  'ranch.wellStone': 55,
-  'ranch.roundBale': 55,
-  'ranch.roundBaleRotted': 55,
-  'ranch.squareBales': 37,
-  'ranch.feedBin': 37,
-  'ranch.fencePost': 20,
-  'ranch.fenceCorner': 20,
-  'ranch.feedBucket': 13,
+const scaleRaw = JSON.parse(readFileSync('art/scene-scale.json', 'utf8')) as {
+  drawAt: Record<string, number>
+  tallOverrides: Record<string, number>
 }
+const SCENE_SCALE = scaleRaw.drawAt
+const SCENE_TALL = scaleRaw.tallOverrides
 
 /** Frame keys grouped by their dotted prefix. */
 const byPrefix = new Map<string, string[]>()
@@ -375,7 +324,10 @@ for (const [prefix, title, img] of groups) {
   L.push('| key | source | **draw at** |')
   L.push('|---|---|---|')
   for (const k of list) {
-    const draw = SCENE_SCALE[k] ? `**${SCENE_SCALE[k]}px**` : ''
+    const tall = SCENE_TALL[k]
+    const draw = SCENE_SCALE[k]
+      ? (tall ? `**${SCENE_SCALE[k]} wide, ${tall} tall**` : `**${SCENE_SCALE[k]}px**`)
+      : ''
     L.push(`| \`${k}\` | ${sizeOf(k)} | ${draw} |`)
   }
   L.push('')

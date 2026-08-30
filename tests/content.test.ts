@@ -139,4 +139,88 @@ describe('card art', () => {
     }
     expect(bad).toEqual([])
   })
+
+  /**
+   * The scene scale table.
+   *
+   * This exists because the first title screens came out with a bulldog the
+   * size of a pony, and the cause was that the SOURCE ART IS NOT TO SCALE:
+   * every animal is authored on the game's 32x64 grid, so a cat is 16x42, a
+   * bulldog 29x42, a pony 25x53 and a grown man 30x52. Drawn at their own size
+   * they are a row of identical silhouettes.
+   *
+   * `art/scene-scale.json` is the correction, and the only property that has to
+   * hold is the ORDER. The absolute numbers are stylised on purpose -- a cat at
+   * true scale is 9px and unreadable -- so asserting them would be asserting
+   * taste. Asserting that a hen is smaller than a dog is smaller than a pony is
+   * smaller than a barn is asserting the thing that was actually broken.
+   */
+  it('draws the cast in an order that matches the real world', async () => {
+    const { readFileSync } = await import('node:fs')
+    const scale = JSON.parse(readFileSync('art/scene-scale.json', 'utf8')) as {
+      drawAt: Record<string, number>
+      tallOverrides: Record<string, number>
+    }
+    const at = scale.drawAt
+    const ordered = [
+      'chick', 'bantamHen', 'silkieHen', 'brahmaHen', 'farmRooster',
+      'rosie', 'fjordPony', 'arabian',
+    ]
+    for (let i = 1; i < ordered.length; i++) {
+      const small = ordered[i - 1]
+      const big = ordered[i]
+      expect(at[small], `${small} must be smaller than ${big}`).toBeLessThan(at[big])
+    }
+    // A cat is smaller than a dog is smaller than a person is smaller than a horse.
+    expect(at.wiz).toBeLessThan(at.joy)
+    expect(at.joy).toBeLessThan(at.hand)
+    expect(at.hand).toBeLessThan(at.fjordPony)
+    /*
+       Buildings are compared only among themselves, and that is not laziness.
+
+       THE TWO FAMILIES ARE IN DIFFERENT UNITS: a cast entry is a HEIGHT and a
+       building entry is a WIDTH, because that is the dimension each is
+       naturally described by. The first version of this test asserted a horse
+       (104 tall) was shorter than a chicken coop (92 wide) and failed, which
+       was the test being wrong rather than the data -- a coop really is about
+       2.5m wide and about 2m tall, so it is shorter than a horse and wider than
+       one at the same time. Comparing across the families means nothing.
+    */
+    expect(at['ranch.coop']).toBeLessThan(at['ranch.farmhouse'])
+    expect(at['ranch.farmhouse']).toBeLessThan(at['ranch.barn'])
+    expect(at['ranch.feedBucket']).toBeLessThan(at['ranch.roundBale'])
+    expect(at['ranch.roundBale']).toBeLessThan(at['ranch.tractor'])
+  })
+
+  it('never draws a sprite at its source size, because that is the bug', async () => {
+    // The specific failure: `spriteEl` snaps to whole-pixel zoom, so every one
+    // of these came back at roughly its source height whatever box was asked
+    // for. If `draw at` ever collapses back toward source size, the same row of
+    // identical silhouettes returns.
+    const { readFileSync } = await import('node:fs')
+    const at = (JSON.parse(readFileSync('art/scene-scale.json', 'utf8')) as {
+      drawAt: Record<string, number>
+    }).drawAt
+    const frames = JSON.parse(readFileSync('public/atlas.json', 'utf8')).frames as
+      Record<string, { w: number; h: number }>
+    // A pony and a bulldog are within 11px of each other in the SOURCE...
+    const ponySrc = frames['fjordPony.idle.down.0']
+    const dogSrc = frames['joy.idle.down.0']
+    expect(Math.abs(ponySrc.h - dogSrc.h)).toBeLessThan(16)
+    // ...and must not be, once drawn.
+    expect(at.fjordPony - at.joy).toBeGreaterThan(40)
+  })
+
+  it('gives every scale entry something real to scale', async () => {
+    const { readFileSync } = await import('node:fs')
+    const at = (JSON.parse(readFileSync('art/scene-scale.json', 'utf8')) as {
+      drawAt: Record<string, number>
+    }).drawAt
+    const frames = JSON.parse(readFileSync('public/atlas.json', 'utf8')).frames as
+      Record<string, unknown>
+    const missing = Object.keys(at).filter(
+      (k) => !(k in frames) && !(`${k}.idle.down.0` in frames),
+    )
+    expect(missing).toEqual([])
+  })
 })
