@@ -766,6 +766,9 @@ export class World {
         e.attackT += dt
         if (e.attackT >= C.attackClipSeconds) e.attackT = 0
       }
+      // The recoil counts DOWN, unlike the attack, because the renderer wants
+      // "how much is left" to drive a clip that plays once and stops.
+      if (e.hitT > 0) e.hitT -= dt
 
       // Hazard effects on movement, applied before integration.
       let slow = 0
@@ -2010,6 +2013,7 @@ export class World {
     e.knockbackImmune = def.knockbackImmune === true
     e.dying = 0
     e.attackT = 0
+    e.hitT = 0
     e.hpBuffPct = 0
     e.burnDps = 0
     e.burnLife = 0
@@ -2139,6 +2143,11 @@ export class World {
       if (e.flashLock <= 0) {
         e.flash = C.hitFlashSeconds
         e.flashLock = C.hitFlashSeconds + C.hitFlashRefractorySeconds
+        // The recoil rides the SAME gate. It is a longer clip than the blink,
+        // so left ungated it would be re-armed before it finished and the
+        // enemy would appear frozen in the first frame of a flinch forever --
+        // the flash bug again, in an animation instead of a colour.
+        e.hitT = C.hitClipSeconds
       }
 
       this.addDamageNumber(e.x, e.y - e.radius, dmg, isCrit)

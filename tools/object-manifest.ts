@@ -137,9 +137,55 @@ const WANTED: Record<string, string> = {
 
 const DEATH = /^(buckling|toppling|folding|dropping|stumbling|collapsing)/
 
-function kindOf(slug: string): 'walk' | 'attack' | 'death' {
+/**
+ * Ambient clips -- the animals being animals rather than fighting.
+ *
+ * These exist for the title screen: a yard where twenty animals stand perfectly
+ * still is a diorama, not a farm. They are named for what they are because the
+ * fallback below is `attack`, and without this a grazing pony would pack as an
+ * attack clip -- silently, and then play when something got close to it.
+ *
+ * It also keeps them from colliding. Two clips that classify the same kind are
+ * resolved by "whichever has all eight directions wins", so an ambient clip
+ * generated at three directions would simply be dropped in favour of a combat
+ * one. Distinct names mean both survive.
+ */
+const AMBIENT: Record<string, string> = {
+  grazing: 'graze',
+  pecking: 'peck',
+  crowing: 'crow',
+  sitting: 'sit',
+  scratching: 'scratch',
+  preening: 'preen',
+  sniffing: 'sniff',
+  drinking: 'drink',
+  resting: 'rest',
+  standing: 'idleLoop',
+}
+
+/*
+   Combat states the renderer selects between, keyed on their opening verb.
+
+   `hit` and `walkHurt` are what make damage legible: a thing that takes a blow
+   should flinch, and a thing that is nearly dead should look it. Both are
+   OPTIONAL everywhere -- the renderer falls through to the next clip when one
+   is absent -- so the roster can gain them one animal at a time.
+
+   `staggering` and `limping` are listed for walkHurt because that is how the
+   injured walk gets described when it is generated; `reeling`, `recoiling` and
+   `flinching` all mean the recoil. Getting one of these wrong is silent: the
+   clip packs under the wrong name and simply never plays.
+*/
+const HURT_WALK = /^(limping|staggering|hobbling|dragging)/
+const HIT = /^(reeling|recoiling|flinching|jerking|snapping_back|taking)/
+
+function kindOf(slug: string): string {
+  if (HURT_WALK.test(slug)) return 'walkHurt'
+  if (HIT.test(slug)) return 'hit'
   if (slug.startsWith('walking')) return 'walk'
   if (DEATH.test(slug)) return 'death'
+  const first = slug.split('_')[0].toLowerCase()
+  if (AMBIENT[first]) return AMBIENT[first]
   return 'attack'
 }
 
@@ -154,7 +200,7 @@ for (const [dir, id] of Object.entries(WANTED)) {
   // Cell size is per-animal and uniform within it; read it, do not assume.
   const cell = decodePng(readFileSync(probe)).width
 
-  const clips: Record<string, { slug: string; frames: number }> = {}
+  const clips: Record<string, { slug: string; frames: number; dirs?: string[] }> = {}
 
   /*
      An object with no animations is still worth packing. The eight rotations
@@ -179,14 +225,40 @@ for (const [dir, id] of Object.entries(WANTED)) {
   for (const slug of readdirSync(animDir)) {
     if (!statSync(`${animDir}/${slug}`).isDirectory()) continue
     const present = DIRS.filter((d) => existsSync(`${animDir}/${slug}/${d}`))
-    const frames = present.length ? readdirSync(`${animDir}/${slug}/${present[0]}`).filter((f) => f.endsWith('.png')).length : 0
+    /*
+       The MINIMUM frame count across the directions present, not the first
+       one's.
+
+       An object downloaded while its animation was still generating has
+       directions at different lengths, and trusting the first one makes the
+       manifest promise frames that are not on disk -- which the packer then
+       reports as a wall of ENOENT rather than as "this download was early".
+       Taking the minimum packs a short but complete clip instead.
+    */
+    const frames = present.length
+      ? Math.min(...present.map((d) => readdirSync(`${animDir}/${slug}/${d}`).filter((f) => f.endsWith('.png')).length))
+      : 0
     const kind = kindOf(slug)
     const existing = clips[kind]
     // All eight directions beats a partial clip, whatever arrived first.
     if (existing && present.length < 8) { report.push(`  ${id}: ignoring partial ${kind} "${slug}" (${present.length}/8)`); continue }
     if (existing) report.push(`  ${id}: replacing partial ${kind} with "${slug}" (${present.length}/8)`)
-    if (present.length < 8) report.push(`  ${id}: WARNING ${kind} "${slug}" has only ${present.length}/8 directions`)
-    clips[kind] = { slug, frames }
+    /*
+       AMBIENT CLIPS ARE DELIBERATELY PARTIAL, and must not be warned about.
+
+       A grazing pony is only ever seen from the few facings a scene actually
+       uses, so buying eight directions of it buys five nobody looks at. The
+       directions that DO exist are recorded on the clip so the packer knows
+       what to expect rather than erroring on the absent ones.
+
+       A combat clip missing a direction is still a defect -- that is an enemy
+       that vanishes when it turns -- so the warning is kept for those.
+    */
+    const combat = kind === 'walk' || kind === 'attack' || kind === 'death'
+    if (present.length < 8 && combat) {
+      report.push(`  ${id}: WARNING ${kind} "${slug}" has only ${present.length}/8 directions`)
+    }
+    clips[kind] = present.length < 8 ? { slug, frames, dirs: present } : { slug, frames }
   }
   sheets[id] = { dir, cell, clips }
   report.push(`${id.padEnd(18)} cell ${String(cell).padEnd(3)} ${Object.entries(clips).map(([k, v]) => `${k}:${v.frames}f`).join(' ')}`)

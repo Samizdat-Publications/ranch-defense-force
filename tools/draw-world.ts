@@ -43,6 +43,10 @@ const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROP_FPS` in the renderer. Ambient loops run slower than combat art. */
 const PROP_FPS = 8
 
+/** Must match src/render/renderer.ts. */
+const HIT_SECONDS = TUNING.combat.hitClipSeconds as number
+const INJURED_BELOW = (TUNING.combat.injuredBelowPct as number) / 100
+
 /** Must match src/render/renderer.ts -- a shot that fogs differently is a lie. */
 const FOG_TILE = 512
 const FOG_BLOBS = 26
@@ -554,6 +558,18 @@ export class WorldPainter {
     return frames[`${sheet}.${clip}.${dir}.${f}`]
   }
 
+  /** A walk-style looping clip by name, for the injured variant. */
+  private walkClipFrame(
+    sheet: string, facing: number, travelled: number, clip: string,
+  ): Frame | undefined {
+    const len = clipLengths[sheet]?.[clip]
+    if (!len) return undefined
+    const dirs = atlas.dirSets?.[sheet] ?? atlas.rig.directions
+    const dir = dirs[this.directionIndex(facing, dirs.length)] ?? dirs[0] ?? 'down'
+    const f = Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len
+    return frames[`${sheet}.${clip}.${dir}.${f}`]
+  }
+
   private sheetFrame(sheet: string, facing: number, travelled: number, moving: boolean): Frame | undefined {
     const dirs = atlas.dirSets?.[sheet] ?? atlas.rig.directions
     const dir = dirs[this.directionIndex(facing, dirs.length)] ?? dirs[0] ?? 'down'
@@ -713,9 +729,25 @@ export class WorldPainter {
     for (let i = 0; i < world.enemies.live; i++) {
       const e = world.enemies.items[i]
       const moving = e.stun <= 0 && e.dying <= 0 && (e.vx !== 0 || e.vy !== 0)
-      const f = (e.attackT > 0 && e.dying <= 0
-        ? this.clipFrame(e.sheetId, e.facing, 'attack', e.attackT / ATTACK_SECONDS)
+      /*
+         The clip state machine, matching src/render/renderer.ts:
+
+           death  >  hit  >  attack  >  injured walk  >  walk  >  idle
+
+         Every step falls through when its clip is absent, so a sheet without
+         the art behaves exactly as before. Restated here rather than shared
+         because sim and render never import each other's internals and this is
+         a tool -- but it must not drift, or a shot stops being a picture of
+         the game.
+      */
+      const hurt = e.maxHp > 0 && e.hp / e.maxHp < INJURED_BELOW
+      const f = (e.dying <= 0 && e.hitT > 0
+        ? this.clipFrame(e.sheetId, e.facing, 'hit', 1 - e.hitT / HIT_SECONDS)
         : undefined)
+        ?? (e.attackT > 0 && e.dying <= 0
+          ? this.clipFrame(e.sheetId, e.facing, 'attack', e.attackT / ATTACK_SECONDS)
+          : undefined)
+        ?? (moving && hurt ? this.walkClipFrame(e.sheetId, e.facing, e.travelled, 'walkHurt') : undefined)
         ?? this.sheetFrame(e.sheetId, e.facing, e.travelled, moving)
       if (f) drawList.push({ y: e.y, x: e.x, f })
     }

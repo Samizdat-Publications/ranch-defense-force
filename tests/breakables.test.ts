@@ -385,3 +385,78 @@ describe('breakables: the scenery split', () => {
     }
   })
 })
+
+describe('hit reactions and the injured state', () => {
+  it('a real hit arms the recoil, and it decays', () => {
+    const w = new World(101, 'hand')
+    const e = w.spawnEnemy('farmhand', w.player.x + 200, w.player.y, false)!
+    expect(e.hitT).toBe(0)
+    w.damageEnemy(w.enemies.live - 1, 1, 'ranged', false)
+    expect(e.hitT).toBeGreaterThan(0)
+    const armed = e.hitT
+    w.step(STEP, 0, 0, false)
+    expect(e.hitT).toBeLessThan(armed)
+  })
+
+  it('damage over time never arms it', () => {
+    // The whole reason the recoil rides the flash's gate. A burn ticks several
+    // times a second per enemy; without this an enemy on fire would be frozen
+    // in the first frame of a flinch for as long as it burned -- the white
+    // flash bug again, wearing an animation instead of a colour.
+    const w = new World(103, 'hand')
+    const e = w.spawnEnemy('farmhand', w.player.x + 200, w.player.y, false)!
+    w.damageEnemy(w.enemies.live - 1, 1, 'ranged', false, true)
+    expect(e.hitT).toBe(0)
+  })
+
+  it('is refractory — a second hit inside the window does not re-arm it', () => {
+    const w = new World(107, 'hand')
+    const i = w.enemies.live
+    const e = w.spawnEnemy('farmhand', w.player.x + 200, w.player.y, false)!
+    w.damageEnemy(i, 1, 'ranged', false)
+    const first = e.hitT
+    // Advance a little, then hit again while the lock is still down.
+    w.step(STEP, 0, 0, false)
+    w.damageEnemy(i, 1, 'ranged', false)
+    expect(e.hitT).toBeLessThan(first)
+  })
+
+  it('a fresh spawn never inherits a recoil from the slot it reused', () => {
+    // These are pooled. An enemy arriving mid-flinch because the last occupant
+    // of the slot died mid-flinch is exactly the class of bug the pool comment
+    // on `spawnProjectile` exists for.
+    const w = new World(109, 'hand')
+    const i = w.enemies.live
+    const e = w.spawnEnemy('farmhand', w.player.x + 200, w.player.y, false)!
+    w.damageEnemy(i, 1, 'ranged', false)
+    expect(e.hitT).toBeGreaterThan(0)
+    w.enemies.free(i)
+    const next = w.spawnEnemy('farmhand', w.player.x + 210, w.player.y, false)!
+    expect(next.hitT).toBe(0)
+  })
+
+  it('the injured threshold is a fraction, and the clip length is positive', () => {
+    // Both are render-only — neither changes damage, speed, or any decision the
+    // sim makes — so this guards a typo rather than a balance choice.
+    const c = TUNING.combat as Record<string, number>
+    expect(c.hitClipSeconds).toBeGreaterThan(0)
+    expect(c.hitClipSeconds).toBeLessThan(1)
+    expect(c.injuredBelowPct).toBeGreaterThan(0)
+    expect(c.injuredBelowPct).toBeLessThan(100)
+  })
+
+  it('both renderers agree on the state machine order', () => {
+    // Separate copies by design — sim and render never import each other's
+    // internals, and draw-world is a tool. Separate copies drift, and a shot
+    // that picks a different clip is a picture of a different program.
+    const game = readFileSync('src/render/renderer.ts', 'utf8')
+    const head = readFileSync('tools/draw-world.ts', 'utf8')
+    for (const [name, src] of [['renderer', game], ['draw-world', head]] as const) {
+      expect(src.includes('e.hitT > 0'), `${name} lost the hit branch`).toBe(true)
+      expect(src.includes('walkHurt'), `${name} lost the injured walk`).toBe(true)
+      // The recoil must be tested BEFORE the attack: being interrupted
+      // mid-swing is the moment worth showing.
+      expect(src.indexOf('e.hitT > 0')).toBeLessThan(src.indexOf('e.attackT > 0 && e.dying <= 0'))
+    }
+  })
+})

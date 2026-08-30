@@ -42,7 +42,7 @@
  * left and eighteen high of where it belongs, and so did every other prop.
  */
 import { el } from './dom'
-import { spriteEl, spriteTileUrl, frameOf } from './sprite'
+import { spriteEl, spriteTileUrl, frameOf, stripUrl, clipsOf } from './sprite'
 
 export type SceneKind = 'yard' | 'field'
 
@@ -161,6 +161,43 @@ function stripActor(
     `--strip-w:${opts.sheetW}px;` +
     `image-rendering:pixelated;` +
     `animation:${opts.keyframe} ${opts.dur} steps(${opts.frames}) infinite${opts.delay ? ` ${opts.delay}` : ''}`
+  return d
+}
+
+/**
+ * Animate ANY packed clip, without a baked strip PNG.
+ *
+ *     clipActor('brahmaHenBlight', 'walk', 'down', 820, 470, '1.1s', 2)
+ *
+ * `actor()` above needs a strip that `npm run anim` baked, and only fifteen of
+ * those exist -- all of them LimeZu-era. Everything generated since is packed
+ * as individual frames, so this composes the strip at runtime out of the atlas
+ * (see `stripUrl`) and hands the result to the same `stripActor`.
+ *
+ * The cell and the frame count come back FROM the composer rather than being
+ * typed here, which is the whole reason to prefer this over `actor()` for
+ * generated art: `actor`'s own comment warns that a hand-typed sheet width
+ * fails silently by sliding the animation instead of stepping it, and every
+ * generated clip has a different cell.
+ *
+ * Ask `clipsOf(sheet)` for what a sheet can do. Directions are the game's
+ * eight: down, downLeft, left, upLeft, up, upRight, right, downRight.
+ */
+function clipActor(
+  sheet: string, clip: string, dir: string,
+  x: number, y: number, dur: string, zoom = 1, delay?: string,
+): HTMLElement | null {
+  const strip = stripUrl(sheet, clip, dir)
+  if (!strip) return null
+  const d = document.createElement('div')
+  const w = strip.cell * zoom
+  const sheetW = w * strip.frames
+  d.style.cssText =
+    `position:absolute;left:${x}px;top:${y}px;` +
+    `width:${w}px;height:${w}px;background-image:url('${strip.url}');` +
+    `background-size:${sheetW}px ${w}px;background-repeat:no-repeat;` +
+    `--strip-w:${sheetW}px;image-rendering:pixelated;` +
+    `animation:y-strip ${dur} steps(${strip.frames}) infinite${delay ? ` ${delay}` : ''}`
   return d
 }
 
@@ -376,6 +413,53 @@ function yard(): (HTMLElement | null)[] {
   L.push(sprite('scene.hay', 646, 616))
   L.push(sprite('scene.doghouse', 722, 552))
 
+  /*
+     THE OWNER'S OWN FLOCK, around the coop.
+
+     Ten different birds rather than one bird ten times, which was the explicit
+     ask -- and they differ in SIZE as well as plumage (the chick packs at 34px,
+     the buff Orpington at 56), so a row of them at one zoom already reads as a
+     real flock with no per-bird treatment.
+
+     `clipActor` where a bird has an ambient clip and `spriteEl` where it does
+     not, so this degrades to a still yard rather than to a missing one while
+     the rest of the animations generate. Durations are deliberately coprime,
+     the same rule the cow/calf/sheep in the pen already follow: three animals
+     pecking on the same beat read as one machine.
+
+     Facings are mixed on purpose. A yard where every animal faces the camera is
+     a lineup, not a farm.
+  */
+  const FLOCK: [string, string, number, number, string, string][] = [
+    ['brahmaHen', 'downRight', 792, 566, '1.7s', '0s'],
+    ['buffHen', 'down', 862, 590, '2.3s', '0.4s'],
+    ['barredHen', 'downLeft', 928, 604, '1.9s', '0.9s'],
+    ['leghornHen', 'right', 744, 604, '2.1s', '0.2s'],
+    ['silkieHen', 'downRight', 690, 636, '2.7s', '1.1s'],
+    ['polishHen', 'down', 836, 640, '2.9s', '0.6s'],
+    ['beardedHen', 'downLeft', 906, 656, '2.2s', '1.4s'],
+    ['bantamHen', 'right', 776, 668, '1.5s', '0.8s'],
+    ['chick', 'downRight', 820, 690, '1.3s', '0.3s'],
+    ['farmRooster', 'downLeft', 964, 596, '3.4s', '0s'],
+  ]
+  for (const [id, dir, x, y, dur, delay] of FLOCK) {
+    const clips = clipsOf(id)
+    const ambient = clips.peck ? 'peck' : clips.crow ? 'crow' : null
+    L.push(ambient
+      ? clipActor(id, ambient, dir, x, y, dur, 2, delay)
+      : sprite(`${id}.idle.${dir}`, x, y, 2))
+  }
+
+  // Joy on the porch side of her house, and the cats where cats go.
+  {
+    const joyClips = clipsOf('joy')
+    L.push(joyClips.sit
+      ? clipActor('joy', 'sit', 'downRight', 700, 620, '3.1s', 2)
+      : sprite('joy.idle.downRight', 700, 620, 2))
+  }
+  L.push(sprite('wiz.idle.downLeft', 1104, 672, 2))
+  L.push(sprite('tabbyCat.idle.right', 1180, 640, 2))
+
   // -- the stock pen: rails, a gate, two posts and a sign
   const pen = box('left:1596px;top:646px;width:324px;height:74px')
   const rail = 'height:26px;'
@@ -408,6 +492,27 @@ function yard(): (HTMLElement | null)[] {
   L.push(actor('scene.sheepGrazeStrip', 1826, 678, 52, 34, 9, '4.3s', 1, '1.4s')
     ?? sprite('scene.sheep', 1826, 678))
   L.push(sprite('scene.trough', 1600, 700))
+
+  /*
+     The owner's equines, at the rail beside the pen rather than inside it.
+
+     Outside on purpose: the pen already holds a cow, a calf and a sheep, and
+     five more animals in a 324px box is a pile. Standing along the rail reads
+     as a yard that has more animals than pens, which is what a real one looks
+     like.
+  */
+  const RAIL: [string, string, number, number, string][] = [
+    ['fjordPony', 'downRight', 1420, 668, '4.7s'],
+    ['arabian', 'down', 1520, 690, '5.3s'],
+    ['blackMule', 'downLeft', 1352, 706, '6.1s'],
+    ['beigeMule', 'right', 1276, 674, '5.9s'],
+    ['rosie', 'downRight', 1444, 736, '4.1s'],
+  ]
+  for (const [id, dir, x, y, dur] of RAIL) {
+    L.push(clipsOf(id).graze
+      ? clipActor(id, 'graze', dir, x, y, dur, 2)
+      : sprite(`${id}.idle.${dir}`, x, y, 2))
+  }
 
   // -- actors at 2x. Two hens cross the whole yard, right to left.
   for (const [anim, step] of [

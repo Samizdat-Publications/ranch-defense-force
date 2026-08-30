@@ -106,6 +106,80 @@ export function spriteTileUrl(name: string): string | null {
   return url
 }
 
+const stripCache = new Map<string, { url: string; cell: number; frames: number } | null>()
+
+/**
+ * Compose an animation clip into a horizontal strip, at runtime, from the atlas.
+ *
+ * WHY THIS EXISTS. `stripActor` in scene.ts animates a strip with CSS
+ * `steps()`, and the fifteen strips it can use today were baked as strip PNGs
+ * by `npm run anim`. Everything generated since -- the owner's twenty farm
+ * animals, their nineteen blighted twins, the cursed roster -- is packed as
+ * INDIVIDUAL frames, because that is what the game renderer wants. So the
+ * scene could place any of them and animate none of them.
+ *
+ * Baking strip PNGs for all of them and packing those too would duplicate
+ * every frame in the atlas, which already carries 4,774. This composes the
+ * strip in a canvas from frames the atlas ALREADY holds, so the cost is one
+ * canvas per clip used and the atlas does not grow at all.
+ *
+ * Frames are laid out on a uniform cell -- the widest frame in the clip -- and
+ * each is centred in its cell. That matters: PixelLab frames are trimmed to
+ * content, so a walk cycle's frames differ in width by a few pixels, and a
+ * strip packed at each frame's own width makes `steps(n)` land off-centre and
+ * the animation jitter sideways. Uniform cells are what make the step exact.
+ *
+ * Returns the url plus the two numbers `actor()` needs, so no caller has to
+ * type a sheet width by hand -- the comment on `actor` is explicit that a
+ * hand-typed width fails silently by sliding instead of stepping.
+ */
+export function stripUrl(
+  sheet: string, clip: string, dir: string,
+): { url: string; cell: number; frames: number } | null {
+  const key = `${sheet}.${clip}.${dir}`
+  const hit = stripCache.get(key)
+  if (hit !== undefined) return hit
+
+  if (!atlas) return null
+  const frames = atlas.clipLength(sheet, clip)
+  if (!frames || frames < 1) { stripCache.set(key, null); return null }
+
+  const rects = []
+  for (let i = 0; i < frames; i++) {
+    const f = atlas.get(`${key}.${i}`)
+    if (!f) { stripCache.set(key, null); return null }
+    rects.push(f)
+  }
+
+  // One uniform cell, big enough for the widest and tallest frame.
+  let cell = 0
+  for (const f of rects) cell = Math.max(cell, f.w, f.h)
+
+  const c = document.createElement('canvas')
+  c.width = cell * frames
+  c.height = cell
+  const ctx = c.getContext('2d')
+  if (!ctx) return null
+  ctx.imageSmoothingEnabled = false
+  rects.forEach((f, i) => {
+    ctx.drawImage(
+      atlas!.image, f.x, f.y, f.w, f.h,
+      Math.round(i * cell + (cell - f.w) / 2),
+      Math.round(cell - f.h),
+      f.w, f.h,
+    )
+  })
+
+  const out = { url: c.toDataURL(), cell, frames }
+  stripCache.set(key, out)
+  return out
+}
+
+/** Which clips a sheet publishes, and how many frames each has. */
+export function clipsOf(sheet: string): Record<string, number> {
+  return atlas?.clipLengths?.[sheet] ?? {}
+}
+
 /** The atlas rect for a name, so callers can size a strip from its real width. */
 export function frameOf(name: string): { w: number; h: number } | null {
   const f = atlas?.get(name)

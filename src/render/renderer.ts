@@ -64,6 +64,9 @@ const PROJECTILE_FPS = 15
  * pass is that the field looks alive without competing with the fight for the
  * player's eye.
  */
+/** Below this fraction of max hp an enemy uses its injured clips, if it has any. */
+const INJURED_BELOW = (TUNING.combat.injuredBelowPct as number) / 100
+
 const PROP_FPS = 8
 
 /** Fog tile edge, in world pixels. A power of two so the wrap arithmetic is exact. */
@@ -891,6 +894,44 @@ export class Renderer {
    * death clip is: the world ends the clip on a timer, and a wrap would restart
    * the lunge for whatever fraction of a frame the two disagree by.
    */
+  /**
+   * The recoil clip, or undefined when the sheet has none.
+   *
+   * Plays ONCE over `hitClipSeconds`, forward, never looping -- `hitT` counts
+   * down, so `1 - hitT/total` is how far through it is. Returning undefined for
+   * a sheet without the art is what makes this safe to ship before every animal
+   * has a recoil: those enemies simply keep doing what they did before.
+   */
+  private hitFrame(sheet: string, facing: number, remaining: number): AtlasFrame | undefined {
+    if (!this.atlas) return undefined
+    const len = this.atlas.clipLengths[sheet]?.hit
+    if (!len) return undefined
+    const dir = this.atlas.directionFor(sheet, facing)
+    const total = TUNING.combat.hitClipSeconds as number
+    const t = Math.min(1, Math.max(0, 1 - remaining / total))
+    const f = Math.min(len - 1, Math.floor(t * len))
+    return this.atlas.get(`${sheet}.hit.${dir}.${f}`)
+  }
+
+  /**
+   * The walk, in the hurt variant once an enemy is badly enough damaged.
+   *
+   * This is the whole point of the injured state: a wounded thing should LOOK
+   * wounded, so the damage the player has already done is visible on the field
+   * rather than only in a health bar. Falls straight back to the ordinary walk
+   * where a sheet has no `walkHurt`, so it costs nothing until the art exists.
+   */
+  private hurtWalkFrame(
+    sheet: string, facing: number, travelled: number,
+  ): AtlasFrame | undefined {
+    if (!this.atlas) return undefined
+    const len = this.atlas.clipLengths[sheet]?.walkHurt
+    if (!len) return undefined
+    const dir = this.atlas.directionFor(sheet, facing)
+    const f = Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len
+    return this.atlas.get(`${sheet}.walkHurt.${dir}.${f}`)
+  }
+
   private attackFrame(sheet: string, facing: number, elapsed: number): AtlasFrame | undefined {
     if (!this.atlas) return undefined
     const len = this.atlas.clipLengths[sheet]?.attack
@@ -1003,11 +1044,31 @@ export class Renderer {
       if (!it) break
 
       const moving = e.stun <= 0 && e.dying <= 0 && (e.vx !== 0 || e.vy !== 0)
-      // An attack pose outranks the walk: the wind-up is the thing the player
-      // has to read, and a charging bull that keeps trotting reads as a bug.
-      const frame = (e.attackT > 0 && e.dying <= 0
-        ? this.attackFrame(e.sheetId, e.facing, e.attackT)
+      /*
+         The clip state machine, in priority order.
+
+           death  >  hit  >  attack  >  injured walk  >  walk  >  idle
+
+         Recoil outranks the attack, and both outrank the walk. A thing that
+         keeps trotting through a hit it just took is the reason hits used to
+         read as nothing happening: the white flash was the only report, and a
+         flash is a colour, not an event. Putting the recoil above the attack
+         matters too -- being interrupted mid-swing is exactly the moment worth
+         showing.
+
+         Every step returns undefined when its clip is absent and falls to the
+         next, so a sheet with none of this art behaves precisely as it did
+         before. That is what lets the roster gain these clips one animal at a
+         time instead of all at once.
+      */
+      const hurt = e.maxHp > 0 && e.hp / e.maxHp < INJURED_BELOW
+      const frame = (e.dying <= 0 && e.hitT > 0
+        ? this.hitFrame(e.sheetId, e.facing, e.hitT)
         : undefined)
+        ?? (e.attackT > 0 && e.dying <= 0
+          ? this.attackFrame(e.sheetId, e.facing, e.attackT)
+          : undefined)
+        ?? (moving && hurt ? this.hurtWalkFrame(e.sheetId, e.facing, e.travelled) : undefined)
         ?? this.humanoidFrame(e.sheetId, e.facing, e.travelled, moving)
 
       it.x = x

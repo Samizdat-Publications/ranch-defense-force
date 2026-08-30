@@ -108,7 +108,7 @@ interface Manifest {
     sheets: Record<string, {
       dir: string
       cell: number
-      clips: Record<string, { slug: string; frames: number }>
+      clips: Record<string, { slug: string; frames: number; dirs?: string[] }>
     }>
   }
   /** One cell lifted out of a bigger sheet, for art that already exists. */
@@ -322,7 +322,21 @@ if (manifest.pixellabObjects) {
 
     for (const [clipName, clip] of Object.entries(sheet.clips)) {
       clipLengths[id][clipName] = clip.frames
+      /*
+         A clip may declare the SUBSET of directions it was generated for.
+
+         Ambient scene clips -- a grazing pony, a pecking hen -- are bought at
+         the three or four facings a scene actually shows, because the other
+         four are five directions nobody looks at. Iterating all eight and
+         erroring on the absent ones would make a deliberately partial clip
+         fail the whole build.
+
+         Combat clips still want all eight, and `objman` warns when one is
+         short: an enemy that vanishes when it turns is a real defect.
+      */
+      const want = clip.dirs
       for (const [compass, dir] of Object.entries(cfg.compassToDirection)) {
+        if (want && !want.includes(compass)) continue
         for (let f = 0; f < clip.frames; f++) {
           const path = `${cfg._base}${sheet.dir}/animations/${clip.slug}/${compass}/`
             + `frame_${String(f).padStart(3, '0')}.png`
