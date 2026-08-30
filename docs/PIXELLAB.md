@@ -69,6 +69,24 @@ id the account held on 2026-08-28.
 
 ### Measured costs
 
+### In DOLLARS, measured session 17
+
+The table below counts SUBSCRIPTION GENERATIONS. Credits are a different
+currency and price differently — most importantly **size is nearly free**:
+
+| call | USD |
+|---|---|
+| map-object 48px | $0.0070 |
+| map-object 128px | $0.0078 |
+| animate-with-text-v3, 8 frames | $0.0343 |
+| Wang tileset, 32px, 16 tiles | ~$0.017 |
+| 8-direction character, standard | ~$0.01 |
+
+1.10x the cost for 7.1x the pixels. So "generate small, candidates are free
+money" is advice about the generation counter, not about money. On credits,
+generate at the size the subject wants.
+
+
 Read the balance either side of a call rather than trusting a table; every row
 below was measured that way, and two of them contradict PixelLab's own docs.
 

@@ -4,6 +4,206 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 17 — the flash, the roster, and what a dollar buys
+
+Overnight, unsupervised, with the owner's approval to spend and to add systems.
+**$1.22 of $15 spent.** Five things landed, and two of them were bugs that had
+been shipping for a while.
+
+## The white flash was eating the game
+
+The owner's own playtest screenshots showed wave 15 with 266 enemies where most
+of the crowd rendered as **solid white silhouettes**, and the wave-12 boss could
+not be seen at all while being fought. Two causes, six lines apart.
+
+`e.flash = C.hitFlashSeconds` sat OUTSIDE the `if (!fromDot)` guard in
+`damageEnemy`, so every burn tick, bleed tick and hazard tick re-armed it. A
+burn ticks several times a second per enemy, so a 60ms flash never expired.
+
+The second cause survives fixing the first: once a build is up, direct hits also
+land faster than 60ms. Re-arming on every one makes the flash a fill, not a
+blink.
+
+The tell was sitting right underneath it the whole time. The spark immediately
+below was already rate-limited, with the comment *"so a late wave reads as
+combat rather than as a wall of white."* Somebody saw the exact failure, fixed
+it for the sparks, and did not notice the flash — which is the thing that
+actually fills the sprite.
+
+DoT no longer flashes, and a `flashLock` refractory caps the duty cycle at
+60/(60+160) = 27%. **Measured after: mean 0.9% of live enemies flashing, worst
+frame 20%.** Both numbers are in `tuning.json`, because which one to turn
+depends on whether crowds still wash out or single hits stop registering.
+
+Three pools were also pinned at capacity and silently refusing: particles
+900/900 with 23,824 dropped, damage numbers 64/64 with 35,233 dropped, hazards
+64/64. `props` was 120 against boneOrchard's 140 node maximum, so the biggest map
+could not finish scattering its own field. Now 2400 / 256 / 192 / 320.
+
+## Five enemies were already in the atlas
+
+`arabianCursed`, `donkeyCursed`, `draftMuleCursed`, `fjordPonyCursed` and
+`infectedHen` were complete 8-direction rigs — walk, attack, death, idle, 224
+frames each — **sitting in the shipped atlas wired to nothing.** 1,120 frames,
+26% of the packed page, bought in an earlier session and never drawn.
+
+They went in at waves 3, 8, 13, 16 and 19, weighted to the back half, because
+that was the actual gap: the last new enemy arrived at wave 14 and **waves 15–25
+introduced nothing at all.** Half of every run was the same eight things with
+bigger numbers.
+
+### The NaN that ate the spawner
+
+Adding a `_lateRosterNote` to `enemies.json` took the entire acceptance suite
+down, and the mechanism is worth writing down because it is silent and total.
+
+`ENEMIES` only ever stripped `_bosses`. Every other underscore key survived into
+the roster as a fake enemy with no `firstWave` (so `refreshRoster` never filtered
+it) and no `threatCost` — and `1 / Math.sqrt(undefined)` is NaN. **One NaN makes
+`weightedIndex` return garbage for every enemy**, so the director stops spawning
+and a full run reports zero kills. The file had never carried a top-level note
+before, so nothing had ever triggered it.
+
+`defsOf` already existed for exactly this, and its own comment records the bug
+biting twice before. Enemies now go through it.
+
+## The acceptance tests were measuring their own sample size
+
+This came up **three times in one session**, so it is now written down properly.
+
+The clear rate was surveyed over 40–60 full runs each time: **60%** before maps,
+**55%** on the unchanged Home Field alone, **62.5%** with the expanded roster. At
+a true rate near 60%, six seeds fail a 50% bar about **one time in five on a
+passing game.** Twice that turned the suite red for no reason at all, and the
+reflex both times was to go tuning the game.
+
+`SEEDS` is now 24 and `CROSSOVER_SEEDS` 32. **Both bars are untouched** — a
+bigger sample against the same bar is strictly harder to pass by luck. The
+parity tolerance became `ceil(n/3)` rather than a hardcoded `2`, which is the
+same third-of-the-sample it always was and was about to become four times
+stricter by accident.
+
+## Two real balance findings, one fixed and one not
+
+**Fixed, because it was mine:** `donkeyCursed` shipped one pass as
+`knockbackImmune` + `flank`. A flanker that cannot be pushed off is aimed
+squarely at the one class whose kit is standing still. The control measured The
+Hand's preference for holding ground at **21-vs-11 without these enemies and
+26-vs-21 with them** — the gap halved, and this one card was why. Knockback
+restored.
+
+**Not fixed, because it is not:** that same control settled something bigger.
+**The Kid's class identity is already gone.** Kiting scored 15 against 15
+standing still *without any of tonight's enemies*. The class whose damage scales
+with velocity currently has no measurable reason to move, and it predates
+tonight's work. It belongs in the play session, not in a commit made while the
+owner was asleep.
+
+## What a PixelLab dollar actually buys
+
+Every figure measured with the balance read either side:
+
+| | USD |
+|---|---|
+| map-object, 48px | $0.0070 |
+| map-object, 128px | $0.0078 |
+| animate-with-text-v3, 8 frames | $0.0343 |
+| Wang tileset (32px, 16 tiles) | ~$0.017 |
+| 8-direction character, standard mode | ~$0.01 |
+
+**Size is nearly free** — 1.10× the cost for 7.1× the pixels. The repo's standing
+"generate small, candidates are free money" advice optimises the *subscription
+generation counter*, which is a different currency and is at zero until Sep 14.
+On credits there is no size penalty.
+
+The subscription is **active, not cancelled**, and the key is **not dead** —
+`docs/PIXELLAB.md` says both and both are wrong. What is true is that the 4,710
+monthly generations are spent.
+
+## The floor lesson, learned twice in one night
+
+Ten Wang tilesets generated. **None wired**, and that is the finding.
+
+The first family went out at `highly detailed` with decorative nouns —
+wildflowers, plates splitting. At 32px, detail becomes a **repeating motif**: the
+pasture tiled into visible polka dots and the hardpan into red brickwork with
+the enemies unreadable on top of it. `tuning.json`'s `_chosenNote` already
+recorded exactly this about `dirt_to_grass`, with the reason spelled out — *the
+ground is what two hundred enemies are read against.* It was overridden anyway.
+
+The second family, at `low detail` + `flat shading` + `lineless` +
+`tile_strength 0.4`, is much better and the sprites read against it — but still
+carries a faint repeat that `dirt_to_grass_plain` does not. So the Home Field
+stays on the ground it was tuned on, because it is the control, and all ten sit
+packed as stock to be chosen in motion.
+
+**Rule, now in `maps.json`: for ground, ask for LESS.**
+
+Related, and worth correcting: **the ground was never LimeZu.** Those 29 Wang
+sets were generated off the account earlier. What IS still LimeZu is five
+manifest groups — `weapons` (8), `animals` (duckFlight), `vehicles` (the
+Duster), `singlesExtra` (pickup.heal) and the yard `scene` — and a generated
+replacement for every one is already on disk, unwired. That is the whole
+remaining retirement job.
+
+## The crops are ours now
+
+Ten field crops swapped from the LimeZu pack to the generated set that had been
+sitting unwired since session 15, picked by contact sheet. The pack entries were
+**deleted, not left alongside** — two groups writing one frame key is the trap
+this repo has hit before and the later one wins silently.
+
+They are 32×32 where the pack crops were 32×64, because the pack drew a whole
+plant with its soil and these are the fruit alone, which is what a 13px harvest
+radius wants. Blighted variants for five of them are picked and on disk but
+deliberately unwired: swapping crop art mid-run changes what a map looks like
+and belongs in the play session.
+
+## Props can animate now
+
+`Renderer.propFrame` draws `sprite.N` when the atlas holds a loop for that key
+and falls back to the single static frame when it does not — so **adding motion
+to a prop is an atlas change with no code and no content edit.** Phase comes
+from world position rather than a per-prop timer, because props are pooled and
+have no animation state, and forty crops swaying on the same frame reads as the
+screen refreshing rather than as wind. The headless painter mirrors it exactly,
+phase included, or a screenshot would be a picture of a different program.
+
+Ambient loops run at 8fps against combat art's 15. At 15 a crop flickers.
+
+## Four animals from the owner's actual farm
+
+The white Fjord pony with the cream mane, the bay Arabian with the golden mane
+and tail, Job the tan-and-white bulldog, and Wiz the black cat with green eyes —
+each an 8-direction rig for **one generation** via the quadruped templates.
+
+Those templates also expose presets for walk, run, eat, dying and — the useful
+one — **`hit-left` and `hit-right`**, which means hit reactions stop being custom
+animation work entirely.
+
+**Known defect:** the Fjord's *west* rotation came back on an opaque grey card.
+Unwired, so nothing ships broken, but it needs a `remove-background` pass first.
+
+Standard mode is visibly flatter than the existing cursed animals, which were
+made with `create_8_direction_object` at 20–40 generations. For animals this
+personal, the richer path is probably worth $0.09 apiece — that is a look-at-it
+decision, not a measurable one.
+
+## Open, in priority order
+
+1. **The Kid's identity** — measured at zero, predates tonight, needs the play
+   session.
+2. **The rest of the owner's roster** — two more mules, Rosie, three more cats,
+   and ten chicken variants, wanted both as scene characters and as corrupted
+   enemies, with the hen flock varied rather than one hen repeated.
+3. **Choose a ground** in motion from the ten packed sets.
+4. **Retire the last five LimeZu groups** — all replacements already bought.
+5. **Hit reactions** — the preset exists, the sim needs a `hit` clip slot.
+6. **Destructibles and the magnet** — designed in the plan, not started.
+7. **The Fjord's grey card.**
+
+---
+
 # Session 16 — maps
 
 Five maps. A run picks one, and it changes the ground, the field, the roster
