@@ -14,7 +14,10 @@
 import { decodePng, encodePng, blankImage, type Image } from './png.ts'
 import { readFileSync } from 'node:fs'
 import { Rng } from '../src/core/rng.ts'
-import { TUNING, WEAPONS, projectileScaleFor } from '../src/content/index.ts'
+import {
+  TUNING, WEAPONS, decalKindsFor, projectileScaleFor, sceneryKindsFor,
+  type MapBoundary,
+} from '../src/content/index.ts'
 import type { World } from '../src/sim/world.ts'
 import { wangKey, type Corner } from '../src/render/wang.ts'
 
@@ -480,15 +483,17 @@ export class WorldPainter {
   }
 
   private decals(world: World): void {
-    const kinds = ['decal.tireRuts', 'decal.scorch', 'decal.mud', 'decal.ash']
+    // Read off the map, same as the renderer -- one list, so they cannot drift.
+    const kinds = decalKindsFor(world.map)
       .map((k) => frames[k]).filter((f): f is Frame => !!f)
     if (!kinds.length) return
     const rng = new Rng(world.seed ^ 0x0dec_a15)
+    const pad = 60 + (world.map.boundary?.inset ?? 0)
     const count = Math.round((world.arenaW * world.arenaH) / 240_000)
     for (let i = 0; i < count; i++) {
       const f = kinds[rng.int(0, kinds.length - 1)]
-      const x = rng.int(60, world.arenaW - 60)
-      const y = rng.int(60, world.arenaH - 60)
+      const x = rng.int(pad, world.arenaW - pad)
+      const y = rng.int(pad, world.arenaH - pad)
       this.drawFrame(f, x, y)
     }
   }
@@ -504,31 +509,87 @@ export class WorldPainter {
     // which by looking. Leaving the containers here as well would have put an
     // unbreakable oil drum in the same field as a breakable one, and no amount
     // of feedback recovers from that.
-    const kinds = [
-      'prop.carcass', 'prop.plough', 'prop.graveMarker', 'prop.treeStump',
-      'prop.barbedWire', 'prop.scarecrow', 'prop.scarecrowRotted',
-      'prop.fencePost', 'prop.fenceRail', 'prop.gate',
-    ].map((k) => frames[k]).filter((f): f is Frame => !!f)
+    const kinds = sceneryKindsFor(world.map)
+      .map((k) => frames[k]).filter((f): f is Frame => !!f)
     const out: { x: number; y: number; f: Frame }[] = []
     if (!kinds.length) return out
     const rng = new Rng(world.seed ^ 0x5ce_1e11)
     const W = world.arenaW
     const H = world.arenaH
     const BAND = 220
+    const IN = 40 + (world.map.boundary?.inset ?? 0)
     const count = Math.round((W * H) / 90_000)
     for (let i = 0; i < count; i++) {
       const f = kinds[rng.int(0, kinds.length - 1)]
       let x: number
       let y: number
       switch (rng.int(0, 3)) {
-        case 0: x = rng.int(40, W - 40); y = rng.int(40, BAND); break
-        case 1: x = rng.int(40, W - 40); y = rng.int(H - BAND, H - 40); break
-        case 2: x = rng.int(40, BAND); y = rng.int(40, H - 40); break
-        default: x = rng.int(W - BAND, W - 40); y = rng.int(40, H - 40); break
+        case 0: x = rng.int(IN, W - IN); y = rng.int(IN, BAND); break
+        case 1: x = rng.int(IN, W - IN); y = rng.int(H - BAND, H - IN); break
+        case 2: x = rng.int(IN, BAND); y = rng.int(IN, H - IN); break
+        default: x = rng.int(W - BAND, W - IN); y = rng.int(IN, H - IN); break
       }
       out.push({ x, y, f })
     }
     return out
+  }
+
+  /**
+   * The arena edge, restated from `Renderer.paintBoundary`. Same dispatch, same
+   * fallback: a map whose wall art is not packed gets the fence, because a
+   * shot that quietly drops the boundary is a shot of a field with no edge.
+   */
+  private boundary(world: World): void {
+    const b = world.map.boundary
+    if (b && b.kind === 'wall' && this.wallBand(world, b)) return
+    this.fence(world)
+  }
+
+  /** `Renderer.paintWallBand`, restated. Same vertex field, same corner rule. */
+  private wallBand(world: World, b: MapBoundary): boolean {
+    const set = b.wangSet
+    if (!set || !frames[wangKey(set, 1, 1, 1, 1)]) return false
+    const tile = 32
+    const cols = Math.ceil(world.arenaW / tile)
+    const rows = Math.ceil(world.arenaH / tile)
+    const vw = cols + 1
+    const vh = rows + 1
+    const field = new Uint8Array(vw * vh)
+    for (let vy = 0; vy < vh; vy++) {
+      for (let vx = 0; vx < vw; vx++) {
+        const x = vx * tile
+        const y = vy * tile
+        const wall = x < b.band || x > world.arenaW - b.band
+          || y < b.band || y > world.arenaH - b.band
+        if (wall) field[vy * vw + vx] = 1
+      }
+    }
+    for (let ty = 0; ty < rows; ty++) {
+      for (let tx = 0; tx < cols; tx++) {
+        const nw = field[ty * vw + tx] as Corner
+        const ne = field[ty * vw + tx + 1] as Corner
+        const sw = field[(ty + 1) * vw + tx] as Corner
+        const se = field[(ty + 1) * vw + tx + 1] as Corner
+        if (!(nw || ne || sw || se)) continue
+        const f = frames[wangKey(set, nw, ne, sw, se)]
+        if (f) this.drawFrame(f, tx * tile, ty * tile)
+      }
+    }
+    this.wallPanels(world, b)
+    return true
+  }
+
+  /** `Renderer.paintWallPanels`, restated. Same stream, same pitch, same roll. */
+  private wallPanels(world: World, b: MapBoundary): void {
+    const kinds = (b.panels ?? []).map((k) => frames[k]).filter((f): f is Frame => !!f)
+    if (!kinds.length) return
+    const rng = new Rng(world.seed ^ 0xfa11_0000)
+    const PITCH = 96
+    for (let x = PITCH / 2; x < world.arenaW - PITCH / 2; x += PITCH) {
+      if (rng.next() > 0.55) continue
+      const f = kinds[rng.int(0, kinds.length - 1)]
+      this.drawFrame(f, x - f.w / 2, b.band - f.h)
+    }
   }
 
   private fence(world: World): void {
@@ -581,7 +642,7 @@ export class WorldPainter {
 
   private terrain(world: World): void {
     fillRect(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0x479757)
-    if (this.wangTerrain(world)) { this.decals(world); this.fence(world); this.fog(world); return }
+    if (this.wangTerrain(world)) { this.decals(world); this.boundary(world); this.fog(world); return }
 
     const grass = frames['terrain.grass']
     const dirt = frames['terrain.dirt']

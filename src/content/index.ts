@@ -450,6 +450,92 @@ export interface MapDef {
   breakables?: MapBreakables
   /** Ceiling art drawn over everything, or absent for open sky. */
   overhead?: MapOverhead
+  /** Props and ground marks this map is dressed with. Absent means the default
+   *  farm set; see `sceneryKindsFor`. */
+  dressing?: MapDressing
+  /** What the arena edge is made of. Absent means the farm fence. */
+  boundary?: MapBoundary
+}
+
+/**
+ * The arena edge.
+ *
+ * The edge was a clamp and a stroked line, then a clamp and a fence. A bunker
+ * is neither: it is a ROOM, and a room that just stops at an invisible line
+ * reads as a bug rather than as a wall.
+ *
+ * `inset` is the only part of this that touches the sim -- it pulls the player
+ * clamp in by that many pixels so the band is wall rather than floor you can
+ * stand on. It DEFAULTS TO 0, which is what every surface map uses, so the
+ * five farm maps clamp exactly where they always did and every seeded replay
+ * still holds. Enemies are deliberately not inset: they spawn outside the
+ * arena and walk in, which is what they already did through the fence.
+ */
+export interface MapBoundary {
+  /** `fence` is the farm's posts and rails. `wall` is a solid band. */
+  kind: 'fence' | 'wall'
+  /** How far the band reaches in from each edge, in pixels. */
+  band: number
+  /** Pixels the PLAYER clamp is pulled in by. Usually `band`, and 0 for a
+   *  fence, which the player has always been able to stand on. */
+  inset: number
+  /**
+   * Wang set whose UPPER terrain is the wall and whose lower is this map's
+   * floor. A wall is a TERRAIN, not a row of stamped sprites, and that is the
+   * whole reason the corners work: corner autotiling already turns a band into
+   * a room with four proper corners, and stamping sprites would have needed a
+   * hand-written corner case for each. It is the same `bakeWangGround` the
+   * ground uses -- one machine, two fields.
+   */
+  wangSet?: string
+  /**
+   * Wall-mounted dressing -- pipe runs, hazard striping, a caged lamp -- stamped
+   * along the band on a roll.
+   *
+   * These are OBJECTS and not tiles, which is the distinction that cost a
+   * generation to learn: a map-object comes back with an outline all the way
+   * round, so eight of them in a row read as eight bricks with gaps, never as a
+   * wall. As things bolted ONTO a wall that already tiles, they are exactly
+   * right.
+   */
+  panels?: string[]
+}
+
+/**
+ * What a map is dressed with: standing props round the edges, flat marks on
+ * the ground.
+ *
+ * REPLACES the default wholesale rather than merging. A bunker floor wants none
+ * of the farm, and a merging scheme would have made "no scarecrows" cost ten
+ * lines of exclusions to remove ten props. An empty array means bare, and is a
+ * legal answer.
+ */
+export interface MapDressing {
+  scenery?: string[]
+  decals?: string[]
+}
+
+/**
+ * The dressing a map gets when it names none.
+ *
+ * Lives in maps.json rather than in either renderer because it USED to live in
+ * both of them, hardcoded, and that is how the first bunker preview came out
+ * with a plough and a grave marker on a concrete floor. Fog, overhead art,
+ * breakable skins and the ground were already per-map; scenery and decals were
+ * the one dressing layer that was not, so every new biome silently inherited a
+ * barnyard.
+ *
+ * Both the browser renderer and `tools/draw-world.ts` call these, which is also
+ * what keeps them agreeing: there is one list now, not two that drift.
+ */
+const DEFAULT_DRESSING = (mapsRaw as unknown as { defaultDressing: MapDressing }).defaultDressing
+
+export function sceneryKindsFor(map: MapDef): readonly string[] {
+  return map.dressing?.scenery ?? DEFAULT_DRESSING.scenery ?? []
+}
+
+export function decalKindsFor(map: MapDef): readonly string[] {
+  return map.dressing?.decals ?? DEFAULT_DRESSING.decals ?? []
 }
 
 export const MAPS = defsOf<MapDef>(

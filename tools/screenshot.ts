@@ -31,8 +31,18 @@ const classId = process.argv[5] ?? 'hand'
  * state, and looking is how this repo verifies rendering.
  */
 const forceHit = process.argv.includes('--hit')
+/**
+ * `--map=<id>` puts the shot on a chosen map instead of the one the seed rolls.
+ *
+ * This is the only way to photograph a WEIGHT-0 map: `pickMapId` can never
+ * return one, so a preview map added ahead of the level system was previously
+ * unreachable without editing its weight in content and remembering to put it
+ * back. It overrides the map draw's RESULT and not the draw itself, so the shot
+ * is still of a real, replayable run.
+ */
+const mapArg = process.argv.find((a) => a.startsWith('--map='))?.slice(6)
 
-const world = new World(seed, classId)
+const world = new World(seed, classId, {}, 1, mapArg)
 const offers = new OfferPool(world.rng)
 let pending = 0
 world.events = { onLevelUp: (n) => { pending += n } }

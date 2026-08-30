@@ -330,7 +330,18 @@ export class Player {
    *             speed on purpose — The Kid's damage scales with it, and a Kid
    *             bogged down in an oil sump should read as slow, because it is.
    */
-  move(moveX: number, moveY: number, dt: number, arenaW: number, arenaH: number, slow = 0): void {
+  /**
+   * @param inset extra pixels the clamp is pulled in by, on top of
+   *              `arena.edgePadding`. This is the wall band: on a map whose
+   *              edge is a solid wall the player must stop at its inner face,
+   *              not at the arena rectangle. DEFAULTS TO 0 so every surface map
+   *              -- and every seeded replay of one -- clamps exactly where it
+   *              always did.
+   */
+  move(
+    moveX: number, moveY: number, dt: number, arenaW: number, arenaH: number,
+    slow = 0, inset = 0,
+  ): void {
     this.px = this.x
     this.py = this.y
 
@@ -347,7 +358,7 @@ export class Player {
     }
     this.anim += dt
 
-    const pad = TUNING.arena.edgePadding
+    const pad = TUNING.arena.edgePadding + inset
     if (this.x < pad) this.x = pad
     else if (this.x > arenaW - pad) this.x = arenaW - pad
     if (this.y < pad) this.y = pad

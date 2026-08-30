@@ -234,7 +234,10 @@ export class World {
    *             acre payout; see `meta.ts`. Defaults to 1 so every existing
    *             caller — tests, tools, the headless painter — is unaffected.
    */
-  constructor(seed: number, classId: string, metaMods: StatMods = {}, readonly tier = 1) {
+  constructor(
+    seed: number, classId: string, metaMods: StatMods = {}, readonly tier = 1,
+    forceMapId?: string,
+  ) {
     this.seed = seed
     this.rng = new Rng(seed)
 
@@ -242,7 +245,15 @@ export class World {
     // else touches the stream — see the `_rngNote` in maps.json. Moving this
     // later does not just change which map you get, it reseats every draw after
     // it, and every recorded seed replays as a different run.
-    this.mapId = pickMapId(this.rng.next())
+    //
+    // `forceMapId` overrides the RESULT and never the DRAW. The `next()` above
+    // is spent either way, so a forced run and a rolled one from the same seed
+    // sit at the identical stream position and everything after them matches.
+    // This is what makes a weight-0 map reachable at all: `pickMapId` can never
+    // return one, so a preview map, and the level system that will place a run
+    // on a chosen floor rather than a rolled one, both need this door.
+    const rolled = pickMapId(this.rng.next())
+    this.mapId = forceMapId && MAPS[forceMapId] ? forceMapId : rolled
     this.map = MAPS[this.mapId]
     this.arenaW = this.map.arena.width
     this.arenaH = this.map.arena.height
@@ -293,6 +304,19 @@ export class World {
    * the numbers stay in one file and a map that says nothing gets exactly the
    * field the game always had.
    */
+  /**
+   * How far in from the arena rectangle anything standing on the ground must
+   * stay: the wall band, or 0 on every map whose edge is a fence.
+   *
+   * Added to each scatterer's own pad rather than replacing it, and it does NOT
+   * change the RNG stream -- `rng.range(lo, hi)` costs exactly one draw whatever
+   * the bounds are, so a surface map (inset 0) draws the identical numbers it
+   * always did and its seeded replays are untouched.
+   */
+  private get edgeInset(): number {
+    return this.map.boundary?.inset ?? 0
+  }
+
   private variantWeight(v: NodeVariant): number {
     return this.map.nodes.variantWeights?.[v.sprite] ?? v.weight
   }
@@ -302,7 +326,9 @@ export class World {
     if (!def) return
     const field = NODES.field
     const cap = this.map.nodes.max[kind] ?? field.max[kind] ?? 0
-    const pad = 80
+    // Held off the wall band as well as the arena edge: a tree growing out of
+    // a concrete wall is the same class of mistake as a plough on a bunker floor.
+    const pad = 80 + this.edgeInset
 
     let live = 0
     for (let i = 0; i < this.props.live; i++) if (this.props.items[i].kind === kind) live++
@@ -395,8 +421,9 @@ export class World {
       let x = 0
       let y = 0
       for (let attempt = 0; attempt < 8; attempt++) {
-        x = this.rng.range(f.edgePad, this.arenaW - f.edgePad)
-        y = this.rng.range(f.edgePad, this.arenaH - f.edgePad)
+        const pad = f.edgePad + this.edgeInset
+        x = this.rng.range(pad, this.arenaW - pad)
+        y = this.rng.range(pad, this.arenaH - pad)
         if (Math.hypot(x - this.player.x, y - this.player.y) >= f.minDistanceFromPlayer) break
       }
 
@@ -606,7 +633,12 @@ export class World {
     this.elapsed += dt
 
     // 2. player
-    this.player.move(moveX, moveY, dt, this.arenaW, this.arenaH, this.playerHazardSlow())
+    this.player.move(
+      moveX, moveY, dt, this.arenaW, this.arenaH, this.playerHazardSlow(),
+      // The wall band, if this map has one. Zero on every surface map, which is
+      // what keeps their replays byte-identical.
+      this.map.boundary?.inset ?? 0,
+    )
     this.player.updatePassive(dt)
     this.player.regen(dt)
     if (abilityPressed) this.tryAbility()
@@ -1469,7 +1501,7 @@ export class World {
     // against a wall is still on ground the player uses.
     const angle = this.rng.range(0, Math.PI * 2)
     const dist = this.rng.range(cfg.minDistanceFromPlayer, cfg.maxDistanceFromPlayer)
-    const lo = cfg.radius
+    const lo = cfg.radius + this.edgeInset
     let x = this.player.x + Math.cos(angle) * dist
     let y = this.player.y + Math.sin(angle) * dist
     if (x < lo) x = lo

@@ -21,7 +21,10 @@ import { readFileSync, existsSync } from 'node:fs'
 import { World } from '../src/sim/world'
 import { Rng } from '../src/core/rng'
 import { STEP } from '../src/core/loop'
-import { MAPS, MAP_IDS, NODES, ENEMIES, pickMapId } from '../src/content'
+import {
+  MAPS, MAP_IDS, NODES, ENEMIES, TUNING, decalKindsFor, pickMapId, sceneryKindsFor,
+} from '../src/content'
+import { wangKey } from '../src/render/wang'
 import type { HazardKind } from '../src/sim/entities'
 
 /** The packed atlas, or null when it has not been built. */
@@ -419,6 +422,120 @@ describe('the atmosphere layers', () => {
     for (const [name, src] of [['renderer', game], ['draw-world', head]] as const) {
       expect(src.includes('0xf0_9c1a'), `${name} fog seed`).toBe(true)
       expect(src.includes('0x0ce1_1a6'), `${name} overhead seed`).toBe(true)
+    }
+  })
+
+  it('the dressing defaults leave every surface map exactly as it was', () => {
+    // Scenery and decals were two hardcoded farm lists in the renderer until a
+    // bunker floor rendered with a plough on it. Making them data is only safe
+    // if the maps that said nothing keep the list they always had -- otherwise
+    // "no visual change" is a claim rather than a fact.
+    const FARM_SCENERY = [
+      'prop.carcass', 'prop.plough', 'prop.graveMarker', 'prop.treeStump',
+      'prop.barbedWire', 'prop.scarecrow', 'prop.scarecrowRotted',
+      'prop.fencePost', 'prop.fenceRail', 'prop.gate',
+    ]
+    const FARM_DECALS = ['decal.tireRuts', 'decal.scorch', 'decal.mud', 'decal.ash']
+    for (const [id, m] of Object.entries(MAPS)) {
+      if (m.dressing) continue
+      expect(sceneryKindsFor(m), `${id} scenery`).toEqual(FARM_SCENERY)
+      expect(decalKindsFor(m), `${id} decals`).toEqual(FARM_DECALS)
+    }
+  })
+
+  it('every dressing sprite a map names is actually packed', () => {
+    if (!packed) return
+    for (const [id, m] of Object.entries(MAPS)) {
+      for (const k of sceneryKindsFor(m)) expect(packed.has(k), `${id} scenery -> ${k}`).toBe(true)
+      for (const k of decalKindsFor(m)) expect(packed.has(k), `${id} decal -> ${k}`).toBe(true)
+    }
+  })
+
+  it('a map that declares a wall actually has one', () => {
+    // A `wall` boundary with no packed Wang set falls back to the FENCE, and
+    // silently: the bunker would come out ringed in wooden posts and nothing
+    // would say so. This is the check that turns that into a failure.
+    for (const [id, m] of Object.entries(MAPS)) {
+      const b = m.boundary
+      if (!b || b.kind !== 'wall') continue
+      expect(b.wangSet, `${id} wall names no Wang set`).toBeTruthy()
+      expect(b.band, `${id} wall band`).toBeGreaterThan(0)
+      if (!packed) continue
+      expect(packed.has(wangKey(b.wangSet!, 1, 1, 1, 1)), `${id} -> ${b.wangSet}`).toBe(true)
+      for (const k of b.panels ?? []) expect(packed.has(k), `${id} panel -> ${k}`).toBe(true)
+    }
+  })
+
+  it('only a map with a wall insets the player, and it insets it inside the band', () => {
+    // The inset is the ONE part of the boundary that touches the sim. Every
+    // surface map must keep 0 or its seeded replays stop matching, and a map
+    // whose inset exceeds its band would hold the player off thin air.
+    for (const [id, m] of Object.entries(MAPS)) {
+      const b = m.boundary
+      if (!b) continue
+      if (b.kind !== 'wall') expect(b.inset, `${id} fence inset`).toBe(0)
+      else expect(b.inset, `${id} inset past its own band`).toBeLessThanOrEqual(b.band)
+    }
+  })
+
+  it('the wall band actually stops the player, on every map', () => {
+    // WALKED, not asserted off the config. The clamp lives in player.ts and the
+    // inset in maps.json, and the only thing worth testing is that the two
+    // meet: a config that says 64 and a clamp that ignores it passes every
+    // check made of the data alone.
+    for (const id of MAP_IDS) {
+      const m = MAPS[id]
+      const inset = m.boundary?.inset ?? 0
+      // Hold hard into the top-left corner until the clamp is the only thing
+      // still holding the player.
+      const w = new World(1, 'hand', {}, 1, id)
+      expect(w.mapId, 'forced map ignored').toBe(id)
+      for (let i = 0; i < 900; i++) w.step(STEP, -1, -1, false)
+      expect(w.player.x, `${id} x`).toBeGreaterThanOrEqual(inset)
+      expect(w.player.y, `${id} y`).toBeGreaterThanOrEqual(inset)
+      // ...and the wall is not a no-op: a map with a band stops the player
+      // strictly further in than one without.
+      if (inset > 0) expect(w.player.x, `${id} not held off`).toBeGreaterThan(TUNING.arena.edgePadding)
+    }
+  })
+
+  it('forcing a map overrides the result and never the draw', () => {
+    // The whole safety of `forceMapId` rests on the map `next()` being spent
+    // either way. If forcing ever SKIPPED the draw, every draw after it would
+    // reseat and a forced run would replay as a different one.
+    //
+    // Tested by forcing the map the seed would have rolled anyway: the two
+    // worlds must then be identical in every respect, which they cannot be if
+    // forcing spends a different number of draws. Comparing a forced run
+    // against a run on a DIFFERENT map would prove nothing -- their streams
+    // diverge legitimately, because scattering a different field costs a
+    // different number of draws.
+    const rolled = new World(7, 'hand')
+    const forced = new World(7, 'hand', {}, 1, rolled.mapId)
+    expect(forced.mapId).toBe(rolled.mapId)
+    expect(forced.rng.next()).toBe(rolled.rng.next())
+
+    // ...and the override really does reach a map the roll can never produce.
+    const vault = new World(7, 'hand', {}, 1, 'theVault')
+    expect(vault.mapId).toBe('theVault')
+    expect(MAPS.theVault.weight).toBe(0)
+  })
+
+  it('an unknown forced map falls back to the roll rather than crashing', () => {
+    const rolled = new World(7, 'hand')
+    const bogus = new World(7, 'hand', {}, 1, 'noSuchMap')
+    expect(bogus.mapId).toBe(rolled.mapId)
+  })
+
+  it('the two renderers agree on the wall band', () => {
+    const game = readFileSync('src/render/renderer.ts', 'utf8')
+    const head = readFileSync('tools/draw-world.ts', 'utf8')
+    for (const [name, src] of [['renderer', game], ['draw-world', head]] as const) {
+      // Same panel stream, same pitch, same roll, or a shot shows the wall
+      // dressed differently to the game.
+      expect(src.includes('0xfa11_0000'), `${name} wall panel seed`).toBe(true)
+      expect(src.includes('const PITCH = 96'), `${name} wall panel pitch`).toBe(true)
+      expect(src.includes('rng.next() > 0.55'), `${name} wall panel roll`).toBe(true)
     }
   })
 })

@@ -16,7 +16,8 @@
 import type { World } from '../sim/world'
 import { Camera } from './camera'
 import {
-  ENEMIES, NODES, TUNING, WEAPONS, itemCardSprite, projectileScaleFor, type MapTerrain,
+  ENEMIES, NODES, TUNING, WEAPONS, decalKindsFor, itemCardSprite, projectileScaleFor,
+  sceneryKindsFor, type MapBoundary, type MapTerrain,
 } from '../content'
 import { Atlas, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
@@ -247,7 +248,7 @@ export class Renderer {
     const atlas = this.atlas
     if (!atlas) return
     // FIXTURES ONLY. Everything container-shaped -- drum, barrel, bale, bin,
-    // cans, barrow, trough, log and bone pile -- moved to breakables.json and
+    // cans, barrow, trough, log and bone pile -- lives in breakables.json and
     // is scattered by the sim through the interior instead.
     //
     // The split is what makes the mechanic legible without a tutorial: a
@@ -255,11 +256,11 @@ export class Renderer {
     // which by looking. Leaving the containers here as well would have put an
     // unbreakable oil drum in the same field as a breakable one, and no amount
     // of feedback recovers from that.
-    const kinds = [
-      'prop.carcass', 'prop.plough', 'prop.graveMarker', 'prop.treeStump',
-      'prop.barbedWire', 'prop.scarecrow', 'prop.scarecrowRotted',
-      'prop.fencePost', 'prop.fenceRail', 'prop.gate',
-    ].map((k) => atlas.get(k)).filter((f): f is AtlasFrame => !!f)
+    //
+    // WHICH fixtures is the map's call, not this file's. It was a hardcoded
+    // farm list until a bunker floor rendered with a plough on it.
+    const kinds = sceneryKindsFor(this.world.map)
+      .map((k) => atlas.get(k)).filter((f): f is AtlasFrame => !!f)
     if (!kinds.length) return
 
     const rng = new Rng(this.world.seed ^ 0x5ce_1e11)
@@ -267,6 +268,10 @@ export class Renderer {
     const H = this.world.arenaH
     // How deep the peripheral band reaches in from each edge.
     const BAND = 220
+    // ...starting INSIDE the wall, on a map that has one. Zero everywhere else,
+    // and `rng.int` costs one draw whatever the bounds are, so the surface maps
+    // scatter the identical props in the identical places.
+    const IN = 40 + (this.world.map.boundary?.inset ?? 0)
     const count = Math.round((W * H) / 90_000)
     for (let i = 0; i < count; i++) {
       const f = kinds[rng.int(0, kinds.length - 1)]
@@ -274,10 +279,10 @@ export class Renderer {
       let x: number
       let y: number
       switch (rng.int(0, 3)) {
-        case 0: x = rng.int(40, W - 40); y = rng.int(40, BAND); break
-        case 1: x = rng.int(40, W - 40); y = rng.int(H - BAND, H - 40); break
-        case 2: x = rng.int(40, BAND); y = rng.int(40, H - 40); break
-        default: x = rng.int(W - BAND, W - 40); y = rng.int(40, H - 40); break
+        case 0: x = rng.int(IN, W - IN); y = rng.int(IN, BAND); break
+        case 1: x = rng.int(IN, W - IN); y = rng.int(H - BAND, H - IN); break
+        case 2: x = rng.int(IN, BAND); y = rng.int(IN, H - IN); break
+        default: x = rng.int(W - BAND, W - IN); y = rng.int(IN, H - IN); break
       }
       this.scenery.push({ x, y, frame: f })
     }
@@ -448,7 +453,7 @@ export class Renderer {
     // Wang ground if the tilesets are packed; the stamped version below if not.
     if (this.bakeWangGround(g, cols, rows, tile, groundSet)) {
       this.paintDecals(g, c)
-      this.paintFence(g, c)
+      this.paintBoundary(g, c)
       this.terrain = c
       return
     }
@@ -476,8 +481,114 @@ export class Renderer {
       }
     }
 
-    this.paintFence(g, c)
+    this.paintBoundary(g, c)
     this.terrain = c
+  }
+
+  /**
+   * The arena edge, whichever kind this map has.
+   *
+   * A bunker's edge is a wall and a farm's is a fence, and until this existed
+   * every map got the fence -- which is how the first preview of a concrete
+   * floor came out ringed in wooden posts. Falls through to the fence when the
+   * wall art is not packed, on the same principle as everything else here: a
+   * missing tileset costs the dressing, not the game.
+   */
+  private paintBoundary(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
+    const b = this.world.map.boundary
+    if (b && b.kind === 'wall' && this.paintWallBand(g, c, b)) return
+    this.paintFence(g, c)
+  }
+
+  /**
+   * A solid wall band round the arena, as a TERRAIN rather than a sprite run.
+   *
+   * The field is 1 (wall) within `band` pixels of an edge and 0 (floor)
+   * inside, sampled at VERTICES exactly like the ground, so the same corner
+   * autotiling that makes a dirt patch look poured makes this look like a room.
+   * Four corners come out right for free, which is the entire argument for
+   * doing it this way: stamping sprites needs a corner case per corner, and
+   * then another one the first time a map is not a rectangle.
+   *
+   * The player is held off it by `boundary.inset` in the sim. Enemies are not,
+   * and walk in through it -- which is what they already did through the fence,
+   * and is the same trade the fence made: they have to come from somewhere.
+   */
+  private paintWallBand(
+    g: CanvasRenderingContext2D, c: HTMLCanvasElement, b: MapBoundary,
+  ): boolean {
+    const atlas = this.atlas
+    const set = b.wangSet
+    if (!atlas || !set || !atlas.get(wangKey(set, 1, 1, 1, 1))) return false
+    const img = atlas.image
+    // 32, the same literal `bakeTerrain` uses -- the grid the whole atlas is on.
+    const tile = 32
+    const cols = Math.ceil(c.width / tile)
+    const rows = Math.ceil(c.height / tile)
+    const vw = cols + 1
+    const vh = rows + 1
+
+    const field = new Uint8Array(vw * vh)
+    for (let vy = 0; vy < vh; vy++) {
+      for (let vx = 0; vx < vw; vx++) {
+        const x = vx * tile
+        const y = vy * tile
+        const wall = x < b.band || x > c.width - b.band
+          || y < b.band || y > c.height - b.band
+        if (wall) field[vy * vw + vx] = 1
+      }
+    }
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const nw = field[y * vw + x] as Corner
+        const ne = field[y * vw + x + 1] as Corner
+        const sw = field[(y + 1) * vw + x] as Corner
+        const se = field[(y + 1) * vw + x + 1] as Corner
+        // Interior cells are skipped rather than repainted with this set's own
+        // floor, which would double the bake and hide the map's real ground.
+        if (!(nw || ne || sw || se)) continue
+        const f = atlas.get(wangKey(set, nw, ne, sw, se))
+        if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
+      }
+    }
+
+    this.paintWallPanels(g, c, b)
+    return true
+  }
+
+  /**
+   * Pipe runs, hazard striping and a caged lamp, bolted to the band.
+   *
+   * TOP EDGE ONLY, and that is a deliberate reading of the camera rather than
+   * laziness. At this angle you see the inner FACE of the north wall and the
+   * TOP of the other three; a lamp stamped on the south band would be a lamp
+   * lying flat on the floor. Their own RNG stream, the same rule the ground,
+   * the decals and the scenery each follow -- nothing decorative may move a
+   * tile or a spawn.
+   */
+  private paintWallPanels(
+    g: CanvasRenderingContext2D, c: HTMLCanvasElement, b: MapBoundary,
+  ): void {
+    const atlas = this.atlas
+    const img = atlas?.image
+    const kinds = (b.panels ?? [])
+      .map((k) => atlas?.get(k)).filter((f): f is AtlasFrame => !!f)
+    if (!img || !kinds.length) return
+
+    const rng = new Rng(this.world.seed ^ 0xfa11_0000)
+    const PITCH = 96
+    for (let x = PITCH / 2; x < c.width - PITCH / 2; x += PITCH) {
+      if (rng.next() > 0.55) continue
+      const f = kinds[rng.int(0, kinds.length - 1)]
+      // Bottom on the band's inner lip: the panel hangs on the wall and its
+      // foot meets the floor, which is what puts it in the wall rather than
+      // floating over it.
+      g.drawImage(
+        img, f.x, f.y, f.w, f.h,
+        Math.round(x - f.w / 2 + f.ox), Math.round(b.band - f.h + f.oy), f.w, f.h,
+      )
+    }
   }
 
   /** Fence line, drawn flat until the fence tiles are in the atlas. */
@@ -638,17 +749,18 @@ export class Renderer {
   private paintDecals(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
     const img = this.atlas?.image
     if (!img) return
-    const kinds = ['decal.tireRuts', 'decal.scorch', 'decal.mud', 'decal.ash']
+    const kinds = decalKindsFor(this.world.map)
       .map((k) => this.atlas?.get(k))
       .filter((f): f is AtlasFrame => !!f)
     if (!kinds.length) return
 
     const rng = new Rng(this.world.seed ^ 0x0dec_a15)
+    const pad = 60 + (this.world.map.boundary?.inset ?? 0)
     const count = Math.round((c.width * c.height) / 240_000)
     for (let i = 0; i < count; i++) {
       const f = kinds[rng.int(0, kinds.length - 1)]
-      const x = rng.int(60, c.width - 60)
-      const y = rng.int(60, c.height - 60)
+      const x = rng.int(pad, c.width - pad)
+      const y = rng.int(pad, c.height - pad)
       g.globalAlpha = 0.75
       g.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy), f.w, f.h)
     }
