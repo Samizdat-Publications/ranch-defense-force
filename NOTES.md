@@ -4,6 +4,158 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 19 — why the title screens were wrong, and it was not Design
+
+Claude Design produced three landing scenes that the owner called horrible, and
+was right to. The interesting part is that **both defects were in this repo's
+helpers**, and Design had been given no way to know.
+
+## Everything rendered at the same size
+
+`spriteEl(name, box)` snaps to **whole-pixel zoom**. That is correct for a card,
+where a 20px gun at 1.7x is a blurry gun, and it is fatal in a scene.
+
+Every animal in this game is authored on the 32x64 grid, because in the game
+every entity IS a grid cell:
+
+    wiz       (a cat)         16x42        hand      (a grown man)   30x52
+    brahmaHen (a hen)         26x43        blackMule (a mule)        28x63
+    joy       (a bulldog)     29x42        fjordPony (a pony)        25x53
+
+Six things within a few pixels of each other that are nothing like the same size
+in life. Integer zoom pins all six to 1x, so `spriteEl('joy', 40)` returns 40px
+tall and `spriteEl('fjordPony', 96)` returns **53px**. The box argument was
+being silently discarded above 1x, and no choice of numbers could have fixed it.
+That is the bulldog the size of a pony, and it took reading `spriteEl` to see
+it — the scene code looked correct.
+
+`sceneSprite(name, height)` scales fractionally and hits the number. Nearest
+neighbour keeps it crisp, and a scene is composited once at a fixed size rather
+than scrolled past a moving camera, so the half-pixel seams the game camera
+would show never appear.
+
+## Everything floated
+
+No sprite had a contact shadow, and actors were positioned by `top`. A `top`
+says where a head is and nothing at all about where a thing stands. The owner's
+words were *"everything is in the air"*, which is exactly the symptom.
+
+`groundActor` takes a `footY`, adds one soft ellipse, and sets `z-index` from
+the ground line so back-to-front sorting is free. The ellipse is the whole fix:
+the eye reads ground contact from the shadow before it reads placement, and no
+amount of correct placement substitutes for it.
+
+## The catalog had no scale, and raw canvas is a third scale again
+
+`docs/ASSET_CATALOG.md` listed frame keys and clips and **no sizes at all** for
+the cast. The building tables listed raw canvas, which is its own trap:
+`ranch.barn` is 400px wide, `ranch.coop` 128 and `ranch.windmill` 128 — a
+chicken coop drawn at a third of a barn, and a windmill drawn the same as the
+coop when a windmill is taller than a barn is wide.
+
+Every table now carries a **`draw at`** column derived from what the thing
+actually is, against one stated reference: **a grown person is 64 pixels tall**,
+so 36.6px per metre. Small animals sit deliberately above life scale — a cat at
+true scale is 9px and unreadable — but the ORDER is always right.
+
+## The animation gap was real and it was ours
+
+The owner asked Design to lean on the animated assets. It had four.
+
+    prizeBull   attack, death, hit, walk, walkHurt, idle   8 directions   <- an ENEMY
+    fjordPony   graze (3 dir), idle
+    joy         attack (1 dir), sit (3 dir), idle
+    brahmaHen   peck (4 dir), idle
+    16 others   idle ONLY
+
+**Every enemy in the game is fully rigged and the cast the title screen is made
+of was not.** The catalog said `*static*` against sixteen rows and Design
+believed it, correctly. Tier 5 in `docs/ANIMATION_PLAN.md` had this filed as
+"$0.53, scene-only, nice to have"; it is the difference between a diorama and a
+farm, and it is re-costed at $1.09 for walk on the whole cast.
+
+Walk is the clip that matters, not the ambient ones — it is the only one that
+reads at any size or distance. Landed this session, eight directions each:
+fjordPony, arabian, blackMule, beigeMule, rosie, joy.
+
+## Ambient world motion, and where to put a one-direction loop
+
+A title screen is carried by things that move without being looked at. A
+windmill turning, wheat swaying, a scarecrow shifting. All three objects already
+existed, so each cost an animate call rather than a generation.
+
+They fit nothing that was here. The animal pipeline wants eight compass folders;
+the fx pipeline emits `fx.name.i` on a centre pivot. `sceneClips` packs them
+under the same `sheet.clip.dir.frame` keys as everything else, with the single
+direction spelled `down`, so `clipsOf`, `stripUrl` and `groundActor` need no
+special case.
+
+**Packed untrimmed, and that is load-bearing.** `stripUrl` bottom-aligns and
+centres each frame in a uniform cell, which is right for a walking animal whose
+silhouette barely changes. A windmill's blades change their extents every frame,
+so a trimmed box would shift frame to frame and the tower would wobble under its
+own vanes.
+
+Watch the name collision: `windmill.spin` moves, `ranch.windmill` does not.
+
+## Per-map dressing, and a wall that is a terrain
+
+`Renderer.buildScenery` and `paintDecals` each carried a hardcoded list of farm
+props, which is how the first bunker preview came out with a plough and a grave
+marker on a concrete floor. Fog, overhead art, breakable skins and the ground
+were already per-map; the dressing was the one layer that was not, so every new
+biome inherited a barnyard. It is data now, and the five surface maps are
+unchanged to the pixel — asserted, not claimed.
+
+The arena edge can be a `wall` instead of a `fence`, and the wall is a **Wang
+terrain, not a run of stamped sprites.** That is the whole reason the corners
+work: corner autotiling already turns a band into a room, where sprites need a
+hand-written case per corner and then another one the first time a map is not a
+rectangle.
+
+`boundary.inset` is the only part that touches the sim and it defaults to 0. The
+player clamp, node and breakable scatter, hazard placement, the scenery band and
+the decals all add it, and `rng.range` costs one draw whatever its bounds — so a
+surface map draws the identical numbers it always did.
+
+Two things the shots caught that the descriptions did not: **a wall the same
+pale as the floor reads as nothing at all** (two tilesets wasted before
+regenerating near-black), and oil drums standing on the wall band.
+
+## World takes a forced map now
+
+`new World(seed, class, mods, tier, forceMapId)` overrides the map draw's RESULT
+and never the draw, so a forced run sits at the identical stream position. It is
+the only way to reach a weight-0 map — `pickMapId` can never return one — so
+photographing the preview vault previously meant editing content and remembering
+to put it back. `npm run shot -- ... --map=<id>` uses it, and the level system
+will need the same door.
+
+## Two generation lessons worth carrying
+
+**"Seen from below" is not a view the model has.** All three ceiling pieces
+asked for that way came back near-empty. Asked for plainly and treated as
+overhead by the RENDERER, they came back right first time. Overhead is a
+renderer decision, not a prompt.
+
+**A map-object is not a tile.** Every one comes back outlined all the way round,
+so eight in a row read as eight bricks and never as a wall. That cost a
+generation to learn. Things bolted ONTO a wall are what they are good for.
+
+## Open
+
+- Cats, hens, rooster and chick still need walk/peck. Queued as credits allow.
+- The perched crow cannot be animated: `status: review`, generated and paid for
+  and never claimed, and `animate_object` refuses a source that is not
+  `completed`. **Claiming is free.**
+- `public/fonts/rdf-bunker-stencil.ttf` is committed and referenced by nothing.
+  Same pattern: made, never picked up.
+- The level exit (blast door / lift) is art-complete and engine-absent.
+- Per-map enemy rosters for the base — the farm cast currently spawns in a
+  bunker. That is Tier 4 and the owner has said balance is a joint session.
+
+---
+
 # Session 17 — the flash, the roster, and what a dollar buys
 
 Overnight, unsupervised, with the owner's approval to spend and to add systems.
