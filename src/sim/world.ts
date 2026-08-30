@@ -495,6 +495,7 @@ export class World {
       }
 
       if (e.flash > 0) e.flash -= dt
+      if (e.flashLock > 0) e.flashLock -= dt
       if (e.touchCd > 0) e.touchCd -= dt
       /*
          Advance the attack pose, and end it.
@@ -1675,6 +1676,7 @@ export class World {
     e.behaviour = def.behaviour
     e.elite = elite
     e.flash = 0
+    e.flashLock = 0
     e.stun = 0
     e.facing = 0
     e.t0 = 0
@@ -1799,9 +1801,23 @@ export class World {
     )
 
     e.hp -= dmg
-    e.flash = C.hitFlashSeconds
     this.damageDealt += dmg
     if (!fromDot) {
+      // The white flash is a HIT report, so damage-over-time must not raise it:
+      // a burn ticks several times a second per enemy and would hold the sprite
+      // white permanently. Same reasoning as the spark rate limit below, which
+      // was already here -- the flash was simply missed when that was written.
+      //
+      // The refractory is the other half. Even direct hits arrive faster than
+      // 60ms once a build is up, so re-arming on every one made the flash a
+      // solid fill rather than a blink. Locking it for a beat afterwards caps
+      // the duty cycle, so a crowd reads as sprites being hit instead of as a
+      // wall of white.
+      if (e.flashLock <= 0) {
+        e.flash = C.hitFlashSeconds
+        e.flashLock = C.hitFlashSeconds + C.hitFlashRefractorySeconds
+      }
+
       this.addDamageNumber(e.x, e.y - e.radius, dmg, isCrit)
       this.bleed(e.x, e.y, isCrit ? 5 : 3)
 

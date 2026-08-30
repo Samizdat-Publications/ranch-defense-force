@@ -31,6 +31,15 @@ export interface Enemy {
   elite: boolean
   /** Seconds of white flash left. */
   flash: number
+  /**
+   * Seconds until this enemy may flash again.
+   *
+   * Without it the flash is not a flash. It was re-armed on every hit, and at
+   * late-wave fire rates an enemy is hit more often than once per 60ms, so it
+   * never expired -- wave 15 rendered most of the crowd as solid white
+   * silhouettes and the wave-12 boss was invisible for the whole fight.
+   */
+  flashLock: number
   /** Seconds of stun left; steering is skipped while > 0. */
   stun: number
   /** Facing, radians. Drives the lean transform later. */
@@ -101,7 +110,7 @@ export function makeEnemy(): Enemy {
   return {
     active: false, typeId: '', x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0,
     kx: 0, ky: 0, hp: 1, maxHp: 1, speed: 0, damage: 0, radius: 10, xp: 1,
-    behaviour: 'chase', elite: false, flash: 0, stun: 0, facing: 0,
+    behaviour: 'chase', elite: false, flash: 0, flashLock: 0, stun: 0, facing: 0,
     t0: 0, t1: 0, s0: 0, s1: 0, touchCd: 0, knockbackImmune: false, attackT: 0,
     dying: 0, hpBuffPct: 0, anim: 0, travelled: 0,
     burnDps: 0, burnLife: 0, burnAcc: 0, burnGen: 0,

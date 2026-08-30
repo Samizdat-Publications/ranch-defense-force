@@ -20,6 +20,8 @@
   "knockbackDecay": 8,
   "hitstopSecondsOnCrit": 0.04,
   "hitFlashSeconds": 0.06,
+  "hitFlashRefractorySeconds": 0.16,
+  "_hitFlashNote": "The flash is 60ms as the spec asks, but 60ms only reads as a blink if it is allowed to end. It was re-armed on every hit INCLUDING damage-over-time ticks, so at late-wave fire rates it never expired: wave 15 with 266 enemies rendered most of the crowd as solid white silhouettes and the wave-12 boss could not be seen at all while being fought. DoT no longer flashes, and the refractory caps the duty cycle at 60/(60+160) = 27%, so a hit reads as a blink against the sprite rather than replacing it. Raise the refractory if a crowd still washes out; lower it if single hits stop registering.",
   "deathSpinSeconds": 0.2,
   "attackClipSeconds": 0.6
  },
@@ -46,10 +48,10 @@
   "enemies": 800,
   "projectiles": 1200,
   "pickups": 1500,
-  "damageNumbers": 64,
-  "particles": 900,
-  "hazards": 64,
-  "props": 120,
+  "damageNumbers": 256,
+  "particles": 2400,
+  "hazards": 192,
+  "props": 320,
   "effects": 256
  },
  "fx": {
