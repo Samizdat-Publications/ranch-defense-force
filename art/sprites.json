@@ -971,6 +971,10 @@
       "slug": "rearing_up_and_stamping_down",
       "frames": 9
      },
+     "hit": {
+      "slug": "reeling_backward_from_a_blow_head_snapping_back",
+      "frames": 7
+     },
      "death": {
       "slug": "stumbling_and_collapsing_onto_its_side_going_stil",
       "frames": 9

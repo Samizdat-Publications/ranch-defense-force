@@ -393,9 +393,16 @@ Measured session 18, across three objects animated with `animate_object`
 
 | object | clip | directions returned |
 |---|---|---|
+| `donkey_cursed` | hit | 8 of 8 |
 | `infected_hen_rotten` | hit | 7 of 8 |
-| `arabian_cursed` | hit | **5 of 8** |
+| `draft_mule_cursed` | hit | 7 of 8 |
+| `arabian_cursed` | hit | 5 of 8 |
+| `fjord_pony_cursed2` | hit | **3 of 8** |
 | `barn_dog_cursed2` | walk (earlier session) | 4 of 8 |
+
+Across six clips the yield ran 8, 7, 7, 5, 4 and 3 of 8 — a mean near **6 of 8**,
+so budget an eight-direction clip at roughly **1.3× its nominal cost** if you
+want all eight, and expect to make a second call to get there.
 
 **The API reports the missing ones as covered.** Asking it to fill the gaps with
 `animation_group_id` alone returns *"group already covers all 8 directions"*,
