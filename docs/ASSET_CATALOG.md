@@ -113,6 +113,27 @@ with nothing to re-register. That is what makes the corruption cut cheap.
 | `farmRooster` | `farmRoosterBlight` | **46px tall** | 26x51 | *static* | the rooster, green-black sickle tail |
 | `chick` | — | **16px tall** | 22x22 | *static* | the yellow chick |
 
+## Ambient loops — the scenes live on these
+
+One-direction props that move on their own. A title screen is carried by the
+things that move without being looked at, and these are the whole point of
+the `sceneClips` block: they use the same keys as everything else, with the
+single direction spelled `down`.
+
+| sheet | clip | draw at | note |
+|---|---|---|---|
+| `windmill` | `spin` (9f) | **100 wide, 366 tall** | blades turning. NOT `ranch.windmill`, which is the static one |
+| `wheat` | `sway` (9f) | ~55 tall | a stand swaying in the breeze |
+| `scarecrow` | `sway` (9f) | ~90 tall | shifting and sagging in the wind |
+
+```ts
+groundActor('windmill', 'spin', 'down', x, footY, 366, '1.4s')
+```
+
+**Watch the name collision.** `ranch.windmill` and `ranch.scarecrow` are the
+STILL versions and they are what a scene gets if it asks for the `ranch.`
+key. The moving ones have no prefix.
+
 ## Everything that can move
 
 Every sheet with a multi-frame clip. `clipActor(sheet, clip, dir, ...)`.
