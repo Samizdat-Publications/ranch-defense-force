@@ -1674,9 +1674,13 @@
       "ranch.gateOpen": "gateOpen.png",
       "ranch.fenceBroken": "fenceBroken.png",
       "ranch.doghouse": "doghouse.png",
-      "ranch.barnLantern": "barnLantern.png"
+      "ranch.barnLantern": "barnLantern.png",
+      "ranch.stallFront": "stallFront.png",
+      "ranch.stallDivider": "stallDivider.png",
+      "ranch.loftEdge": "loftEdge.png"
     },
-    "_fenceNote": "`ranch.fencePost` measures 22x15 of actual content -- it is a squat STUB, not a post, and stretching it to post height is forcing a sprite to be something it is not. Claude Design found this by measuring the alpha box when its pens kept losing their corners. `ranch.fenceCornerPost` is the real tall post; `ranch.fenceRun` is a three-panel run drawn receding, which is what a pen side actually wants; `gateOpen`/`gateClosed` are a pair."
+    "_fenceNote": "`ranch.fencePost` measures 22x15 of actual content -- it is a squat STUB, not a post, and stretching it to post height is forcing a sprite to be something it is not. Claude Design found this by measuring the alpha box when its pens kept losing their corners. `ranch.fenceCornerPost` is the real tall post; `ranch.fenceRun` is a three-panel run drawn receding, which is what a pen side actually wants; `gateOpen`/`gateClosed` are a pair.",
+    "_verticalFenceNote": "THERE IS NO RECEDING FENCE SPRITE AND THERE IS NOT GOING TO BE. Three attempts at 'a fence running away from the viewer', in three different phrasings -- as a viewpoint, as a perspective, and as a pure shape ('three posts stacked with two rails between') -- all returned a single tall post. It is the same failure as 'seen from below' on the ceiling pieces: the generator draws OBJECTS and does not take instruction about the angle you are looking at one from.\nThe answer is compositional and it is what pixel games actually do: build a vertical pen side by REPEATING `ranch.fenceCornerPost` down the screen at a fixed spacing, with the gap between posts reading as the rail at this scale -- or drop `ranch.fenceRail` between each pair if the run is close to camera. `ranch.fenceRun` stays the horizontal answer."
   },
   "base": {
     "_note": "The military base under the farm -- see docs/SUBTERRANEAN.md. Blast doors with stencilled SECTOR numbering, lift cage gates with floor indicator dials, and specimen containment tanks.",
