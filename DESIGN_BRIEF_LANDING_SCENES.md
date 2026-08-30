@@ -95,6 +95,67 @@ than any other single change.
 
 ---
 
+## Making the title screen breathtaking
+
+The owner's ask, in his words: *"I want the loading page to be really animated
+and breathtaking as it sets the whole tone."*
+
+Most of what does that is **not art**. It is layering, light, and timing, and
+all three are yours. Ranked by effect per unit of work:
+
+**1. Parallax, four or five layers.** The single biggest change available. Sky
+and cloud band, far treeline, the buildings, the paddock, then a foreground
+strip. Drift them at different speeds — a few pixels a second of differential is
+plenty — and a flat collage becomes a place with depth. Nothing else on this
+list comes close.
+
+**2. A foreground strip.** Dark grass and a fence post at the very front, low
+contrast, partly cropped by the frame. It costs one row of sprites and it is
+what tells the eye there is space between it and the barn.
+
+**3. One light pass over everything.** A single time-of-day gradient across the
+whole scene, plus warm rim light on the faces turned toward the sun. As an
+overlay, not as per-sprite art. It is what makes a set of separately generated
+sprites read as one photograph instead of a sticker sheet.
+
+**4. Rare events beat constant motion.** A flock crossing the sky once every
+half minute is worth more than ten things looping every second. Constant motion
+becomes wallpaper in about four seconds; something that happens *occasionally*
+keeps the eye moving and makes the scene feel observed rather than played.
+
+**5. Animals that sometimes walk.** Not a permanent walk loop — idle, then a few
+paces, then idle again, at randomised intervals, each animal on its own clock.
+An animal looping forever is animated; an animal that stops is alive. Walk
+cycles are being generated for the whole cast now, and `groundActor` +
+`travelling` already do the moving part.
+
+**6. Dust motes, pollen, drifting ash.** Pure code, parallaxed with the layers.
+Cheap and enormously effective in the low sun.
+
+### The turn — why the black bar didn't work
+
+A ten-second bar sliding over the sun reads as a transition effect. The turn
+should read as *a thing happening to a place*. The mechanism is **staggering**:
+
+- everything changing at once reads as a filter
+- one thing at a time reads as a spread
+
+So: the sky gradient goes first, sunset to bruised purple, slowly. The rim light
+cools. Then the farmhouse windows light **one at a time**, a few hundred
+milliseconds apart. Ground fog rises. Then the animals cross-fade to their
+blighted twins — **staggered**, nearest first, two hundred milliseconds each,
+so it travels across the frame like something passing through. The windmill
+slows and stops. A shutter bangs somewhere off-screen.
+
+Every blighted twin is a *state* of the same object — same pose, same canvas, so
+`x.idle.down.0` cross-fades to `xBlight.idle.down.0` with nothing to
+re-register. That is what makes the staggered version cheap.
+
+Eight to twelve seconds. The pause before the last thing turns is worth more
+than any single effect in it.
+
+---
+
 ## Read these first, in this order
 
 | file | why |
