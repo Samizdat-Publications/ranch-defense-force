@@ -13,6 +13,7 @@ import { writeFileSync } from 'node:fs'
 import { WorldPainter, encodePng } from './draw-world.ts'
 import { World } from '../src/sim/world.ts'
 import { OfferPool, type Offer } from '../src/sim/offers.ts'
+import { TUNING } from '../src/content/index.ts'
 
 const STEP = 1 / 60
 const VIEW_W = 520
@@ -22,6 +23,14 @@ const ticks = Number(process.argv[2] ?? 1500)
 const out = process.argv[3] ?? 'tools/shot.png'
 const seed = Number(process.argv[4] ?? 20260811)
 const classId = process.argv[5] ?? 'hand'
+/**
+ * `--hit` arms every live enemy's recoil just before the draw.
+ *
+ * The clip is 0.22s inside a 25-minute run, so catching one by chance takes
+ * dozens of screenshots. This is the only practical way to LOOK at the recoil
+ * state, and looking is how this repo verifies rendering.
+ */
+const forceHit = process.argv.includes('--hit')
 
 const world = new World(seed, classId)
 const offers = new OfferPool(world.rng)
@@ -42,6 +51,19 @@ for (let i = 0; i < ticks; i++) {
     }
     pending--
   }
+}
+
+if (forceHit) {
+  let n = 0
+  for (let i = 0; i < world.enemies.live; i++) {
+    const e = world.enemies.items[i]
+    if (e.dying > 0) continue
+    // Mid-clip rather than the first frame: frame 0 of a recoil is the idle
+    // pose, so arming it fully would produce a shot that looks like nothing.
+    e.hitT = (TUNING.combat.hitClipSeconds as number) * 0.45
+    n++
+  }
+  console.log(`--hit: armed ${n} recoils`)
 }
 
 const painter = new WorldPainter(VIEW_W, VIEW_H)

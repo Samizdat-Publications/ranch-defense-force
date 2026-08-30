@@ -438,7 +438,7 @@ describe('hit reactions and the injured state', () => {
   it('the injured threshold is a fraction, and the clip length is positive', () => {
     // Both are render-only — neither changes damage, speed, or any decision the
     // sim makes — so this guards a typo rather than a balance choice.
-    const c = TUNING.combat as Record<string, number>
+    const c = TUNING.combat as unknown as Record<string, number>
     expect(c.hitClipSeconds).toBeGreaterThan(0)
     expect(c.hitClipSeconds).toBeLessThan(1)
     expect(c.injuredBelowPct).toBeGreaterThan(0)

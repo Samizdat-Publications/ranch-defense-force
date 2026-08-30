@@ -824,6 +824,10 @@
       "slug": "flaring_its_wings_and_lashing_out_with_its_spurs",
       "frames": 9
      },
+     "hit": {
+      "slug": "reeling_backward_from_a_blow_head_snapping_back",
+      "frames": 7
+     },
      "death": {
       "slug": "toppling_sideways_in_a_spray_of_feathers_and_going",
       "frames": 9
@@ -845,6 +849,15 @@
      "death": {
       "slug": "collapsing_forward_and_rolling_onto_its_side_goin",
       "frames": 9
+     },
+     "hit": {
+      "slug": "reeling_backward_from_a_blow_head_snapping_back",
+      "frames": 7,
+      "dirs": [
+       "south",
+       "north-east",
+       "south-east"
+      ]
      },
      "walk": {
       "slug": "walking_with_a_laboured_stagger",
@@ -881,6 +894,10 @@
      "attack": {
       "slug": "lowering_its_head_and_charging_forward_horns_firs",
       "frames": 9
+     },
+     "hit": {
+      "slug": "reeling_backward_from_a_blow_head_snapping_back",
+      "frames": 7
      },
      "walk": {
       "slug": "walking_with_a_heavy_dragging_stagger_head_swingi",
