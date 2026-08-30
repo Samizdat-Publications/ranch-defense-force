@@ -185,3 +185,98 @@ export function frameOf(name: string): { w: number; h: number } | null {
   const f = atlas?.get(name)
   return f ? { w: f.w, h: f.h } : null
 }
+
+/* -------------------------------------------------------- scenes, not cards */
+
+/**
+ * A sprite for a SCENE, drawn at an exact height and standing on the ground.
+ *
+ * `spriteEl` is for cards and it is right for cards: it snaps to whole-pixel
+ * zoom, because a 20px gun at 1.7x is a blurry gun. In a scene that same rule
+ * is the bug. Every animal in this game is authored on the 32x64 grid -- a cat
+ * is 16x42, a bulldog 29x42, a pony 25x53, a grown man 30x52 -- so integer zoom
+ * pins them ALL to zoom 1 and they all render at roughly the same fifty pixels
+ * however big a `box` the caller asks for. `spriteEl('joy', 40)` and
+ * `spriteEl('fjordPony', 96)` come back 40 and 53 pixels tall. That is the
+ * bulldog the size of a pony on the first title screens, and no amount of
+ * choosing better numbers fixes it, because the numbers were being ignored.
+ *
+ * So this scales to hit `height` EXACTLY, fractional zoom included. Nearest-
+ * neighbour keeps it crisp (`image-rendering: pixelated`), and a scene is
+ * composited once at a fixed size rather than scrolled past a moving camera,
+ * so the half-pixel seams the game camera would show never appear.
+ *
+ * Use the `draw at` column in docs/ASSET_CATALOG.md for the height. It is
+ * derived against one reference -- a grown person is 64px tall -- so passing
+ * those numbers makes a scene compose itself.
+ */
+export function sceneSprite(
+  name: string,
+  height: number,
+  opts: { shadow?: boolean; flip?: boolean; facing?: string } = {},
+): HTMLElement | null {
+  if (!atlas) return null
+  const key = opts.facing ? `${name}.idle.${opts.facing}.0` : name
+  const f = atlas.get(key) ?? atlas.get(name)
+  if (!f) return null
+
+  const scale = height / f.h
+  const sprite = document.createElement('div')
+  sprite.className = 'scene-sprite'
+  sprite.style.width = `${f.w * scale}px`
+  sprite.style.height = `${height}px`
+  sprite.style.backgroundImage = `url('${atlasUrl}')`
+  sprite.style.backgroundPosition = `${-f.x * scale}px ${-f.y * scale}px`
+  sprite.style.backgroundSize =
+    `${atlas.image.naturalWidth * scale}px ${atlas.image.naturalHeight * scale}px`
+  sprite.style.imageRendering = 'pixelated'
+  if (opts.flip) sprite.style.transform = 'scaleX(-1)'
+
+  if (opts.shadow === false) return sprite
+  return groundWrap(sprite, f.w * scale)
+}
+
+/**
+ * Put a sprite on the ground.
+ *
+ * A CONTACT SHADOW is the whole difference between a scene and a collage, and
+ * it is one soft ellipse. Without it every sprite reads as pasted on top of the
+ * background at whatever y it happens to sit at -- which is exactly the note
+ * the first title screens got back: *"everything is in the air."* The eye reads
+ * ground contact from the shadow before it reads anything else, and no amount
+ * of correct placement substitutes for it.
+ *
+ * Deliberately an ellipse and not art. It costs nothing, it scales with the
+ * sprite, it tints with the scene's light, and a generated shadow sprite would
+ * have to be redrawn for every silhouette.
+ *
+ * The wrapper anchors its child at the BOTTOM, so a caller positions by the
+ * feet. That is the other half of grounding: `top` on a sprite puts its head
+ * somewhere, and where the head goes tells you nothing about where it stands.
+ */
+export function groundWrap(sprite: HTMLElement, width: number): HTMLElement {
+  const wrap = document.createElement('div')
+  wrap.className = 'scene-grounded'
+  wrap.style.position = 'relative'
+  wrap.style.display = 'flex'
+  wrap.style.flexDirection = 'column'
+  wrap.style.alignItems = 'center'
+  wrap.style.justifyContent = 'flex-end'
+
+  const shadow = document.createElement('div')
+  shadow.className = 'scene-shadow'
+  shadow.style.position = 'absolute'
+  // Slightly narrower than the sprite and sitting a touch high, which is what a
+  // shadow under a standing animal actually looks like from this camera.
+  shadow.style.width = `${Math.round(width * 0.72)}px`
+  shadow.style.height = `${Math.max(3, Math.round(width * 0.2))}px`
+  shadow.style.left = '50%'
+  shadow.style.bottom = '-2px'
+  shadow.style.transform = 'translateX(-50%)'
+  shadow.style.borderRadius = '50%'
+  shadow.style.background = 'radial-gradient(ellipse at center, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.22) 55%, rgba(0,0,0,0) 78%)'
+  shadow.style.pointerEvents = 'none'
+
+  wrap.append(shadow, sprite)
+  return wrap
+}

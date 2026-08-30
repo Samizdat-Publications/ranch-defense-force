@@ -42,7 +42,10 @@
  * left and eighteen high of where it belongs, and so did every other prop.
  */
 import { el } from './dom'
-import { spriteEl, spriteTileUrl, frameOf, stripUrl, clipsOf } from './sprite'
+import { spriteEl, spriteTileUrl, frameOf, stripUrl, clipsOf, groundWrap } from './sprite'
+// Re-exported so a scene has one place to import from. `sceneSprite` is the
+// STILL counterpart of `groundActor` below: exact height, feet on the ground.
+export { sceneSprite } from './sprite'
 
 export type SceneKind = 'yard' | 'field'
 
@@ -199,6 +202,51 @@ function clipActor(
     `--strip-w:${sheetW}px;image-rendering:pixelated;` +
     `animation:y-strip ${dur} steps(${strip.frames}) infinite${delay ? ` ${delay}` : ''}`
   return d
+}
+
+/**
+ * An animated actor, at an exact height, standing on the ground.
+ *
+ * This is `clipActor` with the two things a SCENE needs and a card does not.
+ *
+ * **It positions by the FEET.** `clipActor` takes a `top`, which puts the
+ * sprite's head somewhere and tells you nothing about where it stands. `footY`
+ * is the ground line the animal is standing on, which is the only y a scene
+ * actually cares about -- and in a low top-down scene it is also the depth, so
+ * sorting by `footY` sorts back-to-front for free.
+ *
+ * **It scales to `height` exactly, fractional zoom included.** `clipActor`'s
+ * integer `zoom` cannot hit a target size, and every animal here is authored on
+ * the same 32x64 grid, so integer zoom renders a cat and a mule at the same
+ * fifty pixels. See `sceneSprite` in ui/sprite.ts for the long version; the
+ * heights to pass are the `draw at` column in docs/ASSET_CATALOG.md.
+ *
+ * And it gets a contact shadow, because *"everything is in the air"* was the
+ * note the first title screens came back with, and one soft ellipse is the
+ * entire fix.
+ */
+export function groundActor(
+  sheet: string, clip: string, dir: string,
+  x: number, footY: number, height: number, dur: string, delay?: string,
+): HTMLElement | null {
+  const strip = stripUrl(sheet, clip, dir)
+  if (!strip) return null
+  const scale = height / strip.cell
+  const w = strip.cell * scale
+  const sheetW = w * strip.frames
+  const d = document.createElement('div')
+  d.style.cssText =
+    `width:${w}px;height:${w}px;background-image:url('${strip.url}');` +
+    `background-size:${sheetW}px ${w}px;background-repeat:no-repeat;` +
+    `--strip-w:${sheetW}px;image-rendering:pixelated;` +
+    `animation:y-strip ${dur} steps(${strip.frames}) infinite${delay ? ` ${delay}` : ''}`
+  const wrap = groundWrap(d, w)
+  wrap.style.position = 'absolute'
+  wrap.style.left = `${Math.round(x - w / 2)}px`
+  wrap.style.top = `${Math.round(footY - w)}px`
+  // Depth IS the ground line in a scene like this, so sorting is free.
+  wrap.style.zIndex = String(Math.round(footY))
+  return wrap
 }
 
 /** A travelling wrapper: where an actor starts, and the path it walks. */

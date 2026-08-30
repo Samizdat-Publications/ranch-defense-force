@@ -63,6 +63,73 @@ const CAST: [string, string][] = [
   ['chick', 'the yellow chick'],
 ]
 
+/**
+ * WHAT SIZE TO DRAW IT AT. This table is the most useful thing in this file.
+ *
+ * THE SOURCE ART IS NOT TO SCALE, and nothing about the atlas says so. Every
+ * animal is authored on the game's 32x64 grid because in the game every entity
+ * IS a grid cell -- so `wiz` (a cat) is 16x42, `brahmaHen` is 26x43, `joy` (a
+ * bulldog) is 29x42, `blackMule` is 28x63 and `hand` (a grown man) is 30x52.
+ * Five things within a few pixels of each other that are nothing like the same
+ * size in life. Drawn at 1:1 in a scene they make a lineup of identical
+ * silhouettes, and that is exactly what the first title screens came out as: a
+ * bulldog the size of a pony and hens the size of cats.
+ *
+ * The buildings are on a THIRD scale with no relation to either family:
+ * `ranch.barn` is 400px wide, `ranch.coop` 128 and `ranch.windmill` 128 -- a
+ * chicken coop drawn at a third of a barn, and a windmill drawn the same as the
+ * coop when it should be taller than the barn is wide.
+ *
+ * So the numbers below are NOT canvas sizes. They are derived from what the
+ * thing actually is, against one stated reference:
+ *
+ *     A GROWN PERSON IS 64 PIXELS TALL.  =>  36.6 px per metre.
+ *
+ * A barn is about 12m wide, so 440. A round bale is 1.5m, so 55. A cat is
+ * about 25cm at the shoulder, which would be 9px and unreadable, so the small
+ * animals are deliberately drawn ABOVE life scale -- readability wins over
+ * arithmetic, and the numbers here are the stylised ones to actually use.
+ * What matters is that they are CONSISTENT: a hen is smaller than a dog is
+ * smaller than a pony is smaller than a barn, always, in every scene.
+ *
+ * Pass the number to `spriteEl(key, size)`. For the cast it is a HEIGHT; for
+ * buildings and vehicles, whichever dimension the entry names.
+ */
+const SCENE_SCALE: Record<string, number> = {
+  // --- the cast, by height ---------------------------------------------
+  arabian: 104, blackMule: 100, beigeMule: 100, fjordPony: 96, rosie: 76,
+  farmRooster: 46, joy: 40, brahmaHen: 40, buffHen: 40, leghornHen: 36,
+  wiz: 36, ouiji: 36, tabbyCat: 36, siameseCat: 36,
+  beardedHen: 34, barredHen: 34, polishHen: 34, silkieHen: 30,
+  bantamHen: 26, chick: 16,
+  // The playable classes, and the reference every other number is against.
+  hand: 64, vet: 64, widow: 64, drifter: 64, kid: 64, agronomist: 64,
+  // --- buildings and vehicles, by WIDTH unless noted --------------------
+  'ranch.barn': 440,
+  'ranch.farmhouse': 330,
+  'ranch.bunkhouse': 256,
+  'ranch.biplane': 293,
+  'ranch.silo': 146,        // ...and ~440 TALL. A silo is as tall as a barn is wide.
+  'ranch.windmill': 100,    // ...and ~366 TALL. Taller than the barn. Never draw it square.
+  'ranch.tractor': 146,
+  'ranch.tractorRed': 128,
+  'ranch.hayWagon': 146,
+  'ranch.coop': 92,
+  'ranch.coopBroken': 80,
+  'ranch.waterTrough': 73,
+  'ranch.fenceRail': 73,
+  'ranch.fenceRailBroken': 73,
+  'ranch.well': 55,
+  'ranch.wellStone': 55,
+  'ranch.roundBale': 55,
+  'ranch.roundBaleRotted': 55,
+  'ranch.squareBales': 37,
+  'ranch.feedBin': 37,
+  'ranch.fencePost': 20,
+  'ranch.fenceCorner': 20,
+  'ranch.feedBucket': 13,
+}
+
 /** Frame keys grouped by their dotted prefix. */
 const byPrefix = new Map<string, string[]>()
 for (const k of keys) {
@@ -150,13 +217,67 @@ L.push('account holds and answers *"have we already generated this?"*. **This on
 L.push('what is packed and drawable**, and answers *"what can I put on screen?"* — a')
 L.push('uuid is not an atlas key, and a scene can only draw atlas keys.')
 L.push('')
-L.push('## How to draw one')
+L.push('## READ THIS FIRST — the art is not to scale')
+L.push('')
+L.push('**Never draw a sprite at its source size.** Every animal is authored on the')
+L.push("game's 32x64 grid, because in the game every entity IS a grid cell. So:")
+L.push('')
+L.push('| | source | | source |')
+L.push('|---|---|---|---|')
+L.push('| `wiz` — a cat | 16x42 | `hand` — a grown man | 30x52 |')
+L.push('| `brahmaHen` — a hen | 26x43 | `blackMule` — a mule | 28x63 |')
+L.push('| `joy` — a bulldog | 29x42 | `fjordPony` — a pony | 25x53 |')
+L.push('')
+L.push('Six things within a few pixels of each other that are nothing like the same')
+L.push('size in life. Drawn 1:1 they are a row of identical silhouettes — which is')
+L.push('exactly what the first title screens came out as, with a bulldog the size of')
+L.push('a pony. The buildings are on a THIRD scale again: `ranch.barn` is 400px wide')
+L.push('and `ranch.windmill` 128, when a windmill is taller than a barn is wide.')
+L.push('')
+L.push('So **every table below has a `draw at` column**, derived from what the thing')
+L.push('actually is against one reference:')
+L.push('')
+L.push('> **A grown person is 64px tall.** That is 36.6px per metre.')
+L.push('')
+L.push('Small animals sit deliberately above life scale — a cat at true scale is 9px')
+L.push('and unreadable — but the ORDER is always right: hen < dog < pony < barn. Use')
+L.push('the `draw at` number and the scene composes itself.')
+L.push('')
+L.push('Two that are not square and are usually drawn wrong:')
+L.push('')
+L.push('- `ranch.silo` — **146 wide, 440 tall.** As tall as the barn is wide.')
+L.push('- `ranch.windmill` — **100 wide, 366 tall.** Taller than the barn. Never square.')
+L.push('')
+L.push('## How to draw one — USE THESE TWO, not `spriteEl`')
 L.push('')
 L.push('```ts')
-L.push("spriteEl('scene.barn', 400)                    // key, box size")
-L.push("spriteEl('rosie.idle.downRight', 96)           // any sheet, any facing")
-L.push("clipActor('brahmaHen', 'peck', 'down', x, y, '1.4s', 2)   // ANIMATED")
+L.push("sceneSprite('ranch.barn', 440)                        // exact height, on the ground")
+L.push("sceneSprite('rosie', 76, { facing: 'downRight' })     // any of the eight facings")
+L.push("groundActor('fjordPony', 'walk', 'left', x, footY, 96, '1.1s')   // ANIMATED")
 L.push('```')
+L.push('')
+L.push('`sceneSprite` and `groundActor` (both from `src/ui/scene.ts`) do two things')
+L.push('`spriteEl` and `clipActor` deliberately do not, and both were bugs in the')
+L.push('first title screens:')
+L.push('')
+L.push('**1. They hit the height you ask for.** `spriteEl` snaps to whole-pixel zoom,')
+L.push('which is right for a card and wrong here: every animal is authored on the')
+L.push('32x64 grid, so integer zoom pins them all to 1x and they all render at about')
+L.push('fifty pixels *whatever box you pass*. `spriteEl(\'joy\', 40)` and')
+L.push("`spriteEl('fjordPony', 96)` come back 40px and 53px tall — a bulldog nearly")
+L.push('as tall as a pony, and no better numbers fix it because the numbers were')
+L.push('being ignored. `sceneSprite` scales fractionally and hits the number exactly.')
+L.push('')
+L.push('**2. They put things on the ground.** Every sprite gets a soft contact')
+L.push('shadow, and `groundActor` positions by the FEET (`footY`), not the top.')
+L.push('*"Everything is in the air"* was the note the first screens came back with,')
+L.push('and one ellipse is the whole fix — the eye reads ground contact from the')
+L.push('shadow before it reads placement. `footY` is also the depth in a scene like')
+L.push('this, so `groundActor` sets `z-index` from it and back-to-front sorting is')
+L.push('free.')
+L.push('')
+L.push('`spriteEl` and `clipActor` are still correct for CARDS, where every sprite')
+L.push('sits in its own fixed window and pixel purity is what matters.')
 L.push('')
 L.push('`clipActor` composes the strip at runtime from frames already in the atlas,')
 L.push('so any clip listed below can be animated with no new art and no atlas growth.')
@@ -178,15 +299,16 @@ L.push('twin is provably the same animal gone wrong — same pose, same size, sa
 L.push('canvas. A cross-fade between `x.idle.down.0` and `xBlight.idle.down.0` lands')
 L.push('with nothing to re-register. That is what makes the corruption cut cheap.')
 L.push('')
-L.push('| clean | blighted | animated clips | who |')
-L.push('|---|---|---|---|')
+L.push('| clean | blighted | **draw at** | source | animated clips | who |')
+L.push('|---|---|---|---|---|---|')
 for (const [id, who] of CAST) {
   const clips = clipsFor(id)
   const moving = clips
     ? Object.entries(clips).filter(([, n]) => n > 1).map(([c, n]) => `${c} (${n}f)`).join(', ')
     : ''
   const twin = atlas.frames[`${id}Blight.idle.down.0`] ? `\`${id}Blight\`` : '—'
-  L.push(`| \`${id}\` | ${twin} | ${moving || '*static*'} | ${who} |`)
+  const draw = SCENE_SCALE[id] ? `**${SCENE_SCALE[id]}px tall**` : '—'
+  L.push(`| \`${id}\` | ${twin} | ${draw} | ${sizeOf(`${id}.idle.down.0`)} | ${moving || '*static*'} | ${who} |`)
 }
 L.push('')
 
@@ -227,9 +349,12 @@ for (const [prefix, title, img] of groups) {
   L.push('')
   L.push(`![${prefix}](catalog/${img}.png)`)
   L.push('')
-  L.push('| key | size |')
-  L.push('|---|---|')
-  for (const k of list) L.push(`| \`${k}\` | ${sizeOf(k)} |`)
+  L.push('| key | source | **draw at** |')
+  L.push('|---|---|---|')
+  for (const k of list) {
+    const draw = SCENE_SCALE[k] ? `**${SCENE_SCALE[k]}px**` : ''
+    L.push(`| \`${k}\` | ${sizeOf(k)} | ${draw} |`)
+  }
   L.push('')
 }
 
