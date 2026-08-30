@@ -81,7 +81,28 @@ Done already: `hit` on infectedHen, feralDog, arabianCursed.
 **Do this tier first.** It is the visible half — these are the enemies that fill
 a late wave, and the recoil is what makes a hit read as a hit.
 
-### Tier 2 — the humanoid enemies ($1.66, ~80 min serial)
+### Tier 2 — the humanoid enemies — **PIPELINE UNBLOCKED, 3 of 5 done**
+
+`farmhand`, `acidZombie` and `bloatedFarmhand` now carry idle / walk / hit /
+death. `maskedHauler` and `maskedSprayer` remain.
+
+**The blocker was tooling, not budget.** `tools/pixellab-character.ts` looked for
+one hardcoded animation folder called `walk`, so hit and death art for these five
+could be generated and would never be cut — the pipeline appeared to work and
+produced nothing. It scans now, reads frame counts per clip, and prints the
+manifest block so the template lengths are never hand-typed.
+
+**Template presets are far cheaper than the animal path.** `taking-punch` and
+`falling-back-death` cost 1 generation per direction, and the humanoid rig is
+four-way rather than eight — so a humanoid state runs about a SIXTH of an animal
+one. Actual spend for three humanoids, six clips: well under $0.20.
+
+Frame counts come back at the template's own length — taking-punch 6,
+falling-back-death 7, walk 8 — NOT a uniform 9. `pixellabStrips` slices a strip
+by the manifest number, and a wrong one does not error: it slices at the wrong
+width and the animation slides instead of stepping.
+
+### Tier 2 — as originally planned ($1.66, ~80 min serial)
 
 acidZombie, bloatedFarmhand, farmhand, maskedHauler, maskedSprayer. These are
 PixelLab **characters**, not objects, so they need `animate_character` — and
@@ -142,6 +163,18 @@ chickens peck, the rooster crows. Done: brahmaHen, fjordPony, arabian, rosie,
 joy. Seventeen animals remain at three directions each.
 
 Not needed for gameplay at all. It is what stops the yard being a diorama.
+
+## Actual spend, measured
+
+| tier | planned | actual | note |
+|---|---|---|---|
+| 1 — animal hit + injured | $1.41 | **~$1.90** | the 1.3x direction-loss multiplier |
+| 2 — humanoids (3 of 5) | $1.00 | **<$0.20** | template presets, four-way rig |
+
+The two numbers move in opposite directions and both are worth carrying
+forward: **animal states cost more than they look** because v3 loses directions
+and you pay to refill, and **humanoid states cost far less than they look**
+because templates are 1 gen/direction on a four-way rig.
 
 ## Running total
 
