@@ -91,6 +91,21 @@ canvas-constraint trick is what works, not words about camera angle. The old
 
 ---
 
+## The LimeZu credit — audited, and my count was wrong
+
+I said "64 LimeZu `scene.*` keys" from a `grep -c`. Claude Design audited it
+properly: **44 keys** (25 `scene` + 19 `sceneStrips`), 36 replaceable, **8 still
+blocking**. Six of the eight are the pen's cow, calf and sheep.
+
+Two corrections worth carrying:
+
+- **Never sweep by prefix.** `scene.oak` and `scene.rooster` are already
+  GENERATED art sitting under the `scene.` prefix. Counting the prefix counts
+  them as LimeZu and they are not.
+- **Retiring beats regenerating** for the six pen animals — the owner's real
+  farm has no cow, calf or sheep, so they are set dressing nobody asked for.
+  Cutting them from the scene clears six of the eight blockers for free.
+
 ## The LimeZu credit
 
 It is a **licence requirement**, not a preference: `CLAUDE.md` records that the
