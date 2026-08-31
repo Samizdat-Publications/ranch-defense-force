@@ -44,21 +44,27 @@ rank / scatter / stack. Barn kit. Bunker fittings.
 
 ## What is IN FLIGHT and unfinished
 
-- **Lab set for the fourth scene** — containment vat with a specimen, alien in a
-  vat, broken empty vat, control console, exam table with restraints, specimen
-  jar rack. Generating when the session stopped. **They still need: download →
-  `assets/pixellab/vault/` → register in `art/sprites.json` under `vault` →
-  `npm run atlas`.**
-- **Animations on the lab set** — the owner's explicit ask: bubbling vats,
-  flickering consoles. Use `animate_object` on each id, then download the frames
-  to `assets/pixellab/scene-anim/<name>/<clip>/frame_NN.png` and register under
-  `sceneClips` in `art/sprites.json`. That path is already built and working —
-  `windmill.spin`, `wheat.sway`, `scarecrow.sway` all go through it.
-- **Pen reshoot at depth/width 0.20-0.22** on a 400x200 canvas. The current
-  `pen.paddockFlat` is 0.113, which Design measured as too flat; the older
-  lozenge pens are 0.457, too steep.
+- **The vat's scale is a STORY call and it is the owner's.** `vault.vatSpecimen`
+  is drawn at `drawAt` 78, which is 206 tall against a 64px person. Measured:
+  the tube is 58x153 and the silhouette inside it is 36x87, so the figure is 57%
+  of the tube whatever size it is drawn. That gives three readings, and none of
+  them is a bug:
+
+  | `drawAt` | tube | figure | reads as |
+  |---|---|---|---|
+  | **78** (shipped) | 206 | 117 | 1.8x a person — something bigger than human in there |
+  | **43** | 113 | 64 | exactly a person |
+  | **38** (Design's suggestion) | 100 | 57 | slightly under a person |
+
+  43 is the precise version of what Design proposed; 38 undershoots by 7px.
+  Nothing is changed pending the owner — a monumental tank is a legitimate
+  choice and arguably the better story, which is why Design built it at 78 and
+  flagged it rather than fixing it.
 - **`pen.chickenRunFlat` is a known partial failure** — the wire mesh reads as
   interior to the flood, so the quad came back degenerate. Do not use it.
+- **Balance on the base cast has still never been played.** Five enemies, all
+  numbers interpolated. This is the joint-activity item and it is the largest
+  unfinished thing in the project.
 
 ## Object IDs generated late and NOT yet in the ledger
 
@@ -86,6 +92,16 @@ baseBreacher f2c594e5-7369-4975-84ba-a3377352012f
 **Record an object id the moment you generate it.** Deriving a state, a rotation
 or an animation from a finished object needs the id, and it lives only on
 PixelLab's servers.
+
+**But a recorded id is not packed art.** All five base humanoids are listed
+above and only three of them were ever cut into the repo; `baseOperator` and
+`baseBreacher` had spawn weights in two maps and not one packed frame, so both
+would have appeared as coloured rectangles. This ledger says what exists on the
+account. `tests/content.test.ts` says what exists in the game. When they
+disagree, believe the test — it reads the built atlas.
+
+All five are now cut, packed and walking (four cardinals, eight frames,
+`scary-walk`), and all five carry a `drawAt` of 64.
 
 ## Standing constraints
 

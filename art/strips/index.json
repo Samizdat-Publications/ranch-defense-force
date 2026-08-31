@@ -481,6 +481,46 @@
       "frames": 8,
       "file": "baseHazmat.walk.right.png"
     },
+    "baseOperator.walk.down": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseOperator.walk.down.png"
+    },
+    "baseOperator.walk.up": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseOperator.walk.up.png"
+    },
+    "baseOperator.walk.left": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseOperator.walk.left.png"
+    },
+    "baseOperator.walk.right": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseOperator.walk.right.png"
+    },
+    "baseBreacher.walk.down": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseBreacher.walk.down.png"
+    },
+    "baseBreacher.walk.up": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseBreacher.walk.up.png"
+    },
+    "baseBreacher.walk.left": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseBreacher.walk.left.png"
+    },
+    "baseBreacher.walk.right": {
+      "cell": 58,
+      "frames": 8,
+      "file": "baseBreacher.walk.right.png"
+    },
     "feralDog.death.right": {
       "cell": 53,
       "frames": 9,

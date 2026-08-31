@@ -780,6 +780,34 @@
             "frames": 8
           }
         }
+      },
+      "baseOperator": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
+      },
+      "baseBreacher": {
+        "cellWidth": 32,
+        "cellHeight": 64,
+        "clips": {
+          "idle": {
+            "file": "idle_{compass}.png",
+            "frames": 1
+          },
+          "walk": {
+            "file": "walk_{compass}_strip.png",
+            "frames": 8
+          }
+        }
       }
     },
     "_castNote": "The six player classes and the infected farmhand, all generated at size 64 (see docs/ART_STYLE.md \u2014 size is the CANVAS, and the figure fills about 76% of it) and cut by npm run character to a 32x64 cell with feet on y58. Four cardinals only: the renderer buckets facing into four, so the diagonals are generated and deliberately unused.",

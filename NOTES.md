@@ -3090,3 +3090,121 @@ retuned per class, rather than each getting a bespoke one. Abilities dispatch on
 button that silently does nothing. A class with a borrowed ability is fully
 playable; a class with a dead button is worse than no class. Bespoke abilities
 are follow-up work and the dispatch is where they go.
+
+## Two enemies were wired into the game with no art at all
+
+`baseOperator` and `baseBreacher` shipped fully specified — stat blocks in
+`enemies.json`, spawn weights in both sector maps (`1.0`/`1.4` and `1.2`),
+behaviours, `teaches` strings, PixelLab object ids recorded — and neither was
+ever declared in `art/sprites.json`. Neither had one packed frame. Both would
+have walked into the lab as **plain coloured rectangles**: a wave-12 flanker and
+a wave-18 shield tank, drawn as boxes.
+
+Nothing caught it, and the reasons are worth keeping:
+
+- `tests/maps.test.ts` asserts a biased enemy is a *defined* enemy. They were.
+- The renderer degrades a missing frame to `null` and draws the fallback box
+  rather than erroring — the same forgiving path that makes a fresh clone
+  render squares until `npm run atlas` runs.
+- `docs/SESSION_STATE.md` listed both object ids under "generated", which reads
+  as done. **A recorded id means the art exists on PixelLab's servers, not that
+  it exists in this repo.** Those are different claims and the ledger only makes
+  the first.
+
+### `def.sheet` is vestigial and lies
+
+Chasing this down surfaced a second thing. The sim does not read the singular
+`sheet` field in `enemies.json` at all — `world.ts` sets
+`e.sheetId = def.sheets?.[n] ?? typeId`, the plural array or the type id. The
+singular field disagrees with the packed art for six enemies: `farmhand` claims
+`"zombie"`, `feralDog` claims `"dog"`, `sickHog` claims `"pig"`, `maskedSprayer`
+claims `"gas_enemy"`. None of those sheets has a single frame in the atlas, and
+all six of those enemies render perfectly.
+
+It is left in place — it is content, it is harmless to the running game, and
+deleting a field across the roster is a bigger change than this. But it is a
+loaded gun for anyone reasoning about which art an enemy uses, and it fired
+twice in one session: it produced a wrong diagnosis of the missing humanoids and
+then a coverage test that reported eight false positives on its first run. If
+you want to know what sheet an enemy draws, read `world.ts`, not `enemies.json`.
+
+### The fix, and the guard
+
+`baseOperator`'s walk was **already generated** and had been sitting on the
+account unclaimed — four cardinals, eight frames, `scary-walk` — so cutting and
+packing it cost nothing. `baseBreacher` had rotations but no animations; four
+template directions closed it. Measured cost: `generations_used` 4715 → 4719 and
+credits unchanged at **$11.99**. The whole roster gap was essentially free,
+which is the inventory lesson again in a new costume.
+
+`tests/content.test.ts` now asserts that **every enemy any map can roll has
+`idle` and `walk` packed for every direction its sheet declares**, reading the
+built atlas rather than mocking it. Two scoping decisions in it were earned:
+
+- It resolves the sheet the way the sim does. Using `def.sheet` reported six
+  working enemies as broken.
+- It checks `idle` and `walk` only. Everything above them in the renderer's
+  chain — `hit`, `attack`, `walkHurt`, `death` — returns `undefined` when absent
+  and falls through by design, which is what lets the roster gain clips one
+  animal at a time. `humanoidFrame` is the last link and has nothing to fall
+  back to, so those two are the real floor. Checking every clip reported
+  `fjordPonyCursed` and `prizeBull` as broken for partial `walkHurt` rings that
+  are working as intended.
+
+All five underground humanoids now also carry a `drawAt` of 64 — the same
+grown-person height as the six player classes. None of the five had one, so the
+lab scene had no published height for any of its cast.
+
+## The drums were carded, and a card is a scale bug
+
+`vault.drumRank` and `vault.drumScatter` came back with an opaque fill behind
+them. The cosmetic half of that is well documented. The half that was not:
+**100% opaque means the alpha content box is the canvas, so `npm run scale`
+measures the card.** `drumRank` is 253x58 of drums floating in a 300x180 canvas;
+carded, the table published it at 210x126 against a true 210x48 — 2.6x too tall,
+on a number whose entire purpose is to be trusted without re-measuring.
+
+The card is a flat fill touching the border, which means it does not need the
+API. `npm run decard` floods 4-connected from the edge at a colour tolerance and
+removes exactly it — free, offline, deterministic, and repeatable by anyone
+without a key. It refuses rather than guesses when the border region is under
+15% of the canvas, and it reports enclosed pockets of card colour instead of
+cutting them, since a pocket is as likely to be a highlight as a gap. `npm run
+rmbg` stays as the API fallback for a background that is textured or graded, at
+one generation per image.
+
+Checked on both drums by rendering them over magenta and looking: no grey halo,
+outlines and stencilled numbers intact, and the semi-transparent contact shadows
+under `drumScatter` survived. Derived heights afterwards were 210x48 and
+190x115, against 210x49 and 190x115 measured independently by Design — two
+methods agreeing to a pixel, which is the only reason to believe either.
+
+### A red test was pushed and reported as green
+
+`gives every scale entry something real to scale` was failing on this branch
+before any of the above, and the previous session's write-up says "204 tests
+passing". It was not. The failure was introduced the moment the nine ambient
+loops were given `drawAt` entries, and it went out with them.
+
+The test's intent was right; its lookup was one shape short. A scale key can
+point at art in three ways, and it knew two:
+
+| shape | example | packed as |
+|---|---|---|
+| a still | `ranch.barn` | the key IS the frame key |
+| a cast sheet | `fjordPony`, `vet` | `<k>.idle.down.0` |
+| **an ambient loop** | `vatSpecimen`, `wheat` | `<k>.bubble.down.0`, `<k>.sway.down.0` |
+
+An ambient loop has no `idle` — its clip is whatever the loop was named — so all
+nine reported as pointing at nothing while all nine were packed and drawing
+fine. Matching any packed frame under the key's own prefix covers all three.
+
+**Checked that the widened test still fails**, by feeding it `ranch.barnn` and
+`vatSpecimenn`: both are caught. A guard that has been relaxed until it passes
+is worse than no guard, and the only way to know which one you have is to break
+it on purpose.
+
+The lesson is not about the lookup. `npm run scale` prints `not packed,
+skipped: wheat, scarecrow, windmill, labConsole, vatSpecimen, ...` on every
+single run — the exact nine keys, in the exact order the test reports them. The
+tool had been saying so all along and it read as routine.

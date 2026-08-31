@@ -45,7 +45,8 @@
     "pick": "vite-node tools/pick-props.ts --",
     "strips": "vite-node tools/export-strips.ts --",
     "pens": "vite-node tools/measure-pens.ts --",
-    "clips": "vite-node tools/check-clips.ts --"
+    "clips": "vite-node tools/check-clips.ts --",
+    "decard": "vite-node tools/decard.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

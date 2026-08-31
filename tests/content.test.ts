@@ -6,7 +6,7 @@
  * run" — it ran fine, it just looked wrong.
  */
 import { describe, it, expect } from 'vitest'
-import { WEAPONS, ELEMENTS, ITEMS, TUNING, projectileScaleFor } from '../src/content/index'
+import { WEAPONS, ELEMENTS, ITEMS, TUNING, MAPS, ENEMIES, projectileScaleFor } from '../src/content/index'
 
 /**
  * Behaviours that put a travelling object on screen.
@@ -211,6 +211,22 @@ describe('card art', () => {
     expect(at.fjordPony - at.joy).toBeGreaterThan(40)
   })
 
+  /**
+   * A `drawAt` entry must point at art that is actually packed.
+   *
+   * There are THREE shapes a scale key can take and this once knew only two,
+   * so it went red the moment the ambient loops were given draw sizes and
+   * stayed red across a push:
+   *
+   *   `ranch.barn`            a still  -> the key IS the frame key
+   *   `fjordPony`, `vet`      a cast sheet -> `<k>.idle.down.0`
+   *   `vatSpecimen`, `wheat`  an ambient loop -> `<k>.bubble.down.0`, `<k>.sway.down.0`
+   *
+   * The third has no `idle`; its clip is whatever the loop was named. Matching
+   * any packed frame under the key's own prefix covers all three and still
+   * fails on what this is for — a key that points at nothing, from a typo or
+   * from art that was renamed or dropped.
+   */
   it('gives every scale entry something real to scale', async () => {
     const { readFileSync } = await import('node:fs')
     const at = (JSON.parse(readFileSync('art/scene-scale.json', 'utf8')) as {
@@ -218,9 +234,90 @@ describe('card art', () => {
     }).drawAt
     const frames = JSON.parse(readFileSync('public/atlas.json', 'utf8')).frames as
       Record<string, unknown>
+    const prefixes = new Set<string>()
+    for (const key of Object.keys(frames)) {
+      const cut = key.indexOf('.', key.startsWith('vault.') || key.startsWith('ranch.')
+        || key.startsWith('scene.') || key.startsWith('pen.') || key.startsWith('sceneBg.')
+        ? key.indexOf('.') + 1 : 0)
+      if (cut > 0) prefixes.add(key.slice(0, cut))
+    }
     const missing = Object.keys(at).filter(
-      (k) => !(k in frames) && !(`${k}.idle.down.0` in frames),
+      (k) => !(k in frames) && !prefixes.has(k),
     )
     expect(missing).toEqual([])
+  })
+})
+
+describe('enemy art', () => {
+  /**
+   * Every enemy a map can roll must have its sheet in the atlas.
+   *
+   * `baseOperator` and `baseBreacher` shipped wired into `enemies.json` and
+   * given spawn weights in two sector maps while neither was ever declared in
+   * `art/sprites.json` — so neither had a single packed frame, and both would
+   * have walked into the lab as plain coloured rectangles. Nothing caught it:
+   * the maps test asserts a biased enemy is a DEFINED enemy, which they were,
+   * and the renderer degrades a missing frame to `null` and draws the fallback
+   * box rather than erroring. A defect that only shows up by looking is exactly
+   * the kind this file exists for.
+   *
+   * Spawnable means `weight > 0` (the default) or ANY map raising it by name —
+   * `enemyBias` replaces the weight rather than multiplying it, which is the
+   * whole mechanism by which the base cast sits at 0 and still appears
+   * underground.
+   *
+   * Reads the built atlas, so it fails when the art and the content disagree.
+   * Checks every direction of every clip the sheet claims, because a partial
+   * ring is the documented failure of the v3 rotations and it animates into
+   * empty space rather than erroring too.
+   */
+  it('packs a sheet for every enemy a map can roll', async () => {
+    const { readFileSync } = await import('node:fs')
+    const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
+      rig: { directions: string[] }
+      dirSets?: Record<string, string[]>
+      clipLengths: Record<string, Record<string, number>>
+      frames: Record<string, unknown>
+    }
+
+    const spawnable = new Set<string>()
+    for (const [id, def] of Object.entries(ENEMIES)) {
+      if ((def.weight ?? 1) > 0) spawnable.add(id)
+    }
+    for (const map of Object.values(MAPS)) {
+      for (const [id, w] of Object.entries(map.enemyBias)) if (w > 0) spawnable.add(id)
+    }
+
+    const bad: string[] = []
+    for (const id of [...spawnable].sort()) {
+      // What the SIM actually uses (`world.ts` spawn): the `sheets` array when
+      // the type declares variants, else the type id. NOT `def.sheet` -- that
+      // singular field is vestigial and disagrees with the packed art for six
+      // enemies (`farmhand` claims "zombie", `sickHog` claims "pig"), which is
+      // exactly the trap that makes a check like this look broken when it is
+      // the field that is.
+      const sheets = (ENEMIES[id]?.sheets as string[] | undefined) ?? [id]
+      for (const sheet of sheets) {
+        const clips = atlas.clipLengths[sheet]
+        if (!clips) { bad.push(`${id} -> sheet "${sheet}" is not packed at all`); continue }
+        const dirs = atlas.dirSets?.[sheet] ?? atlas.rig.directions
+        // `idle` and `walk` ONLY. Everything above them in the renderer's chain
+        // -- hit, attack, walkHurt, death -- returns undefined when absent and
+        // falls through to the next by design, which is what lets the roster
+        // gain clips one animal at a time. `humanoidFrame` is the last link and
+        // has nothing to fall back to, so these two are the real floor.
+        for (const clip of ['idle', 'walk']) {
+          const frames = clips[clip]
+          if (!frames) { bad.push(`${id} -> sheet "${sheet}" has no ${clip} clip`); continue }
+          for (const dir of dirs) {
+            for (let i = 0; i < frames; i++) {
+              const key = `${sheet}.${clip}.${dir}.${i}`
+              if (!(key in atlas.frames)) { bad.push(`${id} -> missing ${key}`); break }
+            }
+          }
+        }
+      }
+    }
+    expect(bad).toEqual([])
   })
 })

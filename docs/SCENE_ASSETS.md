@@ -14,6 +14,13 @@ Companion files, all generated, none hand-edited:
 | `art/strips/index.json` | `npm run strips` | every animation as a flat PNG strip |
 | `docs/PIXELLAB_INVENTORY.md` | `npm run inventory` | what the account already holds |
 
+Two checkers, both free and offline:
+
+| command | what it catches |
+|---|---|
+| `npm run decard -- [--check] <png>` | an opaque card behind a scene sprite |
+| `npm run clips` | an ambient loop whose subject dissolved across its frames |
+
 ---
 
 ## The five rules
@@ -42,9 +49,26 @@ should not be two things aligned by hand.
 **3. Everything scene-scale comes back CARDED.** An opaque fill behind the
 sprite — measured at 0% transparent on the treeline. A carded pen drawn over a
 title screen is an opaque rectangle across the sky and the ground, and it
-survives review because the sprite looks fine in isolation. `npm run rmbg` fixes
-it. **Verify the alpha afterwards rather than trusting the call.** Large subjects
-card; the same prompt at 96px comes back clean.
+survives review because the sprite looks fine in isolation. Large subjects card;
+the same prompt at 96px comes back clean.
+
+**`npm run decard` strips it offline and for nothing.** The card is a FLAT fill
+touching the border, so a 4-connected flood from the edge at a colour tolerance
+removes exactly it: measured 74% of `vault.drumRank`'s canvas and 63% of
+`drumScatter`'s, with the drum numbers, outlines and contact shadows all intact.
+It refuses rather than guesses when the border region is under 15% of the
+canvas, and it reports enclosed pockets of card colour instead of cutting them,
+because a pocket is as likely to be a highlight as a gap. `npm run rmbg` is the
+API fallback for a background that is textured or graded; it costs a generation
+per image, so reach for it second. **Either way, verify the alpha afterwards
+rather than trusting the call** — both tools re-read what they wrote and say so.
+
+**A card is a scale bug wearing a cosmetic bug's clothes, and rules 3 and 4
+compound.** 100% opaque means the alpha content box IS the canvas, so `npm run
+scale` measures the card. `vault.drumRank` is 253x58 of drums inside a 300x180
+canvas; carded, the table published it 210x126 against a true 210x48 — 2.6x too
+tall, on a number whose whole job is to be trusted. Always de-card BEFORE you
+pack and measure.
 
 **4. Never infer a height from the canvas.** The `ranch.*` group is packed
 UNTRIMMED, so the frame rect is the generation canvas and the art floats inside
@@ -144,7 +168,7 @@ through the base of every building and they read as stickers on a backdrop.
 ## Animation
 
 `npm run strips` writes every clip as a flat PNG to `art/strips/` with an
-`index.json` giving `{cell, frames, file}`. 687 of them. The contract is
+`index.json` giving `{cell, frames, file}`. 714 of them. The contract is
 identical to `stripUrl`'s at runtime — uniform square cell, frames centred and
 bottom-aligned — so a preview built from the strips and the running game show
 the same animation.
@@ -152,6 +176,19 @@ the same animation.
 Partial clips are skipped rather than half-written: several v3 clips returned 3
 of 8 directions, and a strip missing its tail animates into empty space.
 `index.json` is the authority on what exists.
+
+**The whole underground cast walks too** — all five of them:
+`baseGuard`, `baseTech`, `baseHazmat`, `baseOperator`, `baseBreacher`, four
+cardinals each, eight frames, `scary-walk`. Two of those five were missing until
+someone looked: `baseOperator` and `baseBreacher` were wired into `enemies.json`
+and given spawn weights in both sector maps while neither was ever declared in
+`art/sprites.json`, so neither had a packed frame and both would have walked
+into the lab as coloured rectangles. `tests/content.test.ts` now asserts that
+every enemy a map can roll has `idle` and `walk` packed for every direction, so
+this cannot recur silently.
+
+All five are `drawAt` 64, the same grown-person height as the six player
+classes.
 
 **The whole clean cast walks** — all five equines, Joy, four cats, nine hens and
 the rooster. Plus three ambient world loops, which is what a title screen
