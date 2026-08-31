@@ -1796,9 +1796,25 @@
       ],
       "labConsole": [
         "flicker"
+      ],
+      "vatSpecimen": [
+        "bubble"
+      ],
+      "tankSwirl": [
+        "swirl",
+        "churn"
+      ],
+      "tankPanel": [
+        "churn"
+      ],
+      "tankBarrel": [
+        "swirl"
+      ],
+      "tankVat": [
+        "swirl"
       ]
     },
-    "_labNote": "The lab set for the fifth scene. A flickering console is what makes a lab read as RUNNING rather than abandoned -- same principle as the windmill on the surface: a title screen lives on the things that move without being looked at.\nV3 ANIMATION CANNOT ANIMATE A GLASS TANK. THREE attempts, MEASURED, not judged by eye:\n  attempt 1 and 2 -- glass gone entirely, alien standing on the base, lid floating\n  attempt 3 (the owner's, with a much longer and more specific prompt) -- the best of them, and it holds the fluid in frames 0 and 4 ONLY. Green-pixel area per frame: 42%, 1%, 1%, 15%, 42%, 0%, 0%, 0%, 1%. It ALTERNATES between intact and collapsed, so there is nothing to truncate the way the fx packer truncates a muzzle flash that dies at the end.\nThe console `flicker` from the same batch is perfect, so it is the SUBJECT and not the prompt: v3 redraws every frame and there is no hard edge in a tall glass tube of fluid for it to hold on to. A longer prompt does not fix a subject the model cannot hold.\nTHE FIX IS AN OVERLAY. Animate the CONTENTS, never the vessel: a bubble column on nothing composites over the still tank, and bubbles have no rigid structure to lose. Stop re-rolling a vessel after the second failure."
+    "_labNote": "SIX WORKING FLUID LOOPS plus the console. All measured frame by frame, not judged by eye: every one holds its opaque body to within 1% across all 9 frames while the green fluid varies gently, which is what a working loop looks like.\nTHE RULE THIS CORRECTS. An earlier note here said 'v3 cannot animate a glass tank' and that was WRONG and cost a working asset: `vatSpecimen` -- the tall glass tube with the human silhouette in it -- was unwired without ever being measured, on the assumption that it failed because the ALIEN vat from the same batch did. It measures 9/9 and always did.\nWhat actually fails is the SUBJECT INSIDE, not the vessel. Measured side by side, same shape of object, same prompt style:\n  vatAlien    (an articulated creature: limbs, tail, head)  green 4123, 21, 22, 18, 41, 25, 40, 25, 1013  -> 1/9, the glass dissolves\n  vatSpecimen (a flat human silhouette)                      green 1504..1590 across all 9   -> 9/9, rock solid\nv3 redraws every frame, so it holds a simple shape and loses a complex articulated one. A silhouette survives; a creature with limbs does not. `vatAlien` stays a still.\nMEASURE EVERY CLIP BEFORE UNWIRING IT. `tools/` has no checker for this yet; the one used here counts opaque and green pixels per frame and flags any frame that drops below 75% of the body or 45% of the peak fluid."
   },
   "pens": {
     "_note": "Complete enclosures, drawn as ONE sprite each with all four sides. A pen assembled from rail, post and corner pieces is where three rounds of the title screen went wrong: the sides never line up with the front and the pieces disagree about scale. The generator draws whole objects well and PIECES of one badly -- three attempts at a fence receding from the viewer all returned a single post -- so the fix is to stop asking for pieces. `npm run pens` measures each one's ground quad so a scene can stand animals inside it without guessing.",
@@ -1834,7 +1850,11 @@
       "vault.vatAlien": "vatAlien.png",
       "vault.vatSpecimen": "vatSpecimen.png",
       "vault.labConsole": "labConsole.png",
-      "vault.jarRack": "jarRack.png"
+      "vault.jarRack": "jarRack.png",
+      "vault.tankSwirl": "tankSwirl.png",
+      "vault.tankPanel": "tankPanel.png",
+      "vault.tankBarrel": "tankBarrel.png",
+      "vault.tankVat": "tankVat.png"
     },
     "_varietyNote": "Three drum groupings, not one. Two copies of a single rank read as two neat lines and the scene lost the variety it had when drums were placed individually. `drumScatter` is six at different angles, `drumStack` is a pallet stacked two high, `drumRank` is the ordered row. Mix them."
   },

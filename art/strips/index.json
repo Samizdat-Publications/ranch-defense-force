@@ -3500,6 +3500,36 @@
       "cell": 180,
       "frames": 9,
       "file": "labConsole.flicker.down.png"
+    },
+    "vatSpecimen.bubble.down": {
+      "cell": 180,
+      "frames": 9,
+      "file": "vatSpecimen.bubble.down.png"
+    },
+    "tankSwirl.swirl.down": {
+      "cell": 64,
+      "frames": 9,
+      "file": "tankSwirl.swirl.down.png"
+    },
+    "tankSwirl.churn.down": {
+      "cell": 64,
+      "frames": 9,
+      "file": "tankSwirl.churn.down.png"
+    },
+    "tankPanel.churn.down": {
+      "cell": 64,
+      "frames": 9,
+      "file": "tankPanel.churn.down.png"
+    },
+    "tankBarrel.swirl.down": {
+      "cell": 64,
+      "frames": 9,
+      "file": "tankBarrel.swirl.down.png"
+    },
+    "tankVat.swirl.down": {
+      "cell": 64,
+      "frames": 9,
+      "file": "tankVat.swirl.down.png"
     }
   }
 }
