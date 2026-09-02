@@ -47,10 +47,12 @@
     "pens": "vite-node tools/measure-pens.ts --",
     "clips": "vite-node tools/check-clips.ts --",
     "decard": "vite-node tools/decard.ts --",
-    "placements": "vite-node tools/extract-placements.ts --"
+    "placements": "vite-node tools/extract-placements.ts --",
+    "scene": "vite-node tools/scene-shot.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
+    "playwright": "^1.62.1",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
     "vitest": "^2.1.8"

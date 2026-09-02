@@ -3208,3 +3208,47 @@ The lesson is not about the lookup. `npm run scale` prints `not packed,
 skipped: wheat, scarecrow, windmill, labConsole, vatSpecimen, ...` on every
 single run — the exact nine keys, in the exact order the test reports them. The
 tool had been saying so all along and it read as routine.
+
+## Nobody could look, and that was the whole problem
+
+Every scene failure this project has had traces to the same gap: there was no
+way to see a title screen without a human opening a browser. `npm run shot`
+photographs the SIM — it drives `tools/draw-world.ts`, which is canvas and knows
+nothing about the home screen. The scenes are DOM, built by `src/ui/scene.ts`.
+So Design built them blind, I reviewed them blind, and the owner was the only
+pair of eyes in the loop. "Everything is floating on the horizon" and "Joy is in
+the black silhouette where you can't see her" were both caught by a person,
+late, after the work had shipped.
+
+`npm run scene -- [kind] [out.png] [ms]` closes it. It starts the real dev
+server, drives the real app in Chromium, waits for the animation loops to run so
+a walk is caught mid-stride rather than on frame 0, and writes a PNG. It also
+reports console errors and failed requests, which is how the first run turned up
+a 404.
+
+**It is not a re-implementation of the scene, and that is the point.** A second
+renderer that agrees with itself proves nothing — that lesson is already in this
+file under the cross-renderer agreement tests, and it applies double here.
+
+### The dependency
+
+`playwright`, dev-only. CLAUDE.md requires a reason written down, so: this
+environment already ships Chromium at `PLAYWRIGHT_BROWSERS_PATH`, the package is
+a driver rather than a bundled browser, it is never imported by `src/`, and it
+adds nothing to the production build. Against that, it removes the one review
+step in this project that could only be done by a human with a browser open.
+
+One trap worth recording. The browser store's directories carry the BUILD number
+the environment shipped (`chromium-1194`) and the npm playwright expects the
+build IT was published against; when they differ you get "executable doesn't
+exist" with downloads disabled. The tool resolves the binary by listing the
+store rather than assuming the conventional path.
+
+### What the first shot showed
+
+The live home screen renders the FIELD scene, not the yard, and the defects the
+owner reported are all visible in one frame: the farmhouse and barn stand on a
+hard horizon with the wheat band starting abruptly across their footings, the
+distant treeline is a row of small sprites on that same line, and the class
+cards cover the lower third of the composition. Design's two rebuilt artboards
+address exactly these, which is the next piece of work.
