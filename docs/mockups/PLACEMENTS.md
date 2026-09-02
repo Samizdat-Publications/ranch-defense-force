@@ -38,26 +38,26 @@ packed animation, drawn by `stripActor`/`clipActor` rather than as an image.
 | 23 | strip | `leghornHen.walk.down` | 1002 | 716 | 36 | 36 | — | — |
 | 24 | strip | `beardedHen.walk.down` | 828 | 756 | 34 | 34 | — | — |
 | 25 | strip | `silkieHen.walk.down` | 1040 | 770 | 30 | 30 | — | — |
-| 26 | strip | `barredHen.walk.down` | NaN | NaN | NaN | NaN | mull-idle 53s step-end infinite | — |
-| 27 | strip | `barredHen.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.8s steps(9) infinite, mull-out 53s step-end infinite | op 0 |
-| 28 | strip | `barredHen.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.8s steps(9) infinite, mull-back 53s step-end infinite | op 0 |
-| 29 | strip | `polishHen.walk.down` | NaN | NaN | NaN | NaN | mull-idle 43s step-end infinite | — |
-| 30 | strip | `polishHen.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.8s steps(9) infinite, mull-out 43s step-end infinite | op 0 |
-| 31 | strip | `polishHen.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.8s steps(9) infinite, mull-back 43s step-end infinite | op 0 |
-| 32 | strip | `farmRooster.walk.down` | NaN | NaN | NaN | NaN | mull-idle 67s step-end infinite | — |
-| 33 | strip | `farmRooster.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.9s steps(9) infinite, mull-out 67s step-end infinite | op 0 |
-| 34 | strip | `farmRooster.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.9s steps(9) infinite, mull-back 67s step-end infinite | op 0 |
-| 35 | strip | `tabbyCat.walk.left` | NaN | NaN | NaN | NaN | mull-idle 71s step-end infinite | — |
-| 36 | strip | `tabbyCat.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.7s steps(9) infinite, mull-out 71s step-end infinite | op 0 |
-| 37 | strip | `tabbyCat.walk.left` | NaN | NaN | NaN | NaN | y-strip 0.7s steps(9) infinite, mull-back 71s step-end infinite | op 0 |
+| 26 | strip | `barredHen.walk.down` | 1150 | 702 | 34 | 34 | mull-idle 53s step-end infinite + via mull-path 53s linear infinite leg -70px | — |
+| 27 | strip | `barredHen.walk.left` | 1150 | 702 | 34 | 34 | y-strip 0.8s steps(9) infinite, mull-out 53s step-end infinite + via mull-path 53s linear infinite leg -70px | op 0 |
+| 28 | strip | `barredHen.walk.left` | 1150 | 702 | 34 | 34 | y-strip 0.8s steps(9) infinite, mull-back 53s step-end infinite + via mull-path 53s linear infinite leg -70px | op 0 |
+| 29 | strip | `polishHen.walk.down` | 1204 | 738 | 34 | 34 | mull-idle 43s step-end infinite + via mull-path 43s linear infinite leg -60px | — |
+| 30 | strip | `polishHen.walk.left` | 1204 | 738 | 34 | 34 | y-strip 0.8s steps(9) infinite, mull-out 43s step-end infinite + via mull-path 43s linear infinite leg -60px | op 0 |
+| 31 | strip | `polishHen.walk.left` | 1204 | 738 | 34 | 34 | y-strip 0.8s steps(9) infinite, mull-back 43s step-end infinite + via mull-path 43s linear infinite leg -60px | op 0 |
+| 32 | strip | `farmRooster.walk.down` | 1264 | 702 | 46 | 46 | mull-idle 67s step-end infinite + via mull-path 67s linear infinite leg -90px | — |
+| 33 | strip | `farmRooster.walk.left` | 1264 | 702 | 46 | 46 | y-strip 0.9s steps(9) infinite, mull-out 67s step-end infinite + via mull-path 67s linear infinite leg -90px | op 0 |
+| 34 | strip | `farmRooster.walk.left` | 1264 | 702 | 46 | 46 | y-strip 0.9s steps(9) infinite, mull-back 67s step-end infinite + via mull-path 67s linear infinite leg -90px | op 0 |
+| 35 | strip | `tabbyCat.walk.left` | 760 | 792 | 36 | 36 | mull-idle 71s step-end infinite + via mull-path 71s linear infinite leg -120px | — |
+| 36 | strip | `tabbyCat.walk.left` | 760 | 792 | 36 | 36 | y-strip 0.7s steps(9) infinite, mull-out 71s step-end infinite + via mull-path 71s linear infinite leg -120px | op 0 |
+| 37 | strip | `tabbyCat.walk.left` | 760 | 792 | 36 | 36 | y-strip 0.7s steps(9) infinite, mull-back 71s step-end infinite + via mull-path 71s linear infinite leg -120px | op 0 |
 | 38 | still | `ranch.stockTank` | 1558 | 750 | 78 | 52 | — | brightness(0.94) |
 | 39 | strip | `fjordPony.graze.downRight` | 1450 | 704 | 96 | 96 | y-strip 5.3s steps(9) infinite | — |
-| 40 | strip | `fjordPony.walk.left` | NaN | NaN | NaN | NaN | mull-idle 61s step-end infinite | — |
-| 41 | strip | `fjordPony.walk.left` | NaN | NaN | NaN | NaN | y-strip 1.4s steps(9) infinite, mull-out 61s step-end infinite | op 0 |
-| 42 | strip | `fjordPony.walk.left` | NaN | NaN | NaN | NaN | y-strip 1.4s steps(9) infinite, mull-back 61s step-end infinite | op 0 |
-| 43 | strip | `joy.sit.downRight` | NaN | NaN | 60 | 60 | y-strip 3.1s steps(9) infinite, joy-sit 43s step-end infinite | — |
-| 44 | strip | `joy.walk.right` | NaN | NaN | 60 | 60 | y-strip 0.62s steps(9) infinite, joy-right 43s step-end infinite | op 0 |
-| 45 | strip | `joy.walk.left` | NaN | NaN | 60 | 60 | y-strip 0.62s steps(9) infinite, joy-left 43s step-end infinite | op 0 |
+| 40 | strip | `fjordPony.walk.left` | 1640 | 740 | 96 | 96 | mull-idle 61s step-end infinite + via mull-path 61s linear infinite leg -170px | — |
+| 41 | strip | `fjordPony.walk.left` | 1640 | 740 | 96 | 96 | y-strip 1.4s steps(9) infinite, mull-out 61s step-end infinite + via mull-path 61s linear infinite leg -170px | op 0 |
+| 42 | strip | `fjordPony.walk.left` | 1640 | 740 | 96 | 96 | y-strip 1.4s steps(9) infinite, mull-back 61s step-end infinite + via mull-path 61s linear infinite leg -170px | op 0 |
+| 43 | strip | `joy.sit.downRight` | 1372 | 770 | 60 | 60 | y-strip 3.1s steps(9) infinite, joy-sit 43s step-end infinite | — |
+| 44 | strip | `joy.walk.right` | 1372 | 770 | 60 | 60 | y-strip 0.62s steps(9) infinite, joy-right 43s step-end infinite | op 0 |
+| 45 | strip | `joy.walk.left` | 1372 | 770 | 60 | 60 | y-strip 0.62s steps(9) infinite, joy-left 43s step-end infinite | op 0 |
 | 46 | still | `scene.fencePicket` | -20 | 834 | 1960 | 32 | — | brightness(0.6) saturate(0.85) |
 | 47 | strip | `wheat.sway.down` | 1403 | 732 | 88 | 88 | y-strip 5.1s steps(9) infinite | op 0.88 · brightness(0.8) |
 | 48 | strip | `wheat.sway.down` | 1563 | 772 | 88 | 88 | y-strip 6.3s steps(9) infinite 1.1s | op 0.82 · brightness(0.72) |
@@ -72,7 +72,7 @@ packed animation, drawn by `stripActor`/`clipActor` rather than as an image.
 
 | # | kind | key | x | y | w | h | animation | tint |
 |---|---|---|---|---|---|---|---|---|
-| 1 | still | `base.ceilingPipes` | NaN | NaN | NaN | 96 | — | brightness(0.72) |
+| 1 | still | `base.ceilingPipes` | 0 | 0 | 1920 | 96 | — | brightness(0.72) |
 | 2 | still | `base.striplightLit` | 260 | 44 | 192 | 96 | l-hum 5.3s ease-in-out infinite | — |
 | 3 | still | `base.striplightLit` | 700 | 44 | 192 | 96 | l-hum 6.7s ease-in-out infinite 1.4s | — |
 | 4 | still | `base.striplightLit` | 1500 | 44 | 192 | 96 | l-hum 7.9s ease-in-out infinite 0.6s | — |
@@ -91,28 +91,28 @@ packed animation, drawn by `stripActor`/`clipActor` rather than as an image.
 | 17 | strip | `tankSwirl.churn.down` | 1352 | 483 | 192 | 192 | y-strip 3.3s steps(9) infinite 0.6s | — |
 | 18 | strip | `tankPanel.churn.down` | 1540 | 491 | 192 | 192 | y-strip 3.9s steps(9) infinite 1.3s | — |
 | 19 | strip | `tankBarrel.swirl.down` | 1710 | 496 | 192 | 192 | y-strip 4.3s steps(9) infinite 2.1s | — |
-| 20 | still | `vault.vatBroken` | NaN | NaN | 194 | 292 | — | brightness(0.82) |
-| 21 | still | `vault.vatAlien` | NaN | NaN | 161 | 241 | — | brightness(0.94) |
+| 20 | still | `vault.vatBroken` | 673 | 410 | 194 | 292 | — | brightness(0.82) |
+| 21 | still | `vault.vatAlien` | 565 | 460 | 161 | 241 | — | brightness(0.94) |
 | 22 | strip | `vatSpecimen.bubble.down` | 386 | 456 | 261 | 261 | y-strip 3.6s steps(9) infinite | — |
-| 23 | strip | `baseHazmat.walk.right` | NaN | NaN | NaN | NaN | mull-haz-pr 41s step-end infinite | brightness(0.9) |
-| 24 | strip | `baseHazmat.walk.left` | NaN | NaN | NaN | NaN | mull-haz-pl 41s step-end infinite | op 0 · brightness(0.9) |
-| 25 | strip | `baseHazmat.walk.left` | NaN | NaN | NaN | NaN | y-strip 1.2s steps(8) infinite, mull-haz-wl 41s step-end infinite | op 0 · brightness(0.9) |
-| 26 | strip | `baseHazmat.walk.right` | NaN | NaN | NaN | NaN | y-strip 1.2s steps(8) infinite, mull-haz-wr 41s step-end infinite | op 0 · brightness(0.9) |
+| 23 | strip | `baseHazmat.walk.right` | 1455 | 596 | 174 | 174 | mull-haz-pr 41s step-end infinite | brightness(0.9) |
+| 24 | strip | `baseHazmat.walk.left` | 1455 | 596 | 174 | 174 | mull-haz-pl 41s step-end infinite | op 0 · brightness(0.9) |
+| 25 | strip | `baseHazmat.walk.left` | 1455 | 596 | 174 | 174 | y-strip 1.2s steps(8) infinite, mull-haz-wl 41s step-end infinite | op 0 · brightness(0.9) |
+| 26 | strip | `baseHazmat.walk.right` | 1455 | 596 | 174 | 174 | y-strip 1.2s steps(8) infinite, mull-haz-wr 41s step-end infinite | op 0 · brightness(0.9) |
 | 27 | still | `vault.floorGrate` | 980 | 890 | 143 | 143 | — | brightness(0.62) |
 | 28 | still | `vault.floorGrate` | 1420 | 930 | 143 | 143 | — | brightness(0.56) |
-| 29 | strip | `labConsole.flicker.down` | NaN | NaN | NaN | NaN | y-strip 1.8s steps(9) infinite | — |
-| 30 | still | `vault.jarRack` | NaN | NaN | 210 | 210 | — | brightness(0.92) |
-| 31 | still | `vault.drumRank` | NaN | NaN | 516 | 309 | — | brightness(0.84) |
-| 32 | still | `base.labBench` | NaN | NaN | 188 | 150 | — | brightness(0.96) |
-| 33 | strip | `baseTech.walk.left` | NaN | NaN | NaN | NaN | mull-tech-pl 47s step-end infinite | — |
-| 34 | strip | `baseTech.walk.right` | NaN | NaN | NaN | NaN | mull-tech-pr 47s step-end infinite | op 0 |
-| 35 | strip | `baseTech.walk.right` | NaN | NaN | NaN | NaN | y-strip 1.2s steps(8) infinite, mull-tech-wr 47s step-end infinite | op 0 |
-| 36 | strip | `baseTech.walk.left` | NaN | NaN | NaN | NaN | y-strip 1.2s steps(8) infinite, mull-tech-wl 47s step-end infinite | op 0 |
-| 37 | strip | `baseGuard.walk.left` | NaN | NaN | NaN | NaN | mull-guard-pl 59s step-end infinite | brightness(0.86) |
-| 38 | strip | `baseGuard.walk.right` | NaN | NaN | NaN | NaN | mull-guard-pr 59s step-end infinite | op 0 · brightness(0.86) |
-| 39 | strip | `baseGuard.walk.right` | NaN | NaN | NaN | NaN | y-strip 1.2s steps(8) infinite, mull-guard-wr 59s step-end infinite | op 0 · brightness(0.86) |
-| 40 | strip | `baseGuard.walk.left` | NaN | NaN | NaN | NaN | y-strip 1.2s steps(8) infinite, mull-guard-wl 59s step-end infinite | op 0 · brightness(0.86) |
-| 41 | still | `vault.drumScatter` | NaN | NaN | 372 | 239 | — | brightness(0.62) |
-| 42 | still | `vault.examTable` | NaN | NaN | 414 | 296 | — | brightness(1.02) |
+| 29 | strip | `labConsole.flicker.down` | 825 | 491 | 374 | 374 | y-strip 1.8s steps(9) infinite | — |
+| 30 | still | `vault.jarRack` | 1162 | 682 | 210 | 210 | — | brightness(0.92) |
+| 31 | still | `vault.drumRank` | 1335 | 615 | 516 | 309 | — | brightness(0.84) |
+| 32 | still | `base.labBench` | 544 | 707 | 188 | 150 | — | brightness(0.96) |
+| 33 | strip | `baseTech.walk.left` | 861 | 696 | 174 | 174 | mull-tech-pl 47s step-end infinite | — |
+| 34 | strip | `baseTech.walk.right` | 861 | 696 | 174 | 174 | mull-tech-pr 47s step-end infinite | op 0 |
+| 35 | strip | `baseTech.walk.right` | 861 | 696 | 174 | 174 | y-strip 1.2s steps(8) infinite, mull-tech-wr 47s step-end infinite | op 0 |
+| 36 | strip | `baseTech.walk.left` | 861 | 696 | 174 | 174 | y-strip 1.2s steps(8) infinite, mull-tech-wl 47s step-end infinite | op 0 |
+| 37 | strip | `baseGuard.walk.left` | 420 | 770 | 190 | 190 | mull-guard-pl 59s step-end infinite | brightness(0.86) |
+| 38 | strip | `baseGuard.walk.right` | 420 | 770 | 190 | 190 | mull-guard-pr 59s step-end infinite | op 0 · brightness(0.86) |
+| 39 | strip | `baseGuard.walk.right` | 420 | 770 | 190 | 190 | y-strip 1.2s steps(8) infinite, mull-guard-wr 59s step-end infinite | op 0 · brightness(0.86) |
+| 40 | strip | `baseGuard.walk.left` | 420 | 770 | 190 | 190 | y-strip 1.2s steps(8) infinite, mull-guard-wl 59s step-end infinite | op 0 · brightness(0.86) |
+| 41 | still | `vault.drumScatter` | 264 | 782 | 372 | 239 | — | brightness(0.62) |
+| 42 | still | `vault.examTable` | 539 | 779 | 414 | 296 | — | brightness(1.02) |
 | 43 | strip | `tankVat.swirl.down` | 1147 | 848 | 179 | 179 | y-strip 5.4s steps(9) infinite | brightness(0.86) |
-| 44 | still | `vault.drumStack` | NaN | NaN | 268 | 241 | — | brightness(0.7) |
+| 44 | still | `vault.drumStack` | 1544 | 797 | 268 | 241 | — | brightness(0.7) |

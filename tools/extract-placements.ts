@@ -61,46 +61,71 @@ const val = (style: string, prop: string): string | undefined => {
   return m ? m[1].trim() : undefined
 }
 
-function extract(html: string): Placement[] {
-  const out: Placement[] = []
-  // <img src="..." style="...">
-  for (const m of html.matchAll(/<img\s+src="([^"]+)"\s+style="([^"]*)"/g)) {
-    const { kind, key } = resolve(m[1])
-    const s = m[2]
-    out.push({
-      kind, key, x: px(s, 'left'), y: px(s, 'top'), w: px(s, 'width'), h: px(s, 'height'),
-      anim: val(s, 'animation'), opacity: val(s, 'opacity'), filter: val(s, 'filter'),
-    })
+/*
+   A TAG STACK, not a regex sweep, because the artboard nests.
+
+   Design's "muller" -- a bird or a cat that wanders a few steps and comes back
+   -- is a WRAPPER div carrying `left`, `top`, a `--leg` travel distance and a
+   `mull-path` animation, holding children pinned with `inset:0` that are the
+   actual sprites. A flat scan reads those children, finds no `left`, and emits
+   NaN: 20 of the yard's 52 placements came out that way on the first run, and a
+   NaN in a generated table is worse than no table.
+
+   So walk the document as a tree. A sprite's position is the sum of its own
+   offset and every ancestor's, and `inset:0` means "take the wrapper's box".
+   That is what makes these stage-space coordinates rather than per-parent ones,
+   which is what `src/ui/scene.ts` needs.
+*/
+interface Frame { left: number; top: number; w: number; h: number; anim?: string; leg?: string }
+
+function frameOf(style: string): Frame {
+  const inset = /(?:^|;)\s*inset:\s*0/.test(style)
+  return {
+    left: inset ? 0 : (px(style, 'left') || 0),
+    top: inset ? 0 : (px(style, 'top') || 0),
+    w: px(style, 'width'),
+    h: px(style, 'height'),
+    anim: val(style, 'animation'),
+    leg: val(style, '--leg'),
   }
-  // <div style="...background-image:url('...')...">  -- the animated strips
-  for (const m of html.matchAll(/<div\s+style="([^"]*background-image:\s*url\(([^)]+)\)[^"]*)"/g)) {
-    const s = m[1]
-    const { kind, key } = resolve(m[2])
-    out.push({
-      kind, key, x: px(s, 'left'), y: px(s, 'top'), w: px(s, 'width'), h: px(s, 'height'),
-      anim: val(s, 'animation'), opacity: val(s, 'opacity'), filter: val(s, 'filter'),
-    })
-  }
-  // Paint order is DOM order, and the two passes above break it. Restore it by
-  // where each match started in the source.
-  return out
 }
 
-function orderedExtract(html: string): Placement[] {
-  const marks: { at: number; p: Placement }[] = []
-  for (const m of html.matchAll(/<img\s+src="([^"]+)"\s+style="([^"]*)"/g)) {
-    const { kind, key } = resolve(m[1]); const s = m[2]
-    marks.push({ at: m.index, p: { kind, key, x: px(s,'left'), y: px(s,'top'), w: px(s,'width'),
-      h: px(s,'height'), anim: val(s,'animation'), opacity: val(s,'opacity'), filter: val(s,'filter') } })
+function extract(html: string): Placement[] {
+  const out: Placement[] = []
+  const stack: Frame[] = []
+  const token = /<(div|img)\b([^>]*?)(\/?)>|<\/div>/g
+  for (let m = token.exec(html); m; m = token.exec(html)) {
+    if (m[0] === '</div>') { stack.pop(); continue }
+    const [, tag, attrs, selfClose] = m
+    const style = /style="([^"]*)"/.exec(attrs)?.[1] ?? ''
+    const f = frameOf(style)
+    const x = stack.reduce((a, p) => a + p.left, 0) + f.left
+    const y = stack.reduce((a, p) => a + p.top, 0) + f.top
+    // `inset:0` gives no size of its own; inherit the nearest sized ancestor.
+    const inherited = [...stack].reverse().find((p) => !Number.isNaN(p.w))
+    const w = Number.isNaN(f.w) ? (inherited?.w ?? NaN) : f.w
+    const h = Number.isNaN(f.h) ? (inherited?.h ?? NaN) : f.h
+
+    const src = tag === 'img'
+      ? /src="([^"]+)"/.exec(attrs)?.[1]
+      : /background-image:\s*url\(([^)]+)\)/.exec(style)?.[1]
+    if (src) {
+      const { kind, key } = resolve(src)
+      // The wrapper's animation is the TRAVEL; the child's is the gait.
+      const wrap = [...stack].reverse().find((p) => p.anim?.includes('mull-path'))
+      out.push({
+        kind, key, x, y, w, h,
+        anim: [f.anim, wrap ? `via ${wrap.anim} leg ${wrap.leg ?? '?'}` : ''].filter(Boolean).join(' + ')
+          || undefined,
+        opacity: val(style, 'opacity'),
+        filter: val(style, 'filter'),
+      })
+    }
+    // <img> is void and never opens a level.
+    if (tag === 'div' && !selfClose) stack.push({ ...f, w, h })
   }
-  for (const m of html.matchAll(/<div\s+style="([^"]*background-image:\s*url\(([^)]+)\)[^"]*)"/g)) {
-    const s = m[1]; const { kind, key } = resolve(m[2])
-    marks.push({ at: m.index, p: { kind, key, x: px(s,'left'), y: px(s,'top'), w: px(s,'width'),
-      h: px(s,'height'), anim: val(s,'animation'), opacity: val(s,'opacity'), filter: val(s,'filter') } })
-  }
-  return marks.sort((a, b) => a.at - b.at).map((m) => m.p)
+  return out
 }
-void extract
 
 const files = process.argv.slice(2).filter((a) => a.endsWith('.dc.html'))
 if (!files.length) { console.error('usage: npm run placements -- <artboard.dc.html> ...'); process.exit(1) }
@@ -113,7 +138,7 @@ let md = `# Scene placements — generated, do not hand-edit\n\n`
   + `packed animation, drawn by \`stripActor\`/\`clipActor\` rather than as an image.\n`
 
 for (const file of files) {
-  const rows = orderedExtract(readFileSync(file, 'utf8'))
+  const rows = extract(readFileSync(file, 'utf8'))
   md += `\n## ${basename(file, '.dc.html')}\n\n`
     + `${rows.length} placements.\n\n`
     + `| # | kind | key | x | y | w | h | animation | tint |\n|---|---|---|---|---|---|---|---|---|\n`
