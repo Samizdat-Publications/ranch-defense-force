@@ -25,46 +25,127 @@ Order after generating art: `atlas` → `scale` → `pens` → `strips` → `cat
 
 ## What landed this session
 
-**Engine.** Per-map dressing (scenery and decals are data, not hardcoded farm
-lists). A wall band for the arena edge, as a Wang TERRAIN not stamped sprites.
-`boundary.inset` holding the player, nodes, breakables, hazards, scenery and
-decals off it — defaulting to 0, so every surface map is byte-identical. A level
-exit: a door that unseals after a wave, `World.descendTo` that swaps the room and
-keeps the run, and `theLift` as a second base level. `World(seed, cls, mods,
-tier, forceMapId)` overriding the map draw's RESULT and never the draw.
+- **The character cut tool was cutting the heads off, and PixelLab was
+  innocent.** All five base humanoids were clipped on all four sides. Three
+  diagnoses were wrong first — the exporter, then "lost at generation", then my
+  own first fix. Cause: the base cast was generated on a 92px canvas (figures
+  35-46 x 64-70) and cut into a fixed 32x64 cell. Measured: PixelLab source has
+  10-13px of headroom and a rounded 6-10px top row; the cut had 0 and a flat
+  17-22px. Size-64 cast 0/8 frames touch row 0, size-92 cast 8/8. The cell is
+  DERIVED now (44x75 to 48x79, per sheet in the manifest) and re-cutting cost
+  zero generations. Feet verified unmoved.
+- **`npm run scene`** — the live title screen can be photographed for the first
+  time. See below; this is the biggest change here.
+- **`npm run placements`** — Design's artboards become a coordinate table.
+- **`npm run decard`** — strips PixelLab's opaque card offline and free, instead
+  of `rmbg` at a generation an image. A card is a SCALE bug, not a cosmetic one:
+  100% opaque means the alpha box is the canvas, so `npm run scale` measures the
+  card. `vault.drumRank` published 210x126 against a true 210x48.
+- **`baseOperator` and `baseBreacher` had no art at all** — wired into
+  `enemies.json` with spawn weights in two maps and never declared in
+  `art/sprites.json`, so both would have walked into the lab as coloured
+  rectangles. Now packed. `tests/content.test.ts` asserts every enemy a map can
+  roll has `idle` and `walk` packed for every direction.
+- **A red test was fixed that had been reported as green** — the scale-entry
+  guard knew stills and cast sheets but not ambient loops.
+- All five underground humanoids carry `drawAt` 64; none did.
 
-**Scene helpers.** `sceneSprite` and `groundActor` in `src/ui/scene.ts`. The card
-helpers (`spriteEl`, `clipActor`) snap to whole-pixel zoom and silently discard
-their size argument — that was the bulldog-the-size-of-a-pony bug.
-
-**Art.** The whole clean farm cast walks. Five base enemies (tech, guard,
-hazmat, operator, breacher) at `weight: 0`. Pens as whole sprites with detected
-ground quads and punched-out interiors. Corn wall and treeline horizons. Drum
-rank / scatter / stack. Barn kit. Bunker fittings.
+**Do not trust `def.sheet` in `enemies.json`.** The sim reads
+`def.sheets ?? typeId`; the singular field disagrees with the packed art for six
+WORKING enemies (`farmhand` claims `"zombie"`). It produced a wrong diagnosis
+and eight false-positive test failures in one session.
 
 ## What is IN FLIGHT and unfinished
 
+**The next session is LOCAL.** Everything below assumes that.
+
+### THE ONE BIG THING: implement Design's two rebuilt scenes
+
+Design exported `Yard Grounding Fix.dc.html` and `Lab at Depth.dc.html`; both
+are in `docs/mockups/` and both are UNIMPLEMENTED. The coordinates are already
+extracted for you:
+
+```bash
+npm run placements -- "docs/mockups/Yard Grounding Fix.dc.html" "docs/mockups/Lab at Depth.dc.html"
+```
+
+writes `docs/mockups/PLACEMENTS.md` — 52 yard placements and 44 lab, every path
+resolved to an atlas key or a packed clip, in DOM/paint order, in 1920x1080
+stage space. **Do not hand-type any of those numbers**; if the artboard changes,
+re-run the tool.
+
+The artboards are reference documents, not code to lift — `docs/mockups/
+README.md` is explicit that the inline styles, the `<x-dc>` machinery and
+`support.js` never ship. Implement with the helpers already in `src/ui/scene.ts`
+(`sprite`, `groundActor`, `stripActor`, `clipActor`, `tileBand`, `travelling`).
+
+Two things to carry over from Design's build:
+
+- **The grounding rule indoors.** The wall/floor junction is the horizon,
+  nothing stands in y 496-556, first foot line is 636.
+- **The lab is at one scale**: a grown person is 174px, 97px per metre.
+
+`lab` is a new `SceneKind` alongside `yard` and `field`.
+
+### Now you can SEE it, which you could not before
+
+```bash
+npm run scene -- yard /tmp/yard.png 1500
+```
+
+Starts the real dev server, drives the real app in Chromium, waits for the
+loops, writes a PNG, and reports console errors and failed requests. This is the
+review step that did not exist for the whole of the scene work, and it is why
+every scene defect was found late and by a human. **Look at the shot before
+claiming a scene is done.**
+
+The first shot found: the home screen renders the FIELD scene; the farmhouse and
+barn stand on a hard horizon with the wheat band cutting their footings; the
+distant treeline is small sprites on that line; the class cards cover the lower
+third. There is also an unexplained 404 on load — worth five minutes.
+
+### Still open, unchanged
+
+- **`scene.fencePicket` is a re-opened blocker; the audit is 7 of 8.** Design
+  cleared it, then reversed itself: `ranch.fenceRun` is drawn RECEDING (tall
+  near post, panels shrinking away), so tiling it sideways repeats the vanishing
+  point every 108px. The near fence is LimeZu's picket tile again. What closes
+  it is one wide shallow generation asked for as a THING — "a long low wooden
+  rail fence filling the frame edge to edge", 400x64. **I have not verified
+  either of Design's two opposite calls by measurement.**
+- **`ranch.well` and `ranch.wellStone` are named BACKWARDS.** `well` is the ruin
+  with the collapsing roof; `wellStone` is the intact one with a bucket. Same
+  trap as `latrine` and `medChair`.
 - **The vat's scale is a STORY call and it is the owner's.** `vault.vatSpecimen`
-  is drawn at `drawAt` 78, which is 206 tall against a 64px person. Measured:
-  the tube is 58x153 and the silhouette inside it is 36x87, so the figure is 57%
-  of the tube whatever size it is drawn. That gives three readings, and none of
-  them is a bug:
-
-  | `drawAt` | tube | figure | reads as |
-  |---|---|---|---|
-  | **78** (shipped) | 206 | 117 | 1.8x a person — something bigger than human in there |
-  | **43** | 113 | 64 | exactly a person |
-  | **38** (Design's suggestion) | 100 | 57 | slightly under a person |
-
-  43 is the precise version of what Design proposed; 38 undershoots by 7px.
-  Nothing is changed pending the owner — a monumental tank is a legitimate
-  choice and arguably the better story, which is why Design built it at 78 and
-  flagged it rather than fixing it.
+  is `drawAt` 78. The silhouette is 57% of the tube at any size, so: 78 -> tube
+  206, figure 117 (1.8x a person); 43 -> tube 113, figure 64 (exactly a person);
+  38 -> tube 100, figure 57. Nothing changed pending the owner.
 - **`pen.chickenRunFlat` is a known partial failure** — the wire mesh reads as
   interior to the flood, so the quad came back degenerate. Do not use it.
 - **Balance on the base cast has still never been played.** Five enemies, all
-  numbers interpolated. This is the joint-activity item and it is the largest
-  unfinished thing in the project.
+  numbers interpolated. This is the joint-activity item, it is the largest
+  unfinished thing in the project, and going local is what finally makes it
+  possible: `npm run dev` and play it WITH the owner. Do not tune alone.
+
+### Setting the local session up
+
+```bash
+git clone https://github.com/Samizdat-Publications/ranch-defense-force
+cd ranch-defense-force
+git checkout claude/rdf-merge-session-l7ta2j
+npm install
+npm run atlas          # REQUIRED — a fresh clone renders coloured squares without it
+npm run dev
+```
+
+Two things do not come with the repo:
+
+1. **`.mcp.json` is gitignored** (that is what keeps the PixelLab key out of a
+   public repo). Recreate it locally. **Rotate the key while you are at it** —
+   it has been through a chat transcript.
+2. **`/design-login`** must be run once from an interactive local Claude Code to
+   turn on `DesignSync`. It is stored PER MACHINE, so it does nothing for a
+   cloud session.
 
 ## Object IDs generated late and NOT yet in the ledger
 
