@@ -50,7 +50,65 @@ export function threatBudget(wave: number): number {
   return 30 + 22 * wave + 1.4 * wave * wave
 }
 
-/** Enemy damage/HP scalar for wave n. */
+/**
+ * Enemy damage/HP scalar for wave n. Applied to contact damage and to `maxHp`
+ * at spawn, so it is the one lever for how strong an enemy IS at a wave.
+ *
+ * ## The difficulty curve inverts, and this is why
+ *
+ * It is LINEAR -- 1.24 at wave 5, 1.96 at 17, 2.44 at 25 -- while player power
+ * COMPOUNDS through levels, six weapon slots and merges to tier 4. The harness
+ * has been reporting the consequence all along. Deaths over 64 baseline runs,
+ * four pilots:
+ *
+ *     hand/kite     w5 w6 w8 w9
+ *     hand/brawler  w5 w6 w6 w16
+ *     kid/kite      w4 w4 w11 w11
+ *     kid/brawler   w4 w6 w7 w11 w12 w12 w15 w16 w21
+ *
+ * **Almost every death is before wave 12.** Past that the game cannot kill
+ * anyone: a watched run sat at 160/160 through waves 16 and 17 while killing
+ * 851 things, on a build a bot assembled by taking offer 1 unread. The owner's
+ * report is "too easy"; the shape behind it is hard EARLY, trivial LATE.
+ *
+ * ## Two fixes were measured and BOTH broke a guardrail
+ *
+ * Adding a quadratic term anchored at wave 1, so the already-lethal early game
+ * is untouched and only the ceiling rises:
+ *
+ *     +0.004*n^2 on this scalar   deaths spread to w5..w23 CORRECTLY, but clear
+ *                                 rate 75% -> 31% (hand/kite), 38% -> 13%
+ *                                 (kid/brawler). Far under the acceptance bar.
+ *     +0.002*n^2 on this scalar   acceptance bar HELD, but `treats both classes
+ *                                 comparably` failed at a gap of 11 against a
+ *                                 limit of 8, and `rewards build quality`
+ *                                 inverted -- the smart pilot died before it
+ *                                 could merge.
+ *     +0.004*n^2 on HP ONLY,      `completes all 25 waves on most seeds` failed
+ *     damage left linear          AND parity still failed.
+ *
+ * The middle row is the instructive one. Multiplying incoming DAMAGE rewards
+ * flat damage reduction and punishes a low-HP dodger, so The Hand (30% DR while
+ * braced) barely noticed while The Kid was shredded. Incoming damage is the
+ * wrong lever for late pressure. Scaling HP alone instead makes the field fill
+ * -- which is what the `threatBudget` note wants from the other direction -- but
+ * time-to-kill rises faster than damage output and the run stops completing.
+ *
+ * That is three levers, all measured, all breaking something. It is the same
+ * conclusion `threatBudget` reached: **the game has no headroom, and no single
+ * multiplier buys any.** The honest fix is the one that note already named -- a
+ * design change to `enemies.json`, HP and contact damage and threatCost moved
+ * together, so the late game holds more, weaker bodies.
+ *
+ * It also needs a decision that is not a programmer's to make. `run.test.ts`
+ * asserts "clears 25 waves on most seeds" and "neither class is a trap pick".
+ * Those bars ENCODE the current difficulty target. A game the owner considers
+ * appropriately hard may well clear on fewer than half of seeds, and until
+ * somebody says so, every change that makes it harder reads as a regression.
+ *
+ * Do not reach for a bigger coefficient here. It has been tried three ways; the
+ * numbers are above.
+ */
 export function waveScalar(wave: number): number {
   return 1 + 0.06 * (wave - 1)
 }
