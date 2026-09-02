@@ -42,6 +42,10 @@ const seconds = Number(process.argv[3] ?? 180)
 const outDir = process.argv[4] ?? 'tools/play'
 const seed = process.argv[5] ?? 'playtest'
 const PORT = 5198
+/* How often to sample. Configurable so the sampler can be ruled IN or OUT as
+   the cause of a periodic hitch -- if a spike period follows this value, the
+   spikes are the measurement, not the game. */
+const SAMPLE_MS = Number(process.env.RDF_SAMPLE_MS ?? 1000)
 
 /** Sampled once a second off the live world. */
 interface Sample {
@@ -55,12 +59,18 @@ interface Sample {
   cleared: number
   feed: number
   elapsed: number
+  wall: number
   fps: number
   levelUp: boolean
   shop: boolean
   results: boolean
   paused: boolean
   over: boolean
+  hitstop: number
+  playerAlive: boolean
+  tick: number
+  pauseOpen: boolean
+  waveTime: number
 }
 
 mkdirSync(outDir, { recursive: true })
@@ -82,6 +92,33 @@ try {
   page.on('response', (r) => {
     if (r.status() >= 400) problems.push(`HTTP ${r.status()} ${r.url()}`)
   })
+
+  /*
+     Record every long frame, and the heap alongside it.
+
+     The owner reported a stutter "roughly every 6-10 seconds". A periodic
+     hitch with a stable period is a different animal from a slow frame: it
+     points at something that happens on a schedule, and the usual suspect in a
+     game with a zero-allocation rule is the garbage collector. So sample the
+     heap next to the frame times -- a sawtooth that drops exactly when a spike
+     lands is GC, and a spike with a flat heap is work.
+
+     Installed before app code so frame zero is covered.
+  */
+  await page.addInitScript(`
+    window.__spikes = []; window.__frames = 0; window.__heap = [];
+    let last = performance.now();
+    const tick = (t) => {
+      const d = t - last; last = t; window.__frames++;
+      if (d > 33) window.__spikes.push([Math.round(t), Math.round(d)]);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    setInterval(() => {
+      const m = performance.memory;
+      if (m) window.__heap.push([Math.round(performance.now()), m.usedJSHeapSize]);
+    }, 250);
+  `)
 
   await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'domcontentloaded', timeout: 120_000 })
   // The atlas resolves asynchronously and `rdf` is assigned at module bottom.
@@ -126,6 +163,39 @@ try {
 
   await page.evaluate(`window.rdf.startRun(${JSON.stringify(classId)}, ${JSON.stringify(seed)})`)
   await page.waitForTimeout(500)
+  /*
+     Throw away everything recorded before the run.
+
+     Page load blocks the main thread for tens of seconds -- a 12MB atlas and
+     the whole module graph -- and shows up as one absurd 52-60s "frame" that
+     dominates the spike table and means nothing about play. Reset here so
+     every number below is gameplay, and re-base the clock on the run.
+  */
+  /* `RDF_NO_OVERLAY=1` toggles the dev overlay off (F1) before measuring, so
+     its per-frame text and graph work can be ruled in or out. */
+  /*
+     `RDF_PROFILE=1` takes a real CPU profile over the run.
+
+     A/B-ing suspects stopped working: run-to-run variance is larger than any
+     effect being tested (turning the dev overlay OFF measured WORSE than
+     leaving it on, which says the runs differ, not that the overlay helps).
+     Sampling the stack is the only thing that names a function instead of
+     nominating one.
+  */
+  const cdp = process.env.RDF_PROFILE === '1'
+    ? await page.context().newCDPSession(page)
+    : null
+  if (cdp) {
+    await cdp.send('Profiler.enable')
+    await cdp.send('Profiler.setSamplingInterval', { interval: 200 })
+    await cdp.send('Profiler.start')
+  }
+
+  if (process.env.RDF_NO_OVERLAY === '1') {
+    await page.keyboard.press('F1')
+    await page.waitForTimeout(300)
+  }
+  await page.evaluate('window.__spikes.length = 0; window.__heap.length = 0; window.__t0 = performance.now();')
 
   /*
      Read the run's own numbers rather than the pixels.
@@ -144,6 +214,8 @@ try {
       wave: w.spawner ? w.spawner.wave : 0,
       hp: Math.round(w.player.hp), maxHp: Math.round(w.player.stats.maxHp),
       level: w.player.level, feed: Math.round(w.player.feed),
+      hitstop: +(w.hitstop || 0).toFixed(2), playerAlive: !!w.player.alive,
+      tick: w.tick, pauseOpen: !!sc.pause.isOpen, waveTime: +(w.spawner ? w.spawner.waveTime : 0).toFixed(1),
       alive: w.enemies.live, kills: w.kills, cleared: w.wavesCleared,
       elapsed: Math.round(w.elapsed)
     });
@@ -157,7 +229,9 @@ try {
   const ORBIT = ['d', 's', 'a', 'w']
   let held = ''
   let lastShot = -1e9
+  let lastFps = ticks * 2
   let lastWave = 0
+  const started = Date.now()
 
   for (let t = 0; t < seconds; t++) {
     const want = ORBIT[Math.floor(t / 3) % ORBIT.length]
@@ -166,12 +240,21 @@ try {
       await page.keyboard.down(want)
       held = want
     }
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(SAMPLE_MS)
 
-    const fps = (await page.evaluate(COUNT_RAF) as number) * 2
+    /*
+       The fps probe BLOCKS for 500ms, so paying it every second silently made
+       each iteration ~1.6s and every `t=` in this report a lie -- a run said
+       t=95s when 190s of wall clock had passed. Sample it every 10th tick and
+       carry the last reading; the frame-time recorder in the page catches
+       anything that happens in between anyway.
+    */
+    if (t % 10 === 0) lastFps = (await page.evaluate(COUNT_RAF) as number) * 2
+    const fps = lastFps
     const raw = await page.evaluate(READ) as string | null
-    if (!raw) { events.push(`t=${t}s  world is gone -- run ended`); break }
-    const s = { t, fps, ...JSON.parse(raw) } as Sample
+    if (!raw) { events.push(`t=${Math.round((Date.now() - started) / 1000)}s  world is gone -- run ended`); break }
+    const wall = Math.round((Date.now() - started) / 1000)
+    const s = { t, wall, fps, ...JSON.parse(raw) } as Sample
     samples.push(s)
 
     /*
@@ -190,12 +273,12 @@ try {
     */
     if (s.levelUp) {
       await page.keyboard.press('1')
-      events.push(`t=${t}s  level ${s.level} -- took offer 1`)
+      events.push(`t=${Math.round((Date.now() - started) / 1000)}s  level ${s.level} -- took offer 1`)
       await page.waitForTimeout(400)
     } else if (s.shop) {
       const back = page.getByText('BACK TO THE FIELD').first()
       if (await back.count()) await back.click()
-      events.push(`t=${t}s  shop after wave ${s.wave - 1} -- left with ${s.feed} feed`)
+      events.push(`t=${Math.round((Date.now() - started) / 1000)}s  shop after wave ${s.wave - 1} -- left with ${s.feed} feed`)
       await page.waitForTimeout(400)
     } else if (s.results || s.over) {
       /*
@@ -208,7 +291,7 @@ try {
          open, which reads exactly like a hang. It was reported as one.
       */
       events.push(
-        `t=${t}s  RUN OVER -- died on wave ${s.wave} at level ${s.level}, `
+        `t=${Math.round((Date.now() - started) / 1000)}s  RUN OVER -- died on wave ${s.wave} at level ${s.level}, `
         + `${s.kills} kills, ${s.feed} feed banked`,
       )
       break
@@ -226,12 +309,26 @@ try {
        rate is measured in the same sample, so the report can just say.
     */
     const prev = samples[samples.length - 2]
-    if (prev && prev.elapsed === s.elapsed && !s.paused && !s.over) {
+    /*
+       Compare TICK, not the clock.
+
+       `elapsed` was rounded to whole seconds and compared across samples about
+       a second apart, so two honest readings could round to the same integer
+       and be reported as a frozen sim. It fired three times on a game that was
+       running fine, and each one read like a hang worth chasing. `tick` is an
+       exact integer that advances once per fixed step, so an unchanged tick
+       means the step really did not run.
+    */
+    if (prev && prev.tick === s.tick && !s.paused && !s.over) {
       events.push(
         s.fps < 10
-          ? `t=${t}s  THROTTLED -- ${s.fps}fps, sim clock stuck at ${s.elapsed}s. `
+          ? `t=${Math.round((Date.now() - started) / 1000)}s  THROTTLED -- ${s.fps}fps, sim clock stuck at ${s.elapsed}s. `
             + 'The browser window is covered or minimised, not the game stalling.'
-          : `t=${t}s  STALLED -- sim clock stuck at ${s.elapsed}s at ${s.fps}fps, no screen open`,
+          : `t=${Math.round((Date.now() - started) / 1000)}s  STALLED -- sim clock stuck at ${s.elapsed}s `
+            + `at ${s.fps}fps. tick=${s.tick} (was ${prev.tick}) hitstop=${s.hitstop} `
+            + `playerAlive=${s.playerAlive} over=${s.over} paused=${s.paused} `
+            + `pause=${s.pauseOpen} levelUp=${s.levelUp} shop=${s.shop} results=${s.results} `
+            + `waveTime=${s.waveTime}`,
       )
       // A covered window is recoverable; raise it and give it one more second.
       if (s.fps < 10) { await page.bringToFront(); await page.waitForTimeout(1000); continue }
@@ -240,7 +337,7 @@ try {
 
     const changed = s.wave !== lastWave
     if (changed) {
-      events.push(`t=${t}s  wave ${s.wave} begins -- ${s.hp}/${s.maxHp} hp, level ${s.level}`)
+      events.push(`t=${Math.round((Date.now() - started) / 1000)}s  wave ${s.wave} begins -- ${s.hp}/${s.maxHp} hp, level ${s.level}`)
       lastWave = s.wave
     }
     // Photograph on a wave change, or every 30s, whichever comes first.
@@ -265,11 +362,11 @@ try {
     '',
     '## Samples',
     '',
-    '| t | fps | wave | hp | level | alive | kills | feed |',
+    '| wall | fps | wave | hp | level | alive | kills | feed |',
     '|---|---|---|---|---|---|---|---|',
     ...samples
       .filter((s) => s.t % 10 === 0 || s === last)
-      .map((s) => `| ${s.t}s | ${s.fps} | ${s.wave} | ${s.hp}/${s.maxHp} | ${s.level} | ${s.alive} | ${s.kills} | ${s.feed} |`),
+      .map((s) => `| ${s.wall}s | ${s.fps} | ${s.wave} | ${s.hp}/${s.maxHp} | ${s.level} | ${s.alive} | ${s.kills} | ${s.feed} |`),
     '',
     '## Shots',
     '',
@@ -282,6 +379,87 @@ try {
       : 'no console errors, no failed requests',
     '',
   ]
+  if (cdp) {
+    const { profile } = await cdp.send('Profiler.stop') as {
+      profile: {
+        nodes: { id: number; callFrame: { functionName: string; url: string; lineNumber: number } }[]
+        samples: number[]
+        timeDeltas: number[]
+      }
+    }
+    // Self time per call frame: the sample sits on the function actually
+    // running, so summing the deltas against it is where the time went.
+    const byId = new Map<number, number>()
+    for (let i = 0; i < profile.samples.length; i++) {
+      const id = profile.samples[i]
+      byId.set(id, (byId.get(id) ?? 0) + (profile.timeDeltas[i] ?? 0))
+    }
+    const named = new Map<string, number>()
+    for (const n of profile.nodes) {
+      const us = byId.get(n.id)
+      if (!us) continue
+      const f = n.callFrame
+      const where = f.url.replace(/^https?:\/\/[^/]+/, '')
+      const key = `${f.functionName || '(anonymous)'}  ${where}:${f.lineNumber + 1}`
+      named.set(key, (named.get(key) ?? 0) + us)
+    }
+    const total = [...named.values()].reduce((a, b) => a + b, 0) || 1
+    const top = [...named.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25)
+    lines.push(
+      '## CPU profile',
+      '',
+      `${(total / 1e6).toFixed(1)}s of samples.`,
+      '',
+      '| self | % | function |',
+      '|---|---|---|',
+      ...top.map(([k, us]) => `| ${(us / 1e6).toFixed(2)}s | ${(us / total * 100).toFixed(1)}% | \`${k}\` |`),
+      '',
+    )
+  }
+
+  /* Frame-time spikes and the heap behind them. */
+  const spikes = await page.evaluate('JSON.stringify(window.__spikes || [])') as string
+  const heap = await page.evaluate('JSON.stringify(window.__heap || [])') as string
+  const base = await page.evaluate('window.__t0 || 0') as number
+  const sp = (JSON.parse(spikes) as [number, number][]).map(([t, d]) => [t - base, d] as [number, number])
+  const hp = JSON.parse(heap) as [number, number][]
+  const gaps: number[] = []
+  for (let i = 1; i < sp.length; i++) gaps.push((sp[i][0] - sp[i - 1][0]) / 1000)
+  const median = gaps.length
+    ? [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)]
+    : 0
+  const worst = [...sp].sort((a, b) => b[1] - a[1]).slice(0, 10)
+  // Heap drops mean a collection ran. Their spacing is the GC period.
+  const drops: number[] = []
+  for (let i = 1; i < hp.length; i++) {
+    if (hp[i][1] < hp[i - 1][1] * 0.85) drops.push(hp[i][0] / 1000)
+  }
+  const dropGaps: number[] = []
+  for (let i = 1; i < drops.length; i++) dropGaps.push(drops[i] - drops[i - 1])
+
+  // The whole series, so periodicity can be looked for offline rather than
+  // guessed at from a top-ten table.
+  writeFileSync(`${outDir}/spikes.json`, JSON.stringify({
+    spikes: sp.map(([t, d]) => [+(t / 1000).toFixed(2), d]),
+    events,
+  }))
+
+  lines.push(
+    '## Frame spikes',
+    '',
+    `${sp.length} frames over 33ms. Median gap between them: **${median.toFixed(1)}s**.`,
+    '',
+    `Heap collections (a drop over 15%): ${drops.length}`
+    + (dropGaps.length
+      ? `, median **${[...dropGaps].sort((a, b) => a - b)[Math.floor(dropGaps.length / 2)].toFixed(1)}s** apart.`
+      : '.'),
+    '',
+    '| at | frame ms |',
+    '|---|---|',
+    ...worst.map(([t, d]) => `| ${(t / 1000).toFixed(1)}s | ${d} |`),
+    '',
+  )
+
   const report = `${outDir}/REPORT.md`
   writeFileSync(report, lines.join('\n'))
 

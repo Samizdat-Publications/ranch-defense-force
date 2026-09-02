@@ -354,15 +354,42 @@ function assertUiLayersClickable(): void {
    Screens are built empty and filled on open, so at boot the results layer has
    no buttons to count — checking once would have missed the exact bug this
    exists for. A MutationObserver on `#ui` fires when a screen is shown or
-   populated, which is precisely the moment the question is worth asking, and it
-   costs nothing in a build where it does not run.
+   populated, which is precisely the moment the question is worth asking.
+
+   ## Why it is filtered and throttled, and not just observed
+
+   The first version watched `subtree: true, attributes: true` and re-checked on
+   a microtask. The HUD LIVES IN `#ui` AND WRITES STYLES EVERY FRAME — hp bar
+   width, xp fill, cooldown sweeps — so every frame fired the observer, and the
+   check calls `getComputedStyle`, which forces a synchronous style recalc. The
+   game was paying a full style flush per frame for a dev assertion.
+
+   Measured, in a CPU profile of a real run: `assertUiLayersClickable` 4.05s of
+   self time plus 2.54s inside `querySelectorAll`, against roughly 28s of
+   non-idle JS — about a QUARTER of everything the game did, and second only to
+   `drawImage`. It surfaced as 100-400ms frame spikes in bursts, which the owner
+   reported as a stutter every 6-10 seconds.
+
+   Two changes, neither of which weakens the guard:
+
+   - Only mutations that can change the answer count. The check reads
+     `uiRoot.children` — a layer's computed `pointer-events` and how many
+     controls sit under it. So a `childList` change anywhere matters (controls
+     appear), but an ATTRIBUTE change only matters on a layer itself. The HUD
+     restyling its own innards cannot make a layer unclickable.
+   - A timer, not a microtask. A burst of DOM churn now costs one check instead
+     of one per frame. This reports a dead button 200ms later than it used to,
+     into `console.error`, which is not a deadline anybody is keeping.
 */
 if (import.meta.env.DEV) {
-  let queued = false
-  new MutationObserver(() => {
-    if (queued) return
-    queued = true
-    queueMicrotask(() => { queued = false; assertUiLayersClickable() })
+  let timer = 0
+  new MutationObserver((records) => {
+    const worth = records.some((r) => (
+      r.type === 'childList'
+      || (r.target as HTMLElement | null)?.parentElement === uiRoot
+    ))
+    if (!worth || timer) return
+    timer = window.setTimeout(() => { timer = 0; assertUiLayersClickable() }, 200)
   }).observe(uiRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] })
 }
 
