@@ -422,102 +422,102 @@
       "file": "maskedHauler.death.right.png"
     },
     "baseGuard.walk.down": {
-      "cell": 58,
+      "cell": 67,
       "frames": 8,
       "file": "baseGuard.walk.down.png"
     },
     "baseGuard.walk.up": {
-      "cell": 58,
+      "cell": 70,
       "frames": 8,
       "file": "baseGuard.walk.up.png"
     },
     "baseGuard.walk.left": {
-      "cell": 58,
+      "cell": 67,
       "frames": 8,
       "file": "baseGuard.walk.left.png"
     },
     "baseGuard.walk.right": {
-      "cell": 58,
+      "cell": 70,
       "frames": 8,
       "file": "baseGuard.walk.right.png"
     },
     "baseTech.walk.down": {
-      "cell": 58,
+      "cell": 65,
       "frames": 8,
       "file": "baseTech.walk.down.png"
     },
     "baseTech.walk.up": {
-      "cell": 58,
+      "cell": 69,
       "frames": 8,
       "file": "baseTech.walk.up.png"
     },
     "baseTech.walk.left": {
-      "cell": 58,
+      "cell": 65,
       "frames": 8,
       "file": "baseTech.walk.left.png"
     },
     "baseTech.walk.right": {
-      "cell": 58,
+      "cell": 67,
       "frames": 8,
       "file": "baseTech.walk.right.png"
     },
     "baseHazmat.walk.down": {
-      "cell": 58,
+      "cell": 64,
       "frames": 8,
       "file": "baseHazmat.walk.down.png"
     },
     "baseHazmat.walk.up": {
-      "cell": 58,
+      "cell": 67,
       "frames": 8,
       "file": "baseHazmat.walk.up.png"
     },
     "baseHazmat.walk.left": {
-      "cell": 58,
+      "cell": 67,
       "frames": 8,
       "file": "baseHazmat.walk.left.png"
     },
     "baseHazmat.walk.right": {
-      "cell": 58,
+      "cell": 66,
       "frames": 8,
       "file": "baseHazmat.walk.right.png"
     },
     "baseOperator.walk.down": {
-      "cell": 58,
+      "cell": 66,
       "frames": 8,
       "file": "baseOperator.walk.down.png"
     },
     "baseOperator.walk.up": {
-      "cell": 58,
+      "cell": 68,
       "frames": 8,
       "file": "baseOperator.walk.up.png"
     },
     "baseOperator.walk.left": {
-      "cell": 58,
+      "cell": 68,
       "frames": 8,
       "file": "baseOperator.walk.left.png"
     },
     "baseOperator.walk.right": {
-      "cell": 58,
+      "cell": 68,
       "frames": 8,
       "file": "baseOperator.walk.right.png"
     },
     "baseBreacher.walk.down": {
-      "cell": 58,
+      "cell": 70,
       "frames": 8,
       "file": "baseBreacher.walk.down.png"
     },
     "baseBreacher.walk.up": {
-      "cell": 58,
+      "cell": 65,
       "frames": 8,
       "file": "baseBreacher.walk.up.png"
     },
     "baseBreacher.walk.left": {
-      "cell": 58,
+      "cell": 65,
       "frames": 8,
       "file": "baseBreacher.walk.left.png"
     },
     "baseBreacher.walk.right": {
-      "cell": 58,
+      "cell": 70,
       "frames": 8,
       "file": "baseBreacher.walk.right.png"
     },

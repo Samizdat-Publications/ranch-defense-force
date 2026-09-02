@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #0f1113; }
+  a { color: #6fe0c0; text-decoration: none; border-bottom: 1px solid rgba(111,224,192,0.4); }
+  a:hover { color: #a8f2dd; border-bottom-color: rgba(168,242,221,0.7); }
+  @keyframes y-strip { to { background-position: calc(-1 * var(--strip-w)) 0; } }
+  @keyframes l-hum { 0%,100% { opacity: 0.86; } 43% { opacity: 1; } 71% { opacity: 0.8; } }
+  @keyframes l-glow { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+  @keyframes l-fizz { 0%,93.6%,100% { opacity: 0.12; } 94% { opacity: 0.9; } 94.4% { opacity: 0.15; } 95.1% { opacity: 1; } 95.5% { opacity: 0.2; } 96.4% { opacity: 0.75; } 97% { opacity: 0.14; } }
+  @keyframes l-lift { 0%,74%,100% { opacity: 0.16; } 80% { opacity: 1; } 92% { opacity: 0.9; } 97% { opacity: 0.2; } }
+  @keyframes l-liftfloor { 0%,74%,100% { opacity: 0; } 80%,92% { opacity: 0.55; } 97% { opacity: 0; } }
+  @keyframes l-dust { 0%,100% { transform: translate(0,0); opacity: 0.14; } 40% { opacity: 0.5; } 60% { transform: translate(var(--dx),var(--dy)); opacity: 0.4; } 85% { opacity: 0.1; } }
+  @keyframes mull-tech-path { 0%,25% { transform: translateX(0); } 28.8%,60% { transform: translateX(220px); } 63.8%,100% { transform: translateX(0); } }
+  @keyframes mull-tech-pl { 0%,23% { opacity: 1; } 23.01%,58% { opacity: 0; } 58.01%,60% { opacity: 1; } 60.01%,63.8% { opacity: 0; } 63.81%,100% { opacity: 1; } }
+  @keyframes mull-tech-pr { 0%,23% { opacity: 0; } 23.01%,25% { opacity: 1; } 25.01%,28.8% { opacity: 0; } 28.81%,58% { opacity: 1; } 58.01%,100% { opacity: 0; } }
+  @keyframes mull-tech-wr { 0%,25% { opacity: 0; } 25.01%,28.8% { opacity: 1; } 28.81%,100% { opacity: 0; } }
+  @keyframes mull-tech-wl { 0%,60% { opacity: 0; } 60.01%,63.8% { opacity: 1; } 63.81%,100% { opacity: 0; } }
+  @keyframes mull-guard-path { 0%,14% { transform: translateX(0); } 19.93%,54% { transform: translateX(320px); } 61.93%,100% { transform: translateX(0); } }
+  @keyframes mull-guard-pl { 0%,12% { opacity: 1; } 12.01%,54% { opacity: 0; } 54.01%,56% { opacity: 1; } 56.01%,61.93% { opacity: 0; } 61.94%,100% { opacity: 1; } }
+  @keyframes mull-guard-pr { 0%,12% { opacity: 0; } 12.01%,14% { opacity: 1; } 14.01%,19.93% { opacity: 0; } 19.94%,54% { opacity: 1; } 54.01%,100% { opacity: 0; } }
+  @keyframes mull-guard-wr { 0%,14% { opacity: 0; } 14.01%,19.93% { opacity: 1; } 19.94%,100% { opacity: 0; } }
+  @keyframes mull-guard-wl { 0%,56% { opacity: 0; } 56.01%,61.93% { opacity: 1; } 61.94%,100% { opacity: 0; } }
+  @keyframes mull-haz-path { 0%,20% { transform: translateX(0); } 26.1%,62% { transform: translateX(-300px); } 70.1%,100% { transform: translateX(0); } }
+  @keyframes mull-haz-pr { 0%,18% { opacity: 1; } 18.01%,62% { opacity: 0; } 62.01%,64% { opacity: 1; } 64.01%,70.1% { opacity: 0; } 70.11%,100% { opacity: 1; } }
+  @keyframes mull-haz-pl { 0%,18% { opacity: 0; } 18.01%,20% { opacity: 1; } 20.01%,26.1% { opacity: 0; } 26.11%,62% { opacity: 1; } 62.01%,100% { opacity: 0; } }
+  @keyframes mull-haz-wl { 0%,20% { opacity: 0; } 20.01%,26.1% { opacity: 1; } 26.11%,100% { opacity: 0; } }
+  @keyframes mull-haz-wr { 0%,64% { opacity: 0; } 64.01%,70.1% { opacity: 1; } 70.11%,100% { opacity: 0; } }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:28px;padding:36px;width:1992px;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;color:#dfe4e2">
+
+  <div id="2b" style="display:flex;flex-direction:column;gap:20px">
+
+    <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+      <span style="font-family:Silkscreen,monospace;font-size:12px;letter-spacing:0.12em;color:#0f1113;background:#6fe0c0;padding:5px 9px">2b</span>
+      <h1 style="font-family:Rye,serif;font-size:30px;font-weight:400;margin:0;color:#eaf2ef">Sector 4 — Containment, at one scale</h1>
+      <span style="font-size:13px;color:#8b9691">a grown person is <strong style="color:#c2ccc9">174px</strong> · 97px per metre · everything on the floor rebuilt to it · <a href="Yard Grounding Fix.dc.html">yard fix 1a</a></span>
+    </div>
+
+    <div style="position:relative;width:1920px;height:1080px;overflow:hidden;background:#191c1f">
+
+      <div style="position:absolute;left:0;right:0;top:0;height:496px;background:linear-gradient(180deg,#23272a 0%,#2c3134 26%,#33383b 62%,#3a3f42 88%,#2f3437 100%)"></div>
+      <div style="position:absolute;left:0;right:0;top:0;height:496px;opacity:0.5;background-image:repeating-linear-gradient(90deg,rgba(0,0,0,0.28) 0 1px,transparent 1px 96px),repeating-linear-gradient(180deg,rgba(0,0,0,0.22) 0 1px,transparent 1px 144px)"></div>
+      <div style="position:absolute;left:0;right:0;top:0;height:240px;background:linear-gradient(180deg,rgba(8,10,12,0.74) 0%,rgba(8,10,12,0.3) 62%,transparent 100%)"></div>
+
+      <div style="position:absolute;left:0;right:0;top:0;height:96px;background-image:url('assets/pixellab/base/ceilingPipes.png');background-size:288px 96px;background-repeat:repeat-x;image-rendering:pixelated;filter:brightness(0.72)"></div>
+
+      <img src="assets/pixellab/base/striplightLit.png" style="position:absolute;left:260px;top:44px;width:192px;height:96px;image-rendering:pixelated;animation:l-hum 5.3s ease-in-out infinite">
+      <img src="assets/pixellab/base/striplightLit.png" style="position:absolute;left:700px;top:44px;width:192px;height:96px;image-rendering:pixelated;animation:l-hum 6.7s ease-in-out infinite 1.4s">
+      <img src="assets/pixellab/base/striplightLit.png" style="position:absolute;left:1500px;top:44px;width:192px;height:96px;image-rendering:pixelated;animation:l-hum 7.9s ease-in-out infinite 0.6s">
+      <img src="assets/pixellab/base/striplightDead.png" style="position:absolute;left:1060px;top:36px;width:192px;height:144px;image-rendering:pixelated;filter:brightness(0.5)">
+      <div style="position:absolute;left:1084px;top:60px;width:150px;height:56px;pointer-events:none;background:radial-gradient(60% 60% at 50% 50%,rgba(198,232,255,0.85),transparent 72%);animation:l-fizz 71s linear infinite"></div>
+
+      <div style="position:absolute;left:180px;top:130px;width:352px;height:390px;pointer-events:none;background:linear-gradient(180deg,rgba(206,232,240,0.16) 0%,rgba(206,232,240,0.04) 60%,transparent 100%);filter:blur(8px)"></div>
+      <div style="position:absolute;left:620px;top:130px;width:352px;height:390px;pointer-events:none;background:linear-gradient(180deg,rgba(206,232,240,0.16) 0%,rgba(206,232,240,0.04) 60%,transparent 100%);filter:blur(8px)"></div>
+      <div style="position:absolute;left:1420px;top:130px;width:352px;height:390px;pointer-events:none;background:linear-gradient(180deg,rgba(206,232,240,0.16) 0%,rgba(206,232,240,0.04) 60%,transparent 100%);filter:blur(8px)"></div>
+
+      <img src="assets/pixellab/base/wallPipes.png" style="position:absolute;left:200px;top:280px;width:96px;height:144px;image-rendering:pixelated;filter:brightness(0.88)">
+      <img src="assets/pixellab/base/wallHazard.png" style="position:absolute;left:330px;top:280px;width:96px;height:144px;image-rendering:pixelated;filter:brightness(0.9)">
+      <img src="assets/pixellab/base/warningSign.png" style="position:absolute;left:104px;top:300px;width:96px;height:144px;image-rendering:pixelated">
+      <img src="assets/pixellab/base/wallVent.png" style="position:absolute;left:1120px;top:280px;width:96px;height:144px;image-rendering:pixelated;filter:brightness(0.86)">
+      <img src="assets/pixellab/base/wallStencil.png" style="position:absolute;left:1240px;top:280px;width:96px;height:144px;image-rendering:pixelated;filter:brightness(0.9)">
+      <img src="assets/pixellab/base/wallLamp.png" style="position:absolute;left:1360px;top:280px;width:96px;height:144px;image-rendering:pixelated;filter:brightness(1.05)">
+      <div style="position:absolute;left:1300px;top:280px;width:216px;height:250px;pointer-events:none;background:radial-gradient(50% 50% at 50% 24%,rgba(255,214,150,0.3),transparent 72%);filter:blur(6px);animation:l-hum 8.3s ease-in-out infinite"></div>
+      <img src="assets/pixellab/base/warningSign.png" style="position:absolute;left:1462px;top:300px;width:96px;height:144px;image-rendering:pixelated">
+      <img src="assets/pixellab/base/wallPipes.png" style="position:absolute;left:1790px;top:280px;width:96px;height:144px;image-rendering:pixelated;filter:brightness(0.82)">
+
+      <img src="assets/pixellab/base/lift3.png" style="position:absolute;left:820px;top:244px;width:256px;height:256px;image-rendering:pixelated">
+      <div style="position:absolute;left:838px;top:262px;width:220px;height:238px;pointer-events:none;background:radial-gradient(58% 62% at 50% 48%,rgba(255,196,110,0.62),transparent 74%);animation:l-lift 31s ease-in-out infinite"></div>
+      <img src="assets/pixellab/base/blastDoor5.png" style="position:absolute;left:1500px;top:248px;width:256px;height:256px;image-rendering:pixelated">
+
+      <div style="position:absolute;left:0;right:0;top:496px;bottom:0;background:linear-gradient(180deg,#4c5052 0%,#44484c 8%,#3b3f44 22%,#32363c 44%,#26282e 70%,#171920 100%)"></div>
+      <div style="position:absolute;left:0;right:0;top:496px;bottom:0;opacity:0.32;background-image:repeating-linear-gradient(180deg,rgba(0,0,0,0.4) 0 1px,transparent 1px 68px),repeating-linear-gradient(90deg,rgba(0,0,0,0.3) 0 1px,transparent 1px 192px)"></div>
+      <div style="position:absolute;left:0;right:0;top:496px;height:26px;background:linear-gradient(180deg,#63696d 0%,#4b5054 46%,#383c40 100%)"></div>
+      <div style="position:absolute;left:0;right:0;top:496px;height:2px;background:rgba(196,214,220,0.4)"></div>
+      <div style="position:absolute;left:0;right:0;top:470px;height:98px;pointer-events:none;filter:blur(11px);background:linear-gradient(180deg,rgba(120,138,146,0) 0%,rgba(96,112,122,0.3) 44%,rgba(60,70,78,0.04) 100%)"></div>
+      <div style="position:absolute;left:0;right:0;top:518px;height:56px;pointer-events:none;background:linear-gradient(180deg,rgba(8,10,14,0.5) 0%,rgba(8,10,14,0) 100%)"></div>
+
+      <div style="position:absolute;left:180px;top:520px;width:352px;height:220px;pointer-events:none;filter:blur(18px);background:radial-gradient(50% 50% at 50% 50%,rgba(198,224,236,0.16),transparent 72%)"></div>
+      <div style="position:absolute;left:620px;top:520px;width:352px;height:220px;pointer-events:none;filter:blur(18px);background:radial-gradient(50% 50% at 50% 50%,rgba(198,224,236,0.16),transparent 72%)"></div>
+      <div style="position:absolute;left:1420px;top:520px;width:352px;height:220px;pointer-events:none;filter:blur(18px);background:radial-gradient(50% 50% at 50% 50%,rgba(198,224,236,0.16),transparent 72%)"></div>
+      <div style="position:absolute;left:780px;top:500px;width:340px;height:180px;pointer-events:none;filter:blur(16px);background:radial-gradient(50% 50% at 50% 30%,rgba(255,190,104,0.7),transparent 74%);animation:l-liftfloor 31s ease-in-out infinite"></div>
+
+      <div style="position:absolute;left:1120px;top:600px;width:190px;height:26px;filter:blur(6px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.5),transparent 72%)"></div>
+      <div style="position:absolute;left:1167px;top:475px;width:192px;height:192px;background-image:url('art/strips/tankSwirl.swirl.down.png');background-size:1728px 192px;background-repeat:no-repeat;--strip-w:1728px;image-rendering:pixelated;animation:y-strip 2.9s steps(9) infinite"></div>
+      <div style="position:absolute;left:1352px;top:483px;width:192px;height:192px;background-image:url('art/strips/tankSwirl.churn.down.png');background-size:1728px 192px;background-repeat:no-repeat;--strip-w:1728px;image-rendering:pixelated;animation:y-strip 3.3s steps(9) infinite 0.6s"></div>
+      <div style="position:absolute;left:1540px;top:491px;width:192px;height:192px;background-image:url('art/strips/tankPanel.churn.down.png');background-size:1728px 192px;background-repeat:no-repeat;--strip-w:1728px;image-rendering:pixelated;animation:y-strip 3.9s steps(9) infinite 1.3s"></div>
+      <div style="position:absolute;left:1710px;top:496px;width:192px;height:192px;background-image:url('art/strips/tankBarrel.swirl.down.png');background-size:1728px 192px;background-repeat:no-repeat;--strip-w:1728px;image-rendering:pixelated;animation:y-strip 4.3s steps(9) infinite 2.1s"></div>
+      <div style="position:absolute;left:1140px;top:470px;width:790px;height:250px;pointer-events:none;filter:blur(16px);background:radial-gradient(50% 50% at 50% 60%,rgba(96,224,168,0.22),transparent 74%);animation:l-glow 6.1s ease-in-out infinite"></div>
+
+      <div style="position:absolute;left:673px;top:410px;width:194px;height:292px">
+        <div style="position:absolute;left:44px;top:256px;width:104px;height:22px;filter:blur(5px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.6),transparent 70%)"></div>
+        <img src="assets/pixellab/vault/vatBroken.png" style="position:absolute;inset:0;width:194px;height:292px;image-rendering:pixelated;filter:brightness(0.82)">
+      </div>
+
+      <div style="position:absolute;left:565px;top:460px;width:161px;height:241px">
+        <div style="position:absolute;left:26px;top:208px;width:116px;height:24px;filter:blur(5px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.62),transparent 70%)"></div>
+        <img src="assets/pixellab/vault/vatAlien.png" style="position:absolute;inset:0;width:161px;height:241px;image-rendering:pixelated;filter:brightness(0.94)">
+      </div>
+      <div style="position:absolute;left:576px;top:560px;width:140px;height:170px;pointer-events:none;filter:blur(12px);background:radial-gradient(50% 50% at 50% 50%,rgba(96,224,168,0.22),transparent 72%);animation:l-glow 7.3s ease-in-out infinite"></div>
+
+      <div style="position:absolute;left:398px;top:520px;width:240px;height:240px;filter:blur(15px);pointer-events:none;background:radial-gradient(46% 46% at 50% 54%,rgba(96,224,168,0.32),transparent 72%);animation:l-glow 3.6s ease-in-out infinite"></div>
+      <div style="position:absolute;left:444px;top:684px;width:136px;height:26px;filter:blur(6px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.62),transparent 70%)"></div>
+      <div style="position:absolute;left:386px;top:456px;width:261px;height:261px;background-image:url('art/strips/vatSpecimen.bubble.down.png');background-size:2349px 261px;background-repeat:no-repeat;--strip-w:2349px;image-rendering:pixelated;animation:y-strip 3.6s steps(9) infinite"></div>
+
+      <div style="position:absolute;left:1455px;top:596px;width:174px;height:174px;animation:mull-haz-path 41s linear infinite">
+        <div style="position:absolute;left:36px;top:160px;width:104px;height:22px;filter:blur(5px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.6),transparent 70%)"></div>
+        <div style="position:absolute;inset:0;background-image:url('art/strips/baseHazmat.walk.right.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;filter:brightness(0.9);animation:mull-haz-pr 41s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseHazmat.walk.left.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;filter:brightness(0.9);animation:mull-haz-pl 41s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseHazmat.walk.left.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;filter:brightness(0.9);animation:y-strip 1.2s steps(8) infinite, mull-haz-wl 41s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseHazmat.walk.right.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;filter:brightness(0.9);animation:y-strip 1.2s steps(8) infinite, mull-haz-wr 41s step-end infinite"></div>
+      </div>
+
+      <img src="assets/pixellab/vault/floorGrate.png" style="position:absolute;left:980px;top:890px;width:143px;height:143px;image-rendering:pixelated;filter:brightness(0.62)">
+      <img src="assets/pixellab/vault/floorGrate.png" style="position:absolute;left:1420px;top:930px;width:143px;height:143px;image-rendering:pixelated;filter:brightness(0.56)">
+
+      <div style="position:absolute;left:825px;top:491px;width:374px;height:374px">
+        <div style="position:absolute;left:52px;top:282px;width:270px;height:26px;filter:blur(6px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.6),transparent 70%)"></div>
+        <div style="position:absolute;inset:0;background-image:url('art/strips/labConsole.flicker.down.png');background-size:3366px 374px;background-repeat:no-repeat;--strip-w:3366px;image-rendering:pixelated;animation:y-strip 1.8s steps(9) infinite"></div>
+      </div>
+      <div style="position:absolute;left:840px;top:600px;width:350px;height:200px;pointer-events:none;filter:blur(12px);background:radial-gradient(50% 40% at 50% 62%,rgba(120,206,255,0.22),transparent 74%);animation:l-glow 1.8s steps(9) infinite"></div>
+
+      <div style="position:absolute;left:1162px;top:682px;width:210px;height:210px">
+        <div style="position:absolute;left:18px;top:176px;width:180px;height:24px;filter:blur(5px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.58),transparent 70%)"></div>
+        <img src="assets/pixellab/vault/jarRack.png" style="position:absolute;inset:0;width:210px;height:210px;image-rendering:pixelated;filter:brightness(0.92)">
+      </div>
+
+      <div style="position:absolute;left:1335px;top:615px;width:516px;height:309px">
+        <div style="position:absolute;left:50px;top:186px;width:430px;height:26px;filter:blur(6px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.55),transparent 72%)"></div>
+        <img src="assets/pixellab/vault/drumRank.png" style="position:absolute;inset:0;width:516px;height:309px;image-rendering:pixelated;filter:brightness(0.84)">
+      </div>
+
+      <div style="position:absolute;left:544px;top:707px;width:188px;height:150px">
+        <div style="position:absolute;left:18px;top:130px;width:160px;height:22px;filter:blur(5px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.58),transparent 70%)"></div>
+        <img src="assets/pixellab/base/labBench.png" style="position:absolute;inset:0;width:188px;height:150px;image-rendering:pixelated;filter:brightness(0.96)">
+      </div>
+
+      <div style="position:absolute;left:861px;top:696px;width:174px;height:174px;animation:mull-tech-path 47s linear infinite">
+        <div style="position:absolute;left:36px;top:160px;width:104px;height:22px;filter:blur(5px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.6),transparent 70%)"></div>
+        <div style="position:absolute;inset:0;background-image:url('art/strips/baseTech.walk.left.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;animation:mull-tech-pl 47s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseTech.walk.right.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;animation:mull-tech-pr 47s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseTech.walk.right.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;animation:y-strip 1.2s steps(8) infinite, mull-tech-wr 47s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseTech.walk.left.png');background-size:1392px 174px;background-repeat:no-repeat;--strip-w:1392px;image-rendering:pixelated;animation:y-strip 1.2s steps(8) infinite, mull-tech-wl 47s step-end infinite"></div>
+      </div>
+
+      <div style="position:absolute;left:420px;top:770px;width:190px;height:190px;animation:mull-guard-path 59s linear infinite">
+        <div style="position:absolute;left:38px;top:175px;width:114px;height:24px;filter:blur(5px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.66),transparent 70%)"></div>
+        <div style="position:absolute;inset:0;background-image:url('art/strips/baseGuard.walk.left.png');background-size:1520px 190px;background-repeat:no-repeat;--strip-w:1520px;image-rendering:pixelated;filter:brightness(0.86);animation:mull-guard-pl 59s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseGuard.walk.right.png');background-size:1520px 190px;background-repeat:no-repeat;--strip-w:1520px;image-rendering:pixelated;filter:brightness(0.86);animation:mull-guard-pr 59s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseGuard.walk.right.png');background-size:1520px 190px;background-repeat:no-repeat;--strip-w:1520px;image-rendering:pixelated;filter:brightness(0.86);animation:y-strip 1.2s steps(8) infinite, mull-guard-wr 59s step-end infinite"></div>
+        <div style="position:absolute;inset:0;opacity:0;background-image:url('art/strips/baseGuard.walk.left.png');background-size:1520px 190px;background-repeat:no-repeat;--strip-w:1520px;image-rendering:pixelated;filter:brightness(0.86);animation:y-strip 1.2s steps(8) infinite, mull-guard-wl 59s step-end infinite"></div>
+      </div>
+
+      <div style="position:absolute;left:264px;top:782px;width:372px;height:239px">
+        <div style="position:absolute;left:40px;top:186px;width:290px;height:26px;filter:blur(6px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.55),transparent 72%)"></div>
+        <img src="assets/pixellab/vault/drumScatter.png" style="position:absolute;inset:0;width:372px;height:239px;image-rendering:pixelated;filter:brightness(0.62)">
+      </div>
+
+      <div style="position:absolute;left:539px;top:779px;width:414px;height:296px">
+        <div style="position:absolute;left:104px;top:216px;width:216px;height:26px;filter:blur(6px);background:radial-gradient(50% 50% at 50% 50%,rgba(6,8,10,0.55),transparent 72%)"></div>
+        <img src="assets/pixellab/vault/examTable.png" style="position:absolute;inset:0;width:414px;height:296px;image-rendering:pixelated;filter:brightness(1.02)">
+      </div>
+
+      <div style="position:absolute;left:1147px;top:848px;width:179px;height:179px;background-image:url('art/strips/tankVat.swirl.down.png');background-size:1611px 179px;background-repeat:no-repeat;--strip-w:1611px;image-rendering:pixelated;filter:brightness(0.86);animation:y-strip 5.4s steps(9) infinite"></div>
+      <div style="position:absolute;left:1150px;top:958px;width:180px;height:56px;pointer-events:none;filter:blur(8px);background:radial-gradient(50% 50% at 50% 50%,rgba(140,224,120,0.22),transparent 72%);animation:l-glow 9.1s ease-in-out infinite"></div>
+
+      <div style="position:absolute;left:1544px;top:797px;width:268px;height:241px">
+        <img src="assets/pixellab/vault/drumStack.png" style="position:absolute;inset:0;width:268px;height:241px;image-rendering:pixelated;filter:brightness(0.7)">
+      </div>
+
+      <div style="position:absolute;left:660px;top:600px;width:5px;height:5px;border-radius:50%;background:#cfe8ff;box-shadow:0 0 8px 2px rgba(180,220,255,0.6);--dx:70px;--dy:-90px;animation:l-dust 13s ease-in-out infinite"></div>
+      <div style="position:absolute;left:1320px;top:640px;width:4px;height:4px;border-radius:50%;background:#cfe8ff;box-shadow:0 0 7px 2px rgba(180,220,255,0.5);--dx:-60px;--dy:-120px;animation:l-dust 17s ease-in-out infinite 4s"></div>
+      <div style="position:absolute;left:980px;top:860px;width:4px;height:4px;border-radius:50%;background:#cfe8ff;box-shadow:0 0 7px 2px rgba(180,220,255,0.45);--dx:90px;--dy:-140px;animation:l-dust 21s ease-in-out infinite 9s"></div>
+
+      <div style="position:absolute;left:0;right:0;top:940px;bottom:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,8,10,0) 0%,rgba(6,8,10,0.5) 42%,rgba(4,6,8,0.9) 100%)"></div>
+      <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(118% 76% at 50% 46%,transparent 40%,rgba(6,10,14,0.58) 100%)"></div>
+      <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,10,16,0.5) 0%,transparent 20%,transparent 54%,rgba(4,6,10,0.68) 100%)"></div>
+
+      <sc-if value="{{ showGuides }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;pointer-events:none;font-family:Silkscreen,monospace;font-size:11px;color:#7ad3ff">
+          <div style="position:absolute;left:0;right:0;top:496px;height:0;border-top:1px dashed rgba(122,211,255,0.85)"></div>
+          <div style="position:absolute;left:12px;top:474px;background:rgba(8,20,28,0.85);padding:3px 6px">JUNCTION 496 — kick 496–522, contact 518–574</div>
+          <div style="position:absolute;left:0;right:0;top:496px;height:60px;background:repeating-linear-gradient(45deg,rgba(255,170,90,0.18) 0 12px,transparent 12px 24px);border-bottom:1px dotted rgba(255,180,120,0.8)"></div>
+          <div style="position:absolute;left:12px;top:530px;color:#ffb478;background:rgba(28,18,8,0.85);padding:3px 6px">NO FEET IN 496–556</div>
+          <div style="position:absolute;left:0;right:0;top:664px;height:0;border-top:1px dotted rgba(160,255,190,0.5)"></div>
+          <div style="position:absolute;left:12px;top:642px;color:#a0ffbe;background:rgba(8,28,16,0.8);padding:3px 6px">WALL ROW 664–700 · 168px of floor behind it</div>
+          <div style="position:absolute;left:0;right:0;top:770px;height:0;border-top:1px dashed rgba(122,211,255,0.5)"></div>
+          <div style="position:absolute;left:12px;top:748px;background:rgba(8,20,28,0.8);padding:3px 6px">LANE 1 · foot 770 · hazmat patrol, paints BEHIND everything in band B</div>
+          <div style="position:absolute;left:0;right:0;top:1000px;height:0;border-top:1px dashed rgba(122,211,255,0.5)"></div>
+          <div style="position:absolute;left:12px;top:976px;background:rgba(8,20,28,0.8);padding:3px 6px">LANE 2 · foot 1000 · guard, paints LAST</div>
+          <div style="position:absolute;left:0;top:0;width:430px;height:726px;background:repeating-linear-gradient(45deg,rgba(255,90,90,0.16) 0 12px,transparent 12px 24px);border-right:1px dashed rgba(255,120,120,0.7);border-bottom:1px dashed rgba(255,120,120,0.7)"></div>
+          <div style="position:absolute;left:16px;top:16px;color:#ff9a9a;background:rgba(30,10,10,0.85);padding:4px 7px">CLASS RAIL · nothing that moves, nothing that has to be read</div>
+          <div style="position:absolute;left:0;right:0;top:940px;bottom:0;background:repeating-linear-gradient(45deg,rgba(255,90,90,0.16) 0 12px,transparent 12px 24px);border-top:1px dashed rgba(255,120,120,0.7)"></div>
+          <div style="position:absolute;left:16px;top:952px;color:#ff9a9a;background:rgba(30,10,10,0.85);padding:4px 7px">SILHOUETTE · props only</div>
+          <div style="position:absolute;left:430px;top:640px;width:1490px;height:300px;border:1px solid rgba(255,230,150,0.7);background:rgba(255,230,150,0.05)"></div>
+          <div style="position:absolute;left:440px;top:646px;color:#ffe696;background:rgba(30,24,8,0.85);padding:4px 7px">READABLE BAND · x 430–1920 · y 640–940</div>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <div style="background:#1a1e20;border:1px solid #2f3538;padding:22px">
+        <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:0.14em;color:#d4654a;margin-bottom:8px">WHAT WAS WRONG — YOU WERE RIGHT</div>
+        <h2 style="font-family:Rye,serif;font-size:21px;font-weight:400;margin:0 0 12px;color:#eaf2ef">Two scales in one room</h2>
+        <p style="margin:0 0 14px;font-size:13px;line-height:1.65;color:#c2ccc9">The wall fixtures were at 4× and the floor kit at roughly 1×, so the door and the panels weren't too big — <strong style="color:#eaf2ef">everything else was too small</strong>, exactly as you said. The lift cage is 256px for a 2.6m gate, which fixes the room's scale at <strong style="color:#6fe0c0">97px per metre</strong>. Everything on the floor is now derived from that one number instead of from the <code>drawAt</code> column, which was authored for a scene without a 4× door in it.</p>
+        <div style="display:grid;grid-template-columns:1.3fr 0.7fr 0.7fr 1fr;gap:5px 14px;font-size:12.5px;line-height:1.7;color:#c2ccc9">
+          <span style="font-family:Silkscreen,monospace;font-size:10px;color:#8b9691">PIECE</span><span style="font-family:Silkscreen,monospace;font-size:10px;color:#8b9691">WAS</span><span style="font-family:Silkscreen,monospace;font-size:10px;color:#8b9691">IS</span><span style="font-family:Silkscreen,monospace;font-size:10px;color:#8b9691">READS AS</span>
+          <span style="color:#eaf2ef">a person</span><span style="color:#8d8168">64 tall</span><span style="color:#6fe0c0">174 tall</span><span>1.8m</span>
+          <span>labConsole</span><span style="color:#8d8168">130 wide</span><span style="color:#6fe0c0">310 wide</span><span>3.2m control bank</span>
+          <span>tank ×4</span><span style="color:#8d8168">52</span><span style="color:#6fe0c0">186</span><span>1.9m machines</span>
+          <span>vatSpecimen</span><span style="color:#8d8168">78×206</span><span style="color:#6fe0c0">84×222</span><span>2.3m tube</span>
+          <span>vatAlien / vatBroken</span><span style="color:#8d8168">78×182/242</span><span style="color:#6fe0c0">91×213 / 75×232</span><span>2.2m / 2.4m</span>
+          <span>labBench</span><span style="color:#8d8168">73 wide</span><span style="color:#6fe0c0">155 wide</span><span>1.6m bench</span>
+          <span>examTable</span><span style="color:#8d8168">110 wide</span><span style="color:#6fe0c0">213 wide</span><span>2.2m gurney</span>
+          <span>jarRack</span><span style="color:#8d8168">95 wide</span><span style="color:#6fe0c0">174 wide</span><span>1.8m shelf</span>
+          <span>drumRank</span><span style="color:#8d8168">210×126*</span><span style="color:#6fe0c0">435×100</span><span>a 4.5m row of drums</span>
+          <span>drumScatter / drumStack</span><span style="color:#8d8168">190 / 130</span><span style="color:#6fe0c0">290 / 232</span><span>3m / 2.4m</span>
+          <span>tankVat.swirl</span><span style="color:#8d8168">52 (unused)</span><span style="color:#6fe0c0">174</span><span>1.8m open vat, near band</span>
+          <span>wall panels, striplights</span><span style="color:#8d8168">2×</span><span style="color:#6fe0c0">3×</span><span>1m panel, 2m fixture</span>
+        </div>
+        <p style="margin:12px 0 0;font-size:12px;line-height:1.6;color:#8b9691">*drumRank's old number came from the carded canvas; it is published 210×48 now. <code>drumWeeping</code> is out of the scene — <code>tankVat.swirl</code> took its place in the near band because it moves.</p>
+        <div style="margin-top:16px;padding:12px 14px;background:rgba(111,224,192,0.09);border-left:2px solid #6fe0c0;font-size:12.5px;line-height:1.7;color:#dfe4e2">
+          <strong>The vat scale question answers itself now.</strong> Last round I flagged that a 206-tall vat next to a 64px person implied a 4m human inside the glass. At 174px per person the specimen tube is 222 — <em>one and a quarter people tall</em> — and the silhouette inside reads as a person, which is the whole point of the sprite. No story choice needed; it was the cast that was wrong, not the vat.
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <div style="background:#1a1e20;border:1px solid #2f3538;padding:22px">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:0.14em;color:#d4654a;margin-bottom:8px">NOBODY RUNS BY ANY MORE</div>
+          <h2 style="font-family:Rye,serif;font-size:21px;font-weight:400;margin:0 0 12px;color:#eaf2ef">Three people mulling, and the hazmat suit was walking backwards</h2>
+          <p style="margin:0 0 12px;font-size:13px;line-height:1.65;color:#c2ccc9">Two separate bugs, both yours to have caught. <strong style="color:#eaf2ef">The hazmat suit really was moving backwards</strong> — the wrapper translated left while the layer played <code>walk.right</code>. And every leg ended by cutting straight to a front-facing pose, because the idle layer was <code>walk.down</code> frame 0 and there is no turn art between a profile and a front view.</p>
+          <div style="font-size:12.5px;line-height:1.8;color:#c2ccc9">
+            <div><strong style="color:#eaf2ef">The fly-throughs are gone.</strong> Nobody crosses the room. Each figure mulls: idle in profile → a short leg → idle in profile facing the way they went. Tech 220px on 47s, guard 320px on 59s, hazmat 300px on 41s — all at 120px/s against a 1.2s eight-frame cycle, so the stride covers 144px and the feet don't skate.</div>
+            <div><strong style="color:#eaf2ef">Direction now always matches the strip.</strong> Leftward legs play <code>walk.left</code>, rightward play <code>walk.right</code>. That is the whole of the backwards fix.</div>
+            <div><strong style="color:#eaf2ef">Nobody faces front.</strong> The idle pose is frame 0 of the profile walk, held. A figure turns by standing still in the new profile for ~0.8s before setting off, which reads as deciding rather than snapping — and it needs no art that doesn't exist. When you generate turn frames, they drop into exactly that 0.8s window.</div>
+          </div>
+          <p style="margin:12px 0 0;font-size:12.5px;line-height:1.65;color:#8b9691">Lanes still matter for paint order: hazmat at foot 770 is pushed into the DOM <em>before</em> the console, jarRack, drumRank and the near band, so all of them occlude him. Tech 870, guard 960. The rule the yard's <code>groundActor</code> already encodes — <strong style="color:#c2ccc9">z-index comes from footY</strong> — is what a hand-placed DOM order is standing in for here.</p>
+        </div>
+
+        <div style="background:#1a1e20;border:1px solid #2f3538;padding:22px">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:0.14em;color:#6fe0c0;margin-bottom:8px">STAGING — WALL, MID, NEAR</div>
+          <div style="font-size:12.5px;line-height:1.8;color:#c2ccc9">
+            <div><strong style="color:#eaf2ef">The wall (feet 664–700):</strong> the three vats at 470/600/730, the console bank at 860–1170 under the lift, five tanks at 1200–1884. Vats and consoles line the wall, as asked.</div>
+            <div><strong style="color:#eaf2ef">Mid floor (feet 820–870):</strong> labBench 560, jarRack 1180, drumRank 1380–1815, and the tech's errand.</div>
+            <div><strong style="color:#eaf2ef">Near / silhouette (feet 990–1030):</strong> drumScatter 300, examTable 640, tankVat.swirl 1150, drumStack 1560, two floor grates. Big dark shapes, no detail that needs reading — this is the band the class rail and the bottom vignette eat.</div>
+            <div style="margin-top:8px;color:#e0a95c">Nothing tall stands in front of the lift or the blast door: every standing piece's content top is below 500, so both wall fixtures stay fully legible by construction.</div>
+          </div>
+          <p style="margin:12px 0 0;font-size:12.5px;line-height:1.65;color:#8b9691"><strong style="color:#c2ccc9">Five props came out</strong> to make room at full size: serverRack ×3, lockers, cratePallet ×2, rubble ×2, cableSpool. At 97px/m there is no such thing as background clutter — anything on the floor is 100px or bigger, so fewer and larger beats a scattering of miniatures.</p>
+        </div>
+
+        <div style="background:#1a1e20;border:1px solid #2f3538;padding:22px">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:0.14em;color:#d4654a;margin-bottom:8px">STILL OPEN UPSTREAM</div>
+          <div style="font-size:12.5px;line-height:1.75;color:#c2ccc9;display:flex;flex-direction:column;gap:10px">
+            <div><strong style="color:#9db362">CLOSED — drumRank and drumScatter <em>were</em> carded, and the card had poisoned the scale table.</strong> Flat fills of 169,169,168 and 194,192,192 meant the alpha box <em>was</em> the canvas, so <code>npm run scale</code> measured the card and published drumRank at 210×126 when the art is 253×58 of drums in a 300×180 canvas. Both files now come back with corner alpha 0 and the table publishes <strong style="color:#eaf2ef">210×48</strong> and <strong style="color:#eaf2ef">190×115</strong>, against 210×49 and 190×115 measured here independently — one pixel apart, which is the good kind of disagreement. Fixed offline by <code>npm run decard</code>, not by <code>rmbg</code>: the card is a flat fill touching the border, so it never needed the API. The durable part is now a rule in <code>SCENE_ASSETS.md</code> — <strong style="color:#eaf2ef">a card is a scale bug, not a cosmetic one</strong>, so de-card before you pack and measure.</div>
+            <div><strong style="color:#d4654a">THE CUT-OFF HEADS ARE IN THE GENERATED ART, AND THE EXPORTER IS INNOCENT.</strong> I said last round it was <code>npm run strips</code> cropping. It isn't — I chased it to the source and the exporter is right. <code>assets/pixellab/character/baseGuard/walk_west_strip.png</code> is 8 frames of <strong style="color:#eaf2ef">32×64</strong>, and in <em>every one</em> the art's topmost opaque row is row 0 while 6–11px of the frame sits empty at the <em>bottom</em>. Content heights run 52–58, so the export cell of 58 is the correct measurement of what is there.<br><br><strong style="color:#eaf2ef">The proof that pixels are missing is the run width.</strong> A rounded head's topmost row is 3–6px wide. These are 17–22px of flat: <code>baseTech.walk.down</code> 18,18,19,17,19,0,19,18 across its eight frames; <code>baseGuard.walk.right</code> 21,18,0,0,0,0,0,0; <code>baseHazmat.walk.right</code> 17,18,19,0,0,0,0,17. That is a slice, not a crown — PixelLab drew the figure hard against the top of the canvas and the bob-up frames lost their scalp at generation. No export change and no placement change recovers it; the only fixes are a regeneration with the subject sitting lower in the frame, or 2px of paint-in on ~20 frames. I've reverted to the packed strips because they are the same pixels, and left the cast at 174 rather than shrinking it to hide the artifact — that is your call, not mine to make quietly.</div>
+            <div><strong style="color:#eaf2ef">There is no animated weeping drum.</strong> I looked: <code>assets/pixellab/scene-anim/</code> holds exactly ten clips — labConsole.flicker, scarecrow.sway, windmill.spin, wheat.sway, vatSpecimen.bubble and the five tank clips. No drum, no spill, nothing under drum/weep/pool/leak in 715 strips. The one you're thinking of is almost certainly <strong>tankVat.swirl</strong> — a wide shallow open vessel with green fluid turning over in it — so that is now in the near band at 174 wide with the puddle glow under it, where the still <code>drumWeeping</code> was. If you do have a drum clip somewhere, it isn't on this branch; point me at it and it swaps in one line.</div>
+            <div><strong style="color:#eaf2ef">baseOperator and baseBreacher are packed and walking</strong> — worse than I diagnosed, and thank you for the <code>enemies.json</code> / <code>world.ts</code> trap. They are not in this scene yet; adding two more mullers wants a staging pass, not a paste, so say the word and they go in with lanes of their own.</div>
+            <div><strong style="color:#eaf2ef">The concrete is CSS.</strong> The game has the <code>concrete_to_wall</code> / <code>concrete_to_grating</code> Wang sets; what this scene fixes is the geometry of the junction, which holds either way.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showGuides&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Diagnostics&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { showGuides: this.props.showGuides ?? false }
+  }
+}
+</script>
+</body>
+</html>

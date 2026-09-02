@@ -740,8 +740,8 @@
         }
       },
       "baseGuard": {
-        "cellWidth": 32,
-        "cellHeight": 64,
+        "cellWidth": 44,
+        "cellHeight": 78,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -754,8 +754,8 @@
         }
       },
       "baseTech": {
-        "cellWidth": 32,
-        "cellHeight": 64,
+        "cellWidth": 44,
+        "cellHeight": 76,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -768,8 +768,8 @@
         }
       },
       "baseHazmat": {
-        "cellWidth": 32,
-        "cellHeight": 64,
+        "cellWidth": 44,
+        "cellHeight": 75,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -782,8 +782,8 @@
         }
       },
       "baseOperator": {
-        "cellWidth": 32,
-        "cellHeight": 64,
+        "cellWidth": 46,
+        "cellHeight": 76,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -796,8 +796,8 @@
         }
       },
       "baseBreacher": {
-        "cellWidth": 32,
-        "cellHeight": 64,
+        "cellWidth": 48,
+        "cellHeight": 79,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -811,7 +811,8 @@
       }
     },
     "_castNote": "The six player classes and the infected farmhand, all generated at size 64 (see docs/ART_STYLE.md \u2014 size is the CANVAS, and the figure fills about 76% of it) and cut by npm run character to a 32x64 cell with feet on y58. Four cardinals only: the renderer buckets facing into four, so the diagonals are generated and deliberately unused.",
-    "_clipNote": "Humanoids carry the same clip vocabulary as the generated animals now: idle, walk, hit, death. `hit` and `death` come from PixelLab TEMPLATE animations (`taking-punch`, `falling-back-death`) at 1 generation per direction, which is the cheap path -- roughly 2.4x under the v3 rate the animal objects pay. FOUR directions, not eight: `compassToDirection` here maps only the cardinals, because the humanoid rig has always been four-way. The renderer's clip chain falls through, so a humanoid without one of these behaves as it did before."
+    "_clipNote": "Humanoids carry the same clip vocabulary as the generated animals now: idle, walk, hit, death. `hit` and `death` come from PixelLab TEMPLATE animations (`taking-punch`, `falling-back-death`) at 1 generation per direction, which is the cheap path -- roughly 2.4x under the v3 rate the animal objects pay. FOUR directions, not eight: `compassToDirection` here maps only the cardinals, because the humanoid rig has always been four-way. The renderer's clip chain falls through, so a humanoid without one of these behaves as it did before.",
+    "_cellNote": "CELL SIZE IS PER SHEET AND IS DERIVED FROM THE ART by `npm run character`, which prints it. The six player classes are 32x64 because they were generated on a 64px canvas. The five base humanoids were generated on a 92px canvas and need 42-46 x 73-76; cutting them into 32x64 silently destroyed them on all four sides -- about 10px off the top and up to 7px off each side, which reads as a flat-topped skull (source topmost row is a rounded 6-10px, the clipped version's is a flat 17-22px). The art on PixelLab was always intact, so the fix was a re-cut at no generation cost. NEVER hand-type these: run the tool and paste what it prints."
   },
   "scene": {
     "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",
