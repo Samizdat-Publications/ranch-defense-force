@@ -8,6 +8,21 @@ was built, what deviated from the spec and why, the bugs found and their causes,
 and the design decisions currently open. It is the handoff, and it is kept
 current.
 
+## Which branch is the project
+
+`claude/rdf-merge-session-l7ta2j` is the live head: **70 commits ahead of
+`origin/main`**, and it already contains both sides of the old split — main's
+28 commits AND the maps/caves work from
+`session-14-16-maps-caves-archive`. Verified by content, not by branch name:
+`src/render/blight.ts` and `terrain.ts` do not exist here because the ground
+banding was reimplemented inside `renderer.ts`, driven by each map's own
+`terrain` block.
+
+`main` is **stale** and `session-14-16-maps-caves-archive` is an **archive**.
+Do not branch from either. An older CLAUDE.md on that archive branch still
+opens by saying the repo has two heads and that merging them is the first job;
+that was true when written and is not true now.
+
 ## Getting running
 
 ```bash
@@ -23,13 +38,18 @@ atlas costs the art, not the game.
 
 | Command | What |
 |---|---|
-| `npm test` | 154 tests, including a headless full-run acceptance test |
+| `npm test` | 205 tests, including a headless full-run acceptance test |
 | `npm run typecheck` | game and tools (they have separate tsconfigs) |
 | `npm run atlas` | slice + pack `art/sprites.json` → `public/atlas.*` |
 | `npm run shot -- [ticks] [out] [seed] [class]` | headless screenshot: runs the sim, draws it, writes a PNG. No browser. |
 | `npm run inspect -- <sheet.png>` | report a sprite sheet's frame grid |
 | `npm run inventory` | refresh `docs/PIXELLAB_INVENTORY.md` — **grep that before generating art** |
 | `npm run build` | atlas + typecheck + production build |
+| `npm run scene -- <kind> <out.png> [ms]` | **photograph the live title screen** — real dev server, real app in Chromium, reports console errors |
+| `npm run placements -- <artboard.dc.html> ...` | a Design artboard → `docs/mockups/PLACEMENTS.md` coordinate table. Never hand-type those numbers |
+| `npm run scale` / `pens` / `strips` / `catalog` | measured art metadata; run in that order after `atlas` |
+| `npm run decard` | strip PixelLab's opaque card **offline and free** (`rmbg` costs a generation) |
+| `npm run clips` | assert every enemy a map can roll has packed art |
 
 `F1` in game toggles the dev overlay; `N` skips a wave.
 
