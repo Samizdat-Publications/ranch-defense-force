@@ -8,7 +8,7 @@
       "maxHp": 140,
       "moveSpeedPct": -20,
       "armor": 6,
-      "hpRegen": 1.5,
+      "hpRegen": 0.8,
       "pickupRadiusPct": 40,
       "critChancePct": -50
     },
@@ -31,13 +31,13 @@
       "animRow": "dig"
     },
     "startingWeapon": "pitchfork",
-    "tag": "SLOW · ARMOURED · IMMOVABLE",
+    "tag": "SLOW \u00b7 ARMOURED \u00b7 IMMOVABLE",
     "bars": {
       "body": 92,
       "speed": 24,
       "reach": 46
     },
-    "cardPassive": "Braced — standing still stacks damage reduction to 30%."
+    "cardPassive": "Braced \u2014 standing still stacks damage reduction to 30%."
   },
   "kid": {
     "name": "The Kid",
@@ -69,13 +69,13 @@
       "animRow": "run"
     },
     "startingWeapon": "scattergun",
-    "tag": "FAST · FRAGILE · MOMENTUM",
+    "tag": "FAST \u00b7 FRAGILE \u00b7 MOMENTUM",
     "bars": {
       "body": 38,
       "speed": 94,
       "reach": 52
     },
-    "cardPassive": "Momentum — up to +50% damage at full speed, nothing standing."
+    "cardPassive": "Momentum \u2014 up to +50% damage at full speed, nothing standing."
   },
   "_abilityNote": "Four classes share the two implemented ability archetypes - `digIn` (plant and absorb) and `bolt` (dash with i-frames) - retuned per class rather than each getting a bespoke one. That is a deliberate first pass: a class with a borrowed ability is fully playable, a class with an unimplemented ability id has a button that silently does nothing. Bespoke abilities are follow-up work, and the place to add them is the `a.id ===` dispatch in world.ts and player.ts.",
   "widow": {
@@ -87,7 +87,7 @@
       "maxHp": 120,
       "moveSpeedPct": -8,
       "armor": 4,
-      "hpRegen": 2.5,
+      "hpRegen": 1.4,
       "pickupRadiusPct": 15,
       "critChancePct": -20
     },
@@ -110,13 +110,13 @@
       "animRow": "dig"
     },
     "startingWeapon": "varmintRifle",
-    "tag": "STEADY · MENDS · UNMOVED",
+    "tag": "STEADY \u00b7 MENDS \u00b7 UNMOVED",
     "bars": {
       "body": 78,
       "speed": 40,
       "reach": 70
     },
-    "cardPassive": "Braced — a shorter fuse than the Hand, a lower ceiling."
+    "cardPassive": "Braced \u2014 a shorter fuse than the Hand, a lower ceiling."
   },
   "vet": {
     "name": "The Veteran",
@@ -127,7 +127,7 @@
       "maxHp": 105,
       "moveSpeedPct": 0,
       "armor": 3,
-      "hpRegen": 0.5,
+      "hpRegen": 0.3,
       "critChancePct": 15,
       "critDamagePct": 20
     },
@@ -149,13 +149,13 @@
       "animRow": "run"
     },
     "startingWeapon": "drumGun",
-    "tag": "EVEN · PRECISE · WATCHFUL",
+    "tag": "EVEN \u00b7 PRECISE \u00b7 WATCHFUL",
     "bars": {
       "body": 64,
       "speed": 58,
       "reach": 80
     },
-    "cardPassive": "Braced — crit-leaning, holds ground well enough."
+    "cardPassive": "Braced \u2014 crit-leaning, holds ground well enough."
   },
   "agronomist": {
     "name": "The Agronomist",
@@ -166,7 +166,7 @@
       "maxHp": 85,
       "moveSpeedPct": 10,
       "armor": 1,
-      "hpRegen": 0.5,
+      "hpRegen": 0.3,
       "harvestPct": 35,
       "luck": 8
     },
@@ -187,13 +187,13 @@
       "animRow": "run"
     },
     "startingWeapon": "chemSprayer",
-    "tag": "CHEMICAL · LUCKY · CURIOUS",
+    "tag": "CHEMICAL \u00b7 LUCKY \u00b7 CURIOUS",
     "bars": {
       "body": 46,
       "speed": 66,
       "reach": 88
     },
-    "cardPassive": "Momentum — modest, and +35% off every node she works."
+    "cardPassive": "Momentum \u2014 modest, and +35% off every node she works."
   },
   "drifter": {
     "name": "The Drifter",
@@ -226,13 +226,14 @@
       "animRow": "run"
     },
     "startingWeapon": "harpoon",
-    "tag": "QUICK · GLASS · MEAN",
+    "tag": "QUICK \u00b7 GLASS \u00b7 MEAN",
     "bars": {
       "body": 30,
       "speed": 98,
       "reach": 64
     },
-    "cardPassive": "Momentum — up to +60%, and nothing at all when standing."
+    "cardPassive": "Momentum \u2014 up to +60%, and nothing at all when standing."
   },
-  "_cardNote": "`tag`, `bars` and `cardPassive` are the class card's presentation, from the design's Home Screen mockup. Bars are 0-100 for the BODY/SPEED/REACH meters and are a READ of the class rather than a derivation from its stats -- Reach has no single stat behind it, and a computed bar would fight the design's intent every time balance moved."
+  "_cardNote": "`tag`, `bars` and `cardPassive` are the class card's presentation, from the design's Home Screen mockup. Bars are 0-100 for the BODY/SPEED/REACH meters and are a READ of the class rather than a derivation from its stats -- Reach has no single stat behind it, and a computed bar would fight the design's intent every time balance moved.",
+  "_regenNote": "hpRegen is an ABSOLUTE number and enemy contact damage was cut to 55% by the density pass in enemies.json, so every point of regen silently became almost twice as valuable. That is invisible in the class sheet and it broke `treats both classes comparably`: The Hand (regen 1.5, armour, and damage reduction to 30%) tanked a denser field comfortably while The Kid, whose only mitigation is avoidance, did not -- a 10-seed gap against a limit of 8. Raising The Kid's dodge was tried first and moved nothing, because the gap was never about avoidance. Regen is rescaled by the same 0.55 the damage was. Percentage defences -- armour, which is armor/(armor+k), and braced damage reduction -- are scale-free and deliberately untouched."
 }

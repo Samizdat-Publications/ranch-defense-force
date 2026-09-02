@@ -124,14 +124,34 @@ describe('the epics are not dead cards', () => {
   })
 
   it('Threshing Floor splashes when something dies in reach', () => {
+    /*
+       Asserted on KILLS, because `damageDealt` does not count the splash.
+
+       The relic chains 40% damage to whatever is within 90px of a death, and
+       that chain damage is not tracked in `damageDealt` -- so a chain that
+       finishes an enemy REMOVES weapon damage the run would otherwise have had
+       to deal. The relic reliably lowers the number the old assertion required
+       it to raise. Measured, ring of 28, seed 4242:
+
+           ticks   plain                 threshingFloor
+           240     28 kills, 504 dmg     36 kills, 397 dmg
+           600     28 kills, 504 dmg     38 kills, 418 dmg
+           1800    48 kills, 864 dmg     70 kills, 786 dmg
+
+       More kills, less damage, at every length. `expect(damageDealt).toBeGreater
+       Than(...)` was measuring the wrong quantity and passed on the old enemy
+       hp by luck; the density pass (farmhand hp 14 -> 8) tipped it over. Kills
+       is what "takes the next one with it" actually means.
+    */
     const w = arena('threshingFloor')
-    ringOfEnemies(w, 14, 60)
-    run(w, 240)
+    ringOfEnemies(w, 28, 60)
+    run(w, 600)
+
     const plain = arena()
-    ringOfEnemies(plain, 14, 60)
-    run(plain, 240)
-    expect(w.kills).toBeGreaterThanOrEqual(plain.kills)
-    expect(w.damageDealt).toBeGreaterThan(plain.damageDealt)
+    ringOfEnemies(plain, 28, 60)
+    run(plain, 600)
+
+    expect(w.kills).toBeGreaterThan(plain.kills)
   })
 
   it('Cattle Prod stuns whatever touches the player', () => {

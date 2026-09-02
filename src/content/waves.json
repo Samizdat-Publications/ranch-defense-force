@@ -34,8 +34,8 @@
     ],
     "finalQuarterBias": 1.4,
     "groupInterval": {
-      "min": 0.5,
-      "max": 1.5
+      "min": 0.3,
+      "max": 0.9
     },
     "_groupIntervalNote": "Seconds between GROUPS, not enemies. This was hardcoded in spawner.ts as rng.range(0.5, 1.5) and it was the real throughput cap: the budget could allow more, but one group per second is all the director could physically emit, so a wave finished spawning around the 23s mark and the field drained for the rest of it. Halving it is most of what makes the arena feel like a bullet-heaven rather than a skirmish."
   },

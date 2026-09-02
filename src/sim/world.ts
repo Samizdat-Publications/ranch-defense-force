@@ -18,7 +18,7 @@ import {
 import { Player } from './player'
 import { tierHpMultiplier } from './meta'
 import { Spawner } from './spawner'
-import { resolveDamage, waveIncome, waveScalar } from './formulas'
+import { resolveDamage, waveIncome, waveScalar, waveHpScalar } from './formulas'
 import {
   BREAKABLES, BREAKABLE_CLASSES, ELEMENTS, ENEMIES, FIELD_GEAR_POOL, ITEMS, MAPS,
   NODES, TUNING, WAVES, WEAPONS, pickMapId,
@@ -2129,7 +2129,8 @@ export class World {
     const e = this.enemies.acquire()
     if (!e) return null
 
-    const scalar = waveScalar(this.spawner.wave)
+    // HP rides its own steeper curve; contact damage stays linear. See formulas.
+    const scalar = waveHpScalar(this.spawner.wave)
     e.typeId = typeId
     /*
        Cycle the sheet where the type declares variants.

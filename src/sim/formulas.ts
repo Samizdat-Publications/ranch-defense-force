@@ -113,6 +113,33 @@ export function waveScalar(wave: number): number {
   return 1 + 0.06 * (wave - 1)
 }
 
+/**
+ * Enemy HP scalar for wave n. This is where the late game gets its teeth.
+ *
+ * Split from `waveScalar` because incoming DAMAGE is the wrong lever and that
+ * was measured twice. Multiplying damage rewards flat damage reduction and
+ * punishes a low-HP dodger: with `+0.003*n^2` on `waveScalar`, The Hand held at
+ * 60% cleared while The Kid fell to 30% and a median wave of 8, dying at w4-w7.
+ * HP costs both classes the same, because time-to-kill does not care about
+ * mitigation.
+ *
+ * The coefficient is large because it multiplies a base that was cut to 55% by
+ * the density pass in `enemies.json`. Against the ORIGINAL per-enemy hp:
+ *
+ *     wave              5     10    17    25
+ *     was (linear)     1.24  1.54  1.96  2.44
+ *     now (x0.55 base) 0.80  1.49  2.94  4.96
+ *
+ * So an early enemy is genuinely weaker than it used to be -- which is correct,
+ * since almost every death in the baseline fell before wave 12 -- and a late one
+ * is much tougher, while roughly 2.2x as many of them arrive. Early pressure
+ * comes from numbers, late pressure from durability.
+ */
+export function waveHpScalar(wave: number): number {
+  const n = wave - 1
+  return 1 + 0.06 * n + 0.010 * n * n
+}
+
 /** Cost of the next reroll in a shop visit. */
 export function shopRerollCost(rerollsThisShop: number): number {
   return 3 + 2 * rerollsThisShop
