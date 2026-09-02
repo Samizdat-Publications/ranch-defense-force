@@ -4,6 +4,71 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# OPEN AND UNSOLVED — the owner sees ~2fps
+
+**Read this before anything else in the performance line.** The owner reports
+the game running at **about 2 frames per second** while playing. That is not
+what any measurement in this repo has produced, and the gap between the two is
+the most important open question in the project.
+
+## What has been measured, so nobody measures it again
+
+| where | rAF ticks per second |
+|---|---|
+| the editor's hidden browser pane | **0** |
+| headless Chromium, throttling flags off | 2-4 |
+| headed Chrome, window covered by another | **2** |
+| headed Chrome, window fronted | 78-240 |
+
+The in-game dev overlay (`F1`) reported `218 fps frame 1.60ms` and
+`240 fps frame 1.40ms` during automated runs at wave 6 and wave 14, with 74
+enemies alive. The sim is not slow.
+
+**2fps is the exact signature of a covered or minimised window.** Chrome throttles
+`requestAnimationFrame` for an occluded window and this game only advances on a
+presented frame. So the first thing to establish is *what the owner's window was
+doing* — split-screen and visible, or behind something. That is a question for
+the owner, not a code change, and it must be settled before any optimisation
+work starts, because optimising a throttle does nothing.
+
+## If it is NOT the window, here is where to look
+
+One session of profiling has already been done and it removed a real cost:
+`assertUiLayersClickable` was forcing a synchronous style recalc every frame
+(4.05s self + 2.54s in `querySelectorAll` against ~28s of non-idle JS). After
+that fix the CPU profile is dominated by `drawImage` at 5% and nothing else is
+above 2%.
+
+**The strongest untested hypothesis is the atlas.** `public/atlas.png` is
+**4096x8192 and 12MB** — 8176 frames in one texture. Every sprite drawn is a
+`drawImage` sampling that one very large image. On integrated graphics with
+limited VRAM that can thrash in a way no CPU profile will show, because the cost
+is not in JS at all. Nothing in this repo has ever measured GPU time, checked
+whether the texture is being re-uploaded per frame, or tried a smaller atlas.
+That is the first experiment worth running.
+
+Second: the machine. Every measurement in this repo was taken on Chrome via
+`channel: 'chrome'` on the owner's box, but always in a fronted window driven by
+playwright. Nothing has profiled the owner's ACTUAL play session.
+
+## The tools that exist for this
+
+    npm run play -- hand 240 out/dir seed      a real run, real renderer
+    RDF_PROFILE=1 npm run play -- ...          CPU profile via CDP, self time by function
+    RDF_SAMPLE_MS=4000 npm run play -- ...     change the sampler's own period
+    RDF_NO_OVERLAY=1 npm run play -- ...       dev overlay off
+    npm run scene -- yard out.png              photograph a title screen
+
+`npm run play` records every frame over 33ms and the heap beside it, writes
+`spikes.json`, and reports whether a stall was a throttled window or a stuck sim
+— that distinction cost an afternoon before it was instrumented.
+
+**One hard-won lesson from that session: when run-to-run variance is larger than
+the effect you are testing, A/B-ing suspects will never converge.** Turning the
+dev overlay off measured WORSE than leaving it on. Go and get a profile instead.
+
+---
+
 # Session 21 — the balance session, and a stutter that was a debug guard
 
 The owner played it split-screen while this ran and gave two verdicts: too easy,

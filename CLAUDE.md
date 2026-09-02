@@ -10,20 +10,24 @@ current.
 
 ## Which branch is the project
 
-`claude/rdf-merge-session-l7ta2j` is the live head: **70 commits ahead of
-`origin/main`**, and it already contains both sides of the old split — main's
-28 commits AND the maps/caves work from
-`session-14-16-maps-caves-archive`. Verified by content, not by branch name:
-`src/render/blight.ts` and `terrain.ts` do not exist here because the ground
-banding was reimplemented inside `renderer.ts`, driven by each map's own
-`terrain` block.
+**`main`.** It was not, for a long time, and the repo carries scars from it:
+`origin/main` and a session branch both moved a long way from one base, neither
+contained the other, and a later session wrote a "THE REPO HAS TWO HEADS" banner
+into this file that was still being obeyed after somebody had quietly done the
+merge on a third branch.
 
-`main` is **stale** and `session-14-16-maps-caves-archive` is an **archive**.
-Do not branch from either. An older CLAUDE.md on that archive branch still
-opens by saying the repo has two heads and that merging them is the first job;
-that was true when written and is not true now.
+That is finished. On 2026-09-02 `main` was fast-forwarded to the head of
+`claude/rdf-merge-session-l7ta2j`, so the two are the same commit and there is
+one head again. `session-14-16-maps-caves-archive` is an archive; its content
+was absorbed long ago (verified by content, not by branch name — the ground
+banding it added lives inside `renderer.ts` now, driven by each map's own
+`terrain` block).
 
-## Getting running
+**Still run `git fetch && git status` before reading anything else.** Not because
+of the old split, but because it is how the old split was found — and while this
+session worked, another session pushed a commit to the same branch.
+
+## Getting running## Getting running
 
 ```bash
 npm install
