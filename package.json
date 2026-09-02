@@ -48,7 +48,8 @@
     "clips": "vite-node tools/check-clips.ts --",
     "decard": "vite-node tools/decard.ts --",
     "placements": "vite-node tools/extract-placements.ts --",
-    "scene": "vite-node tools/scene-shot.ts --"
+    "scene": "vite-node tools/scene-shot.ts --",
+    "play": "vite-node tools/play.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
