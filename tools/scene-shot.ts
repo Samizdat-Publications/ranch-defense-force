@@ -86,11 +86,12 @@ try {
   const target = (await stage.count()) ? stage : page.locator('body')
   await target.screenshot({ path: out })
 
-  const counted = await page.evaluate(() => ({
-    imgs: document.querySelectorAll('img').length,
-    divs: document.querySelectorAll('div').length,
-  }))
-  console.log(`${kind} -> ${out}   (${counted.imgs} img, ${counted.divs} div)`)
+  // Counted through locators rather than `page.evaluate`: the callback would run
+  // in the browser but is type-checked HERE, and tools/tsconfig has no DOM lib
+  // -- correctly, since everything else in tools/ is a Node script.
+  const imgs = await page.locator('img').count()
+  const divs = await page.locator('div').count()
+  console.log(`${kind} -> ${out}   (${imgs} img, ${divs} div)`)
   if (problems.length) {
     console.log(`\n${problems.length} console/network problem(s):`)
     for (const p of [...new Set(problems)].slice(0, 12)) console.log(`  ${p}`)
