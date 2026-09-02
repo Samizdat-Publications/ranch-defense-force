@@ -333,3 +333,54 @@
 @media (prefers-reduced-motion: reduce) {
   .home-yard * { animation: none !important; }
 }
+
+/* ---------------------------------------------------------------- the lab
+
+   Keyframes for the fourth scene, transcribed VERBATIM from Design's
+   `docs/mockups/Lab at Depth.dc.html`. The artboard itself never ships -- see
+   docs/mockups/README.md -- but its timings are the design, so they are copied
+   rather than reinvented.
+
+   The `mull-*` sets are a patrol. Four stacked layers per figure share one
+   duration: two still frames (facing left, facing right) and two walk strips,
+   with only one layer opaque at a time, over a parent carrying `-path` for the
+   travel itself. `step-end` is what makes the swap a cut rather than a fade --
+   a pixel figure must not cross-dissolve into its own mirror image. */
+
+@keyframes l-hum { 0%, 100% { opacity: 0.86; } 43% { opacity: 1; } 71% { opacity: 0.8; } }
+@keyframes l-glow { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+@keyframes l-fizz {
+  0%, 93.6%, 100% { opacity: 0.12; }
+  94% { opacity: 0.9; }
+  94.4% { opacity: 0.15; }
+  95.1% { opacity: 1; }
+  95.5% { opacity: 0.2; }
+  96.4% { opacity: 0.75; }
+  97% { opacity: 0.14; }
+}
+@keyframes l-dust {
+  0%, 100% { transform: translate(0, 0); opacity: 0.14; }
+  40% { opacity: 0.5; }
+  60% { transform: translate(var(--dx), var(--dy)); opacity: 0.4; }
+  85% { opacity: 0.1; }
+}
+@keyframes l-lift { 0%, 74%, 100% { opacity: 0.16; } 80% { opacity: 1; } 92% { opacity: 0.9; } 97% { opacity: 0.2; } }
+@keyframes l-liftfloor { 0%, 74%, 100% { opacity: 0; } 80%, 92% { opacity: 0.55; } 97% { opacity: 0; } }
+
+@keyframes mull-haz-path { 0%, 20% { transform: translateX(0); } 26.1%, 62% { transform: translateX(-300px); } 70.1%, 100% { transform: translateX(0); } }
+@keyframes mull-haz-pr { 0%, 18% { opacity: 1; } 18.01%, 62% { opacity: 0; } 62.01%, 64% { opacity: 1; } 64.01%, 70.1% { opacity: 0; } 70.11%, 100% { opacity: 1; } }
+@keyframes mull-haz-pl { 0%, 18% { opacity: 0; } 18.01%, 20% { opacity: 1; } 20.01%, 26.1% { opacity: 0; } 26.11%, 62% { opacity: 1; } 62.01%, 100% { opacity: 0; } }
+@keyframes mull-haz-wl { 0%, 20% { opacity: 0; } 20.01%, 26.1% { opacity: 1; } 26.11%, 100% { opacity: 0; } }
+@keyframes mull-haz-wr { 0%, 64% { opacity: 0; } 64.01%, 70.1% { opacity: 1; } 70.11%, 100% { opacity: 0; } }
+
+@keyframes mull-tech-path { 0%, 25% { transform: translateX(0); } 28.8%, 60% { transform: translateX(220px); } 63.8%, 100% { transform: translateX(0); } }
+@keyframes mull-tech-pl { 0%, 23% { opacity: 1; } 23.01%, 58% { opacity: 0; } 58.01%, 60% { opacity: 1; } 60.01%, 63.8% { opacity: 0; } 63.81%, 100% { opacity: 1; } }
+@keyframes mull-tech-pr { 0%, 23% { opacity: 0; } 23.01%, 25% { opacity: 1; } 25.01%, 28.8% { opacity: 0; } 28.81%, 58% { opacity: 1; } 58.01%, 100% { opacity: 0; } }
+@keyframes mull-tech-wl { 0%, 60% { opacity: 0; } 60.01%, 63.8% { opacity: 1; } 63.81%, 100% { opacity: 0; } }
+@keyframes mull-tech-wr { 0%, 25% { opacity: 0; } 25.01%, 28.8% { opacity: 1; } 28.81%, 100% { opacity: 0; } }
+
+@keyframes mull-guard-path { 0%, 14% { transform: translateX(0); } 19.93%, 54% { transform: translateX(320px); } 61.93%, 100% { transform: translateX(0); } }
+@keyframes mull-guard-pl { 0%, 12% { opacity: 1; } 12.01%, 54% { opacity: 0; } 54.01%, 56% { opacity: 1; } 56.01%, 61.93% { opacity: 0; } 61.94%, 100% { opacity: 1; } }
+@keyframes mull-guard-pr { 0%, 12% { opacity: 0; } 12.01%, 14% { opacity: 1; } 14.01%, 19.93% { opacity: 0; } 19.94%, 54% { opacity: 1; } 54.01%, 100% { opacity: 0; } }
+@keyframes mull-guard-wl { 0%, 56% { opacity: 0; } 56.01%, 61.93% { opacity: 1; } 61.94%, 100% { opacity: 0; } }
+@keyframes mull-guard-wr { 0%, 14% { opacity: 0; } 14.01%, 19.93% { opacity: 1; } 19.94%, 100% { opacity: 0; } }

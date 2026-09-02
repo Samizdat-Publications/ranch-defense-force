@@ -15,6 +15,9 @@ import { clear, el } from './dom'
 import { spriteEl } from './sprite'
 import { BLEED, DOOR, buildScene, type SceneKind } from './scene'
 
+/** The backdrops, in the order a run of loads walks through them. */
+const SCENE_CYCLE: readonly SceneKind[] = ['yard', 'field', 'lab']
+
 
 
 export class MenuScreen {
@@ -27,20 +30,29 @@ export class MenuScreen {
   private prices = new Map<string, number>()
   private acres = 0
   /** Which backdrop this load got. Mutable only via the dev toggle. */
-  private isField: boolean
+  private sceneKind: SceneKind
 
   constructor(
     parent: HTMLElement,
     private readonly onStart: (classId: string, seed: string) => void,
     private readonly onHomestead?: () => void,
   ) {
-    // Alternate rather than randomise: the design reads the last scene from
-    // storage and mounts the other one, so the game never opens the same way
-    // twice running. Random would repeat about half the time.
+    /*
+       Cycle rather than randomise: read the last scene from storage and mount
+       the NEXT one, so the game never opens the same way twice running. Random
+       would repeat about a third of the time now there are three.
+
+       This was a two-way flip on a boolean and could not express a third
+       backdrop. It also meant a fresh browser profile -- no stored key -- always
+       landed on the same scene, which is what made every automated screenshot
+       for the whole of the scene work come back as `field` while claiming to be
+       whatever was asked for.
+    */
     let last = ''
     try { last = localStorage.getItem('rdf.homeScene') ?? '' } catch { /* private mode */ }
-    this.isField = last !== 'field'
-    try { localStorage.setItem('rdf.homeScene', this.isField ? 'field' : 'yard') } catch { /* ignore */ }
+    const at = SCENE_CYCLE.indexOf(last as SceneKind)
+    this.sceneKind = SCENE_CYCLE[(at + 1) % SCENE_CYCLE.length]
+    try { localStorage.setItem('rdf.homeScene', this.sceneKind) } catch { /* ignore */ }
 
     this.seedInput = el('input', { class: 'home-seed-input' })
     this.seedInput.placeholder = 'random'
@@ -53,7 +65,7 @@ export class MenuScreen {
     // exactly the mistake that made the first attempt look nothing like it.
     this.uiEl = el('div', { class: 'home-ui' })
 
-    this.root = el('div', { class: `screen home${this.isField ? ' is-field' : ''}` }, [
+    this.root = el('div', { class: `screen home${this.sceneKind === 'yard' ? '' : ' is-' + this.sceneKind}` }, [
       el('div', { class: 'home-stagewrap' }, [this.stageEl, this.uiEl]),
     ])
     this.root.style.display = 'none'
@@ -63,10 +75,13 @@ export class MenuScreen {
     window.addEventListener('resize', () => this.fitScene())
   }
 
-  /** Dev only: swap the backdrop in place, no reload. */
+  /** Dev only: step to the next backdrop in place, no reload. */
   private flipScene(): void {
-    this.isField = !this.isField
-    this.root.classList.toggle('is-field', this.isField)
+    const at = SCENE_CYCLE.indexOf(this.sceneKind)
+    this.sceneKind = SCENE_CYCLE[(at + 1) % SCENE_CYCLE.length]
+    try { localStorage.setItem('rdf.homeScene', this.sceneKind) } catch { /* ignore */ }
+    this.root.classList.toggle('is-field', this.sceneKind === 'field')
+    this.root.classList.toggle('is-lab', this.sceneKind === 'lab')
     this.stageEl.replaceChildren(buildScene(this.kind))
     this.renderUi()
     this.fitScene()
@@ -145,7 +160,7 @@ export class MenuScreen {
     if (import.meta.env.DEV) {
       this.uiEl.append(el('button', {
         class: 'home-scene-toggle',
-        text: `SCENE: ${this.isField ? 'FIELD' : 'YARD'}`,
+        text: `SCENE: ${this.sceneKind.toUpperCase()}`,
         onClick: () => this.flipScene(),
       }))
     }
@@ -241,7 +256,7 @@ export class MenuScreen {
 
   /** Which backdrop this load got. */
   private get kind(): SceneKind {
-    return this.isField ? 'field' : 'yard'
+    return this.sceneKind
   }
 
   /**

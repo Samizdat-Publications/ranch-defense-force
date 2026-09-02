@@ -101,10 +101,14 @@ try {
      the "the home screen renders the FIELD scene" defect in NOTES -- not a bug
      in the scene, a bug in what the camera was pointed at.
 
-     Seed the key ahead of app code so the toggle lands where we want. It reads
-     inverted because the value stored is the PREVIOUS load's scene.
+     Seed the key ahead of app code so the cycle lands where we want. The value
+     stored is the PREVIOUS load's scene, so we write the one BEFORE the target.
   */
-  const want = kind === 'field' ? 'yard' : 'field'
+  const CYCLE = ['yard', 'field', 'lab']
+  const at = CYCLE.indexOf(kind)
+  if (at < 0) throw new Error(`unknown scene '${kind}' — expected one of ${CYCLE.join(', ')}`)
+  // Store the PREVIOUS scene in the cycle, because the menu mounts the next one.
+  const want = CYCLE[(at - 1 + CYCLE.length) % CYCLE.length]
   await page.addInitScript(
     `try { localStorage.setItem('rdf.homeScene', ${JSON.stringify(want)}) } catch {}`,
   )

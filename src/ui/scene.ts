@@ -42,17 +42,19 @@
  * left and eighteen high of where it belongs, and so did every other prop.
  */
 import { el } from './dom'
-import { spriteEl, spriteTileUrl, frameOf, stripUrl, clipsOf, groundWrap } from './sprite'
+import { spriteEl, spriteTileUrl, frameOf, stripUrl, clipsOf, groundWrap, sceneSprite as rawSceneSprite } from './sprite'
 // Re-exported so a scene has one place to import from. `sceneSprite` is the
 // STILL counterpart of `groundActor` below: exact height, feet on the ground.
 export { sceneSprite } from './sprite'
 
-export type SceneKind = 'yard' | 'field'
+export type SceneKind = 'yard' | 'field' | 'lab'
 
 /** Edge colours the letterbox bleeds with. The scene's own top and bottom. */
 export const BLEED: Record<SceneKind, { top: string; bottom: string }> = {
   yard: { top: '#191b36', bottom: '#191d13' },
   field: { top: '#1d2140', bottom: '#201e13' },
+  // The lab has no sky. Both edges are the room it is in.
+  lab: { top: '#0d1014', bottom: '#0a0c0f' },
 }
 
 /**
@@ -66,9 +68,14 @@ const YARD_BARN = { x: 1096, y: 410 }
 const FIELD_BARN = { x: 1208, y: 340 }
 const BARN_DOOR = { x: 196, y: 148, w: 92, h: 76 }
 
+/* Underground there is no barn. The way out is the lift, `base.lift3` at
+   (820, 244) in a 256 box -- so the door is its centre, at its foot. */
+const LAB_LIFT = { x: 820, y: 244, size: 256 }
+
 export const DOOR: Record<SceneKind, { x: number; y: number }> = {
   yard: { x: YARD_BARN.x + BARN_DOOR.x, y: YARD_BARN.y + BARN_DOOR.y + BARN_DOOR.h + 10 },
   field: { x: FIELD_BARN.x + BARN_DOOR.x, y: FIELD_BARN.y + BARN_DOOR.y + BARN_DOOR.h + 10 },
+  lab: { x: LAB_LIFT.x + LAB_LIFT.size / 2, y: LAB_LIFT.y + LAB_LIFT.size },
 }
 
 // --------------------------------------------------------------- primitives
@@ -872,9 +879,268 @@ function field(): (HTMLElement | null)[] {
  * page at the flat bleed colour once deleted the dusk entirely and the scene
  * rendered against a solid navy rectangle.
  */
+/* ------------------------------------------------------------------- lab */
+
+/**
+ * A still from the atlas at an exact height, placed by its top-left.
+ *
+ * `sprite()` above snaps to whole-pixel zoom, which is right for a card and
+ * fatal in a scene -- see the session 19 notes: it is what rendered a bulldog
+ * and a pony at the same size. Design's table gives every plate an exact box,
+ * so this scales fractionally and hits it.
+ */
+function plate(name: string, x: number, y: number, h: number, css = ''): HTMLElement | null {
+  const el2 = rawSceneSprite(name, h, { shadow: false })
+  if (!el2) return null
+  el2.style.position = 'absolute'
+  el2.style.left = `${x}px`
+  el2.style.top = `${y}px`
+  if (css) el2.style.cssText += css
+  return el2
+}
+
+/** A soft pool of light: a blurred radial, lighting the room rather than lit. */
+function glow(
+  x: number, y: number, w: number, h: number, colour: string, anim: string, at = '50% 50%',
+): HTMLElement {
+  return box(
+    `left:${x}px;top:${y}px;width:${w}px;height:${h}px;pointer-events:none;` +
+    `background:radial-gradient(50% 50% at ${at},${colour},transparent 72%);` +
+    `filter:blur(6px);animation:${anim}`,
+  )
+}
+
+/**
+ * A packed clip animated at an exact height, placed by its top-left.
+ *
+ * `clipActor` takes an INTEGER zoom and cannot hit a target size; `groundActor`
+ * hits the size but positions by the feet and adds a contact shadow, which is
+ * wrong for a bubbling tank bolted to a wall. This is the third case: exact
+ * height, top-left placement, no shadow.
+ */
+function clipActorAt(
+  sheet: string, clip: string, dir: string,
+  x: number, y: number, height: number, dur: string, delay?: string, css = '',
+): HTMLElement | null {
+  const strip = stripUrl(sheet, clip, dir)
+  if (!strip) return null
+  const scale = height / strip.cell
+  const w = strip.cell * scale
+  const sheetW = w * strip.frames
+  const d = document.createElement('div')
+  d.style.cssText =
+    `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${w}px;` +
+    `background-image:url('${strip.url}');background-size:${sheetW}px ${w}px;` +
+    `background-repeat:no-repeat;--strip-w:${sheetW}px;image-rendering:pixelated;` +
+    `animation:y-strip ${dur} steps(${strip.frames}) infinite${delay ? ` ${delay}` : ''};${css}`
+  return d
+}
+
+/**
+ * One layer of a patrol: a walk strip at an exact height, taking its animation
+ * whole.
+ *
+ * `clipActor` and `clipActorAt` both hard-code `animation:y-strip`, and a
+ * patrol layer needs either NO strip animation (it is a standing frame) or
+ * `y-strip` PLUS an opacity track in the same declaration.
+ */
+function patrolLayer(
+  sheet: string, clip: string, dir: string, height: number, anim: string, css = '',
+): HTMLElement | null {
+  const strip = stripUrl(sheet, clip, dir)
+  if (!strip) return null
+  const scale = height / strip.cell
+  const w = strip.cell * scale
+  const sheetW = w * strip.frames
+  const d = document.createElement('div')
+  d.style.cssText =
+    `position:absolute;left:0;top:0;width:${w}px;height:${w}px;` +
+    `background-image:url('${strip.url}');background-size:${sheetW}px ${w}px;` +
+    `background-repeat:no-repeat;--strip-w:${sheetW}px;image-rendering:pixelated;` +
+    `animation:${anim};${css}`
+  return d
+}
+
+/**
+ * A figure that walks a beat and stands at each end of it.
+ *
+ * Four stacked layers on one clock -- face-right still, face-left still,
+ * walk-left, walk-right -- with exactly one opaque at a time, over a wrapper
+ * carrying the `-path` keyframe that does the travelling.
+ *
+ * The swaps are `step-end` so a figure CUTS between facings. A cross-fade would
+ * dissolve a pixel sprite through its own mirror image, which reads as a ghost
+ * rather than a turn.
+ *
+ * Timings are Design's, from `Lab at Depth.dc.html`; the keyframes are copied
+ * verbatim into home.css. Every figure walks at 1.2s for 8 frames, so only the
+ * patrol clock differs between them.
+ */
+function patrol(
+  sheet: string, x: number, y: number, height: number, key: string, dur: string, css = '',
+): HTMLElement | null {
+  const step = `${dur} step-end infinite`
+  const layers = [
+    patrolLayer(sheet, 'walk', 'right', height, `mull-${key}-pr ${step}`, css),
+    patrolLayer(sheet, 'walk', 'left', height, `mull-${key}-pl ${step}`, css),
+    patrolLayer(sheet, 'walk', 'left', height, `y-strip 1.2s steps(8) infinite, mull-${key}-wl ${step}`, css),
+    patrolLayer(sheet, 'walk', 'right', height, `y-strip 1.2s steps(8) infinite, mull-${key}-wr ${step}`, css),
+  ].filter((l): l is HTMLElement => l !== null)
+  if (layers.length === 0) return null
+  const wrap = box(`left:${x}px;top:${y}px;animation:mull-${key}-path ${dur} step-end infinite`)
+  for (const l of layers) wrap.append(l)
+  return wrap
+}
+
+/**
+ * The fourth scene: a lab, at depth.
+ *
+ * Every number below is Design's, out of `docs/mockups/PLACEMENTS.md`, which
+ * `npm run placements` regenerates from the artboard. If the artboard moves,
+ * re-run the tool and diff it -- do not nudge anything here by hand.
+ *
+ * Two of Design's rules are encoded in those coordinates and worth stating,
+ * because they are what stops an interior reading as a sticker sheet:
+ *
+ * - **The wall/floor junction is the horizon.** Nothing stands in y 496-556 and
+ *   the first foot line is 636. Wall furniture above it, floor furniture below,
+ *   and the gap between is the join.
+ * - **One scale throughout.** A grown person is 174px, so 97px to the metre.
+ *   The guard is 190 because he is a big man, not because he is nearer.
+ *
+ * Layers are appended in paint order, which is the order the table lists them.
+ */
+function lab(): (HTMLElement | null)[] {
+  const dim = (b: number): string => `filter:brightness(${b});`
+  return [
+    /*
+       THE ROOM ITSELF, and it is not in the placement table.
+
+       `npm run placements` extracts SPRITES. The wall, the floor and the join
+       between them are CSS in Design's artboard, so a scene built from the table
+       alone comes out as furniture floating in black -- which is exactly how the
+       first build of this looked.
+
+       The geometry is Design's, read off the artboard: wall 0-496, a 26px
+       junction band AT 496, floor 496 to the bottom. That is the same horizon
+       the handoff states as a rule ("nothing stands in y 496-556, first foot
+       line is 636"), and having it here as a drawn band is what makes the rule
+       visible rather than merely obeyed.
+
+       The two tile grids are the perspective. The wall is 96x144 straight on;
+       the floor is 192 WIDE and only 68 DEEP, because a floor plate seen at a
+       shallow angle is short. Getting that ratio wrong is what makes an interior
+       read as wallpaper.
+    */
+    box(
+      'left:0;right:0;top:0;height:496px;' +
+      'background:linear-gradient(180deg,#23272a 0%,#2c3134 26%,#33383b 62%,#3a3f42 88%,#2f3437 100%)',
+    ),
+    box(
+      'left:0;right:0;top:0;height:496px;background-image:' +
+      'repeating-linear-gradient(90deg,rgba(0,0,0,0.28) 0 1px,transparent 1px 96px),' +
+      'repeating-linear-gradient(180deg,rgba(0,0,0,0.22) 0 1px,transparent 1px 144px)',
+    ),
+    box(
+      'left:0;right:0;top:496px;bottom:0;' +
+      'background:linear-gradient(180deg,#4c5052 0%,#44484c 8%,#3b3f44 22%,' +
+      '#32363c 44%,#26282e 70%,#171920 100%)',
+    ),
+    box(
+      'left:0;right:0;top:496px;bottom:0;background-image:' +
+      'repeating-linear-gradient(180deg,rgba(0,0,0,0.4) 0 1px,transparent 1px 68px),' +
+      'repeating-linear-gradient(90deg,rgba(0,0,0,0.3) 0 1px,transparent 1px 192px)',
+    ),
+    // The join. 26px of skirting is the whole difference between a room and two
+    // stacked rectangles.
+    box(
+      'left:0;right:0;top:496px;height:26px;' +
+      'background:linear-gradient(180deg,#63696d 0%,#4b5054 46%,#383c40 100%)',
+    ),
+    // Weight above and below: the ceiling presses down, the far floor falls away.
+    box(
+      'left:0;right:0;top:0;height:240px;' +
+      'background:linear-gradient(180deg,rgba(8,10,12,0.74) 0%,rgba(8,10,12,0.3) 62%,transparent 100%)',
+    ),
+    box(
+      'left:0;right:0;top:940px;bottom:0;' +
+      'background:linear-gradient(180deg,rgba(6,8,10,0) 0%,rgba(6,8,10,0.5) 42%,rgba(4,6,8,0.9) 100%)',
+    ),
+
+    // The ceiling, and the strip lights hung off it.
+    plate('base.ceilingPipes', 0, 0, 96, dim(0.72)),
+    plate('base.striplightLit', 260, 44, 96, 'animation:l-hum 5.3s ease-in-out infinite;'),
+    plate('base.striplightLit', 700, 44, 96, 'animation:l-hum 6.7s ease-in-out infinite 1.4s;'),
+    plate('base.striplightLit', 1500, 44, 96, 'animation:l-hum 7.9s ease-in-out infinite 0.6s;'),
+    plate('base.striplightDead', 1060, 36, 144, dim(0.5)),
+
+    /*
+       What the lights actually do to the room.
+
+       Three cold pools under the working strips and one warm one under the wall
+       lamp, each blurred and on the same `l-hum` clock as the fitting above it,
+       so a flicker dims the pool with the tube rather than after it. Without
+       these the strips are stickers: bright objects lighting nothing.
+    */
+    glow(180, 130, 352, 390, 'rgba(206,232,240,0.16)', 'l-hum 5.3s ease-in-out infinite'),
+    glow(620, 130, 352, 390, 'rgba(206,232,240,0.16)', 'l-hum 6.7s ease-in-out infinite 1.4s'),
+    glow(1420, 130, 352, 390, 'rgba(206,232,240,0.16)', 'l-hum 7.9s ease-in-out infinite 0.6s'),
+    glow(1300, 280, 216, 250, 'rgba(255,214,150,0.3)', 'l-hum 8.3s ease-in-out infinite', '50% 24%'),
+
+    // Wall furniture, all of it above the junction.
+    plate('base.wallPipes', 200, 280, 144, dim(0.88)),
+    plate('base.wallHazard', 330, 280, 144, dim(0.9)),
+    plate('base.warningSign', 104, 300, 144),
+    plate('base.wallVent', 1120, 280, 144, dim(0.86)),
+    plate('base.wallStencil', 1240, 280, 144, dim(0.9)),
+    plate('base.wallLamp', 1360, 280, 144, dim(1.05)),
+    plate('base.warningSign', 1462, 300, 144),
+    plate('base.wallPipes', 1790, 280, 144, dim(0.82)),
+    plate('base.lift3', LAB_LIFT.x, LAB_LIFT.y, LAB_LIFT.size),
+    plate('base.blastDoor5', 1500, 248, 256),
+
+    // The tank bank, each on its own clock so the room never pulses in unison.
+    clipActorAt('tankSwirl', 'swirl', 'down', 1167, 475, 192, '2.9s'),
+    clipActorAt('tankSwirl', 'churn', 'down', 1352, 483, 192, '3.3s', '0.6s'),
+    clipActorAt('tankPanel', 'churn', 'down', 1540, 491, 192, '3.9s', '1.3s'),
+    clipActorAt('tankBarrel', 'swirl', 'down', 1710, 496, 192, '4.3s', '2.1s'),
+
+    // The vats. This is the thing the scene is about.
+    plate('vault.vatBroken', 673, 410, 292, dim(0.82)),
+    plate('vault.vatAlien', 565, 460, 241, dim(0.94)),
+    clipActorAt('vatSpecimen', 'bubble', 'down', 386, 456, 261, '3.6s'),
+
+    // A hazmat tech working the right-hand aisle.
+    patrol('baseHazmat', 1455, 596, 174, 'haz', '41s', dim(0.9)),
+
+    plate('vault.floorGrate', 980, 890, 143, dim(0.62)),
+    plate('vault.floorGrate', 1420, 930, 143, dim(0.56)),
+    clipActorAt('labConsole', 'flicker', 'down', 825, 491, 374, '1.8s'),
+    plate('vault.jarRack', 1162, 682, 210, dim(0.92)),
+    plate('vault.drumRank', 1335, 615, 309, dim(0.84)),
+    plate('base.labBench', 544, 707, 150, dim(0.96)),
+
+    patrol('baseTech', 861, 696, 174, 'tech', '47s'),
+    patrol('baseGuard', 420, 770, 190, 'guard', '59s', dim(0.86)),
+
+    plate('vault.drumScatter', 264, 782, 239, dim(0.62)),
+    plate('vault.examTable', 539, 779, 296, dim(1.02)),
+    clipActorAt('tankVat', 'swirl', 'down', 1147, 848, 179, '5.4s', undefined, dim(0.86)),
+    plate('vault.drumStack', 1544, 797, 241, dim(0.7)),
+
+    // Underground the light comes from the room itself, so the vignette is
+    // tighter and colder than either scene above ground.
+    ...vignette(
+      'radial-gradient(ellipse 62% 54% at 50% 46%,rgba(0,0,0,0) 40%,rgba(4,6,9,0.66) 100%)',
+      'linear-gradient(180deg,rgba(6,8,11,0.5) 0%,rgba(0,0,0,0) 26%,rgba(0,0,0,0) 72%,rgba(4,5,8,0.72) 100%)',
+    ),
+  ]
+}
+
 export function buildScene(kind: SceneKind): HTMLElement {
   const root = el('div', { class: `home-yard is-${kind}` })
-  for (const layer of kind === 'field' ? field() : yard()) {
+  const layers = kind === 'lab' ? lab() : kind === 'field' ? field() : yard()
+  for (const layer of layers) {
     if (layer) root.append(layer)
   }
   return root
