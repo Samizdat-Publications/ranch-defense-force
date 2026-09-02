@@ -78,6 +78,21 @@ export const DOOR: Record<SceneKind, { x: number; y: number }> = {
   lab: { x: LAB_LIFT.x + LAB_LIFT.size / 2, y: LAB_LIFT.y + LAB_LIFT.size },
 }
 
+/**
+ * The band of the stage the UI owns, in stage pixels.
+ *
+ * `.home-rail` sits at `bottom: 52px` and a `.hero` card is 196 wide by about
+ * 283 tall, six of them with 16px gaps and centred. So the class cards cover
+ * roughly x 332-1588, y 735-1028, and anything a scene puts there is composed
+ * but never seen.
+ *
+ * Design's artboards are composed WITHOUT the UI over them, which is the right
+ * way round -- a backdrop should be a whole picture -- but it means a placement
+ * inside this box needs a decision rather than a transcription. Joy was the
+ * first one to need it and will not be the last.
+ */
+export const UI_RAIL = { x: 332, y: 735, w: 1256, h: 293 } as const
+
 // --------------------------------------------------------------- primitives
 
 /** A bare positioned div carrying literal CSS. The scene's sky, light and air. */
@@ -425,8 +440,21 @@ function yard(): (HTMLElement | null)[] {
   push(clipActorAt('fjordPony', 'graze', 'downRight', 1450, 704, 96, '5.3s'))
   push(wander('fjordPony', 'left', 1640, 740, 96, -170, '61s', '1.4s', [14, 82, 70, 16, 0.5]))
 
-  // -- Joy, who sits, walks out, and comes back
-  push(joy(1372, 770, 60))
+  /*
+     -- Joy, who sits, walks out, and comes back.
+
+     Design places her at (1372, 770). That is the exact centre of the class
+     card rail, so she was invisible in the built screen while being perfectly
+     placed in the artboard -- the artboards are composed without the UI over
+     them. See `UI_RAIL` below for the band that is not available.
+
+     Moved to her own kennel instead of anywhere merely empty: `ranch.doghouse`
+     is at (825, 693), so she sits beside it and her 150px walk takes her out
+     past the feed pan and the hens and back. Same behaviour, same beat, and it
+     reads better than the original spot did -- a dog by her house is a reason
+     to be there.
+  */
+  push(joy(880, 668, 60))
 
   /*
      The near fence, and everything in front of it.
