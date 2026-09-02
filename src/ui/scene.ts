@@ -42,7 +42,7 @@
  * left and eighteen high of where it belongs, and so did every other prop.
  */
 import { el } from './dom'
-import { spriteEl, spriteTileUrl, frameOf, stripUrl, clipsOf, groundWrap, sceneSprite as rawSceneSprite } from './sprite'
+import { spriteEl, spriteTileUrl, frameOf, stripUrl, groundWrap, sceneSprite as rawSceneSprite } from './sprite'
 // Re-exported so a scene has one place to import from. `sceneSprite` is the
 // STILL counterpart of `groundActor` below: exact height, feet on the ground.
 export { sceneSprite } from './sprite'
@@ -107,28 +107,6 @@ function sprite(
 }
 
 /**
- * A sprite bottom-centred inside a fixed box.
- *
- * For the one place a game sprite stands in for scene art: the scene's own
- * rooster crop is entirely transparent, so the yard borrows the rooster the
- * field sprites use, and that one IS trimmed. Bottom-centring puts its feet
- * where the box's feet are, which is the only alignment that matters.
- */
-function spriteInBox(
-  name: string, x: number, y: number, w: number, h: number, zoom: number, css = '',
-): HTMLElement | null {
-  const s = spriteEl(name, 4096, zoom)
-  if (!s) return null
-  const wrap = box(`left:${x}px;top:${y}px;width:${w}px;height:${h}px;${css}`)
-  s.style.position = 'absolute'
-  s.style.left = '50%'
-  s.style.bottom = '0'
-  s.style.transform = 'translateX(-50%)'
-  wrap.append(s)
-  return wrap
-}
-
-/**
  * A band of one tile repeated horizontally.
  *
  * A tiled band needs a STANDALONE tile texture, never an atlas window: pointing
@@ -171,43 +149,6 @@ function stripActor(
     `--strip-w:${opts.sheetW}px;` +
     `image-rendering:pixelated;` +
     `animation:${opts.keyframe} ${opts.dur} steps(${opts.frames}) infinite${opts.delay ? ` ${opts.delay}` : ''}`
-  return d
-}
-
-/**
- * Animate ANY packed clip, without a baked strip PNG.
- *
- *     clipActor('brahmaHenBlight', 'walk', 'down', 820, 470, '1.1s', 2)
- *
- * `actor()` above needs a strip that `npm run anim` baked, and only fifteen of
- * those exist -- all of them LimeZu-era. Everything generated since is packed
- * as individual frames, so this composes the strip at runtime out of the atlas
- * (see `stripUrl`) and hands the result to the same `stripActor`.
- *
- * The cell and the frame count come back FROM the composer rather than being
- * typed here, which is the whole reason to prefer this over `actor()` for
- * generated art: `actor`'s own comment warns that a hand-typed sheet width
- * fails silently by sliding the animation instead of stepping it, and every
- * generated clip has a different cell.
- *
- * Ask `clipsOf(sheet)` for what a sheet can do. Directions are the game's
- * eight: down, downLeft, left, upLeft, up, upRight, right, downRight.
- */
-function clipActor(
-  sheet: string, clip: string, dir: string,
-  x: number, y: number, dur: string, zoom = 1, delay?: string,
-): HTMLElement | null {
-  const strip = stripUrl(sheet, clip, dir)
-  if (!strip) return null
-  const d = document.createElement('div')
-  const w = strip.cell * zoom
-  const sheetW = w * strip.frames
-  d.style.cssText =
-    `position:absolute;left:${x}px;top:${y}px;` +
-    `width:${w}px;height:${w}px;background-image:url('${strip.url}');` +
-    `background-size:${sheetW}px ${w}px;background-repeat:no-repeat;` +
-    `--strip-w:${sheetW}px;image-rendering:pixelated;` +
-    `animation:y-strip ${dur} steps(${strip.frames}) infinite${delay ? ` ${delay}` : ''}`
   return d
 }
 
@@ -317,341 +258,333 @@ function vignette(radial: string, linear: string): HTMLElement[] {
  * The yard: the house on the left, the barn in the middle, stock on the right,
  * and the near ground in front of the fence.
  *
- * Port of `docs/reference/Whitacre Yard at Dusk.html`, in its DOM order.
+ * Built from Design's `Yard Grounding Fix.dc.html` -- the numbers are in
+ * `docs/mockups/PLACEMENTS.md`, which `npm run placements` regenerates.
+ *
+ * ## Why this was rebuilt rather than nudged
+ *
+ * The previous yard was a port of an older reference and it carried a long
+ * note explaining that it had to DISAGREE with the placement table: the table
+ * put the treeline at y 268-414, the ground began at 620, and three of four
+ * oaks therefore hung a hundred pixels up in the sky. That note ended "ground
+ * wins -- it is in the reference and the table is not."
+ *
+ * The Grounding Fix is Design's answer to exactly that conflict. **The ground
+ * moved up to 540**, so the trees now stand ON it, and the whole scene is
+ * rebuilt around the new horizon. The table and the ground agree for the first
+ * time, so there is nothing left to overrule.
+ *
+ * ## What "grounding" turned out to mean
+ *
+ * Every standing thing gets a blurred contact ellipse pushed BEFORE it, so
+ * paint order puts the shadow under the object. That is the same fix session 19
+ * found for the first title screens -- *"everything is in the air"* -- applied
+ * to the props rather than only to the animals, and it is most of why this
+ * version reads as a place rather than a collage.
+ *
+ * The treeline is five oaks at 250x212, blurred 2-2.4px and dimmed to 0.4-0.48
+ * opacity. That is not decoration: a sharp tree at the back of a scene reads as
+ * a prop standing in the yard. Depth here is entirely blur and value.
  */
 function yard(): (HTMLElement | null)[] {
   const L: (HTMLElement | null)[] = []
+  const push = (...items: (HTMLElement | null)[]): void => { L.push(...items) }
 
   // -- the light: a halo, a core, and one slow flicker in nine seconds
-  L.push(box(
+  push(box(
     'left:792px;top:372px;width:300px;height:300px;border-radius:50%;' +
     'background:radial-gradient(circle,#fff6d6 0%,#ffd884 26%,rgba(255,176,92,0) 66%);' +
     'animation:y-sun 9s ease-in-out infinite',
   ))
-  L.push(box(
-    'left:896px;top:476px;width:92px;height:92px;border-radius:50%;' +
+  push(box(
+    'left:896px;top:452px;width:92px;height:92px;border-radius:50%;' +
     'background:radial-gradient(circle,#fffbe8 0%,#ffe6a2 58%,rgba(255,214,124,0) 100%);' +
     'animation:y-sun 9s ease-in-out infinite',
   ))
 
   // -- three cloud bands, each 3040 wide so the drift never shows an end
-  L.push(box(
-    'left:0;top:128px;width:3040px;height:30px;opacity:0.22;filter:blur(4px);' +
-    'background:repeating-linear-gradient(90deg,rgba(255,220,190,0.55) 0 200px,transparent 200px 470px);' +
-    'animation:y-cloud 140s linear infinite',
+  push(cloud(128, 34, 0.13, 9, 'rgba(255,220,190,0.55)', 200, 470, '140s'))
+  push(cloud(232, 24, 0.12, 7, 'rgba(255,208,170,0.6)', 130, 380, '96s'))
+  push(cloud(338, 18, 0.11, 6, 'rgba(255,196,150,0.65)', 90, 300, '70s'))
+
+  // -- a skein crossing the whole sky once every twenty-nine seconds
+  push(birds(1990, 296))
+
+  // -- the ground. THE HORIZON IS 540; everything below is field.
+  push(box(
+    'left:0;right:0;top:540px;bottom:0;' +
+    'background:linear-gradient(180deg,#7c744c 0%,#6c6341 5%,#5c5637 13%,#4d4a2f 28%,' +
+    '#3c3a26 50%,#2a2a1d 74%,#1a1b13 100%)',
   ))
-  L.push(box(
-    'left:0;top:232px;width:3040px;height:20px;opacity:0.2;filter:blur(3px);' +
-    'background:repeating-linear-gradient(90deg,rgba(255,208,170,0.6) 0 130px,transparent 130px 380px);' +
-    'animation:y-cloud 96s linear infinite',
+  push(box(
+    'left:0;right:0;top:540px;bottom:0;opacity:0.26;background-image:' +
+    'repeating-linear-gradient(92deg,rgba(0,0,0,0.3) 0 4px,transparent 4px 13px)',
   ))
-  L.push(box(
-    'left:0;top:338px;width:3040px;height:14px;opacity:0.18;filter:blur(2px);' +
-    'background:repeating-linear-gradient(90deg,rgba(255,196,150,0.65) 0 90px,transparent 90px 300px);' +
-    'animation:y-cloud 70s linear infinite',
+  // The lit lip of the horizon, and the dust hanging over it.
+  push(box(
+    'left:0;right:0;top:518px;height:54px;filter:blur(11px);' +
+    'background:linear-gradient(180deg,rgba(255,214,150,0) 0%,rgba(255,204,136,0.42) 50%,' +
+    'rgba(255,186,116,0) 100%)',
+  ))
+  push(box(
+    'left:0;right:0;top:536px;height:148px;filter:blur(6px);' +
+    'background:linear-gradient(180deg,rgba(200,174,156,0.44) 0%,rgba(150,132,118,0.26) 34%,' +
+    'rgba(100,92,80,0.08) 70%,transparent 100%)',
   ))
 
-  // -- the haze the buildings stand in front of
-  L.push(box(
-    'left:0;right:0;top:512px;height:120px;filter:blur(2px);' +
-    'background:linear-gradient(180deg,rgba(58,46,52,0) 0%,rgba(46,38,44,0.5) 62%,rgba(40,34,38,0.78) 100%)',
-  ))
+  /*
+     The treeline, five oaks along the back.
 
-  // -- the ground: the field itself, its lit top edge, and the furrows
-  L.push(box(
-    'left:0;right:0;top:620px;bottom:0;' +
-    'background:linear-gradient(180deg,#575c33 0%,#454c2b 20%,#333a21 50%,#23281a 78%,#191d13 100%)',
-  ))
-  L.push(box(
-    'left:0;right:0;top:620px;height:18px;' +
-    'background:linear-gradient(180deg,rgba(244,196,126,0.48),transparent)',
-  ))
-  L.push(box(
-    'left:0;right:0;top:620px;bottom:0;opacity:0.3;' +
-    'background-image:repeating-linear-gradient(92deg,rgba(0,0,0,0.3) 0 4px,transparent 4px 13px)',
-  ))
-
-  // -- the track worn up to the barn doors
-  L.push(box(
-    'left:900px;top:630px;width:760px;height:450px;opacity:0.72;' +
-    'background:linear-gradient(180deg,#6a5a3c 0%,#7b6945 36%,#6b5a3a 100%);' +
-    'clip-path:polygon(46% 0,55% 0,100% 100%,0 100%)',
-  ))
-
-  // -- the treeline behind the place, from PLACEMENTS.md
-  //
-  // These were REMOVED last pass with the note "a wrong tree is louder than no
-  // tree": the pack's oak is a modular piece and read as three identical shrubs
-  // at this size. The generated one is 59x54, so it goes in at 4x — 236x216
-  // against the table's 250x212, and 4 is the integer that lands closest.
-  // Design's own final yard drops the oaks entirely; they are back because the
-  // owner wants them and the art is now good enough to carry them.
-  // The dusk correction is not a preference. Everything else in this scene is
-  // lit by a setting sun and carries a warm, low-key palette; the generated oak
-  // is drawn at full daylight saturation and read as pasted on until it was
-  // brought down to meet the rest. The fence does the same thing harder
-  // (brightness 0.62) because it is nearer the camera and more in shadow.
-  //
-  // THE Y VALUES ARE NOT THE TABLE'S, AND THEY CANNOT BE.
-  //
-  // PLACEMENTS.md puts these four at y 268/300/282/414 in a 250x212 box. The
-  // oak packs at 59x54, so at 4x it is 236x216 and those tops put its BASE at
-  // 484, 516, 498 and 630 — against a ground that starts at 620. Three of the
-  // four hung 104-136px up in the sky, which is exactly how it looked.
-  //
-  // There is no reference to copy for this one: `tree_oak` does not appear in
-  // `docs/reference/` at all, because Design's final yard drops the oaks and
-  // they are here because the owner wants them. So the table is the only source
-  // and the table disagrees with the ground layer, which is a CSS layer the
-  // table never had. Ground wins — it is in the reference and the table is not.
-  //
-  // Placed by their base instead: 620 minus the 216 the sprite actually
-  // measures, varied a few pixels either side so four identical trees do not
-  // line up on a ruler. They are pushed before the buildings, so DOM order —
-  // which is paint order — tucks the trunks behind the barn and the house and
-  // the row reads as a treeline rather than four props.
-  for (const [x, y] of [[596, 410], [1150, 418], [1420, 412], [1742, 414]] as const) {
-    L.push(sprite('scene.oak', x, y, 4, 'opacity:0.9;filter:brightness(0.78) saturate(0.82)'))
+     Blurred and dimmed hard on purpose -- see the header. These are also pushed
+     BEFORE the buildings so paint order tucks their trunks behind the barn and
+     the house, which is what makes a row of five props read as one treeline.
+  */
+  const oaks: readonly (readonly [number, number, number, number, number, number])[] = [
+    [230, 368, 0.4, 2.4, 0.4, 0.5],
+    [520, 360, 0.46, 2, 0.46, 0.58],
+    [1130, 364, 0.43, 2.2, 0.43, 0.54],
+    [1408, 356, 0.48, 2, 0.48, 0.58],
+    [1716, 366, 0.41, 2.4, 0.41, 0.5],
+  ]
+  for (const [x, y, op, blur, bright, sat] of oaks) {
+    push(plate('scene.treeOak', x, y, 212,
+      `opacity:${op};filter:blur(${blur}px) brightness(${bright}) saturate(${sat});`))
   }
 
-  // -- the far buildings, all at 1x
-  L.push(sprite('scene.silo', 1664, 192))
-
-  // The barn, and the doorway that is the Homestead entrance. The glow is the
-  // only thing on this screen that says "you can go in there".
-  const barn = box(`left:${YARD_BARN.x}px;top:${YARD_BARN.y}px;width:480px;height:224px`)
-  const barnImg = spriteEl('scene.barn', 4096, 1)
-  if (barnImg) {
-    barnImg.style.cssText += 'position:absolute;inset:0'
-    barn.append(barnImg)
-  }
-  barn.append(box(
-    `left:${BARN_DOOR.x - 10}px;top:${BARN_DOOR.y - 10}px;` +
-    `width:${BARN_DOOR.w + 20}px;height:${BARN_DOOR.h + 20}px;pointer-events:none;` +
-    'background:radial-gradient(60% 60% at 50% 62%,rgba(255,206,120,0.6),transparent 72%);' +
+  // -- the buildings, each on its own contact shadow
+  push(shadow(1620, 696, 120, 30, 0.55, 7))
+  push(plate('ranch.silo', 1559, 337, 406, 'filter:brightness(0.92) saturate(0.9);'))
+  push(shadow(170, 668, 220, 34, 0.5, 7))
+  push(plate('ranch.bunkhouse', 132, 453, 290, 'filter:brightness(0.8) saturate(0.86);'))
+  push(shadow(1140, 684, 340, 38, 0.55, 8))
+  push(plate('ranch.barn', 1079, 476, 257, 'filter:brightness(0.92) saturate(0.94);'))
+  // The doorway that is the Homestead entrance, lit from inside.
+  push(box(
+    'left:1246px;top:606px;width:132px;height:100px;' +
+    'background:radial-gradient(60% 60% at 50% 66%,rgba(255,206,120,0.6),transparent 72%);' +
     'animation:y-door 3.6s ease-in-out infinite',
   ))
-  L.push(barn)
-
-  // The farmhouse: a porch light that catches once, and the stove still lit.
-  const house = box('left:430px;top:320px;width:256px;height:320px')
-  const houseImg = spriteEl('scene.house', 4096, 1)
-  if (houseImg) {
-    houseImg.style.cssText += 'position:absolute;inset:0'
-    house.append(houseImg)
-  }
-  house.append(box(
-    'left:146px;top:226px;width:104px;height:104px;' +
-    'background:radial-gradient(circle,rgba(255,214,140,0.7) 0%,rgba(255,190,110,0.2) 42%,transparent 72%);' +
-    'animation:y-porch 11s ease-in-out infinite',
+  push(shadow(500, 680, 280, 34, 0.52, 7))
+  push(plate('ranch.farmhouse', 405, 254, 544, 'filter:brightness(0.86) saturate(0.9);'))
+  push(box(
+    'left:566px;top:560px;width:140px;height:140px;border-radius:50%;' +
+    'background:radial-gradient(circle,rgba(255,214,140,0.6) 0%,rgba(255,190,110,0.18) 42%,' +
+    'transparent 72%);animation:y-porch 11s ease-in-out infinite',
   ))
-  for (const [size, alpha, blur, delay] of [
-    [16, 0.5, 4, ''], [19, 0.42, 5, '2.5s'], [13, 0.46, 3, '5s'],
-  ] as const) {
-    house.append(box(
-      `left:118px;top:46px;width:${size}px;height:${size}px;border-radius:50%;` +
-      `background:rgba(214,206,196,${alpha});filter:blur(${blur}px);` +
-      `animation:y-smoke 7.5s linear infinite${delay ? ` ${delay}` : ''}`,
-    ))
-  }
-  L.push(house)
+  push(smoke(18, 0.5, 4), smoke(22, 0.42, 5, '2.5s'), smoke(15, 0.46, 3, '5s'))
 
-  // -- the yard's own furniture
-  L.push(sprite('scene.coop', 800, 478))
-  L.push(sprite('scene.nest', 936, 542))
-  // A real sway rather than `y-sway`, which rotated the whole sprite about its
-  // base — a scarecrow tips, its straw does not stay rigid while the post leans.
-  L.push(actor('scene.scarecrowSwayStrip', 968, 546, 96, 96, 7, '7.4s')
-    ?? sprite('scene.scarecrow', 968, 546,
-      1, 'transform-origin:50% 92%;animation:y-sway 7.4s ease-in-out infinite'))
-  L.push(sprite('scene.well', 1112, 596))
-  L.push(sprite('scene.hay', 646, 616))
-  L.push(sprite('scene.doghouse', 722, 552))
+  push(shadow(822, 676, 112, 26, 0.5, 6))
+  push(clipActorAt('windmill', 'spin', 'down', 806, 510, 188, '4.5s', undefined,
+    'filter:brightness(0.86) saturate(0.85);'))
 
-  /*
-     THE OWNER'S OWN FLOCK, around the coop.
+  // The haze that separates the middle distance from the yard proper, and the
+  // worn dirt of the yard itself.
+  push(box(
+    'left:0;right:0;top:656px;height:96px;filter:blur(9px);' +
+    'background:linear-gradient(180deg,rgba(124,114,88,0) 0%,rgba(102,96,74,0.3) 46%,' +
+    'rgba(74,70,56,0.04) 100%)',
+  ))
+  push(box(
+    'left:900px;top:700px;width:760px;height:380px;opacity:0.7;' +
+    'background:linear-gradient(180deg,#6a5a3c 0%,#7b6945 36%,#6b5a3a 100%)',
+  ))
 
-     Ten different birds rather than one bird ten times, which was the explicit
-     ask -- and they differ in SIZE as well as plumage (the chick packs at 34px,
-     the buff Orpington at 56), so a row of them at one zoom already reads as a
-     real flock with no per-bird treatment.
+  push(clipActorAt('scarecrow', 'sway', 'down', 1404, 648, 96, '7.4s'))
 
-     `clipActor` where a bird has an ambient clip and `spriteEl` where it does
-     not, so this degrades to a still yard rather than to a missing one while
-     the rest of the animations generate. Durations are deliberately coprime,
-     the same rule the cow/calf/sheep in the pen already follow: three animals
-     pecking on the same beat read as one machine.
+  // -- the yard furniture
+  push(plate('ranch.roundBale', 605, 657, 107, 'filter:brightness(0.9) saturate(0.94);'))
+  push(plate('ranch.squareBales', 729, 743, 21, 'filter:brightness(0.9);'))
+  push(plate('ranch.doghouse', 825, 693, 54, 'filter:brightness(0.92);'))
+  push(plate('ranch.wellStone', 688, 734, 69, 'filter:brightness(0.92) saturate(0.92);'))
+  push(plate('ranch.coop', 958, 626, 171, 'filter:brightness(0.88) saturate(0.88);'))
+  push(plate('ranch.nestBox', 1085, 722, 32, 'filter:brightness(0.9);'))
+  push(plate('ranch.feedPan', 889, 749, 53, 'filter:brightness(0.94);'))
+  push(plate('ranch.eggClutch', 1105, 730, 28))
+  push(plate('ranch.eggClutch', 985, 786, 28))
 
-     Facings are mixed on purpose. A yard where every animal faces the camera is
-     a lineup, not a farm.
-  */
-  const FLOCK: [string, string, number, number, string, string][] = [
-    ['brahmaHen', 'downRight', 792, 566, '1.7s', '0s'],
-    ['buffHen', 'down', 862, 590, '2.3s', '0.4s'],
-    ['barredHen', 'downLeft', 928, 604, '1.9s', '0.9s'],
-    ['leghornHen', 'right', 744, 604, '2.1s', '0.2s'],
-    ['silkieHen', 'downRight', 690, 636, '2.7s', '1.1s'],
-    ['polishHen', 'down', 836, 640, '2.9s', '0.6s'],
-    ['beardedHen', 'downLeft', 906, 656, '2.2s', '1.4s'],
-    ['bantamHen', 'right', 776, 668, '1.5s', '0.8s'],
-    ['chick', 'downRight', 820, 690, '1.3s', '0.3s'],
-    ['farmRooster', 'downLeft', 964, 596, '3.4s', '0s'],
-  ]
-  for (const [id, dir, x, y, dur, delay] of FLOCK) {
-    const clips = clipsOf(id)
-    const ambient = clips.peck ? 'peck' : clips.crow ? 'crow' : null
-    L.push(ambient
-      ? clipActor(id, ambient, dir, x, y, dur, 2, delay)
-      : sprite(`${id}.idle.${dir}`, x, y, 2))
-  }
+  // -- the flock. Two peck in place; four wander a fixed beat.
+  push(shadow(848, 740, 32, 9, 0.5, 3))
+  push(clipActorAt('brahmaHen', 'peck', 'downRight', 856, 708, 40, '1.9s'))
+  push(shadow(926, 766, 32, 9, 0.5, 3))
+  push(clipActorAt('brahmaHen', 'peck', 'down', 934, 734, 40, '2.3s', '0.6s'))
+  push(shadow(1004, 744, 30, 8, 0.48, 3))
+  push(still('leghornHen', 'walk', 'down', 1002, 716, 36))
+  push(shadow(830, 782, 28, 8, 0.48, 3))
+  push(still('beardedHen', 'walk', 'down', 828, 756, 34))
+  push(shadow(1042, 792, 26, 8, 0.46, 3))
+  push(still('silkieHen', 'walk', 'down', 1040, 770, 30))
 
-  // Joy on the porch side of her house, and the cats where cats go.
-  {
-    const joyClips = clipsOf('joy')
-    L.push(joyClips.sit
-      ? clipActor('joy', 'sit', 'downRight', 700, 620, '3.1s', 2)
-      : sprite('joy.idle.downRight', 700, 620, 2))
-  }
-  L.push(sprite('wiz.idle.downLeft', 1104, 672, 2))
-  L.push(sprite('tabbyCat.idle.right', 1180, 640, 2))
+  push(wander('barredHen', 'down', 1150, 702, 34, -70, '53s', '0.8s', [3, 27, 28, 8, 0.48]))
+  push(wander('polishHen', 'down', 1204, 738, 34, -60, '43s', '0.8s', [3, 27, 28, 8, 0.48]))
+  push(wander('farmRooster', 'down', 1264, 702, 46, -90, '67s', '0.9s', [5, 37, 36, 9, 0.5]))
+  push(wander('tabbyCat', 'left', 760, 792, 36, -120, '71s', '0.7s', [4, 29, 30, 8, 0.48]))
 
-  // -- the stock pen: rails, a gate, two posts and a sign
-  const pen = box('left:1596px;top:646px;width:324px;height:74px')
-  const rail = 'height:26px;'
-  for (const css of [
-    `left:0;right:0;top:0;${rail}opacity:0.92`,
-    `left:0;width:132px;bottom:0;${rail}`,
-    `right:0;width:108px;bottom:0;${rail}`,
-  ]) {
-    const b = tileBand('scene.penH', css, 24, 26)
-    if (b) pen.append(b)
-  }
-  for (const [name, css] of [
-    ['scene.penC1', 'left:-4px;top:0'],
-    ['scene.penGate', 'left:138px;bottom:0'],
-    ['scene.penV', 'left:-2px;top:20px'],
-    ['scene.penV', 'right:-2px;top:20px'],
-    ['scene.signCow', 'left:96px;bottom:14px'],
-  ] as const) {
-    const s = spriteEl(name, 4096, 1)
-    if (s) { s.style.cssText += `position:absolute;${css}`; pen.append(s) }
-  }
-  L.push(pen)
+  // -- the stock
+  push(plate('ranch.stockTank', 1558, 750, 52, 'filter:brightness(0.94);'))
+  push(shadow(1468, 792, 76, 16, 0.5, 5))
+  push(clipActorAt('fjordPony', 'graze', 'downRight', 1450, 704, 96, '5.3s'))
+  push(wander('fjordPony', 'left', 1640, 740, 96, -170, '61s', '1.4s', [14, 82, 70, 16, 0.5]))
 
-  // The pen: grazing rather than bobbing. Durations are deliberately coprime so
-  // three animals in one pen never fall into step and read as one machine.
-  L.push(actor('scene.cowGrazeStrip', 1628, 658, 90, 54, 9, '5.4s')
-    ?? sprite('scene.cow', 1628, 658))
-  L.push(actor('scene.calfGrazeStrip', 1746, 672, 52, 40, 9, '3.1s', 1, '0.6s')
-    ?? sprite('scene.calf', 1746, 672))
-  L.push(actor('scene.sheepGrazeStrip', 1826, 678, 52, 34, 9, '4.3s', 1, '1.4s')
-    ?? sprite('scene.sheep', 1826, 678))
-  L.push(sprite('scene.trough', 1600, 700))
+  // -- Joy, who sits, walks out, and comes back
+  push(joy(1372, 770, 60))
 
   /*
-     The owner's equines, at the rail beside the pen rather than inside it.
+     The near fence, and everything in front of it.
 
-     Outside on purpose: the pen already holds a cow, a calf and a sheep, and
-     five more animals in a 324px box is a pile. Standing along the rail reads
-     as a yard that has more animals than pens, which is what a real one looks
-     like.
+     Full width at -20 so neither end shows, and dimmed harder than anything
+     else in the scene (0.6) because it is the nearest thing to the camera and
+     most deeply in its own shadow.
+
+     TILED, not stretched. The placement table reports this as 1960x32 because
+     that is the box it fills in the artboard, but the sprite is a 96x32 TILE --
+     handing that width to `plate()` scales one picket across the whole screen
+     and it came out as a row of smears. A width in the table is not always a
+     size.
   */
-  const RAIL: [string, string, number, number, string][] = [
-    ['fjordPony', 'downRight', 1420, 668, '4.7s'],
-    ['arabian', 'down', 1520, 690, '5.3s'],
-    ['blackMule', 'downLeft', 1352, 706, '6.1s'],
-    ['beigeMule', 'right', 1276, 674, '5.9s'],
-    ['rosie', 'downRight', 1444, 736, '4.1s'],
-  ]
-  for (const [id, dir, x, y, dur] of RAIL) {
-    L.push(clipsOf(id).graze
-      ? clipActor(id, 'graze', dir, x, y, dur, 2)
-      : sprite(`${id}.idle.${dir}`, x, y, 2))
-  }
+  push(tileBand('scene.fencePicket',
+    'left:-20px;right:-20px;top:834px;height:32px;filter:brightness(0.6) saturate(0.85)', 96, 32))
 
-  // -- actors at 2x. Two hens cross the whole yard, right to left.
-  for (const [anim, step] of [
-    ['y-cross 132s linear infinite', '1.15s'],
-    ['y-cross 168s linear infinite 20s', '1.35s'],
-  ] as const) {
-    L.push(travelling(2000, 664, anim, stripActor('scene.chickenWalkLeftStrip', {
-      w: 64, h: 64, sheetW: 384, sheetH: 64, frames: 6, dur: step, keyframe: 'y-strip-384',
-    })))
-  }
+  // Wheat in front of the fence, each clump dimmer and slower than the last so
+  // the near ground falls away rather than stopping.
+  push(clipActorAt('wheat', 'sway', 'down', 1403, 732, 88, '5.1s', undefined,
+    'opacity:0.88;filter:brightness(0.8);'))
+  push(clipActorAt('wheat', 'sway', 'down', 1563, 772, 88, '6.3s', '1.1s',
+    'opacity:0.82;filter:brightness(0.72);'))
+  push(clipActorAt('wheat', 'sway', 'down', 303, 820, 88, '8.1s', '2.4s',
+    'opacity:0.76;filter:brightness(0.6);'))
+  push(clipActorAt('wheat', 'sway', 'down', 1683, 860, 88, '9.7s', '3.6s',
+    'opacity:0.7;filter:brightness(0.44);'))
+  push(plate('ranch.feedBucket', 487, 858, 52, 'filter:brightness(0.6);'))
+  push(plate('ranch.feedBucket', 539, 876, 52, 'filter:brightness(0.54);'))
 
-  L.push(peck(856, 676, '2s'))
-  L.push(actor('scene.chickPeckStrip', 920, 678, 32, 32, 9, '2.2s', 2)
-    ?? sprite('scene.chick', 920, 678, 2))
-  // The scene pack's own rooster crop is entirely transparent. This is
-  // generated art rather than the game's 32px field rooster, so he is a head
-  // taller than the hens pecking beside him — which is the point of a rooster.
-  // It is a trimmed frame, hence the box: the reference's slot is 64x64 and the
-  // bird stands on its floor.
-  /*
-     THE ROOSTER WALKS A BEAT, PECKS, AND CROWS — one 24s cycle, four layers.
+  // -- the last things still awake
+  push(firefly(560, 790, 6, 10, 0.7, '90px', '-120px', 'y-fly 9s ease-in-out infinite'))
+  push(firefly(1240, 812, 5, 10, 0.7, '-70px', '-150px', 'y-fly 12s ease-in-out infinite 2s'))
+  push(firefly(1660, 786, 6, 12, 0.7, '60px', '-190px', 'y-fly 10.5s ease-in-out infinite 4s'))
+  push(firefly(900, 836, 4, 9, 0.6, '120px', '-100px', 'y-fly 14s ease-in-out infinite 1s'))
 
-     A wrapper carries the PATH and the three strips sit inside it at 0,0, each
-     cut in and out by a keyframe sharing that period. Splitting movement from
-     appearance is what keeps this tractable: the wrapper only ever translates,
-     and a strip only ever decides whether it is the one on screen.
-
-     He walks out and BACK rather than in a circle, because the sprite has one
-     facing. A circle would have him moonwalking through half of it; the return
-     leg flips `scaleX` instead, which is why the path keyframe carries both
-     transforms in every stop — writing only one silently drops the other.
-
-     Placed at 763,642 so his feet land where the old still frame's did; see the
-     note on `spriteInBox` for that arithmetic. A missing strip falls back to
-     the static bird rather than an empty yard.
-  */
-  const roosterWalk = actor('scene.roosterWalkStrip', 0, 0, 54, 62, 9, '0.9s')
-  const roosterPeck = actor('scene.roosterPeckStrip', 0, 0, 54, 62, 9, '2.4s')
-  const roosterCrow = actor('scene.roosterCrowStrip', 0, 0, 54, 62, 9, '1.4s')
-  if (roosterWalk && roosterPeck && roosterCrow) {
-    const beat = '24s'
-    roosterWalk.style.animation += `, y-rooster-walk ${beat} infinite`
-    roosterPeck.style.animation += `, y-rooster-peck ${beat} infinite`
-    roosterCrow.style.animation += `, y-rooster-crow ${beat} infinite`
-    const yard = box(`left:763px;top:642px;width:54px;height:62px;animation:y-rooster-path ${beat} infinite`)
-    yard.append(roosterWalk, roosterPeck, roosterCrow)
-    L.push(yard)
-  } else {
-    L.push(spriteInBox('scene.rooster', 758, 640, 64, 64, 1))
-  }
-  L.push(peck(992, 660, '2.6s', '0.8s'))
-  L.push(peck(1064, 674, '3.1s', '1.9s'))
-
-  // -- a hand crossing the yard, and another walking away up the track
-  L.push(travelling(470, 566, 'y-across 61s linear infinite',
-    stripActor('scene.farmerWalkStrip', {
-      w: 64, h: 128, sheetW: 384, sheetH: 128, frames: 6, dur: '1.1s', keyframe: 'y-strip-384',
-    })))
-  L.push(travelling(1290, 1010, 'y-up 74s linear infinite',
-    stripActor('scene.farmerWalkUpStrip', {
-      w: 64, h: 128, sheetW: 384, sheetH: 128, frames: 6, dur: '1.05s', keyframe: 'y-strip-384',
-    })))
-
-  // -- the fence, which everything above walks behind
-  L.push(tileBand('scene.fencePicket',
-    'left:-20px;right:-20px;top:742px;height:32px;filter:brightness(0.62)', 96, 32))
-
-  // -- the nearest ground, in front of the fence, at 2x
-  L.push(actor('scene.dogIdleStrip', 132, 818, 60, 42, 9, '2.9s', 2)
-    ?? sprite('scene.dogLab', 132, 818, 2))
-  L.push(sprite('scene.milkcan', 24, 872, 2))
-  L.push(sprite('scene.milkcan', 66, 890, 2))
-
-  L.push(firefly(560, 830, 6, 10, 0.7, '90px', '-120px', 'y-fly 9s ease-in-out infinite'))
-  L.push(firefly(1240, 860, 5, 10, 0.7, '-70px', '-150px', 'y-fly 12s ease-in-out infinite 2s'))
-  L.push(firefly(1660, 800, 6, 12, 0.7, '60px', '-190px', 'y-fly 10.5s ease-in-out infinite 4s'))
-  L.push(firefly(900, 880, 4, 9, 0.6, '120px', '-100px', 'y-fly 14s ease-in-out infinite 1s'))
-
-  L.push(...vignette(
-    'radial-gradient(120% 78% at 50% 56%,transparent 42%,rgba(12,10,14,0.52) 100%)',
-    'linear-gradient(180deg,rgba(10,9,14,0.44) 0%,transparent 22%,transparent 56%,rgba(10,9,8,0.68) 100%)',
+  push(box(
+    'left:0;right:0;top:900px;bottom:0;' +
+    'background:linear-gradient(180deg,rgba(8,7,10,0) 0%,rgba(8,7,10,0.6) 38%,rgba(6,6,8,0.95) 100%)',
+  ))
+  push(...vignette(
+    'radial-gradient(120% 78% at 50% 56%,transparent 42%,rgba(12,10,14,0.56) 100%)',
+    'linear-gradient(180deg,rgba(10,9,14,0.44) 0%,transparent 22%,transparent 52%,rgba(10,9,8,0.72) 100%)',
   ))
   return L
 }
+
+/** One drifting cloud band, 3040 wide so the loop never shows an end. */
+function cloud(
+  top: number, h: number, op: number, blur: number,
+  colour: string, on: number, off: number, dur: string,
+): HTMLElement {
+  return box(
+    `left:0;top:${top}px;width:3040px;height:${h}px;opacity:${op};filter:blur(${blur}px);` +
+    `background:repeating-linear-gradient(90deg,${colour} 0 ${on}px,transparent ${on}px ${off}px);` +
+    `animation:y-cloud ${dur} linear infinite`,
+  )
+}
+
+/** A blurred contact ellipse. The whole of "grounding", one element at a time. */
+function shadow(
+  x: number, y: number, w: number, h: number, alpha: number, blur: number,
+): HTMLElement {
+  return box(
+    `left:${x}px;top:${y}px;width:${w}px;height:${h}px;filter:blur(${blur}px);` +
+    `background:radial-gradient(50% 50% at 50% 50%,rgba(10,10,12,${alpha}),transparent 70%)`,
+  )
+}
+
+/** One puff off the farmhouse chimney. */
+function smoke(size: number, alpha: number, blur: number, delay?: string): HTMLElement {
+  return box(
+    `left:596px;top:430px;width:${size}px;height:${size}px;border-radius:50%;` +
+    `background:rgba(214,206,196,${alpha});filter:blur(${blur}px);` +
+    `animation:y-smoke 7.5s linear infinite${delay ? ` ${delay}` : ''}`,
+  )
+}
+
+/** A skein crossing the whole sky, each bird flapping on its own beat. */
+function birds(x: number, y: number): HTMLElement {
+  const wrap = box(`left:${x}px;top:${y}px;width:120px;height:60px;animation:ev-birds 29s linear infinite`)
+  const marks: readonly (readonly [number, number, number, number, string])[] = [
+    [0, 2, 9, 4, '0.9s'], [22, 12, 8, 4, '1.05s'], [41, 26, 7, 3, '0.96s'],
+    [18, 34, 7, 3, '1.14s'], [52, 6, 8, 4, '0.86s'],
+  ]
+  for (const [bx, by, w, h, dur] of marks) {
+    wrap.append(box(
+      `left:${bx}px;top:${by}px;width:${w}px;height:${h}px;` +
+      `background:rgba(40,34,40,0.55);border-radius:50% 50% 0 0;` +
+      `animation:ev-flap ${dur} ease-in-out infinite`,
+    ))
+  }
+  return wrap
+}
+
+/** A single standing frame of a walk clip -- an animal that is simply there. */
+function still(
+  sheet: string, clip: string, dir: string, x: number, y: number, height: number,
+): HTMLElement | null {
+  const l = patrolLayer(sheet, clip, dir, height, '')
+  if (!l) return null
+  const wrap = box(`left:${x}px;top:${y}px`)
+  wrap.append(l)
+  return wrap
+}
+
+/**
+ * An animal that stands a while, walks a leg, and comes back.
+ *
+ * Three layers on one clock -- stand, walk out, walk back -- over a wrapper
+ * carrying `mull-path`, whose distance is this animal's own `--leg`. One
+ * keyframe set drives five animals at five different beats, which is why the
+ * yard never looks choreographed.
+ *
+ * The return leg reuses the SAME left-facing walk rather than a right-facing
+ * one. Design's table does that deliberately for the hens and the cat: at this
+ * size a flipped bird reads as a different bird, and a walk cycle playing while
+ * the parent slides back the other way is legible as "coming back" anyway.
+ */
+function wander(
+  sheet: string, idleDir: string, x: number, y: number, size: number,
+  leg: number, dur: string, walkDur: string,
+  shade: readonly [number, number, number, number, number],
+): HTMLElement | null {
+  const [sx, sy, sw, sh, alpha] = shade
+  const layers = [
+    patrolLayer(sheet, 'walk', idleDir, size, `mull-idle ${dur} step-end infinite`),
+    patrolLayer(sheet, 'walk', 'left', size, `y-strip ${walkDur} steps(9) infinite, mull-out ${dur} step-end infinite`),
+    patrolLayer(sheet, 'walk', 'left', size, `y-strip ${walkDur} steps(9) infinite, mull-back ${dur} step-end infinite`),
+  ].filter((l): l is HTMLElement => l !== null)
+  if (layers.length === 0) return null
+  const wrap = box(
+    `left:${x}px;top:${y}px;width:${size}px;height:${size}px;--leg:${leg}px;` +
+    `animation:mull-path ${dur} linear infinite`,
+  )
+  wrap.append(shadow(sx, sy, sw, sh, alpha, 3))
+  for (const l of layers) wrap.append(l)
+  return wrap
+}
+
+/** Joy: sits, gets up and walks right, comes back left, sits again. */
+function joy(x: number, y: number, size: number): HTMLElement | null {
+  const layers = [
+    patrolLayer('joy', 'sit', 'downRight', size, 'y-strip 3.1s steps(9) infinite, joy-sit 43s step-end infinite'),
+    patrolLayer('joy', 'walk', 'right', size, 'y-strip 0.62s steps(9) infinite, joy-right 43s step-end infinite'),
+    patrolLayer('joy', 'walk', 'left', size, 'y-strip 0.62s steps(9) infinite, joy-left 43s step-end infinite'),
+  ].filter((l): l is HTMLElement => l !== null)
+  if (layers.length === 0) return null
+  const wrap = box(
+    `left:${x}px;top:${y}px;width:${size}px;height:${size}px;` +
+    'animation:joy-path 43s ease-in-out infinite',
+  )
+  wrap.append(shadow(8, size - 9, 46, 12, 0.6, 3))
+  for (const l of layers) wrap.append(l)
+  return wrap
+}
+
+
 
 /**
  * The far treeline: real oaks, small, hazed, on the horizon line.
@@ -679,16 +612,6 @@ function treeline(): HTMLElement | null {
     }
   }
   return band
-}
-
-/** A pecking hen at 2x: a four-frame strip, 256px wide on screen. */
-function peck(x: number, y: number, dur: string, delay?: string): HTMLElement | null {
-  const s = stripActor('scene.chickenPeckStrip', {
-    w: 64, h: 64, sheetW: 256, sheetH: 64, frames: 4, dur, keyframe: 'y-strip-256', delay,
-  })
-  if (!s) return null
-  s.style.cssText += `position:absolute;left:${x}px;top:${y}px`
-  return s
 }
 
 // ------------------------------------------------------------------- field
@@ -912,6 +835,15 @@ function glow(
 
 /**
  * A packed clip animated at an exact height, placed by its top-left.
+ *
+ * Ask `clipsOf(sheet)` in ui/sprite.ts for what a sheet can actually do.
+ * Directions are the game's eight: down, downLeft, left, upLeft, up, upRight,
+ * right, downRight.
+ *
+ * The cell and the frame count come back FROM the strip composer rather than
+ * being typed here, and that is the whole reason to prefer this over a
+ * hand-sized sheet: every generated clip has a different cell, and a width
+ * typed by hand fails silently by SLIDING the animation instead of stepping it.
  *
  * `clipActor` takes an INTEGER zoom and cannot hit a target size; `groundActor`
  * hits the size but positions by the feet and adds a contact shadow, which is

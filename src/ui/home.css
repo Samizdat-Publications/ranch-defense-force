@@ -384,3 +384,27 @@
 @keyframes mull-guard-pr { 0%, 12% { opacity: 0; } 12.01%, 14% { opacity: 1; } 14.01%, 19.93% { opacity: 0; } 19.94%, 54% { opacity: 1; } 54.01%, 100% { opacity: 0; } }
 @keyframes mull-guard-wl { 0%, 56% { opacity: 0; } 56.01%, 61.93% { opacity: 1; } 61.94%, 100% { opacity: 0; } }
 @keyframes mull-guard-wr { 0%, 14% { opacity: 0; } 14.01%, 19.93% { opacity: 1; } 19.94%, 100% { opacity: 0; } }
+
+/* -------------------------------------------------- the yard, grounded
+
+   Design's `Yard Grounding Fix.dc.html`, transcribed. The `mull-*` set is the
+   yard's wander -- three layers per animal on one clock (stand, walk out, walk
+   back) over a parent carrying `mull-path`, whose travel distance is the
+   per-animal `--leg`. One keyframe set, five animals, five different beats.
+
+   `y-cloud`, `y-fly`, `y-porch`, `y-smoke` and `y-sun` are REDEFINED below to
+   Design's corrected values. They belong to the yard alone -- the field's
+   equivalents are the `f-*` family -- so nothing else moves when they change. */
+
+@keyframes mull-path { 0%, 20% { transform: translateX(0); } 26%, 60% { transform: translateX(var(--leg)); } 66%, 100% { transform: translateX(0); } }
+@keyframes mull-idle { 0%, 20% { opacity: 1; } 20.01%, 26% { opacity: 0; } 26.01%, 60% { opacity: 1; } 60.01%, 66% { opacity: 0; } 66.01%, 100% { opacity: 1; } }
+@keyframes mull-out { 0%, 20% { opacity: 0; } 20.01%, 26% { opacity: 1; } 26.01%, 100% { opacity: 0; } }
+@keyframes mull-back { 0%, 60% { opacity: 0; } 60.01%, 66% { opacity: 1; } 66.01%, 100% { opacity: 0; } }
+
+@keyframes joy-path { 0%, 14% { transform: translateX(0); } 26%, 62% { transform: translateX(150px); } 74%, 100% { transform: translateX(0); } }
+@keyframes joy-sit { 0%, 13.5% { opacity: 1; } 14%, 26% { opacity: 0; } 26.5%, 61.5% { opacity: 1; } 62%, 74% { opacity: 0; } 74.5%, 100% { opacity: 1; } }
+@keyframes joy-right { 0%, 13.9% { opacity: 0; } 14%, 26% { opacity: 1; } 26.1%, 100% { opacity: 0; } }
+@keyframes joy-left { 0%, 61.9% { opacity: 0; } 62%, 74% { opacity: 1; } 74.1%, 100% { opacity: 0; } }
+
+@keyframes ev-birds { 0%, 72% { transform: translate(0, 0); } 100% { transform: translate(-2300px, 90px); } }
+@keyframes ev-flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
