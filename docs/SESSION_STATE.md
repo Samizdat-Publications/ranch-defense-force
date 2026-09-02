@@ -143,9 +143,20 @@ Two things do not come with the repo:
 1. **`.mcp.json` is gitignored** (that is what keeps the PixelLab key out of a
    public repo). Recreate it locally. **Rotate the key while you are at it** —
    it has been through a chat transcript.
-2. **`/design-login`** must be run once from an interactive local Claude Code to
-   turn on `DesignSync`. It is stored PER MACHINE, so it does nothing for a
-   cloud session.
+2. **Design access is TWO commands and they are not the same thing.** Read out
+   of the installed CLI rather than guessed, because `DesignSync`'s own error
+   message only ever names the second one:
+
+   | command | description | non-interactive |
+   |---|---|---|
+   | `/design-consent` | Grant Claude agent access to your Design projects | **yes** (`supportsNonInteractive: true`, and `isHidden`) |
+   | `/design-login` | Authorize design-system access for `/design-sync` with your claude.ai account | no — interactive only |
+   | `/design-revoke` | Revoke it | — |
+
+   `/design-login` is stored PER MACHINE, so running it locally does nothing for
+   a cloud session — that is what the error means by "on this machine".
+   `/design-consent` is the one that can run in a non-interactive session, so
+   **try it before assuming Design access needs a local terminal at all.**
 
 ## Object IDs generated late and NOT yet in the ledger
 
