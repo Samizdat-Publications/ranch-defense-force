@@ -4,6 +4,108 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 21 — the balance session, and a stutter that was a debug guard
+
+The owner played it split-screen while this ran and gave two verdicts: too easy,
+and a stutter every 6-10 seconds. Both were real. Balance was given a free hand.
+
+## The stutter was `assertUiLayersClickable`
+
+It shouts when a UI layer holding controls computes `pointer-events: none` --
+three screens have shipped unreachable that way, so the guard earns its keep. It
+was wired to a `MutationObserver` on `#ui` with `subtree: true, attributes:
+true`, re-checking on a microtask. **The HUD lives inside `#ui` and writes styles
+every frame** — hp bar width, xp fill, cooldown sweeps. Every frame fired the
+observer, and the check calls `getComputedStyle`, which forces a synchronous
+style recalc. The game paid a full style flush per frame to ask a question whose
+answer only changes when a screen opens.
+
+CPU profile of a real run: **4.05s self, plus 2.54s inside `querySelectorAll`,
+against ~28s of non-idle JS.** About a quarter of everything the game did,
+second only to `drawImage`. Both are gone from the top 25 now.
+
+**Three guesses were wrong first, and the order matters.** GC was ruled out (one
+collection per run). The measuring tool was ruled out by QUADRUPLING its sample
+interval and watching the ~0.9s spike period not move. The dev overlay was ruled
+out and measured *worse* with it off — which is the result that ended the
+guessing, because it proved run-to-run variance exceeds the effects being A/B'd.
+A CPU profile named the function in one run. **When variance beats the effect,
+stop swapping suspects and go get a profile.**
+
+## The difficulty curve inverted, and one multiplier could not fix it
+
+Baseline deaths over 64 harness runs clustered almost entirely before wave 12;
+past that nothing could kill anyone. `waveScalar` is LINEAR while player power
+COMPOUNDS through levels, six weapon slots and tier-4 merges.
+
+Three single-lever fixes were measured and every one broke a guardrail
+(`+0.004n^2` and `+0.002n^2` on `waveScalar`, `+0.004n^2` on hp alone). That is
+the same wall the `threatBudget` note hit from the other direction: **the game
+had no headroom, and no single multiplier buys any.**
+
+What worked was the change that note had been asking for, made all at once:
+
+- **`enemies.json`: hp x0.55, damage x0.55, threatCost x0.45.** Cutting cost
+  harder than the other two is what buys BODIES rather than the same fight
+  re-priced. With `groupInterval` 0.5-1.5s -> 0.3-0.9s so the director can emit
+  them: kills per run ~1900 -> ~4000, enemies alive at death 8-22 -> 37-125.
+- **A separate `waveHpScalar`, quadratic, on hp only.** Damage is the wrong
+  lever and it was measured twice: multiplying incoming damage rewards flat
+  damage reduction and punishes a low-hp dodger, so The Hand shrugged and The
+  Kid fell to 30% cleared on a median wave of 8. Time-to-kill costs both classes
+  the same.
+- **Flat `hpRegen` rescaled by the same 0.55.** The subtle one, and worth
+  remembering: **regen is an ABSOLUTE number, so halving enemy damage silently
+  made every point of it nearly twice as valuable.** The Hand carries 1.5 and
+  The Kid none, which alone failed class parity at a gap of 10 against 8.
+  Raising The Kid's dodge was tried first and moved nothing — the gap was never
+  about avoidance. Percentage defences (armour is `armor/(armor+k)`, braced DR)
+  are scale-free and untouched.
+
+    pilot           cleared          deaths
+    hand/kite       75% -> 31%       w4 w9 w12 w12 w13 w15x4 w18 w19
+    hand/brawler    75% -> 81%       w11 w21 w25
+    kid/kite        75% -> 50%       w5x3 w12x2 w16 w20 w25
+    kid/brawler     38% -> 56%       w4x4 w5 w12x2
+
+Deaths land across the whole run now instead of piling up before wave 12, and
+each class is still strongest at its own game — which `run.test.ts` explicitly
+wants. **This is a first pass by bots that cannot dodge, aim or read an offer.
+It wants playing.**
+
+## A test that was measuring the wrong quantity
+
+`Threshing Floor splashes when something dies in reach` asserted on
+`damageDealt`, which does not count the chain. A chain that finishes an enemy
+REMOVES weapon damage the run would otherwise have dealt, so the relic reliably
+LOWERS the number the test demanded it raise — 36 kills for 397 damage against
+28 kills for 504. It passed on the old enemy hp by luck and the density pass
+tipped it over. It asserts on kills now.
+
+## Standing directive from the owner: the locked classes
+
+**The four unlockable classes should be notably different from each other — not
+one better than another, but skilled in different areas and carrying different
+powers.** Right now `widow`, `vet`, `agronomist` and `drifter` are variations on
+two passives: three carry `braced` at different rates and three carry `momentum`
+at different rates, with `digIn` or `bolt` bolted on. They read as stat spreads
+of The Hand and The Kid rather than as their own answers to the game. This is a
+design ask, not a tuning one, and it is the next balance-adjacent job.
+
+## Still open, unchanged
+
+- Design's two rebuilt artboards, `Yard Grounding Fix.dc.html` and `Lab at
+  Depth.dc.html`, remain UNIMPLEMENTED. `SceneKind` is still `'yard' | 'field'`
+  with no `lab`. `npm run placements` already extracts both, and design sync has
+  been abandoned as a route — everything needed is in the repo.
+- **Enemy humanoids share the player's silhouette.** The farmhands wear the same
+  straw hat and dungarees as The Hand, at the same size. With the density pass
+  putting 2.2x as many of them on the field, this got worse, not better.
+- `scene.fencePicket`, the `ranch.well`/`wellStone` naming reversal, the vat
+  scale story call and `pen.chickenRunFlat` are all untouched.
+
+---
+
 # Session 20 — the game can be watched now, and it had never been
 
 The previous handoff said the next session should be LOCAL, because locally you
