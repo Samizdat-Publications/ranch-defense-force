@@ -92,12 +92,59 @@ at different rates, with `digIn` or `bolt` bolted on. They read as stat spreads
 of The Hand and The Kid rather than as their own answers to the game. This is a
 design ask, not a tuning one, and it is the next balance-adjacent job.
 
-## Still open, unchanged
+## Both artboards are implemented
 
-- Design's two rebuilt artboards, `Yard Grounding Fix.dc.html` and `Lab at
-  Depth.dc.html`, remain UNIMPLEMENTED. `SceneKind` is still `'yard' | 'field'`
-  with no `lab`. `npm run placements` already extracts both, and design sync has
-  been abandoned as a route — everything needed is in the repo.
+Design sync was abandoned as a route and it cost nothing: **all 69 sprite keys
+the two artboards reference already resolve in the atlas** — checked with a
+script, not assumed. Nothing was needed from Design that was not in the repo.
+
+`lab` is a `SceneKind` alongside `yard` and `field`, and the yard is rebuilt.
+
+**The placement table is the sprites. The scene is more than the sprites.** This
+bit twice in one session and is the thing to remember:
+
+- The lab came out as furniture floating in black, because the wall, the floor
+  and the join between them are CSS in the artboard and `npm run placements`
+  extracts SPRITES. The room is wall 0-496, a 26px junction band AT 496, floor
+  below — which is the same horizon the previous handoff states as a rule
+  ("nothing stands in y 496-556"). Drawing it as a band makes the rule visible
+  rather than merely obeyed.
+- The yard's fence came out as a row of smears. The table reports
+  `scene.fencePicket` at 1960x32 because that is the BOX it fills; the sprite is
+  a 96x32 TILE. **A width in the table is not always a size.**
+
+The yard rebuild also settled an argument the old code had documented. The
+previous yard deliberately disagreed with the placement table — the table put
+the treeline at y 268-414, the ground began at 620, and three of four oaks hung
+a hundred pixels up in the sky, so that session wrote "ground wins". The
+Grounding Fix is Design's answer: **the horizon moved to 540** and the trees
+stand on it. The table and the ground agree now.
+
+What grounding turned out to mean in practice: every standing thing gets a
+blurred contact ellipse pushed BEFORE it, so paint order puts the shadow under
+the object. That is session 19's *"everything is in the air"* fix applied to
+props rather than only animals, and it is most of why the scene reads as a place
+instead of a collage. The treeline is blurred 2-2.4px and dimmed to 0.4-0.48
+opacity — depth here is entirely blur and value, and a sharp tree at the back
+reads as a prop standing in the yard.
+
+`MenuScreen` held a BOOLEAN for the backdrop and could not express a third one.
+It is `SCENE_CYCLE` now. That also fixes why every automated scene shot came
+back as `field`: a fresh browser profile has no stored key, so a two-way flip
+always landed the same side.
+
+## What the scenes still want, and it is Design's call, not code
+
+- **The class cards cover the lower third of every scene.** Joy, the wheat
+  clumps and the bunkhouse are all placed under them in Design's own
+  composition. Someone has to decide whether the artboards should compose around
+  the UI or the UI should move.
+- `scene.fencePicket` is still the re-opened blocker at 7 of 8; the near fence
+  is LimeZu's tile. Closing it needs one wide shallow generation asked for as a
+  THING — "a long low wooden rail fence filling the frame edge to edge", 400x64.
+- **Enemy humanoids share the player's silhouette.** Same straw hat and
+  dungarees as The Hand, at the same size, and the density pass put 2.2x as many
+  of them on the field. This got worse, not better.
 - **Enemy humanoids share the player's silhouette.** The farmhands wear the same
   straw hat and dungarees as The Hand, at the same size. With the density pass
   putting 2.2x as many of them on the field, this got worse, not better.
