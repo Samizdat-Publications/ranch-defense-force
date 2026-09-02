@@ -4,6 +4,130 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 20 — the game can be watched now, and it had never been
+
+The previous handoff said the next session should be LOCAL, because locally you
+can see and play the thing. That was the right call for a reason nobody had
+measured: **nothing in this project could see the game at all.**
+
+## Three separate blindfolds, all of them silent
+
+**`npm run shot` does not use the renderer.** It drives `tools/draw-world.ts`,
+which says so in its own header -- "It deliberately reimplements the renderer".
+Nothing in `tools/` imports `src/render/renderer.ts`. As an independent check on
+frame selection that is a good idea and it is worth keeping. As a way to look at
+the game it is worthless, and it was the only way we had.
+
+**`npm run scene` was photographing `<body>`.** Its stage locator
+`.scene, #scene, [data-scene]` matched NOTHING -- the real root is
+`home-yard is-<kind>` inside `.home-scene` -- and it fell back to the whole page
+without saying so. Every "scene shot" ever taken was a full-page screenshot.
+
+**And its `kind` argument was decorative.** It named the output file and could
+not choose what rendered. `MenuScreen` ALTERNATES: `isField = last !== 'field'`
+read off `localStorage['rdf.homeScene']`. A fresh browser profile has no such
+key, so `null !== 'field'` is true and every shot was the FIELD scene. **That is
+the "the home screen renders the FIELD scene" defect the last session logged.**
+It was never a bug in the scene. It was a bug in where the camera pointed.
+
+## The game only advances on a presented frame
+
+The loop is `requestAnimationFrame`, so the sim advances only when a frame is
+actually composited. Measured, not assumed:
+
+| where | rAF ticks per second |
+|---|---|
+| the editor's hidden browser pane | **0** |
+| headless Chromium, throttling flags off | 2-4 |
+| headed Chrome, window covered | 2 |
+| headed Chrome, window on top | **78-240** |
+
+The owner independently reported the in-editor preview "choppy, like 5fps"
+without knowing any of this had been measured. Same cause. **A hidden or covered
+window does not run this game**, and the failure mode is silent: the sim sits at
+wave 1, every keypress looks ignored, and it reads as a broken game rather than
+a stopped clock. `main.ts` had already written the warning, in the comment on
+`rdf.screens` -- "a rAF-driven game loop that a headless pane may never run".
+
+Two Windows facts fell out of this, both measured here: playwright's bundled
+`chromium-1234/chrome-win64/chrome.exe` is **permission-denied** on this machine
+and fails with `spawn UNKNOWN`, so headed runs go through `channel: 'chrome'`;
+and `spawn('npx', ...)` is ENOENT on Windows, which is why the scene tool was
+simply dead the moment the project moved off the cloud sandbox.
+
+## `npm run play` — a run, watched, through the real renderer
+
+    npm run play -- [class] [seconds] [outDir] [seed]
+
+Boots the real app in real Chrome, starts a run through `window.rdf.startRun`,
+kites with real keyboard events, takes level-ups by the number key the game
+already routes, leaves the shop by its own button, and reports everything off
+`rdf.world` -- the sim's own counts, not a guess from pixels. Every sample
+carries its own frame rate, so a report can tell a throttled window from a stuck
+sim instead of leaving someone to guess between them.
+
+It found two bugs in its own first two runs, and both are instructive:
+
+- **A 6-minute run whose last 290 samples were byte-identical.** The level-up
+  screen pauses the world and its root class is exactly `screen` -- no
+  identifying name at all -- so `className.includes('levelup')` is always false
+  and the card was never dismissed. Detection goes through
+  `rdf.screens.*.visible` now. **The level-up screen having no distinguishing
+  class is a real wart**; it is why nothing can target it, in CSS or otherwise.
+- **A "stall" that was a death.** `World.step` returns immediately on
+  `this.over`, set the tick the player stops being alive, but `finishRun` needs
+  a frame before the results screen reports visible. In between, the sim clock
+  is stopped and no screen is open, which looks exactly like a hang.
+
+## The first balance evidence that came from the game
+
+Two runs, The Hand, seed "harvest", identical settings. They are NOT identical
+runs -- the bot's input is wall-clock driven, so it diverges. That variance is
+itself the finding:
+
+| run | reached | level | kills | ended |
+|---|---|---|---|---|
+| A | wave 6 | 9 | ~150 | **died at 155s** |
+| B | wave 17 | 22 | 851 | ran out of clock at 480s |
+
+Run B is the one to look at. **From wave 16 the player sits at 160/160 and never
+drops again** -- full health through waves 16 and 17 while killing 851 things.
+That is the classic bullet-heaven failure where the build outruns the threat
+curve, and it happened to a bot orbiting in a fixed square that took offer 1
+every single time without reading it. A build chosen at random should not become
+untouchable two thirds of the way in.
+
+**This does not settle balance and must not be used to.** The bot cannot dodge,
+cannot read an offer and cannot aim; run A dying on wave 6 with the same inputs
+shows how wide the spread is. Balance stays JOINT, as it has been all along.
+What changed is that there is now evidence at all, and a way to generate more.
+
+## Closed: the unexplained 404
+
+`404 /favicon.ico`. There is no favicon in `public/` and `index.html` declares
+none, so the browser asks for the default and vite has nothing to serve. Checked
+directly against a dev server: `/favicon.ico` 404, `/` 200. Harmless, and no
+longer an open question.
+
+## Still open, unchanged
+
+- Design's two rebuilt artboards, `Yard Grounding Fix.dc.html` and
+  `Lab at Depth.dc.html`, are still UNIMPLEMENTED. `SceneKind` is still
+  `'yard' | 'field'` with no `lab`. `npm run placements` already extracts both.
+- `scene.fencePicket`, the `ranch.well`/`wellStone` naming reversal, the vat
+  scale story call and `pen.chickenRunFlat` are all untouched.
+
+## Two things to look at in the shots
+
+Both from `tools/play/hand/`, and both are for Design rather than for me:
+
+- **Enemy humanoids share the player's silhouette.** At wave 14 the farmhands
+  wear the same straw hat and dungarees as The Hand, at the same size. Telling
+  yourself apart from the crowd is not a nice-to-have in a bullet-heaven.
+- **The arena's bottom edge is a hard black band** below the boundary tiles.
+
+---
+
 # Session 19 — why the title screens were wrong, and it was not Design
 
 Claude Design produced three landing scenes that the owner called horrible, and
