@@ -114,6 +114,12 @@ Two things follow from that:
   costs nothing — measured, balance identical either side — so an unclaimed pack
   is finished work, not pending work.
 
+**And the other half of that rule (owner, 2026-09-03): whatever you generate,
+you wire.** Generation is allowed and encouraged when the game needs the art —
+but the same task claims it, packs it into `art/sprites.json`, and draws it
+somewhere real, or retires it with a written reason. An unclaimed candidate is
+a debt. A report that lists a generation must say where it is used.
+
 ## Non-negotiables
 
 - **Fixed 1/60s simulation step** with an accumulator; the renderer

@@ -196,6 +196,20 @@
       "tool.axe.ruby": "Ruby_Axe.png"
     }
   },
+  "carry": {
+    "_note": "Purpose-drawn CARRIED weapons — the six firearms as they hang off and are held by the farmhand, drawn side-on and pointing right at the scale a 52px man wants. Generated for exactly this, because the bundled gun sheet is drawn to be held by a 32px character: at our scale a rifle across the back read as a carbine and gun.pistol.0 (the Harpoon Gun at T1) is three pixels by two. These are 28-31px long against his 52px, which is the real proportion of a long gun to a man, and they draw at NATIVE size — no downscale, no lie about the pixel grid.",
+    "_pivotNote": "Every one of them points RIGHT along +x with the grip toward the left end, because `carryAim` swings the sprite to the aim angle and `carryPivot` in weapons.json says how far along that axis the hand is. A sprite drawn diagonally cannot be aimed; the first harpoon came back on a 45-degree diagonal and was rerolled for that reason alone.",
+    "_conformNote": "NOT conformed, and deliberately. `conform` quantises a frame to art/palette.json and exists for the packs drawn by another hand — the FX pack, the tool icons, the gun sheet. These were generated in the house style to begin with, like every other `assets/pixellab/` family, and quantising them cost the rifle its walnut stock: the nearest palette entry to a warm gun-metal brown is a cold blue-grey, and conform matches a palette, it cannot shift one.",
+    "_base": "assets/pixellab/carry/",
+    "files": {
+      "carry.scattergun": "scattergun.png",
+      "carry.varmintRifle": "varmintRifle.png",
+      "carry.grenadeLauncher": "grenadeLauncher.png",
+      "carry.drumGun": "drumGun.png",
+      "carry.tarBomb": "tarBomb.png",
+      "carry.harpoon": "harpoon.png"
+    }
+  },
   "weaponTiers": {
     "_note": "Melee weapon art per TIER, so merging a weapon is visible on the weapon. Weapons tier 1-4 and the Pixcuit pack ships six materials, so four are picked that read as an obvious escalation rather than adjacent shades nobody would notice.",
     "_gapNote": "The pack is NOT complete per tool, which is why the four materials differ by weapon rather than being one shared list: there is no Iron Pitchfork and no Golden Sickle. Checked against the directory, not assumed.",
