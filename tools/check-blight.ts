@@ -113,7 +113,7 @@ const FILTERED = [
 
 /** The soil column between the farm and the lab. Every key must resolve. */
 const SOIL = [
-  'terrain.soil', 'base.wallPipes',
+  'terrain.soil', 'terrain.dirt', 'base.wallPipes',
   'cave.branches0', 'cave.branches1', 'cave.branches2',
   'cave.branches3', 'cave.branches4', 'cave.branches5',
   'node.rockBig', 'node.rockMedium', 'node.rockSmall',

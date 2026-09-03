@@ -105,6 +105,8 @@ export class MenuScreen {
   /** The Homestead button, so the sequence can move it without a re-render. */
   private doorEl: HTMLElement | null = null
   private doorTimer: ReturnType<typeof setTimeout> | null = null
+  /** The reduced-motion fade's half-way timer. See `descend`. */
+  private cutTimer: ReturnType<typeof setTimeout> | null = null
   private readonly pickBtns = new Map<SceneKind, HTMLButtonElement>()
 
   constructor(
@@ -249,7 +251,7 @@ export class MenuScreen {
         return
       case 'down':
         this.descend(true)
-        after(this.calmed ? 260 : BEAT.pan, 'lab')
+        after(this.calmed ? 520 : BEAT.pan, 'lab')
         return
       case 'lab':
         this.showing = 'lab'
@@ -272,7 +274,7 @@ export class MenuScreen {
         store(KEY_SCENE, other)
         this.surfaceSlot.replaceChildren(buildScene(other))
         this.descend(false)
-        after(this.calmed ? 260 : BEAT.pan, 'calm')
+        after(this.calmed ? 520 : BEAT.pan, 'calm')
         return
       }
     }
@@ -329,6 +331,7 @@ export class MenuScreen {
 
   /** Put the camera on a scene with no travel. */
   private settle(kind: SceneKind, blight: boolean): void {
+    this.cut()
     if (kind === 'lab') {
       this.jump(true)
       this.showing = 'lab'
@@ -343,8 +346,45 @@ export class MenuScreen {
     this.paintPick()
   }
 
-  /** Travel the column: down into the lab, or back up to the surface. */
+  /**
+   * Travel the column: down into the lab, or back up to the surface.
+   *
+   * REDUCED MOTION GETS THE JOURNEY AS A FADE, NOT AS A JUMP. `.home-column`'s
+   * transition is switched off under the query, so flipping the class on its
+   * own would TELEPORT the camera — a bigger visual event than the pan it
+   * replaces, and the opposite of what the request means. The scene dips to
+   * nothing, the column moves while there is nothing to see, and it comes back.
+   * The 220ms is the `.home-scene` transition in home.css; `step()` allows 520
+   * for the pair, which is why that beat is not the same number as the pan.
+   */
   private descend(down: boolean): void {
+    if (this.calmed) {
+      this.cut()
+      this.stageEl.classList.add('is-cutting')
+      this.cutTimer = setTimeout(() => {
+        this.cutTimer = null
+        this.move(down)
+        this.stageEl.classList.remove('is-cutting')
+      }, 240)
+      return
+    }
+    this.move(down)
+  }
+
+  /**
+   * Drop any fade in flight, and make sure the scene is visible again.
+   *
+   * Both halves matter: cancelling the timer without clearing the class leaves
+   * the screen dipped to nothing for good, which is what a manual pick landing
+   * mid-fade would otherwise do.
+   */
+  private cut(): void {
+    if (this.cutTimer !== null) { clearTimeout(this.cutTimer); this.cutTimer = null }
+    this.stageEl.classList.remove('is-cutting')
+  }
+
+  /** The camera move itself, with whatever transition is in force. */
+  private move(down: boolean): void {
     this.column.style.transition = ''
     this.column.style.transform = ''
     this.column.classList.toggle('is-down', down)
@@ -653,6 +693,7 @@ export class MenuScreen {
   close(): void {
     this.root.style.display = 'none'
     this.clearTimer()
+    this.cut()
     if (this.doorTimer !== null) { clearTimeout(this.doorTimer); this.doorTimer = null }
   }
 
