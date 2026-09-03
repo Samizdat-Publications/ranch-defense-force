@@ -155,7 +155,7 @@ State of `session-22-integration` at the stop:
 | atlas split into seven ≤2048 pages | merged |
 | four locked classes redesigned, six-class parity test | merged |
 | vitest excludes `.claude/**` (worktrees were being swept) | merged |
-| **home screen**: page-width bug, dev overlay hidden in prod, smaller cards, scene selector, calm→lightning→blight→descend-to-lab sequence, lab actor patrols | **NOT merged.** Uncommitted-or-partially-committed work in worktree `.claude/worktrees/agent-ac16dfe61a144f5c5` (branch `worktree-agent-ac16dfe61a144f5c5`). A replacement agent was told to commit and write `docs/HOME_SEQUENCE_HANDOFF.md` there before stopping; check whether it did. |
+| **home screen**: page-width bug, dev overlay hidden in prod, smaller cards, scene selector, calm→lightning→blight→descend-to-lab sequence, lab actor patrols | **NOT merged.** Four commits (3f3b4e9b cards, cab8b1f3 sequence + lab under the farm, cfe0b0a2 reduced motion, 91452ebc scene tool), nothing uncommitted, verification and screenshots not yet reported, in worktree `.claude/worktrees/agent-ac16dfe61a144f5c5` (branch `worktree-agent-ac16dfe61a144f5c5`). A replacement agent was told to commit and write `docs/HOME_SEQUENCE_HANDOFF.md` there before stopping; check whether it did. |
 
 `npm run typecheck` clean and **207/207 tests pass** on the integration branch
 with everything above except the home screen. The main checkout has the paged
