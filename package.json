@@ -53,7 +53,8 @@
     "scene": "vite-node tools/scene-shot.ts --",
     "play": "vite-node tools/play.ts --",
     "carrysheet": "vite-node tools/carry-contact.ts --",
-    "facings": "vite-node tools/carry-facings.ts --"
+    "facings": "vite-node tools/carry-facings.ts --",
+    "cards": "vite-node tools/card-contact.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

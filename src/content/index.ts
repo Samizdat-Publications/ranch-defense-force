@@ -135,6 +135,15 @@ export interface ItemDef {
  * fallback for the entries that predate the field. Kept here rather than in the
  * renderer because both the card UI and the field pickup ask the same question,
  * and answering it twice is how the two drift apart.
+ *
+ * A `cardSprite` pointing at something that is NOT this item's own icon is a
+ * stand-in, and a stand-in outlives its excuse silently. Seven of them did:
+ * `saltLick` and `saltCircle` both drew `node.rockSmall`, `barbedWire` drew a
+ * silver ore node, `keroseneCan` drew a slop bucket — while `item.saltLick`,
+ * `item.barbedWire` and the rest sat packed in the atlas, generated and paid
+ * for, drawn by nothing. The audit that found them is the reason
+ * `docs/PIXELLAB_LEDGER.md` exists. If you add a stand-in, say so in a
+ * `_standInNote` beside it so the next audit can tell a choice from an oversight.
  */
 export function itemCardSprite(id: string): string {
   const def = ITEMS[id] as { cardSprite?: string; icon?: string } | undefined
@@ -774,10 +783,14 @@ export function carryPivotOf(weaponId: string): number {
  * Here rather than in the HUD because three callers ask the same question and
  * answering it three times is how they drift; `itemCardSprite` exists for the
  * same reason. `cardSprite` opts a weapon out of the tier ladder entirely, and
- * exactly one does: the Harpoon Gun's family is `gun.pistol.*`, which is three
- * pixels by two at T1 and eleven by four at T4. It drew as a blank rectangle at
- * every tier, so it shows its carried art instead and its tier is read off the
- * slot's own pips rather than off art nobody can see.
+ * ALL SIX FIREARMS now do. The Harpoon Gun went first because `gun.pistol.*` is
+ * three pixels by two at T1 and eleven by four at T4 — a blank rectangle at
+ * every tier. The other five are the same argument with less arithmetic:
+ * `gun.shotgun.0` is 8x4 and `gun.smg.0` is 8x6, drawn to be held by a 32px
+ * character, and a card window is 96px. Their `carry.*` art is 28-31px long and
+ * purpose-drawn. A crisp gun at one tier beats a smear at four, and the tier is
+ * not lost — the card's tin plate and its rank pips carry it, which is what
+ * they are for.
  */
 export function weaponCardSprite(weaponId: string, tier: number): string {
   const def = WEAPONS[weaponId] as
