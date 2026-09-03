@@ -19,17 +19,13 @@
  * The grass is the real ground tile where one is packed, tiled, so the contrast
  * a sprite actually has to survive is the contrast being judged.
  */
-import { readFileSync, writeFileSync } from 'node:fs'
-import { decodePng, encodePng, blankImage, blit, type Image } from './png.ts'
+import { writeFileSync } from 'node:fs'
+import { encodePng, blankImage, blit, type Image } from './png.ts'
+import { readAtlas } from './atlas-read.ts'
 import enemiesRaw from '../src/content/enemies.json'
 
-interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
-  rig: { directions: string[] }
-  dirSets?: Record<string, string[]>
-  frames: Record<string, Frame>
-}
-const img = decodePng(readFileSync('public/atlas.png'))
+const atlas = readAtlas()
+type Frame = (typeof atlas.frames)[string]
 
 const ZOOM = 2
 
@@ -70,7 +66,7 @@ const ground = atlas.frames['wang.dirt_to_grass_plain.0000'] ?? atlas.frames['te
 if (ground) {
   for (let y = 0; y < H; y += ground.h) {
     for (let x = 0; x < out.width; x += ground.w) {
-      blit(img, ground.x, ground.y, ground.w, ground.h, out, x, y)
+      blit(atlas.imageFor(ground), ground.x, ground.y, ground.w, ground.h, out, x, y)
     }
   }
 } else {
@@ -83,6 +79,7 @@ if (ground) {
 const BASE = H - 16
 ok.forEach((p, i) => {
   const f = p.frame
+  const img = atlas.imageFor(f)
   const z = scaleOf(p.sheet)
   // Nearest-neighbour at an integer zoom, which is the only kind this project
   // allows: a 32px sprite at 2.5x is a blurry 32px sprite.

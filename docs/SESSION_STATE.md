@@ -15,7 +15,7 @@ pass. Atlas 8029 frames at 4096x8192.
 ## Commands — everything is generated, nothing is hand-edited
 
 ```
-npm run atlas      pack public/atlas.png          npm test        204 tests
+npm run atlas      pack public/atlas-*.png       npm test        205 tests
 npm run scale      art/scene-scale.json           npm run strips  art/strips/ (699)
 npm run pens       art/pen-quads.json + HOLLOWS   npm run catalog docs/ASSET_CATALOG.md
 npm run inventory  docs/PIXELLAB_INVENTORY.md     npm run rmbg    strip carded backgrounds

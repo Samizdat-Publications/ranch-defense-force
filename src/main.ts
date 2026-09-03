@@ -407,8 +407,11 @@ loop.start()
 Atlas.load(import.meta.env.BASE_URL)
   .then((a) => {
     atlas = a
-    // The card screens draw from the same atlas via CSS.
-    setSpriteAtlas(a, `${import.meta.env.BASE_URL}atlas.png`)
+    // The card screens draw from the same atlas via CSS. The atlas is paged and
+    // each sprite takes its own page's url off `a`; this argument is only the
+    // fallback for an atlas that reports no pages at all, so it names a file
+    // that exists rather than the single `atlas.png` there no longer is.
+    setSpriteAtlas(a, `${import.meta.env.BASE_URL}atlas-0.png`)
     // Screens built at module load asked the atlas for sprites before it
     // existed and got null for every one of them — the home screen's yard came
     // up empty and its class cards came up as text. Anything that draws sprites

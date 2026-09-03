@@ -25,13 +25,10 @@
  * that is a regeneration, not a multiplier.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
-import { decodePng } from './png.ts'
+import { readAtlas } from './atlas-read.ts'
 
-interface Frame { x: number; y: number; w: number; h: number }
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
-  frames: Record<string, Frame>
-}
-const sheet = decodePng(readFileSync('public/atlas.png'))
+const atlas = readAtlas()
+type Frame = (typeof atlas.frames)[string]
 const scalePath = 'art/scene-scale.json'
 const scale = JSON.parse(readFileSync(scalePath, 'utf8')) as Record<string, unknown> & {
   drawAt: Record<string, number>
@@ -39,6 +36,7 @@ const scale = JSON.parse(readFileSync(scalePath, 'utf8')) as Record<string, unkn
 
 /** The alpha content box inside a frame's rect, or null if the frame is empty. */
 function contentBox(f: Frame): { w: number; h: number } | null {
+  const sheet = atlas.imageFor(f)
   let x0 = Infinity; let y0 = Infinity; let x1 = -1; let y1 = -1
   for (let y = f.y; y < f.y + f.h; y++) {
     for (let x = f.x; x < f.x + f.w; x++) {

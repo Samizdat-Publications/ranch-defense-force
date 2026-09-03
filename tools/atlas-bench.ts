@@ -20,7 +20,9 @@
  * atlas is exonerated on this hardware and the next hypothesis is somebody
  * else's.
  *
- *   a  the REAL public/atlas.png, 4096x8192, as an <img>
+ *   a  a 4096x8192 `<img>` — what `public/atlas.png` was before this bench's
+ *      own result split it into pages. Composed from `atlas-0.png` now, since
+ *      no single sheet that size is built any more; see `bigCopy` below.
  *   b  a 2048x2048 crop of it, round-tripped through toBlob -> <img>
  *   c  a 1024x1024 crop, same
  *   d  a 4096x8192 <canvas> holding the white silhouette — exactly what
@@ -58,12 +60,12 @@ const REPEATS = Number(process.env.RDF_BENCH_REPEATS ?? 3)
 const LOADS = (process.env.RDF_BENCH_LOADS ?? '600,4000').split(',').map(Number)
 const CONDS = ['a', 'b', 'c', 'd', 'e', 'f']
 const LABEL: Record<string, string> = {
-  a: 'atlas.png 4096x8192 img',
+  a: '4096x8192 img (composed)',
   b: '2048x2048 crop img',
   c: '1024x1024 crop img',
   d: 'flash canvas 4096x8192',
   e: 'alternating img/canvas',
-  f: 'atlas.png, reads inside one 1024 window',
+  f: '4096x8192 img, reads inside one 1024 window',
 }
 
 const PAGE = [
@@ -92,8 +94,31 @@ const PAGE = [
   "  const blob = await new Promise((r) => cv.toBlob(r, 'image/png'));",
   '  return loadImage(URL.createObjectURL(blob));',
   '}',
+  '/* The 4096x8192 source, BUILT rather than loaded.',
+  '',
+  '   This bench used to open `public/atlas.png`, which no longer exists: the',
+  "   atlas ships as pages of at most 2048x2048 now, on this bench's own",
+  '   evidence. Pointing (a) at a page would silently turn the whole experiment',
+  '   into 2048-vs-2048 and it would report "no difference" forever.',
+  '',
+  '   So the big source is composed from a page, tiled to 4096x8192, and',
+  '   round-tripped through toBlob into a real decoded <img> — the same trip',
+  "   `crop` already makes, so (a) is the same KIND of source it always was.",
+  '   The content is repetitive and the pixels are irrelevant: this measures',
+  '   texture size, not what is drawn on it. */',
+  'async function bigCopy(img, w, h) {',
+  "  const cv = document.createElement('canvas');",
+  '  cv.width = w; cv.height = h;',
+  "  const g = cv.getContext('2d');",
+  '  for (let y = 0; y < h; y += img.naturalHeight) {',
+  '    for (let x = 0; x < w; x += img.naturalWidth) g.drawImage(img, x, y);',
+  '  }',
+  "  const blob = await new Promise((r) => cv.toBlob(r, 'image/png'));",
+  '  return loadImage(URL.createObjectURL(blob));',
+  '}',
   'window.__setup = async () => {',
-  "  const atlas = await loadImage('/atlas.png');",
+  "  const page = await loadImage('/atlas-0.png');",
+  '  const atlas = await bigCopy(page, 4096, 8192);',
   '  src.a = atlas;',
   '  src.b = await crop(atlas, 2048);',
   '  src.c = await crop(atlas, 1024);',

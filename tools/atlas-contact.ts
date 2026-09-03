@@ -15,8 +15,9 @@
  * — the order IS the label, and a row that does not belong to the same animal
  * as the others is the failure this is for.
  */
-import { readFileSync, writeFileSync } from 'node:fs'
-import { decodePng, encodePng, blankImage, blit, type Image } from './png.ts'
+import { writeFileSync } from 'node:fs'
+import { encodePng, blankImage, blit, type Image } from './png.ts'
+import { readAtlas } from './atlas-read.ts'
 
 const [sheet, clip, outArg] = process.argv.slice(2).filter((a) => a !== '--')
 if (!sheet || !clip) {
@@ -25,16 +26,10 @@ if (!sheet || !clip) {
 }
 const out = outArg ?? `/tmp/contact_${sheet}_${clip}.png`
 
-interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
-  rig: { directions: string[] }
-  dirSets?: Record<string, string[]>
-  clipLengths: Record<string, Record<string, number>>
-  frames: Record<string, Frame>
-}
-const img = decodePng(readFileSync('public/atlas.png'))
+const atlas = readAtlas()
+type Frame = (typeof atlas.frames)[string]
 
-const dirs = atlas.dirSets?.[sheet] ?? atlas.rig.directions
+const dirs = atlas.data.dirSets?.[sheet] ?? atlas.data.rig.directions
 const len = atlas.clipLengths[sheet]?.[clip] ?? 1
 
 const picked: (Frame | undefined)[][] = dirs.map((d) =>
@@ -59,7 +54,7 @@ let missing = 0
 picked.forEach((row, r) => {
   row.forEach((fr, c) => {
     if (!fr) { missing++; return }
-    blit(img, fr.x, fr.y, fr.w, fr.h, sheetImg,
+    blit(atlas.imageFor(fr), fr.x, fr.y, fr.w, fr.h, sheetImg,
       c * cw + ((cw - fr.w) >> 1), r * ch + ((ch - fr.h) >> 1))
   })
 })
