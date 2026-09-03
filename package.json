@@ -52,7 +52,8 @@
     "placements": "vite-node tools/extract-placements.ts --",
     "scene": "vite-node tools/scene-shot.ts --",
     "play": "vite-node tools/play.ts --",
-    "carrysheet": "vite-node tools/carry-contact.ts --"
+    "carrysheet": "vite-node tools/carry-contact.ts --",
+    "facings": "vite-node tools/carry-facings.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

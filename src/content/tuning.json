@@ -142,6 +142,7 @@
   "muzzleReachFallback": 16,
   "_orderNote": "The slot a weapon asks for is its RESTING slot; `hand` is dynamic and belongs to whichever weapon fired most recently (`slot.firedAt`, a sim tick stamp). Everything else claims its declared slot in pickup order, and a weapon that finds its slot taken walks forward through this cycle, wrapping, until it finds a free one. `hand` is struck out of the free set first, so a resting weapon never lands in it. Six inventory slots against `hand` plus five anchors means the loadout always fits exactly, with no overflow case to invent.",
   "fallbackOrder": ["back", "shoulder", "hipR", "hipL", "backX"],
+  "_twoFamiliesNote": "The rest angles look arbitrary until you notice the atlas holds TWO families pointing two ways. `gun.*` and `carry.*` are side views pointing RIGHT; `weapon.*` is a 3/4 tool icon standing UP. So the hips' 1.15 radians hangs a gun down the thigh, which is what it was tuned for, and swings a pitchfork out sideways past the width of the man. Lowering it to 0.6 was tried and is exactly backwards -- it stands the pitchfork up and lays the guns out flat, which is worse, because five of the seven things that can land on a hip are guns. The real fix is a per-weapon `carryAngle` on the tool icons, and it is not free: `carryAngle` is added at EVERY slot, so correcting a tool for the hip breaks its pose on the back and the shoulder. Left as it is. A pitchfork on a hip only happens to a class that is not The Hand and already owns three other things.",
   "_freshNote": "A weapon just taken or just merged announces itself for a couple of seconds: it rides a little higher and draws a little larger. Same signal the ring used, and the reason it existed is unchanged — a seventh thing appearing on a busy character is otherwise easy to miss entirely.",
   "freshLiftPixels": 3,
   "freshScale": 1.3,
@@ -175,14 +176,14 @@
     }
    },
    "back": {
-    "down": { "dx": -6, "dy": -35, "behind": true, "flip": false, "angle": -0.62 },
-    "up": { "dx": 6, "dy": -35, "behind": false, "flip": false, "angle": -0.62 },
-    "left": { "dx": 8, "dy": -34, "behind": false, "flip": true, "angle": -0.62 },
-    "right": { "dx": -8, "dy": -34, "behind": false, "flip": false, "angle": -0.62 },
+    "down": { "dx": -6, "dy": -35, "behind": true, "flip": false, "angle": -1.152 },
+    "up": { "dx": 6, "dy": -35, "behind": false, "flip": false, "angle": -1.152 },
+    "left": { "dx": 8, "dy": -34, "behind": false, "flip": true, "angle": -1.152 },
+    "right": { "dx": -8, "dy": -34, "behind": false, "flip": false, "angle": -1.152 },
     "byClass": {
      "hand": {
-      "down": { "dy": -37, "angle": -1.25 }, "up": { "dy": -37, "angle": -1.25 },
-      "left": { "dy": -36, "angle": -1.25 }, "right": { "dy": -36, "angle": -1.25 }
+      "down": { "dy": -29, "angle": -1.15 }, "up": { "dy": -29, "angle": -1.15 },
+      "left": { "dy": -28, "angle": -1.15 }, "right": { "dy": -28, "angle": -1.15 }
      },
      "agronomist": {
       "down": { "dx": 0, "dy": -32, "angle": 0 }, "up": { "dx": 0, "dy": -32, "angle": 0 },
@@ -191,10 +192,10 @@
     }
    },
    "backX": {
-    "down": { "dx": 7, "dy": -29, "behind": true, "flip": false, "angle": 0.62 },
-    "up": { "dx": -7, "dy": -29, "behind": false, "flip": false, "angle": 0.62 },
-    "left": { "dx": 12, "dy": -25, "behind": false, "flip": true, "angle": 0.62 },
-    "right": { "dx": -12, "dy": -25, "behind": false, "flip": false, "angle": 0.62 },
+    "down": { "dx": 7, "dy": -29, "behind": true, "flip": false, "angle": 1.152 },
+    "up": { "dx": -7, "dy": -29, "behind": false, "flip": false, "angle": 1.152 },
+    "left": { "dx": 12, "dy": -25, "behind": false, "flip": true, "angle": 1.152 },
+    "right": { "dx": -12, "dy": -25, "behind": false, "flip": false, "angle": 1.152 },
     "byClass": {
      "widow": {
       "down": { "dx": 0, "dy": -28, "behind": false, "angle": 0.45 },
@@ -215,8 +216,8 @@
       "left": { "dx": 3, "dy": -40, "angle": -0.55 }, "right": { "dx": -3, "dy": -40, "angle": -0.55 }
      },
      "drifter": {
-      "down": { "dx": -13, "dy": -36, "angle": -1.35 }, "up": { "dx": 13, "dy": -36, "angle": -1.35 },
-      "left": { "dx": 4, "dy": -37, "angle": -1.35 }, "right": { "dx": -4, "dy": -37, "angle": -1.35 }
+      "down": { "dx": -13, "dy": -31, "angle": -1.35 }, "up": { "dx": 13, "dy": -31, "angle": -1.35 },
+      "left": { "dx": 4, "dy": -32, "angle": -1.35 }, "right": { "dx": -4, "dy": -32, "angle": -1.35 }
      }
     }
    },
