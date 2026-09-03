@@ -46,6 +46,7 @@
     "strips": "vite-node tools/export-strips.ts --",
     "pens": "vite-node tools/measure-pens.ts --",
     "clips": "vite-node tools/check-clips.ts --",
+    "blight": "vite-node tools/check-blight.ts --",
     "decard": "vite-node tools/decard.ts --",
     "placements": "vite-node tools/extract-placements.ts --",
     "scene": "vite-node tools/scene-shot.ts --",
