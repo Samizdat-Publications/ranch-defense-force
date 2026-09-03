@@ -193,9 +193,9 @@ const BLIGHT_SPARE: Readonly<Record<string, string>> = {
  * lands where the reference put it; the figure inside it is the turned one.
  */
 const BLIGHT_STRIP: Readonly<Record<string, { sheet: string; clip: string; dir: string }>> = {
-  'scene.farmerIdleBreatheStrip': { sheet: 'farmhand', clip: 'idle', dir: 'down' },
+  'scene.farmerIdleBreatheStrip': { sheet: 'farmhandBlight', clip: 'idle', dir: 'down' },
   'scene.farmer2IdleBreatheStrip': { sheet: 'bloatedFarmhand', clip: 'idle', dir: 'down' },
-  'scene.farmerWalkStrip': { sheet: 'farmhand', clip: 'walk', dir: 'left' },
+  'scene.farmerWalkStrip': { sheet: 'farmhandBlight', clip: 'walk', dir: 'left' },
   'scene.chickenPeckStrip': { sheet: 'infectedHen', clip: 'idle', dir: 'down' },
   'scene.chickenWalkLeftStrip': { sheet: 'infectedHen', clip: 'walk', dir: 'left' },
 }

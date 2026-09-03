@@ -76,9 +76,9 @@ const SPARE: Record<string, string> = {
 
 /** Mirrors BLIGHT_STRIP: the field's baked strips and who they turn into. */
 const STRIP: Record<string, { sheet: string; clip: string; dir: string }> = {
-  'scene.farmerIdleBreatheStrip': { sheet: 'farmhand', clip: 'idle', dir: 'down' },
+  'scene.farmerIdleBreatheStrip': { sheet: 'farmhandBlight', clip: 'idle', dir: 'down' },
   'scene.farmer2IdleBreatheStrip': { sheet: 'bloatedFarmhand', clip: 'idle', dir: 'down' },
-  'scene.farmerWalkStrip': { sheet: 'farmhand', clip: 'walk', dir: 'left' },
+  'scene.farmerWalkStrip': { sheet: 'farmhandBlight', clip: 'walk', dir: 'left' },
   'scene.chickenPeckStrip': { sheet: 'infectedHen', clip: 'idle', dir: 'down' },
   'scene.chickenWalkLeftStrip': { sheet: 'infectedHen', clip: 'walk', dir: 'left' },
 }
