@@ -23,6 +23,8 @@ was absorbed long ago (verified by content, not by branch name — the ground
 banding it added lives inside `renderer.ts` now, driven by each map's own
 `terrain` block).
 
+**As of 2026-09-03 the newest work is on `session-22-integration`, which is AHEAD of `main` and not yet merged** — the owner asked to be asked first. NOTES.md ("Where session 22 stopped") says what is on it and what is still in a worktree. Do not branch from `main` for new work until that is resolved.
+
 **Still run `git fetch && git status` before reading anything else.** Not because
 of the old split, but because it is how the old split was found — and while this
 session worked, another session pushed a commit to the same branch.

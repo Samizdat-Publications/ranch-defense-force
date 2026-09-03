@@ -136,6 +136,64 @@ drop; the composition stays), and the home screen gets a scene sequence — calm
 lightning, blight, then a camera descent through the soil to the lab that is
 "secretly right under the farm."
 
+## Where session 22 stopped, and what the next session does first
+
+The session ended on the owner's usage limit, not on a natural boundary.
+**The work is on branch `session-22-integration`, NOT on `main`.** The owner
+asked to be asked before anything lands on `main`, and had not yet answered
+when the limit hit. `main` is still b6b0b6a4. Do not fast-forward it without
+the owner's word; do not start a new session branch from `main` either, or the
+two-heads scar in CLAUDE.md reopens.
+
+State of `session-22-integration` at the stop:
+
+| workstream | status |
+|---|---|
+| perf measurement + tools + `docs/PERF_FINDINGS_2026-09-02.md` | merged |
+| audio committed (live site was silent) | merged, deploys with `main` |
+| farmhand recolour + player ground mark | merged |
+| atlas split into seven ≤2048 pages | merged |
+| four locked classes redesigned, six-class parity test | merged |
+| vitest excludes `.claude/**` (worktrees were being swept) | merged |
+| **home screen**: page-width bug, dev overlay hidden in prod, smaller cards, scene selector, calm→lightning→blight→descend-to-lab sequence, lab actor patrols | **NOT merged.** Uncommitted-or-partially-committed work in worktree `.claude/worktrees/agent-ac16dfe61a144f5c5` (branch `worktree-agent-ac16dfe61a144f5c5`). A replacement agent was told to commit and write `docs/HOME_SEQUENCE_HANDOFF.md` there before stopping; check whether it did. |
+
+`npm run typecheck` clean and **207/207 tests pass** on the integration branch
+with everything above except the home screen. The main checkout has the paged
+atlas built and the other session's vite server on port 5180 was serving it.
+
+### Observations still owed by the owner
+
+- **The once-a-second stutter.** Fronted, on the LIVE build (old atlas, no
+  audio), the owner saw good fps but a stutter on every shot, roughly once a
+  second, with two isolated spikes on the F1 frame graph and 1.7ms of game work
+  per frame — the stall is outside the game's own code. Two candidates, both
+  once-a-second: the atlas re-decode (now gone on the integration branch) and
+  the per-shot audio 404 (audio now committed). The owner was asked to compare
+  on `localhost:5180` and had not answered. **That comparison is the first
+  thing to ask for.**
+- The fps cap of 68 in the fronted live build with 2.5ms frames is the
+  display's presentation rate, not the game; worth one question (external
+  monitor? power mode?) but not work.
+
+### Next steps, in order
+
+1. Ask the owner: stutter on `localhost:5180` — gone or not? And: merge to
+   `main`?
+2. Finish the home screen from the worktree (read its handoff doc first). Its
+   brief, with the owner's lab notes, is reproduced in the session transcript
+   and summarised in the table above. Merge it, `npm run atlas`, typecheck,
+   test, screenshot all three scenes, add its NOTES section here.
+3. Then `main`: fast-forward from `session-22-integration` with the owner's
+   go-ahead, push, and confirm the Pages deploy ships `atlas-0..6.png` AND the
+   audio.
+4. Human play of the six classes. The class section above lists what the
+   harness cannot see: Grit has no HUD readout, the Claymore's blast radius is
+   never drawn, Overwatch's bands have no on-screen expression, the Harpoon Gun
+   is still a bad T1 weapon for anyone who is not the Drifter.
+5. Design calls the owner still owns: `bloatedFarmhand`/`acidZombie` keeping
+   the straw hat; the arena's hard black bottom edge; `scene.fencePicket`.
+
+
 ## The four locked classes now answer the game differently
 
 The standing directive is done. `widow`, `vet`, `agronomist` and `drifter` were
