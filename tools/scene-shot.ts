@@ -32,6 +32,46 @@ import { chromium } from 'playwright'
 const kind = process.argv[2] ?? 'yard'
 const out = process.argv[3] ?? `tools/scene-${kind}.png`
 const settle = Number(process.argv[4] ?? 1200)
+/**
+ * Which beat of the home screen's sequence to photograph.
+ *
+ * `calm` is the default and is what this tool always used to shoot, because it
+ * was all there was. The screen now runs a loop — calm, three strikes, the
+ * blight, a three-second descent through the ground into the lab — and TIMING a
+ * screenshot against a 640ms flash is a race nobody wins. So `MenuScreen` reads
+ * `rdf.homePhase`, parks on the named state and stops; this writes it.
+ *
+ *     npm run scene -- yard tools/play/home/blight.png 1400 blight
+ *     npm run scene -- yard tools/play/home/soil.png   1400 down
+ */
+const phase = process.argv[5] ?? ''
+/**
+ * `scene` frames the backdrop alone; `page` frames the whole window.
+ *
+ * The default is the scene, which is right for judging a composition and wrong
+ * for judging the interface over it — the class rail, the print panel and the
+ * scene picker are in `.home-ui`, a sibling, and a `.home-scene` screenshot has
+ * never contained a single pixel of them.
+ */
+const frame = process.argv[6] ?? 'scene'
+/**
+ * The window to photograph in, as `WIDTHxHEIGHT[@DPR]`. Default 1920x1080@1.
+ *
+ * The stage is contain-fitted into whatever the window is, so a composition
+ * that reads at 1920x1080 says nothing at all about one that reads at 2560x1440
+ * -- and a fractional device pixel ratio is the whole reason the page was wider
+ * than the window in the first place. Being able to ask for a size is what
+ * makes "verify at both" a command rather than a promise.
+ *
+ *     npm run scene -- yard out.png 1600 calm page 2560x1440
+ *     npm run scene -- yard out.png 1600 calm page 1920x1080@1.25
+ */
+const size = process.argv[7] ?? '1920x1080'
+const sizeMatch = /^(\d+)x(\d+)(?:@([\d.]+))?$/.exec(size)
+if (!sizeMatch) throw new Error(`bad size '${size}' -- expected WIDTHxHEIGHT[@DPR]`)
+const VW = Number(sizeMatch[1])
+const VH = Number(sizeMatch[2])
+const DPR = Number(sizeMatch[3] ?? 1)
 const PORT = 5199
 
 /*
@@ -88,29 +128,38 @@ const candidates = store
 const exe = candidates.find((c) => existsSync(c))
 const browser = await chromium.launch(exe ? { executablePath: exe } : {})
 try {
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 })
+  const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: DPR })
 
   /*
-     Ask for the scene we were told to shoot.
+     Ask for the scene, and for the beat of the sequence, we were told to shoot.
 
-     `kind` used to name the output file and nothing else -- it could not
-     choose what rendered. `MenuScreen` picks its backdrop by ALTERNATING:
-     `isField = last !== 'field'`, off `localStorage['rdf.homeScene']`. A fresh
-     browser profile has no such key, so `last` is null, `null !== 'field'` is
-     true, and every shot this tool has ever taken was the FIELD scene. That is
-     the "the home screen renders the FIELD scene" defect in NOTES -- not a bug
-     in the scene, a bug in what the camera was pointed at.
+     `kind` used to name the output file and nothing else -- it could not choose
+     what rendered, because `MenuScreen` picked its backdrop by CYCLING off
+     `localStorage['rdf.homeScene']` and a fresh browser profile has no such
+     key. Every shot this tool ever took was the same scene, whatever it was
+     asked for. That is the "the home screen renders the FIELD scene" defect in
+     NOTES -- not a bug in the scene, a bug in what the camera was pointed at.
 
-     Seed the key ahead of app code so the cycle lands where we want. The value
-     stored is the PREVIOUS load's scene, so we write the one BEFORE the target.
+     The key holds the scene to OPEN ON now rather than the previous one, so
+     there is no off-by-one to compensate for; `rdf.homePhase` parks the
+     sequence on a named state so a flash or a mid-descent frame can be
+     photographed at all.
   */
-  const CYCLE = ['yard', 'field', 'lab']
-  const at = CYCLE.indexOf(kind)
-  if (at < 0) throw new Error(`unknown scene '${kind}' — expected one of ${CYCLE.join(', ')}`)
-  // Store the PREVIOUS scene in the cycle, because the menu mounts the next one.
-  const want = CYCLE[(at - 1 + CYCLE.length) % CYCLE.length]
+  const KINDS = ['yard', 'field', 'lab']
+  if (!KINDS.includes(kind)) {
+    throw new Error(`unknown scene '${kind}' — expected one of ${KINDS.join(', ')}`)
+  }
+  const PHASES = ['', 'calm', 'flash', 'blight', 'down', 'lab']
+  if (!PHASES.includes(phase)) {
+    throw new Error(`unknown phase '${phase}' — expected one of ${PHASES.slice(1).join(', ')}`)
+  }
   await page.addInitScript(
-    `try { localStorage.setItem('rdf.homeScene', ${JSON.stringify(want)}) } catch {}`,
+    `try {
+       localStorage.setItem('rdf.homeScene', ${JSON.stringify(kind)});
+       ${phase
+      ? `localStorage.setItem('rdf.homePhase', ${JSON.stringify(phase)});`
+      : `localStorage.removeItem('rdf.homePhase');`}
+     } catch {}`,
   )
   const problems: string[] = []
   page.on('console', (m) => { if (m.type() === 'error') problems.push(m.text()) })
@@ -145,8 +194,22 @@ try {
 
   const stage = page.locator(SCENE).first()
   const framed = (await stage.count()) > 0
-  const target = framed ? stage : page.locator('body')
-  const shot = await page.locator('.home-yard').first().getAttribute('class')
+  const target = frame === 'page' ? page.locator('body') : (framed ? stage : page.locator('body'))
+  /*
+     WHICH SCENE IS IN FRONT OF THE CAMERA IS NO LONGER "the only one built".
+
+     All three live in one tall column -- surface, soil, lab -- and the shot is
+     of whichever the column is translated to. So report the surface slot's
+     class AND whether the column has descended, rather than reading the first
+     `.home-yard` in the document and calling it the answer. Under the old check
+     every lab shot would have been reported as the yard, correctly framed and
+     wrongly described, which is exactly the class of mistake this tool exists
+     to stop.
+  */
+  const surfaceClass = await page.locator('.home-slot.is-surface .home-yard').first()
+    .getAttribute('class')
+  const down = ((await page.locator('.home-column.is-down').count()) > 0)
+  const shot = down ? 'lab' : (surfaceClass ?? '')
   await target.screenshot({ path: out })
 
   // Counted through locators rather than `page.evaluate`: the callback would run
@@ -154,10 +217,36 @@ try {
   // -- correctly, since everything else in tools/ is a Node script.
   const imgs = await page.locator('img').count()
   const divs = await page.locator('div').count()
-  console.log(`${kind} -> ${out}   (${imgs} img, ${divs} div)`)
-  console.log(`framed: ${framed ? SCENE : 'body (FALLBACK -- scene root not found)'}`)
-  console.log(`scene root class: ${shot ?? '(none)'}`)
-  if (shot && !shot.includes(`is-${kind}`)) {
+  console.log(`${kind}${phase ? ` (${phase})` : ''} -> ${out}   (${imgs} img, ${divs} div)  ${VW}x${VH}@${DPR}`)
+  /*
+     THE PAGE MUST NOT BE WIDER THAN THE WINDOW, AND THIS IS WHERE THAT IS
+     CHECKED RATHER THAN HOPED FOR.
+
+     `#stage` was `width: 100vw`, which on a fractional device pixel ratio is
+     wider than `documentElement.clientWidth` -- the right-anchored dev overlay
+     hung off the edge with `overflow: hidden` above it, so there was no
+     scrollbar to say so. A number printed on every shot is how it stays fixed.
+  */
+  const width = await page.evaluate(`(() => {
+    const d = document.documentElement
+    const dev = document.querySelector('#dev')
+    const r = dev && dev.getBoundingClientRect()
+    return {
+      client: d.clientWidth, scroll: d.scrollWidth,
+      devRight: r ? +r.right.toFixed(2) : null, devVisible: !!(r && r.width),
+    }
+  })()`) as { client: number; scroll: number; devRight: number | null; devVisible: boolean }
+  const over = width.scroll - width.client
+  console.log(`page width: client ${width.client}, scroll ${width.scroll}` +
+    `${over > 0 ? `  OVERFLOWING BY ${over}px` : '  (no overflow)'}` +
+    `${width.devVisible ? `   #dev right edge ${width.devRight}` : '   #dev hidden'}`)
+  if (over > 0) console.log('WARNING: the document is wider than the viewport')
+  if (width.devVisible && width.devRight !== null && width.devRight > width.client + 0.5) {
+    console.log(`WARNING: #dev is clipped -- its right edge is ${width.devRight} past ${width.client}`)
+  }
+  console.log(`framed: ${frame === 'page' ? 'body (whole window)' : (framed ? SCENE : 'body (FALLBACK -- scene root not found)')}`)
+  console.log(`surface slot: ${surfaceClass ?? '(none)'}   column: ${down ? 'descended (lab)' : 'up (surface)'}`)
+  if (!shot.includes(kind === 'lab' ? 'lab' : `is-${kind}`)) {
     console.log(`WARNING: asked for '${kind}' and got '${shot}'`)
   }
   if (problems.length) {

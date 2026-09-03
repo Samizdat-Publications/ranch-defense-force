@@ -25,7 +25,17 @@ export class DevOverlay {
   private readonly ctx: CanvasRenderingContext2D
   private readonly history = new Float32Array(GRAPH_W)
   private historyIndex = 0
-  private visible = true
+  /*
+     SHIPPED, BUT NOT SHOWING.
+
+     §13 wants this overlay in every build -- a wave-skip key and a seed box are
+     how twenty-four waves get balanced without playing twenty-four waves -- and
+     that is an argument for BUILDING it, never for opening on it. In a
+     production build the first thing a player saw was a frame-time graph and a
+     spawn menu sitting over the title screen. F1 (or backtick) still brings it
+     up, so nothing is lost and nothing has to be rebuilt to get it.
+  */
+  private visible = import.meta.env.DEV
   private frame = 0
 
   constructor(
@@ -77,21 +87,39 @@ export class DevOverlay {
     this.root = el('div', {}, [this.panel])
     const host = document.getElementById('dev') ?? parent
     host.appendChild(this.root)
+    this.apply()
 
     window.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return
       if (e.key === 'F1' || e.key === '`') {
         this.visible = !this.visible
-        this.root.style.display = this.visible ? '' : 'none'
+        this.apply()
         e.preventDefault()
       }
       if (e.key === 'n' || e.key === 'N') this.hooks.skipWave()
     })
   }
 
+  /**
+   * Show or hide, and say so on `<body>`.
+   *
+   * The `data-dev` attribute is not decoration: the home screen's scene picker
+   * lives in the same top-right corner, and this overlay is in VIEWPORT space
+   * while the picker is in stage space, so no fixed pair of coordinates can
+   * keep them apart at every scale. The picker moves out of the way when the
+   * overlay is up, and it has to learn that from somewhere.
+   */
+  private apply(): void {
+    this.root.style.display = this.visible ? '' : 'none'
+    document.body.dataset.dev = this.visible ? 'on' : 'off'
+  }
+
   update(loop: Loop, world: World, renderer: Renderer): void {
     this.history[this.historyIndex] = loop.stats.frameMs
     this.historyIndex = (this.historyIndex + 1) % GRAPH_W
+    // Hidden costs nothing but the ring buffer above, which is what makes the
+    // graph useful the instant it is toggled on rather than a second later.
+    if (!this.visible) return
 
     // The text is comparatively expensive to rebuild; 6Hz is plenty to read.
     if (++this.frame % 10 === 0) {

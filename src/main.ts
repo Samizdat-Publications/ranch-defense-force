@@ -92,12 +92,23 @@ const dev = new DevOverlay(uiRoot, {
   restartWithSeed: (seed) => startRun(currentClassId, seed),
 })
 
+/**
+ * Size the canvas to the LAYOUT viewport, not to `window.innerWidth`.
+ *
+ * `innerWidth` includes the scrollbar gutter and is rounded to whole pixels;
+ * `documentElement.clientWidth` is the box the page is actually laid out in.
+ * On a fractional device pixel ratio the two disagree, and the canvas was being
+ * given the larger of them -- the same overhang `#stage`'s old `width: 100vw`
+ * had. See the note on `#stage` in ui/style.css for the measurement.
+ */
 function resize(): void {
   const dpr = Math.min(2, window.devicePixelRatio || 1)
-  const w = Math.floor(window.innerWidth * dpr)
-  const h = Math.floor(window.innerHeight * dpr)
-  canvas.style.width = `${window.innerWidth}px`
-  canvas.style.height = `${window.innerHeight}px`
+  const cssW = document.documentElement.clientWidth
+  const cssH = document.documentElement.clientHeight
+  const w = Math.floor(cssW * dpr)
+  const h = Math.floor(cssH * dpr)
+  canvas.style.width = `${cssW}px`
+  canvas.style.height = `${cssH}px`
   renderer?.resize(w, h)
 }
 window.addEventListener('resize', resize)

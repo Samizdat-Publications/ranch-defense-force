@@ -47,7 +47,32 @@ html, body {
   -webkit-font-smoothing: none;
 }
 
-#stage { position: relative; width: 100vw; height: 100vh; }
+/*
+   THE STAGE IS THE VIEWPORT, AND `100vw` IS NOT THE VIEWPORT.
+
+   This was `width: 100vw; height: 100vh`, and on any display whose device pixel
+   ratio is not a whole number that is WIDER THAN THE WINDOW. Measured on the
+   owner's machine, maximised Chrome, dpr 1.5 on a 2560px panel:
+
+       document.documentElement.clientWidth   1707
+       a probe element at width: 100vw        1707.33
+
+   So `#stage` overhung the right edge by a third of a CSS pixel and the page
+   rendered 2561 device pixels wide on a 2560 device pixel screen. Everything
+   anchored to the stage's right edge -- `#dev` is `right: 0` -- hangs off by
+   that much, and the root has `overflow: hidden`, so there is no scrollbar to
+   tell you and no way to scroll to it. The overhang is whatever `100vw` rounds
+   away from `clientWidth` on the display in front of you.
+
+   `position: fixed; inset: 0` IS the viewport, exactly, at every ratio: it is
+   sized from the initial containing block rather than from a rounded unit. The
+   `overflow: hidden` is belt and braces -- nothing inside can push the document
+   wider even if it wanted to.
+
+   The same rule applies in script: `window.innerWidth` includes the scrollbar
+   gutter and rounds. See `resize()` in main.ts, which reads `clientWidth`.
+*/
+#stage { position: fixed; inset: 0; overflow: hidden; }
 #game { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 #ui { position: absolute; inset: 0; pointer-events: none; }
 
@@ -141,15 +166,30 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 
 /* ------------------------------------------------------------------ dev */
 
+/*
+   CAPPED TO THE WINDOW, because it is shrink-to-fit and its width is DATA.
+
+   `#dev` has no width of its own: it is as wide as its widest child, and the
+   widest child is a `<select>` carrying every id in `ENEMY_IDS` — so the panel
+   grows whenever the roster gains a longer name, and the pool lines grow with
+   the pool names. Anchored to `right: 0` inside a `#stage` that now clips, an
+   overrun stops being visible at all rather than merely being wide. The cap
+   plus `overflow-wrap` makes it fold instead.
+*/
 #dev {
-  position: absolute; top: 0; right: 0; padding: 8px;
+  position: absolute; top: 0; right: 0; padding: 8px; max-width: 100%;
   font-size: 11px; line-height: 1.45; color: #9fe6c0;
   text-shadow: 1px 1px 0 #000; pointer-events: none; text-align: right;
 }
 #dev.hidden { display: none; }
-#dev .dev-panel { pointer-events: auto; display: inline-block; text-align: left; background: rgba(0,0,0,0.55); padding: 6px 8px; }
+#dev .dev-panel {
+  pointer-events: auto; display: inline-block; text-align: left;
+  background: rgba(0,0,0,0.55); padding: 6px 8px;
+  max-width: 100%; overflow-wrap: anywhere;
+}
+#dev select { max-width: 100%; }
 #dev input {
-  font-family: inherit; font-size: 11px; width: 110px;
+  font-family: inherit; font-size: 11px; width: 110px; max-width: 100%;
   background: #11151a; color: #9fe6c0; border: 1px solid #2f4a3c; padding: 2px 4px;
 }
 #dev canvas { display: block; margin-top: 4px; background: rgba(0,0,0,0.4); }

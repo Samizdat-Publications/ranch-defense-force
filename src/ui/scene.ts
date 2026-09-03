@@ -49,6 +49,19 @@ export { sceneSprite } from './sprite'
 
 export type SceneKind = 'yard' | 'field' | 'lab'
 
+/** The two scenes that are above ground. The lab is the third and it is below. */
+export const SURFACE_SCENES: readonly SceneKind[] = ['yard', 'field']
+
+/**
+ * How deep the soil between a surface scene and the lab is, in stage pixels.
+ *
+ * The lab is "secretly right under the farm", so the descent is a real distance
+ * rather than a cut. 520 is a little under half a stage: long enough that the
+ * pan reads as going DOWN through something, short enough that three seconds of
+ * it is not three seconds of brown.
+ */
+export const SOIL_H = 520
+
 /** Edge colours the letterbox bleeds with. The scene's own top and bottom. */
 export const BLEED: Record<SceneKind, { top: string; bottom: string }> = {
   yard: { top: '#191b36', bottom: '#191d13' },
@@ -93,6 +106,160 @@ export const DOOR: Record<SceneKind, { x: number; y: number }> = {
  */
 export const UI_RAIL = { x: 332, y: 735, w: 1256, h: 293 } as const
 
+// -------------------------------------------------------------- the blight
+
+/**
+ * WHAT THE PLACE LOOKS LIKE AFTER THE LIGHTNING.
+ *
+ * The home screen's sequence turns the farm over: three white flashes, and then
+ * every living thing in the scene is its blighted twin. The art for most of
+ * them was generated sessions ago and has been sitting in the atlas unused --
+ * nineteen `*Blight` sheets plus the cursed roster plus the turned staff.
+ *
+ * ## The flag is module state, deliberately
+ *
+ * `yard()` and `field()` are one long push list each, ported layer for layer
+ * from Design's documents. Threading a `blight` argument through forty call
+ * sites would rewrite both of them and make every future diff against the
+ * reference harder to read. `buildScene` sets this, builds, and clears it; the
+ * build is synchronous and `buildScene` is the only door in.
+ *
+ * ## Two ways a thing gets blighted, and the second one is the fallback
+ *
+ * 1. **A sheet swap**, for anything drawn from a packed clip. Same clip, same
+ *    direction, same HEIGHT -- `sceneSprite`/`groundActor` semantics mean the
+ *    blighted Joy is exactly as tall as Joy was, even though `joyBlight`'s
+ *    frames are 42px where `joy`'s walk is 50. Sizes differ across every one of
+ *    these sheets; heights do not, because heights are what the scene asks for.
+ * 2. **A colour filter**, for everything with no counterpart: the buildings, the
+ *    windmill, the scarecrow, the wheat, the tractor, the treeline. Desaturate,
+ *    darken, tint green. Stated as a class rather than applied to the whole
+ *    scene root, so a swapped sprite is never double-treated.
+ *
+ * ## What is NOT here, and why
+ *
+ * The scarecrow. `docs/PIXELLAB_INVENTORY.md` lists `rdf-scene-scarecrow-wrong`
+ * -- four candidates of "a scarecrow gone wrong", generated and paid for -- and
+ * NONE of them is claimed, so none is in `art/sprites.json` and none is in the
+ * atlas (checked: no key matches /wrong/i). Claiming is free; packing it is a
+ * separate job with an API key in it. It filters for now and it is written down
+ * in NOTES so the next session claims it rather than generating a fifth one.
+ *
+ * Every key below is asserted against `public/atlas.json` by
+ * `npm run blight` -- see tools/check-blight.ts. Do not trust this table
+ * because it is written down; session 21's lesson was that a document saying
+ * art exists is not evidence that it does, and the reverse is just as true.
+ */
+const BLIGHT_SHEET: Readonly<Record<string, string>> = {
+  joy: 'joyBlight',
+  tabbyCat: 'tabbyCatBlight',
+  brahmaHen: 'brahmaHenBlight',
+  leghornHen: 'leghornHenBlight',
+  beardedHen: 'beardedHenBlight',
+  silkieHen: 'silkieHenBlight',
+  barredHen: 'barredHenBlight',
+  polishHen: 'polishHenBlight',
+  buffHen: 'buffHenBlight',
+  bantamHen: 'bantamHenBlight',
+  // `farmRoosterBlight` is idle-only, so a rooster that WALKS becomes the
+  // infected hen instead -- see `blightStrip`, which falls back by clip.
+  farmRooster: 'farmRoosterBlight',
+  // The pony is the one animal with a fully rigged counterpart: `fjordPonyCursed`
+  // carries walk, attack, hit and death where `fjordPonyBlight` is a still.
+  fjordPony: 'fjordPonyCursed',
+  arabian: 'arabianCursed',
+  blackMule: 'blackMuleBlight',
+  beigeMule: 'beigeMuleBlight',
+  rosie: 'rosieBlight',
+  wiz: 'wizBlight',
+  ouiji: 'ouijiBlight',
+  siameseCat: 'siameseCatBlight',
+}
+
+/** Second choice when the first sheet has no walk: the fully rigged infected. */
+const BLIGHT_SPARE: Readonly<Record<string, string>> = {
+  farmRooster: 'infectedHen',
+  brahmaHen: 'infectedHen',
+  leghornHen: 'infectedHen',
+  fjordPony: 'fjordPonyBlight',
+}
+
+/**
+ * The field's baked `scene.*` strips, and who they turn into.
+ *
+ * These are the one case where the swap is not like for like: the strips are
+ * pre-composed PNGs on a 32x64 (or 32x32) cell, and the counterparts are packed
+ * character clips on their own cells. `sceneStrip` keeps the BOX so the actor
+ * lands where the reference put it; the figure inside it is the turned one.
+ */
+const BLIGHT_STRIP: Readonly<Record<string, { sheet: string; clip: string; dir: string }>> = {
+  'scene.farmerIdleBreatheStrip': { sheet: 'farmhand', clip: 'idle', dir: 'down' },
+  'scene.farmer2IdleBreatheStrip': { sheet: 'bloatedFarmhand', clip: 'idle', dir: 'down' },
+  'scene.farmerWalkStrip': { sheet: 'farmhand', clip: 'walk', dir: 'left' },
+  'scene.chickenPeckStrip': { sheet: 'infectedHen', clip: 'idle', dir: 'down' },
+  'scene.chickenWalkLeftStrip': { sheet: 'infectedHen', clip: 'walk', dir: 'left' },
+}
+
+/** True while `buildScene` is building a blighted scene. See BLIGHT_SHEET. */
+let BLIGHT = false
+
+/** The class that carries the fallback grade. Styled in home.css. */
+const FALLBACK = 'is-blighted'
+
+/**
+ * Resolve a clip through the blight, by sheet and then by clip.
+ *
+ * The sheets do not all carry the same clips: `brahmaHenBlight` walks but does
+ * not peck, `farmRoosterBlight` and `joyBlight` are idle-only stills. So the
+ * order is: the same clip on the blighted sheet, then the spare sheet's version
+ * of it, then `walk`, then `idle`. A blighted farm being STILLER than the farm
+ * was is the right failure, which is why `idle` is the last resort rather than
+ * giving up and drawing the healthy animal.
+ */
+function blightStrip(
+  sheet: string, clip: string, dir: string,
+): { url: string; cell: number; frames: number } | null {
+  if (!BLIGHT) return stripUrl(sheet, clip, dir)
+  const sheets = [BLIGHT_SHEET[sheet], BLIGHT_SPARE[sheet]].filter((s): s is string => !!s)
+  if (sheets.length === 0) return null
+  for (const s of sheets) {
+    for (const c of [clip, 'walk', 'idle']) {
+      const hit = stripUrl(s, c, dir)
+      if (hit) return hit
+    }
+  }
+  return null
+}
+
+/**
+ * Desaturate, darken, tint green: what a thing with no blighted twin gets.
+ *
+ * `sepia` then `hue-rotate` rather than a green overlay, because an overlay
+ * flattens the art it covers and this has to sit under a scene that is already
+ * two vignette passes deep. Sepia pushes everything onto one warm axis and the
+ * rotation swings that axis into the green — the standard trick, and the only
+ * one that keeps pixel edges rather than veiling them.
+ */
+const BLIGHT_FILTER = 'saturate(0.25) brightness(0.78) sepia(0.55) hue-rotate(55deg)'
+
+/**
+ * Mark an element for the fallback grade when there is no blighted art.
+ *
+ * COMPOSED INTO THE INLINE FILTER, not left to a stylesheet rule. Half the
+ * scene already carries an inline `filter` -- the treeline's blur, the wheat
+ * bands' blur, every plate's brightness -- and an inline declaration beats a
+ * class every time. A rule in home.css would have silently done nothing to
+ * exactly the layers that most need it.
+ */
+function graded<T extends HTMLElement | null>(e: T): T {
+  if (e && BLIGHT) {
+    e.classList.add(FALLBACK)
+    const own = e.style.filter
+    e.style.filter = own ? `${own} ${BLIGHT_FILTER}` : BLIGHT_FILTER
+  }
+  return e
+}
+
 // --------------------------------------------------------------- primitives
 
 /** A bare positioned div carrying literal CSS. The scene's sky, light and air. */
@@ -118,7 +285,7 @@ function sprite(
   s.style.left = `${x}px`
   s.style.top = `${y}px`
   if (css) s.style.cssText += css
-  return s
+  return graded(s)
 }
 
 /**
@@ -131,10 +298,10 @@ function sprite(
 function tileBand(name: string, css: string, tileW: number, tileH: number): HTMLElement | null {
   const url = spriteTileUrl(name)
   if (!url) return null
-  return box(
+  return graded(box(
     `background-image:url('${url}');background-size:${tileW}px ${tileH}px;` +
     `background-repeat:repeat-x;image-rendering:pixelated;${css}`,
-  )
+  ))
 }
 
 /**
@@ -192,7 +359,8 @@ export function groundActor(
   sheet: string, clip: string, dir: string,
   x: number, footY: number, height: number, dur: string, delay?: string,
 ): HTMLElement | null {
-  const strip = stripUrl(sheet, clip, dir)
+  const swap = BLIGHT ? blightStrip(sheet, clip, dir) : null
+  const strip = swap ?? stripUrl(sheet, clip, dir)
   if (!strip) return null
   const scale = height / strip.cell
   const w = strip.cell * scale
@@ -209,7 +377,7 @@ export function groundActor(
   wrap.style.top = `${Math.round(footY - w)}px`
   // Depth IS the ground line in a scene like this, so sorting is free.
   wrap.style.zIndex = String(Math.round(footY))
-  return wrap
+  return BLIGHT && !swap ? graded(wrap) : wrap
 }
 
 /** A travelling wrapper: where an actor starts, and the path it walks. */
@@ -237,14 +405,61 @@ function actor(
   cellW: number, cellH: number, frames: number,
   dur: string, zoom = 1, delay?: string,
 ): HTMLElement | null {
-  const s = stripActor(name, {
+  const opts = {
     w: cellW * zoom, h: cellH * zoom,
     sheetW: cellW * frames * zoom, sheetH: cellH * zoom,
     frames, dur, keyframe: 'y-strip', delay,
-  })
+  }
+  const s = travelStrip(name, opts)
   if (!s) return null
   s.style.cssText += `position:absolute;left:${x}px;top:${y}px`
   return s
+}
+
+/**
+ * A blighted figure standing in a baked strip's box.
+ *
+ * The field's people and hens are pre-composed PNG strips on a 32x64 or 32x32
+ * cell; their counterparts are packed clips on cells of their own (a farmhand
+ * is 54, an infected hen 65). So the BOX is kept -- it is the reference's
+ * placement -- and the figure is scaled to the box's height and centred in it,
+ * bottom-aligned, so the feet land on the line the original stood on. Passing
+ * the cell width instead would put a blighted farmhand's feet 12px up in the
+ * air, which is session 19's whole lesson wearing different clothes.
+ */
+function blightBox(
+  name: string, w: number, h: number, dur: string, delay?: string,
+): HTMLElement | null {
+  const m = BLIGHT_STRIP[name]
+  if (!m) return null
+  const strip = stripUrl(m.sheet, m.clip, m.dir)
+  if (!strip) return null
+  const scale = h / strip.cell
+  const fw = strip.cell * scale
+  const sheetW = fw * strip.frames
+  const wrap = document.createElement('div')
+  wrap.style.cssText = `position:relative;width:${w}px;height:${h}px`
+  const d = document.createElement('div')
+  d.style.cssText =
+    `position:absolute;left:${Math.round((w - fw) / 2)}px;top:0;width:${fw}px;height:${fw}px;` +
+    `background-image:url('${strip.url}');background-size:${sheetW}px ${fw}px;` +
+    `background-repeat:no-repeat;--strip-w:${sheetW}px;image-rendering:pixelated;` +
+    `animation:y-strip ${dur} steps(${strip.frames}) infinite${delay ? ` ${delay}` : ''}`
+  wrap.append(d)
+  return wrap
+}
+
+/** A baked `scene.*` strip, or the thing it turns into. Same box either way. */
+function travelStrip(
+  name: string,
+  opts: {
+    w: number; h: number; sheetW: number; sheetH: number
+    frames: number; dur: string; keyframe: string; delay?: string
+  },
+): HTMLElement | null {
+  const turned = BLIGHT ? blightBox(name, opts.w, opts.h, opts.dur, opts.delay) : null
+  if (turned) return turned
+  return graded(stripActor(name, opts))
 }
 
 /** One firefly. Four in the yard, two in the field; the last thing still awake. */
@@ -257,6 +472,28 @@ function firefly(
     `background:#ffe9a0;box-shadow:0 0 ${glow}px 3px rgba(255,220,130,${alpha});` +
     `--fx:${fx};--fy:${fy};animation:${anim}`,
   )
+}
+
+/**
+ * The colour grade the blight puts over a surface scene.
+ *
+ * Two passes and they do different jobs. The multiply carries the CAST -- a
+ * green that darkens what is already dark and drags the warm mid-tones toward
+ * sick -- and a multiply is what keeps the paper-white highlights from going
+ * flat the way a flat overlay would. The second is a plain dim, heavier at the
+ * bottom, because the ground is the part the blight came out of.
+ *
+ * Both are pushed before the vignette, and both go UNDER the two warm lights,
+ * which are pushed after them. See `yard()`.
+ */
+function wash(): HTMLElement[] {
+  return [
+    box('inset:0;pointer-events:none;mix-blend-mode:multiply;' +
+      'background:linear-gradient(180deg,#9cb38e 0%,#87a279 44%,#6b8760 100%)'),
+    box('inset:0;pointer-events:none;' +
+      'background:linear-gradient(180deg,rgba(10,18,12,0.3) 0%,rgba(8,16,10,0.16) 40%,' +
+      'rgba(6,12,8,0.4) 100%)'),
+  ]
 }
 
 /** The two shaped passes every scene ends with. There is no flat scrim. */
@@ -305,16 +542,27 @@ function yard(): (HTMLElement | null)[] {
   const L: (HTMLElement | null)[] = []
   const push = (...items: (HTMLElement | null)[]): void => { L.push(...items) }
 
-  // -- the light: a halo, a core, and one slow flicker in nine seconds
-  push(box(
-    'left:792px;top:372px;width:300px;height:300px;border-radius:50%;' +
-    'background:radial-gradient(circle,#fff6d6 0%,#ffd884 26%,rgba(255,176,92,0) 66%);' +
-    'animation:y-sun 9s ease-in-out infinite',
+  /*
+     -- the light: a halo, a core, and one slow flicker in nine seconds.
+
+     Under the blight the halo goes and the core becomes a pale disc: the sun is
+     still there and it has stopped doing anything. That reads as wrong far
+     faster than dimming the whole sky does, because a sky can be night and a
+     white sun at dusk cannot be anything.
+  */
+  push(box(BLIGHT
+    ? 'left:792px;top:372px;width:300px;height:300px;border-radius:50%;opacity:0.34;' +
+      'background:radial-gradient(circle,#c9d6bd 0%,#8b9a80 30%,rgba(96,110,86,0) 68%);'
+    : 'left:792px;top:372px;width:300px;height:300px;border-radius:50%;' +
+      'background:radial-gradient(circle,#fff6d6 0%,#ffd884 26%,rgba(255,176,92,0) 66%);' +
+      'animation:y-sun 9s ease-in-out infinite',
   ))
-  push(box(
-    'left:896px;top:452px;width:92px;height:92px;border-radius:50%;' +
-    'background:radial-gradient(circle,#fffbe8 0%,#ffe6a2 58%,rgba(255,214,124,0) 100%);' +
-    'animation:y-sun 9s ease-in-out infinite',
+  push(box(BLIGHT
+    ? 'left:896px;top:452px;width:92px;height:92px;border-radius:50%;opacity:0.7;' +
+      'background:radial-gradient(circle,#dfe6d4 0%,#b6c0a6 62%,rgba(150,162,134,0) 100%);'
+    : 'left:896px;top:452px;width:92px;height:92px;border-radius:50%;' +
+      'background:radial-gradient(circle,#fffbe8 0%,#ffe6a2 58%,rgba(255,214,124,0) 100%);' +
+      'animation:y-sun 9s ease-in-out infinite',
   ))
 
   // -- three cloud bands, each 3040 wide so the drift never shows an end
@@ -373,19 +621,29 @@ function yard(): (HTMLElement | null)[] {
   push(plate('ranch.bunkhouse', 132, 453, 290, 'filter:brightness(0.8) saturate(0.86);'))
   push(shadow(1140, 684, 340, 38, 0.55, 8))
   push(plate('ranch.barn', 1079, 476, 257, 'filter:brightness(0.92) saturate(0.94);'))
-  // The doorway that is the Homestead entrance, lit from inside.
-  push(box(
+  /*
+     The two warm lights: the barn doorway lit from inside, and the porch lamp.
+
+     THEY ARE THE ONE THING THE BLIGHT DOES NOT TAKE. Everything else in the
+     yard goes green and dim; the porch light stays the colour it was, and that
+     is what makes the rest read as wrong rather than as night. So when the
+     scene is blighted they are built here and pushed at the END, over the green
+     wash, instead of in place under it.
+  */
+  const doorGlow = (): HTMLElement => box(
     'left:1246px;top:606px;width:132px;height:100px;' +
     'background:radial-gradient(60% 60% at 50% 66%,rgba(255,206,120,0.6),transparent 72%);' +
     'animation:y-door 3.6s ease-in-out infinite',
-  ))
-  push(shadow(500, 680, 280, 34, 0.52, 7))
-  push(plate('ranch.farmhouse', 405, 254, 544, 'filter:brightness(0.86) saturate(0.9);'))
-  push(box(
+  )
+  const porchGlow = (): HTMLElement => box(
     'left:566px;top:560px;width:140px;height:140px;border-radius:50%;' +
     'background:radial-gradient(circle,rgba(255,214,140,0.6) 0%,rgba(255,190,110,0.18) 42%,' +
     'transparent 72%);animation:y-porch 11s ease-in-out infinite',
-  ))
+  )
+  if (!BLIGHT) push(doorGlow())
+  push(shadow(500, 680, 280, 34, 0.52, 7))
+  push(plate('ranch.farmhouse', 405, 254, 544, 'filter:brightness(0.86) saturate(0.9);'))
+  if (!BLIGHT) push(porchGlow())
   push(smoke(18, 0.5, 4), smoke(22, 0.42, 5, '2.5s'), smoke(15, 0.46, 3, '5s'))
 
   push(shadow(822, 676, 112, 26, 0.5, 6))
@@ -495,6 +753,7 @@ function yard(): (HTMLElement | null)[] {
     'left:0;right:0;top:900px;bottom:0;' +
     'background:linear-gradient(180deg,rgba(8,7,10,0) 0%,rgba(8,7,10,0.6) 38%,rgba(6,6,8,0.95) 100%)',
   ))
+  if (BLIGHT) push(...wash(), doorGlow(), porchGlow())
   push(...vignette(
     'radial-gradient(120% 78% at 50% 56%,transparent 42%,rgba(12,10,14,0.56) 100%)',
     'linear-gradient(180deg,rgba(10,9,14,0.44) 0%,transparent 22%,transparent 52%,rgba(10,9,8,0.72) 100%)',
@@ -653,10 +912,13 @@ function treeline(): HTMLElement | null {
 function field(): (HTMLElement | null)[] {
   const L: (HTMLElement | null)[] = []
 
-  L.push(box(
-    'left:660px;top:400px;width:260px;height:260px;border-radius:50%;' +
-    'background:radial-gradient(circle,#fff6d4 0%,#ffd67e 28%,rgba(255,176,92,0) 66%);' +
-    'animation:f-sun 9s ease-in-out infinite',
+  // The sun, and the pale disc it becomes. See the same note in `yard()`.
+  L.push(box(BLIGHT
+    ? 'left:660px;top:400px;width:260px;height:260px;border-radius:50%;opacity:0.42;' +
+      'background:radial-gradient(circle,#d3ddc8 0%,#93a288 32%,rgba(102,116,90,0) 68%);'
+    : 'left:660px;top:400px;width:260px;height:260px;border-radius:50%;' +
+      'background:radial-gradient(circle,#fff6d4 0%,#ffd67e 28%,rgba(255,176,92,0) 66%);' +
+      'animation:f-sun 9s ease-in-out infinite',
   ))
 
   L.push(box(
@@ -718,11 +980,11 @@ function field(): (HTMLElement | null)[] {
   L.push(actor('scene.farmer2IdleBreatheStrip', 1436, 512, 32, 64, 7, '4.1s', 1, '0.7s')
     ?? sprite('scene.farmer2Idle', 1436, 512))
   L.push(travelling(1660, 508, 'f-horizon 92s linear infinite',
-    stripActor('scene.farmerWalkStrip', {
+    travelStrip('scene.farmerWalkStrip', {
       w: 32, h: 64, sheetW: 192, sheetH: 64, frames: 6, dur: '1.2s', keyframe: 'f-strip-192',
     })))
   L.push(travelling(540, 512, 'f-horizon-back 118s linear infinite',
-    stripActor('scene.farmerWalkStrip', {
+    travelStrip('scene.farmerWalkStrip', {
       w: 32, h: 64, sheetW: 192, sheetH: 64, frames: 6, dur: '1.34s', keyframe: 'f-strip-192',
     })))
 
@@ -730,7 +992,7 @@ function field(): (HTMLElement | null)[] {
     [1350, 542, '2.4s', undefined], [1386, 548, '3.1s', '0.7s'],
     [1478, 544, '2.8s', '1.5s'], [1560, 540, '3.4s', '2.2s'],
   ] as const) {
-    const s = stripActor('scene.chickenPeckStrip', {
+    const s = travelStrip('scene.chickenPeckStrip', {
       w: 32, h: 32, sheetW: 128, sheetH: 32, frames: 4, dur, keyframe: 'f-strip-128', delay,
     })
     if (s) { s.style.cssText += `position:absolute;left:${x}px;top:${y}px`; L.push(s) }
@@ -740,7 +1002,7 @@ function field(): (HTMLElement | null)[] {
     [1700, 540, 'f-horizon 140s linear infinite 8s', '1.3s'],
     [1620, 552, 'f-horizon 116s linear infinite 24s', '1.5s'],
   ] as const) {
-    L.push(travelling(x, y, travel, stripActor('scene.chickenWalkLeftStrip', {
+    L.push(travelling(x, y, travel, travelStrip('scene.chickenWalkLeftStrip', {
       w: 32, h: 32, sheetW: 192, sheetH: 32, frames: 6, dur: step, keyframe: 'f-strip-192',
     })))
   }
@@ -807,13 +1069,14 @@ function field(): (HTMLElement | null)[] {
 
   // -- somebody walking the row, left to right, at 2x
   L.push(travelling(-180, 662, 'f-cross 96s linear infinite',
-    stripActor('scene.farmerWalkStrip', {
+    travelStrip('scene.farmerWalkStrip', {
       w: 64, h: 128, sheetW: 384, sheetH: 128, frames: 6, dur: '1.12s', keyframe: 'f-strip-384',
     })))
 
   L.push(firefly(480, 880, 5, 10, 0.7, '80px', '-130px', 'f-fly 11s ease-in-out infinite'))
   L.push(firefly(1420, 840, 6, 11, 0.7, '-60px', '-160px', 'f-fly 13s ease-in-out infinite 3s'))
 
+  if (BLIGHT) L.push(...wash())
   L.push(...vignette(
     'radial-gradient(120% 76% at 50% 52%,transparent 40%,rgba(12,10,14,0.5) 100%)',
     'linear-gradient(180deg,rgba(10,9,14,0.42) 0%,transparent 20%,transparent 54%,rgba(10,9,8,0.7) 100%)',
@@ -847,7 +1110,7 @@ function plate(name: string, x: number, y: number, h: number, css = ''): HTMLEle
   el2.style.left = `${x}px`
   el2.style.top = `${y}px`
   if (css) el2.style.cssText += css
-  return el2
+  return graded(el2)
 }
 
 /** A soft pool of light: a blurred radial, lighting the room rather than lit. */
@@ -882,7 +1145,13 @@ function clipActorAt(
   sheet: string, clip: string, dir: string,
   x: number, y: number, height: number, dur: string, delay?: string, css = '',
 ): HTMLElement | null {
-  const strip = stripUrl(sheet, clip, dir)
+  /*
+     A blighted scene draws the counterpart where there is one and grades the
+     original where there is not. `windmill`, `scarecrow`, `wheat` and the tank
+     bank all land in the second case, which is why this asks for the swap first
+     and only falls back to the healthy sprite plus the filter.
+  */
+  const strip = (BLIGHT ? blightStrip(sheet, clip, dir) : null) ?? stripUrl(sheet, clip, dir)
   if (!strip) return null
   const scale = height / strip.cell
   const w = strip.cell * scale
@@ -893,7 +1162,7 @@ function clipActorAt(
     `background-image:url('${strip.url}');background-size:${sheetW}px ${w}px;` +
     `background-repeat:no-repeat;--strip-w:${sheetW}px;image-rendering:pixelated;` +
     `animation:y-strip ${dur} steps(${strip.frames}) infinite${delay ? ` ${delay}` : ''};${css}`
-  return d
+  return BLIGHT && !BLIGHT_SHEET[sheet] ? graded(d) : d
 }
 
 /**
@@ -907,18 +1176,28 @@ function clipActorAt(
 function patrolLayer(
   sheet: string, clip: string, dir: string, height: number, anim: string, css = '',
 ): HTMLElement | null {
-  const strip = stripUrl(sheet, clip, dir)
+  const swap = BLIGHT ? blightStrip(sheet, clip, dir) : null
+  const strip = swap ?? stripUrl(sheet, clip, dir)
   if (!strip) return null
   const scale = height / strip.cell
   const w = strip.cell * scale
   const sheetW = w * strip.frames
+  /*
+     A patrol layer takes its animation WHOLE, so a swapped clip with a different
+     frame count would step through the wrong number of cells and slide. Rewrite
+     the `steps(n)` the caller asked for to the strip's own count -- the only
+     number in the declaration that is a property of the ART rather than of the
+     beat. `joyBlight` is one frame where `joy.walk` is nine, and without this
+     the blighted dog scrolls sideways off her own strip.
+  */
+  const fixed = swap ? anim.replace(/steps\(\d+\)/g, `steps(${strip.frames})`) : anim
   const d = document.createElement('div')
   d.style.cssText =
     `position:absolute;left:0;top:0;width:${w}px;height:${w}px;` +
     `background-image:url('${strip.url}');background-size:${sheetW}px ${w}px;` +
     `background-repeat:no-repeat;--strip-w:${sheetW}px;image-rendering:pixelated;` +
-    `animation:${anim};${css}`
-  return d
+    `animation:${fixed};${css}`
+  return BLIGHT && !swap ? graded(d) : d
 }
 
 /**
@@ -947,7 +1226,24 @@ function patrol(
     patrolLayer(sheet, 'walk', 'right', height, `y-strip 1.2s steps(8) infinite, mull-${key}-wr ${step}`, css),
   ].filter((l): l is HTMLElement => l !== null)
   if (layers.length === 0) return null
-  const wrap = box(`left:${x}px;top:${y}px;animation:mull-${key}-path ${dur} step-end infinite`)
+  /*
+     THE PATH IS `linear`. THE LAYER SWAPS ARE `step-end`. THEY ARE NOT THE SAME
+     ANIMATION AND THEY MUST NOT SHARE A TIMING FUNCTION.
+
+     This wrapper carried `step-end` too, and `step-end` on a transform does not
+     travel — it holds the old value and JUMPS at the keyframe. So every figure
+     in the lab played its eight-frame walk on the spot for a couple of seconds
+     and then teleported three hundred pixels. The owner's words were "a
+     treadmill", which is exactly what a walk cycle with no translation is.
+     The yard's `wander()` had `linear` here from the start; the lab did not, and
+     the two were written a session apart.
+
+     One consequence worth knowing: the `-path` keyframes' travel windows now
+     have to line up with the `-wl`/`-wr` opacity windows to the percent,
+     because a mismatch is no longer invisible — it is a figure sliding while
+     standing still. They are matched in home.css and commented there.
+  */
+  const wrap = box(`left:${x}px;top:${y}px;animation:mull-${key}-path ${dur} linear infinite`)
   for (const l of layers) wrap.append(l)
   return wrap
 }
@@ -1080,7 +1376,10 @@ function lab(): (HTMLElement | null)[] {
     plate('vault.drumRank', 1335, 615, 309, dim(0.84)),
     plate('base.labBench', 544, 707, 150, dim(0.96)),
 
-    patrol('baseTech', 861, 696, 174, 'tech', '47s'),
+    // 26s, not 47: the scientist's loop is an errand to the vats and back now
+    // rather than 1.8 seconds of walking in three quarters of a minute. The
+    // retimed keyframes are in home.css and say why.
+    patrol('baseTech', 861, 696, 174, 'tech', '26s'),
     patrol('baseGuard', 420, 770, 190, 'guard', '59s', dim(0.86)),
 
     plate('vault.drumScatter', 264, 782, 239, dim(0.62)),
@@ -1097,11 +1396,105 @@ function lab(): (HTMLElement | null)[] {
   ]
 }
 
-export function buildScene(kind: SceneKind): HTMLElement {
-  const root = el('div', { class: `home-yard is-${kind}` })
-  const layers = kind === 'lab' ? lab() : kind === 'field' ? field() : yard()
-  for (const layer of layers) {
-    if (layer) root.append(layer)
+export function buildScene(kind: SceneKind, blight = false): HTMLElement {
+  // The lab never blights. It is what the blight came out of.
+  BLIGHT = blight && kind !== 'lab'
+  try {
+    const root = el('div', { class: `home-yard is-${kind}${BLIGHT ? ' is-blight' : ''}` })
+    const layers = kind === 'lab' ? lab() : kind === 'field' ? field() : yard()
+    for (const layer of layers) {
+      if (layer) root.append(layer)
+    }
+    return root
+  } finally {
+    BLIGHT = false
   }
+}
+
+/**
+ * The ground between the farm and the lab under it.
+ *
+ * The home screen's sequence descends through this rather than cutting, so it
+ * has to survive being LOOKED AT for a second and a half. Four things carry it:
+ *
+ * - a soil fill, `terrain.soil` tiled at 32px, which is the same dirt the game
+ *   walks on rather than a brown gradient invented for the occasion;
+ * - a darkening down the column, because the light comes from the hole above;
+ * - roots and stones scattered off a FIXED table, not the run's RNG. The map
+ *   draw is the first draw off the seeded stream and costs exactly one; a menu
+ *   backdrop calling `rng` at all would invalidate every seed in the game;
+ * - one buried conduit, `base.wallPipes` stacked the whole way down, which is
+ *   the only thing in the column that says the lab was BUILT and is connected
+ *   to the farm rather than merely below it.
+ */
+export function buildSoil(): HTMLElement {
+  const root = el('div', { class: 'home-soil' })
+  /*
+     TWO LAYERS OF GROUND, BECAUSE A CROSS-SECTION HAS TWO.
+
+     `terrain.dirt` averages rgb(170,143,90) and `terrain.soil` rgb(102,68,60) —
+     measured off the atlas, not guessed — so the pack already carries a light
+     topsoil and a dark subsoil, and stacking them in that order is the whole of
+     the geology. One tile the whole way down reads as a texture; two read as a
+     dig. The first build of this dimmed the column to 0.92 black at the bottom
+     and the entire descent was three seconds of nothing at all.
+  */
+  const sub = tileBand('terrain.soil', `left:0;right:0;top:0;height:${SOIL_H}px;` +
+    'background-repeat:repeat;image-rendering:pixelated', 32, 32)
+  if (sub) root.append(sub)
+  const top = tileBand('terrain.dirt', 'left:0;right:0;top:0;height:104px;' +
+    'background-repeat:repeat;image-rendering:pixelated', 32, 32)
+  if (top) root.append(top)
+  // The seam between them, blurred, so the two bands are a transition.
+  root.append(box(
+    'left:0;right:0;top:88px;height:44px;filter:blur(6px);' +
+    'background:linear-gradient(180deg,rgba(84,58,40,0) 0%,rgba(72,50,36,0.85) 55%,' +
+    'rgba(102,68,60,0) 100%)',
+  ))
+  // Light falls off with depth, and the last 90px goes to the lab's own dark so
+  // the two scenes meet on the same value rather than on a line.
+  root.append(box(
+    `left:0;right:0;top:0;height:${SOIL_H}px;` +
+    'background:linear-gradient(180deg,rgba(20,14,10,0.12) 0%,rgba(18,13,10,0.3) 46%,' +
+    'rgba(12,10,10,0.52) 82%,rgba(9,10,13,0.9) 100%)',
+  ))
+
+  /*
+     Roots, stones and the conduit. Fixed positions off a fixed table.
+
+     NOT off the run's RNG, and that is not fussiness: the map choice is the
+     first draw off the seeded stream and costs exactly one, so anything that
+     calls `rng` before a run starts invalidates every seed in the game. A menu
+     backdrop has no business touching it.
+
+     `cave.branches*` averages rgb(11,11,12) — near black — which is why they go
+     in at full brightness and read as roots against the brown rather than
+     needing a filter to darken them.
+  */
+  const roots: readonly (readonly [string, number, number, number, number])[] = [
+    ['cave.branches0', 190, 34, 128, 0.92], ['cave.branches3', 1420, 22, 140, 0.88],
+    ['cave.branches1', 640, 120, 104, 0.8], ['cave.branches5', 1130, 200, 112, 0.7],
+    ['cave.branches2', 320, 262, 96, 0.6], ['cave.branches4', 1660, 296, 100, 0.55],
+  ]
+  for (const [name, x, y, h, op] of roots) {
+    const r = plate(name, x, y, h, `opacity:${op};filter:saturate(0.7);`)
+    if (r) root.append(r)
+  }
+  const stones: readonly (readonly [string, number, number, number, number])[] = [
+    ['node.rockMedium', 860, 88, 46, 0.9], ['node.rockSmall', 1290, 146, 32, 0.82],
+    ['node.rockBig', 460, 184, 54, 0.78], ['node.rockSmall', 1540, 220, 30, 0.7],
+    ['node.rockMedium', 240, 350, 42, 0.6], ['node.rockBig', 1030, 380, 48, 0.55],
+  ]
+  for (const [name, x, y, h, op] of stones) {
+    const s = plate(name, x, y, h, `opacity:${op};filter:brightness(0.72) saturate(0.5);`)
+    if (s) root.append(s)
+  }
+  // The one thing in the column that says the lab was BUILT: a conduit coming
+  // off the farm and going all the way down to it.
+  const pipe = tileBand('base.wallPipes',
+    `left:1478px;width:32px;top:0;height:${SOIL_H}px;background-repeat:repeat-y;` +
+    'filter:brightness(0.82) saturate(0.55);opacity:0.94', 32, 48)
+  if (pipe) root.append(pipe)
+
   return root
 }

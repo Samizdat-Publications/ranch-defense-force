@@ -56,6 +56,83 @@
 
 .home-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 
+/* ===================================================================
+   THE COLUMN — the farm, the ground under it, and the lab under that
+   ===================================================================
+   The lab is not a fourth backdrop you cut to. It is *secretly right
+   under the farm*, so the screen holds all three at once in one tall
+   strip and travels down it: surface at 0, soil from 1080, lab below
+   the soil. Both scenes stay live the whole way, which is the point —
+   a cut would have been a tenth of the code and none of the idea.
+
+   `--soil` is published from scene.ts (`SOIL_H`) so the depth is a
+   number in one place. `--drop` is the distance to the lab.
+
+   The transform is the only thing that animates, and it animates as a
+   CSS transition rather than per-frame JS. Nothing here runs on rAF.
+   =================================================================== */
+.home-column {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(2160px + var(--soil, 520px));
+  transform: translateY(0);
+  transition: transform 3000ms cubic-bezier(0.55, 0, 0.35, 1);
+  will-change: transform;
+}
+
+.home-column.is-down { transform: translateY(calc(-1080px - var(--soil, 520px))); }
+
+.home-slot { position: absolute; left: 0; right: 0; height: 1080px; overflow: hidden; }
+.home-slot.is-surface { top: 0; }
+.home-slot.is-soil { top: 1080px; height: var(--soil, 520px); }
+.home-slot.is-lab { top: calc(1080px + var(--soil, 520px)); }
+
+.home-soil { position: absolute; inset: 0; }
+
+/*
+   THE FLASH WHITENS THE SCENE AND NEVER THE INTERFACE.
+
+   It is a child of `.home-scene`, which sits UNDER `.home-ui` in the
+   stage — so the sky goes white and the print, the cards, the seed box
+   and the Homestead button stay exactly as readable as they were. A
+   flash over the whole stage would have been one line shorter and would
+   have made the interface unreadable three times in six tenths of a
+   second, which is the thing an epilepsy-adjacent effect must not do.
+*/
+.home-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(236, 244, 255, 0.86) 42%,
+      rgba(210, 224, 240, 0.42) 74%, rgba(190, 205, 222, 0.12) 100%);
+}
+
+/* Three strikes in six tenths, each shorter than the last, and the sky
+   carries more of it than the ground does — that is the gradient above.
+   `steps`-free on purpose: lightning is not a square wave. */
+.home-flash.is-striking { animation: y-lightning 640ms linear 1; }
+
+@keyframes y-lightning {
+  0% { opacity: 0; }
+  4% { opacity: 0.95; }
+  11% { opacity: 0.08; }
+  16% { opacity: 0.02; }
+  30% { opacity: 0.88; }
+  38% { opacity: 0.06; }
+  56% { opacity: 0.02; }
+  64% { opacity: 0.7; }
+  72% { opacity: 0.18; }
+  100% { opacity: 0; }
+}
+
+/* Held at the peak so `npm run scene -- yard shot.png 0 flash` can
+   photograph one. A frame that lasts 25ms cannot be caught by timing. */
+.home-flash.is-held { opacity: 0.9; }
+
 /* The interface, in the SAME 1920x1080 space as the scene. */
 .home-ui { position: absolute; inset: 0; }
 
@@ -104,6 +181,28 @@
   background: linear-gradient(180deg,
     #1d2140 0%, #383455 16%, #6b4a52 30%, #b0705a 40%, #e5a75f 47%,
     #f8d894 52%, #cfa96f 56%, #7a7645 60%, #4a5330 100%);
+}
+
+/*
+   THE BLIGHTED SKY.
+
+   Same stops, same order, sick. The dusk's warm band at 44-57% is what
+   the eye reads first in the calm scene, so that is the band that has
+   to change: the orange goes to a bad green-yellow and the whole thing
+   loses two thirds of its value. Everything standing in front of it is
+   handled in scene.ts — either swapped for its blighted twin or graded
+   — and the wash over the top ties the two together.
+*/
+.home-yard.is-yard.is-blight {
+  background: linear-gradient(180deg,
+    #101812 0%, #1e2b1e 18%, #33432a 33%, #556232 44%, #7d8836 52%,
+    #9ba33f 57%, #6d7830 61%, #414f24 66%, #212c14 100%);
+}
+
+.home-yard.is-field.is-blight {
+  background: linear-gradient(180deg,
+    #111a14 0%, #212e22 16%, #38472a 30%, #5a6733 40%, #848d39 47%,
+    #a3aa42 52%, #737e31 56%, #465326 60%, #232f15 100%);
 }
 
 /* The barn doorway is the one thing on this screen you can walk into. */
@@ -332,6 +431,22 @@
 */
 @media (prefers-reduced-motion: reduce) {
   .home-yard * { animation: none !important; }
+
+  /*
+     THE SEQUENCE STILL HAPPENS; IT STOPS BEING A CAMERA MOVE.
+
+     Somebody who has asked their machine to stop moving things still
+     gets the farm, the blight and the lab under it — they get them as
+     cuts. The flash never plays at all (three white strikes is the one
+     effect on this screen that is a genuine hazard rather than a
+     preference), and the three-second descent becomes a short fade, so
+     the story survives and the motion does not. `menu.ts` reads the
+     same query and skips the flash step outright.
+  */
+  .home-column { transition: none; }
+  .home-flash { display: none; }
+  .home-scene { transition: opacity 220ms linear; }
+  .home-scene.is-cutting { opacity: 0; }
 }
 
 /* ---------------------------------------------------------------- the lab
@@ -367,19 +482,53 @@
 @keyframes l-lift { 0%, 74%, 100% { opacity: 0.16; } 80% { opacity: 1; } 92% { opacity: 0.9; } 97% { opacity: 0.2; } }
 @keyframes l-liftfloor { 0%, 74%, 100% { opacity: 0; } 80%, 92% { opacity: 0.55; } 97% { opacity: 0; } }
 
-@keyframes mull-haz-path { 0%, 20% { transform: translateX(0); } 26.1%, 62% { transform: translateX(-300px); } 70.1%, 100% { transform: translateX(0); } }
-@keyframes mull-haz-pr { 0%, 18% { opacity: 1; } 18.01%, 62% { opacity: 0; } 62.01%, 64% { opacity: 1; } 64.01%, 70.1% { opacity: 0; } 70.11%, 100% { opacity: 1; } }
-@keyframes mull-haz-pl { 0%, 18% { opacity: 0; } 18.01%, 20% { opacity: 1; } 20.01%, 26.1% { opacity: 0; } 26.11%, 62% { opacity: 1; } 62.01%, 100% { opacity: 0; } }
-@keyframes mull-haz-wl { 0%, 20% { opacity: 0; } 20.01%, 26.1% { opacity: 1; } 26.11%, 100% { opacity: 0; } }
-@keyframes mull-haz-wr { 0%, 64% { opacity: 0; } 64.01%, 70.1% { opacity: 1; } 70.11%, 100% { opacity: 0; } }
+/*
+   THE `-path` WINDOWS MATCH THE `-wl`/`-wr` WINDOWS TO THE PERCENT.
 
-@keyframes mull-tech-path { 0%, 25% { transform: translateX(0); } 28.8%, 60% { transform: translateX(220px); } 63.8%, 100% { transform: translateX(0); } }
-@keyframes mull-tech-pl { 0%, 23% { opacity: 1; } 23.01%, 58% { opacity: 0; } 58.01%, 60% { opacity: 1; } 60.01%, 63.8% { opacity: 0; } 63.81%, 100% { opacity: 1; } }
-@keyframes mull-tech-pr { 0%, 23% { opacity: 0; } 23.01%, 25% { opacity: 1; } 25.01%, 28.8% { opacity: 0; } 28.81%, 58% { opacity: 1; } 58.01%, 100% { opacity: 0; } }
-@keyframes mull-tech-wl { 0%, 60% { opacity: 0; } 60.01%, 63.8% { opacity: 1; } 63.81%, 100% { opacity: 0; } }
-@keyframes mull-tech-wr { 0%, 25% { opacity: 0; } 25.01%, 28.8% { opacity: 1; } 28.81%, 100% { opacity: 0; } }
+   The wrapper animates `linear` now (it was `step-end`, which is why the lab's
+   figures walked on the spot and then teleported — see `patrol()` in scene.ts).
+   With real travel, any percent where the transform moves and no walking layer
+   is opaque shows as a figure SLIDING while standing, so the two sets have to
+   agree. Two of the three did not: `haz` began its return at 62% while its
+   walk-right layer came up at 64.01%, and `guard` at 54% against 56.01%. Both
+   are moved to the frame the walk starts on. */
+/*
+   The hazmat tech, re-cut so the walk is worth playing.
 
-@keyframes mull-guard-path { 0%, 14% { transform: translateX(0); } 19.93%, 54% { transform: translateX(320px); } 61.93%, 100% { transform: translateX(0); } }
+   Design gave him 6.1% of the clock to cover 300px — 2.5 seconds, 120px a
+   second, which is a jog in a sealed suit. With the transform actually
+   travelling now, the leg is 10% instead, so he covers the same aisle at 73px a
+   second and the eight-frame cycle has room to read. The two long stands are at
+   the ends of the aisle where a man checking a row of tanks would stop. */
+@keyframes mull-haz-path { 0%, 20% { transform: translateX(0); } 30%, 60% { transform: translateX(-300px); } 70%, 100% { transform: translateX(0); } }
+@keyframes mull-haz-pr { 0%, 18% { opacity: 1; } 18.01%, 58% { opacity: 0; } 58.01%, 60% { opacity: 1; } 60.01%, 70% { opacity: 0; } 70.01%, 100% { opacity: 1; } }
+@keyframes mull-haz-pl { 0%, 18% { opacity: 0; } 18.01%, 20% { opacity: 1; } 20.01%, 30% { opacity: 0; } 30.01%, 58% { opacity: 1; } 58.01%, 100% { opacity: 0; } }
+@keyframes mull-haz-wl { 0%, 20% { opacity: 0; } 20.01%, 30% { opacity: 1; } 30.01%, 100% { opacity: 0; } }
+@keyframes mull-haz-wr { 0%, 60% { opacity: 0; } 60.01%, 70% { opacity: 1; } 70.01%, 100% { opacity: 0; } }
+
+/*
+   THE SCIENTIST GOES AND CHECKS A VAT.
+
+   Design's original gave him 3.8% of a 47-second clock walking and the other
+   96% standing — 1.8 seconds of movement in three quarters of a minute, which
+   the owner called "a bit" and meant as a complaint. He is retimed here rather
+   than merely sped up, because speeding it up would have made him pace faster
+   in the same small box.
+
+   The loop is now an errand, and it is legible as one: he stands at the console
+   bank, walks LEFT the 280px to the specimen vats, stands there long enough to
+   have looked at one, turns, walks back, and stays at the consoles longest of
+   all. Thirty-six percent of the clock is travel — nine times Design's — and
+   the two long stands are at the two ends, which is what makes it read as going
+   somewhere rather than as fidgeting. `patrol('baseTech', ..., '26s')` in
+   scene.ts sets the clock; the vats are at x 386-673 and he starts at 861. */
+@keyframes mull-tech-path { 0%, 14% { transform: translateX(0); } 32%, 46% { transform: translateX(-280px); } 64%, 100% { transform: translateX(0); } }
+@keyframes mull-tech-pl { 0%, 14% { opacity: 1; } 14.01%, 32% { opacity: 0; } 32.01%, 44% { opacity: 1; } 44.01%, 100% { opacity: 0; } }
+@keyframes mull-tech-pr { 0%, 44% { opacity: 0; } 44.01%, 46% { opacity: 1; } 46.01%, 64% { opacity: 0; } 64.01%, 100% { opacity: 1; } }
+@keyframes mull-tech-wl { 0%, 14% { opacity: 0; } 14.01%, 32% { opacity: 1; } 32.01%, 100% { opacity: 0; } }
+@keyframes mull-tech-wr { 0%, 46% { opacity: 0; } 46.01%, 64% { opacity: 1; } 64.01%, 100% { opacity: 0; } }
+
+@keyframes mull-guard-path { 0%, 14% { transform: translateX(0); } 19.93%, 56% { transform: translateX(320px); } 61.93%, 100% { transform: translateX(0); } }
 @keyframes mull-guard-pl { 0%, 12% { opacity: 1; } 12.01%, 54% { opacity: 0; } 54.01%, 56% { opacity: 1; } 56.01%, 61.93% { opacity: 0; } 61.94%, 100% { opacity: 1; } }
 @keyframes mull-guard-pr { 0%, 12% { opacity: 0; } 12.01%, 14% { opacity: 1; } 14.01%, 19.93% { opacity: 0; } 19.94%, 54% { opacity: 1; } 54.01%, 100% { opacity: 0; } }
 @keyframes mull-guard-wl { 0%, 56% { opacity: 0; } 56.01%, 61.93% { opacity: 1; } 61.94%, 100% { opacity: 0; } }
