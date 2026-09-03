@@ -55,7 +55,33 @@ interface RunResult {
  * still and has an ability that roots it in place. Measuring both classes with
  * a kiting bot reports The Hand as weaker no matter what the game does.
  */
-type Pilot = 'kite' | 'brawl' | 'wander'
+type Pilot = 'kite' | 'brawl' | 'wander' | 'space'
+
+/**
+ * The pilot each class is flown by, and the whole reason the parity test can
+ * be run over six classes rather than two.
+ *
+ * A class is a claim about how the game should be played, so measuring it with
+ * the wrong pilot measures nothing: kiting The Hand reports his damage
+ * reduction as absent, because it is. The same is now true four more times.
+ *
+ *   hand        brawl — Braced pays for standing, Dig In roots
+ *   kid         kite  — Momentum pays for velocity
+ *   widow       brawl — Grit pays for fighting through a hit, the ward is planted
+ *   vet         space — Overwatch pays past 220px and charges inside 110px
+ *   agronomist  kite  — fragile, and her slicks work on ground she has left
+ *   drifter     kite  — Hot Streak dies to one hit, so contact is the enemy
+ */
+const HOME_PILOT: Record<string, Pilot> = {
+  hand: 'brawl',
+  kid: 'kite',
+  widow: 'brawl',
+  vet: 'space',
+  agronomist: 'kite',
+  drifter: 'kite',
+}
+/** The distance `space` tries to hold. Mirrors tools/balance.ts. */
+const SPACER_RANGE = 200
 
 function simulate(
   seed: number,
@@ -103,6 +129,20 @@ function simulate(
         // reduction, and Dig In, ever come into play.
         mx = 0
         my = 0
+      } else if (pilot === 'space' && healthy && near < 6) {
+        // Hold a band rather than a point: close when the crowd drifts out of
+        // Overwatch's far bracket, back off when it gets inside the near one.
+        // Neither existing pilot can measure a spacing class — one runs to the
+        // wall, the other lets the crowd into the penalty ring.
+        const dx = world.player.x - cx / n
+        const dy = world.player.y - cy / n
+        const d = Math.hypot(dx, dy) || 1
+        const sign = d < SPACER_RANGE ? 1 : -1
+        mx = (dx / d) * sign + ((world.arenaW / 2 - world.player.x) / world.arenaW) * 1.5
+        my = (dy / d) * sign + ((world.arenaH / 2 - world.player.y) / world.arenaH) * 1.5
+        const m = Math.hypot(mx, my) || 1
+        mx /= m
+        my /= m
       } else {
         const dx = world.player.x - cx / n
         const dy = world.player.y - cy / n
@@ -209,6 +249,80 @@ describe('a full run', () => {
     expect(hand).toBeGreaterThan(0)
     expect(kid).toBeGreaterThan(0)
   }, 600_000)
+
+  it('treats all six classes comparably — none is a trap pick', () => {
+    /*
+       The same question the pair test above asks, asked of the four unlockable
+       classes as well.
+
+       It exists because those four used to be stat spreads over two shared
+       passives and two shared abilities: whatever the numbers said, they could
+       not be a trap in a way the pair test would not already have caught,
+       because they were The Hand and The Kid with the dials moved. Now each
+       owns its own axis -- attrition, spacing, status, tempo -- and each can
+       fail on its own terms, so each is measured on its own.
+
+       Every class is flown by the pilot it is built for (HOME_PILOT). Flying
+       all six the same way would be the exact mistake the pair test's comment
+       spends a paragraph on, four times over.
+
+       The bar is the pair test's bar, unchanged in shape: the spread between
+       the best and the worst must fit inside a third of the sample, and nobody
+       may be at zero. It is a wider net over more classes, not a tighter one.
+    */
+    const cleared: Record<string, number> = {}
+    for (const [classId, pilot] of Object.entries(HOME_PILOT)) {
+      cleared[classId] = SEEDS
+        .map((s) => simulate(s, classId, pickSmart, pilot))
+        .filter((r) => r.cleared).length
+    }
+    const counts = Object.values(cleared)
+    const table = Object.entries(cleared)
+      .map(([c, n]) => `${c} ${n}/${SEEDS.length}`).join(', ')
+
+    for (const [classId, n] of Object.entries(cleared)) {
+      expect(n, `${classId} never cleared a run — trap pick (${table})`).toBeGreaterThan(0)
+    }
+    expect(
+      Math.max(...counts) - Math.min(...counts),
+      `class spread too wide (${table})`,
+    ).toBeLessThanOrEqual(Math.ceil(SEEDS.length / 3))
+  }, 1_800_000)
+
+  it('gives every class an ability that does something', () => {
+    /*
+       The cheap half of "each class carries its own powers", and the half a
+       balance number can never report.
+
+       An ability id with no branch in `tryAbility` is a button that silently
+       does nothing -- the run still completes, the clear rate still looks
+       fine, and the class is simply missing a third of itself. That failure
+       shipped once already and was recorded in classes.json as a known
+       compromise for a whole milestone.
+
+       Pressing it must therefore start a cooldown, and `tryAbility` refunds
+       the cooldown for an id it has no branch for precisely so that this is
+       the difference between an implemented ability and a dead one.
+    */
+    for (const classId of Object.keys(HOME_PILOT)) {
+      const world = new World(99, classId)
+      // Far enough in that the field has bodies on it for a mine or a dash to
+      // find, but well before anything can have killed a bot walking east.
+      for (let i = 0; i < 600; i++) world.step(STEP, 1, 0, false)
+      expect(world.player.abilityCooldown, `${classId} started on cooldown`).toBe(0)
+      // A handful of presses, not one: `step` returns early during hitstop,
+      // and a crit landing on the same tick would otherwise eat the press.
+      let fired = false
+      for (let i = 0; i < 20 && !fired; i++) {
+        world.step(STEP, 1, 0, true)
+        if (world.player.abilityCooldown > 0) fired = true
+      }
+      expect(
+        fired,
+        `${classId}'s ability "${world.player.def.ability.id}" did nothing — no branch in tryAbility`,
+      ).toBe(true)
+    }
+  }, 120_000)
 
   it("each class does better at its own game than at the other's", () => {
     // The claim the parity test above rests on, made explicit: if this ever
