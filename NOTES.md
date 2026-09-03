@@ -155,10 +155,11 @@ State of `session-22-integration` at the stop:
 | atlas split into seven ≤2048 pages | merged |
 | four locked classes redesigned, six-class parity test | merged |
 | vitest excludes `.claude/**` (worktrees were being swept) | merged |
-| **home screen**: page-width bug, dev overlay hidden in prod, smaller cards, scene selector, calm→lightning→blight→descend-to-lab sequence, lab actor patrols | **NOT merged.** Four commits (3f3b4e9b cards, cab8b1f3 sequence + lab under the farm, cfe0b0a2 reduced motion, 91452ebc scene tool), nothing uncommitted, verification and screenshots not yet reported, in worktree `.claude/worktrees/agent-ac16dfe61a144f5c5` (branch `worktree-agent-ac16dfe61a144f5c5`). A replacement agent was told to commit and write `docs/HOME_SEQUENCE_HANDOFF.md` there before stopping; check whether it did. |
+| **home screen**: page-width bug, dev overlay hidden in prod, smaller cards, scene selector, calm→lightning→blight→descend-to-lab sequence, lab actor patrols | merged (4f11ab69), after the session was told to wrap up; its own account is `docs/HOME_SEQUENCE_HANDOFF.md` and the section below |
 
 `npm run typecheck` clean and **207/207 tests pass** on the integration branch
-with everything above except the home screen. The main checkout has the paged
+before the home screen merged; the suite was started again on the final state
+as the session closed and its result belongs in the next entry. The main checkout has the paged
 atlas built and the other session's vite server on port 5180 was serving it.
 
 ### Observations still owed by the owner
@@ -179,10 +180,9 @@ atlas built and the other session's vite server on port 5180 was serving it.
 
 1. Ask the owner: stutter on `localhost:5180` — gone or not? And: merge to
    `main`?
-2. Finish the home screen from the worktree (read its handoff doc first). Its
-   brief, with the owner's lab notes, is reproduced in the session transcript
-   and summarised in the table above. Merge it, `npm run atlas`, typecheck,
-   test, screenshot all three scenes, add its NOTES section here.
+2. Confirm the full suite on the merged integration branch (207 expected),
+   then look at the home screen in a real browser: the sequence, the selector,
+   the lab patrols. `npm run blight` must say every mapping resolves.
 3. Then `main`: fast-forward from `session-22-integration` with the owner's
    go-ahead, push, and confirm the Pages deploy ships `atlas-0..6.png` AND the
    audio.
@@ -193,6 +193,41 @@ atlas built and the other session's vite server on port 5180 was serving it.
 5. Design calls the owner still owns: `bloatedFarmhand`/`acidZombie` keeping
    the straw hat; the arena's hard black bottom edge; `scene.fencePicket`.
 
+
+## The farm turns over, and the lab is under it
+
+The owner settled it from the live site: **the scene keeps its composition and
+the cards get out of its way**, and the home screen gets a sequence. Full detail
+in `docs/HOME_SEQUENCE_HANDOFF.md`, written by the agent that built it. The
+short version:
+
+- **The page was wider than the window by a third of a pixel.** `#stage` was
+  `width: 100vw`, and on a non-integer device pixel ratio `100vw` exceeds
+  `documentElement.clientWidth` — measured at dpr 1.5 on a 2560 panel:
+  1707 against 1707.33. The right-anchored `#dev` hung off by that much under
+  an `overflow: hidden`, so no scrollbar and no way to reach it. That is the
+  clipped dev panel on every screenshot the owner sent. `position: fixed;
+  inset: 0`, and `resize()`/`fitScene()` read `clientWidth`, not
+  `innerWidth`. Verified at 1920x1080, 2560x1440 and 1920x1080 at dpr 1.25.
+- The dev overlay starts hidden in production; F1 still toggles it.
+- The class rail is smaller and lower; Joy, the wheat, the coop, and the lab's
+  consoles and barrels show. Nothing hangs off the stage.
+- Scene selector top right (Yard / Field / Lab); a manual pick holds.
+- The sequence: calm → lightning → blight → a descent through a soil band to
+  the lab beneath → back up into the other outdoor scene. Reduced motion gets a
+  240ms fade instead of the descent. The blight swaps every actor with a
+  counterpart in the atlas and grades the rest by filter; `npm run blight`
+  asserts every mapping resolves, which is what caught the one merge hazard —
+  the branch was cut before the farmhand recolour and named `farmhand`, a
+  sheet the merged atlas no longer packs. That failure is SILENT (a null strip,
+  one fewer person in the field), which is the whole reason the check exists.
+- The scarecrow is graded by filter on purpose: `rdf-scene-scarecrow-wrong`
+  has four unclaimed candidates in the inventory, claiming is free, packing is
+  a separate job. Zero art was generated.
+- `npm run scene` takes a window size and prints the page width on every shot.
+
+Screenshots from the build are in the worktree's `tools/play/home/` (gitignored);
+three were sent to the owner. Its own tests: 205/205 before the class merge.
 
 ## The four locked classes now answer the game differently
 
