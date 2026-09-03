@@ -133,8 +133,8 @@
   "ringColour": "#f0d79a",
   "ringAlpha": 0.26,
   "ringWidth": 1,
-  "_footNote": "Sprites are drawn from bottom-centre of a 32x64 cell, so the player's origin is already at his feet; this only nudges the ellipse off the exact pixel so it does not stripe the boot row.",
-  "footOffsetY": 2
+  "_footNote": "NEGATIVE, and measured, not assumed: the character sheets are 32x64 cells drawn from bottom-centre, but the art stands with its feet at cell row 52 -- twelve pixels ABOVE the cell floor (tools/pixellab-cut.ts, and the LimeZu farmer sheets share the baseline). The player origin is therefore the cell floor, not his boots, and an ellipse drawn there reads as a hole he is hovering over; the owner saw exactly that. -10 puts it on the boot row with the couple of pixels of bias that stops it striping the boots.",
+  "footOffsetY": -10
  },
  "harvest": {
   "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
