@@ -178,7 +178,15 @@ atlas built and the other session's vite server on port 5180 was serving it.
   The first request after a cold start still pays ~17s of vite warm-up.
 - **The player mark was drawn in a hole.** Character origins are the cell floor,
   twelve pixels below the boots; footOffsetY is -10 now. The owner saw it first.
-- **Open, by the owner, for next time: the weapon ring.** Tiny icons in a perfect
+- **The weapon ring is replaced** (see "The weapon ring is gone" below). Next
+  passes, in order: class-specific carrying plus purpose-drawn carried weapon
+  art; then the inventory audit the owner asked for — every PixelLab object
+  claimed and wired, or retired with a reason.
+- **Owner rule, 2026-09-03: generated art gets wired in the same session.**
+  Every session has opened by discovering paid-for art nobody claimed. That
+  stops: a brief that permits generation requires claiming and wiring, and the
+  report lists every generation with where it is used.
+- Formerly open: the weapon ring. Tiny icons in a perfect
   circle; it is purely decorative (projectiles spawn from facing, not from the
   ring). Proposal on the table: carried, not orbited -- weapons on body anchors
   at natural scale, per-tier art the atlas already holds, orbiters keep
@@ -250,6 +258,66 @@ short version:
 
 Screenshots from the build are in the worktree's `tools/play/home/` (gitignored);
 three were sent to the owner. Its own tests: 205/205 before the class merge.
+
+### The weapon ring is gone; he carries them now
+
+The owner's word for the ring was "arbitrary", and both halves of that were
+right. Six icons at equal arc on a circle is the visual signature of ORBITING
+— it is what the Scythe literally does — and normalising every one of them to
+fifteen pixels wide threw away the only thing the art was carrying, which is
+how big and how upgraded the object is. A 58px combine header and a 20px
+rifle arrived on screen the same size.
+
+They are worn instead. The weapon that fired most recently is in his hands;
+everything else hangs off his back, his shoulder and his hips at roughly life
+scale against a 52px man, in its own per-tier art. Six weapons at T3 is a
+visibly better-equipped farmhand than one at T1, which was the whole ask.
+
+**Where the pieces live.** `weapons.json` says which anchor a weapon asks for
+(`carry`), how big it draws (`carryHeight`), and whether its art is a side
+view that can be swung round to the aim (`carryAim`). `tuning.json` under
+`carry` holds the anchors: for each of six slots (hand, back, backX,
+shoulder, hipR, hipL), for each of four facings, `{dx, dy, behind, flip,
+angle}`. `assignCarrySlots` in `src/content/index.ts` is the rule that
+matches the two up, and it is in content rather than the renderer for the
+reason `projectileScaleFor` is: `tools/draw-world.ts` is a second,
+deliberately independent painter, and a screenshot that arms the player
+differently to the game is worse than no screenshot. `WeaponSlot` lost
+`ringAngle` and gained `firedAt`, a world-tick stamp; `recoil` cannot
+stand in for it because it expires after 0.12s.
+
+**Three measurements the design turned on.** `dy` is from the BOOTS, not the
+player origin (the origin is the cell floor twelve pixels under his feet — the
+player-mark lesson again; `carry.bootOffsetY` is the one conversion). The
+anchors are a LADDER and nothing shares a rung: hips -18, hand -23, backX -29,
+back -35, shoulder -37 — in profile he is twenty pixels wide, and a first pass
+with the anchors a few pixels apart put the pitchfork over his hat. And the
+atlas anchors two incompatible families — `gun.*` centred, `weapon.*`
+bottom-centre — so `DrawItem` gained `pivotX/pivotY` and both turn about the
+art's centre.
+
+**Depth costs nothing.** Carried items are pushed at the player's own y and the
+sprite pass is a counting sort that preserves insertion order inside a bucket,
+so `behind` items go before the player sprite and the rest after. Two 300s
+runs, ring vs loadout: mean draw 0.62ms vs 0.64ms at the same draw-call count.
+
+**What this cannot fix, and it is the next art job.** `art/sprites.json` says
+it: the 132 firearms on the bundled sheet are 14-25px wide and "drawn to be
+HELD by a 32px character". Ours is 52px. A rifle across his back reads as a
+carbine, and `gun.pistol.*` — the Harpoon Gun — is 3x2 at T1 and 11x4 at T4,
+which is ALSO its HUD card, where it draws as a blank rectangle. Nothing here
+upscales (integer zoom; an enlarged sprite lies about the pixel grid). The
+six guns' `carryHeight` is left above their source as a no-op that records
+which weapons want purpose-drawn carried art. The owner has authorised
+PixelLab for exactly this, with one condition that is now a standing rule:
+**whatever is generated gets claimed, packed and wired in the same pass.**
+
+**Still open from this pass.** Class-specific carrying (plugs in at
+`carryAnchorOf`, per-class override beside the four facings). The grip pivot
+(per weapon, beside `projectileScale`). The muzzle flash still spawns from
+`p.facing` at 16px, not from the weapon. The pickaxe and axe
+(`collectHarvestTools`) still draw at boot level and now read as tools lying
+at his feet. `HANDOFF.md` still describes the ring as live.
 
 ## The four locked classes now answer the game differently
 

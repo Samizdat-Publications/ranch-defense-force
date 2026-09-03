@@ -1,3 +1,8 @@
+> **SUPERSEDED 2026-09-03 where it discusses the weapon ring.** The ring is
+> gone; weapons are carried on the body (NOTES.md, session 22, "The weapon ring
+> is gone; he carries them now"). Of the five-point ring critique below, 1-3 are
+> closed, 4 is half closed (centre pivot, not grip), 5 is open.
+
 # Handoff — read this first
 
 You are picking up **Ranch Defense Force**, a wave-based bullet-heaven on a farm.
