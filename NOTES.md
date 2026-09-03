@@ -64,7 +64,7 @@ landed.
 
 **Do not optimise the renderer's JS.** It is over half idle.
 
-## What stays open, and only the owner can close it
+## What stayed open, and only the owner could close it
 
 1. **Which Chrome profile.** Every measurement here ran a fresh playwright
    profile, which had acceleration on. The owner's own profile could have "Use
@@ -77,13 +77,33 @@ landed.
    owner's own answer — fronted, split-screen, or behind something — is the
    only measurement of it that exists.
 
+## The owner answered both, the same evening
+
+1. **The profile.** The owner's own `chrome://gpu` (`about-gpu-2026-09-03`)
+   is the same picture the fresh profile gave: Canvas, raster, compositing,
+   WebGL all **hardware accelerated**, RTX 5070 Ti active, "Use graphics
+   acceleration when available" on, the browser org-managed but with no
+   graphics policy in effect. **Software rasterisation is ruled out on this
+   machine.** The 25x figure in §6 describes some other machine, not this one.
+2. **The window.** *"I've had the window in the background this whole time."*
+   That is the 2fps: Chrome throttles a backgrounded window's animation frames
+   to roughly two a second, this game only advances on a presented frame, and
+   the throttle is exactly what no CDP-attached tool here could reproduce. The
+   owner was bringing it to the front to confirm as this was written; the
+   confirmation belongs in the next entry.
+
+So the report was the throttle, and the atlas split proceeds anyway on its own
+measured merits — it is still 2x per frame and a 300ms re-decode every second,
+just on a machine that can afford both.
+
+
 ## Found in passing
 
-**The live site has no audio.** `public/audio/` is gitignored (generated), the
+**The live site had no audio.** `public/audio/` was gitignored (generated), the
 deploy runs `npm run atlas` but nothing regenerates sound, so every
 `sfx-*.mp3` and all three music loops 404 on GitHub Pages. The music is CC-0
 and the effects are the project's own ElevenLabs output, 7MB in 29 files.
-Committing the directory is the simple fix and it is the owner's call.
+The owner chose to commit the directory; it ships now.
 
 ## The tools that exist for this
 
