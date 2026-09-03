@@ -21,10 +21,17 @@ import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar, waveHpScalar } from './formulas'
 import {
   BREAKABLES, BREAKABLE_CLASSES, ELEMENTS, ENEMIES, FIELD_GEAR_POOL, ITEMS, MAPS,
-  NODES, TUNING, WAVES, WEAPONS, pickMapId,
+  NODES, TUNING, WAVES, WEAPONS, carryMuzzleOffset, pickMapId,
   type BreakableClass, type DropRow, type MapDef, type NodeVariant, type StatMods,
 } from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
+
+/**
+ * Scratch for `carryMuzzleOffset`. Module-level and reused, because the only
+ * caller is on the path a gun takes when it fires and the hot loop allocates
+ * nothing. Read on the line after it is written and never held.
+ */
+const MUZZLE = { x: 0, y: 0 }
 import { ENEMY_BEHAVIOURS, type SteerContext } from '../behaviours/enemies'
 
 const T = TUNING
@@ -1102,7 +1109,13 @@ export class World {
           this.muzzleAcc += T.fx.muzzleChance
           if (this.muzzleAcc >= 1) {
             this.muzzleAcc -= 1
-            this.playFx('muzzle', p.x + Math.cos(p.facing) * 16, p.y + Math.sin(p.facing) * 16, p.facing)
+            // Out of the barrel of the gun he is holding, along the line the
+            // shot actually took. It used to be sixteen pixels along `facing`,
+            // which is the way he is WALKING: a weapon that auto-targets is
+            // firing sideways most of the time, and the flash was going the
+            // other way. Pure decoration -- see `carryMuzzleOffset`.
+            carryMuzzleOffset(p.classId, slot.id, p.facing, slot.aimAngle, MUZZLE)
+            this.playFx('muzzle', p.x + MUZZLE.x, p.y + MUZZLE.y, slot.aimAngle)
           }
         }
         slot.cooldownLeft += Math.max(0.05, def.cooldown)
