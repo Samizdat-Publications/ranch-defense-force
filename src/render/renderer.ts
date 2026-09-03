@@ -957,6 +957,7 @@ export class Renderer {
     // Ground effects (dash dust, the Dig In pulse) go under the sprite layer,
     // so they read as being on the field rather than pasted over the player.
     this.drawEffects(ctx, true)
+    this.drawPlayerMark(ctx, pxi, pyi)
 
     this.itemCount = 0
     this.arcs.length = 0
@@ -973,6 +974,52 @@ export class Renderer {
     this.drawDamageNumbers(ctx)
 
     ctx.setTransform(1, 0, 0, 1, 0, 0)
+  }
+
+  /**
+   * The player's own mark: a contact shadow with a faint lamp ring round it.
+   *
+   * ONCE PER FRAME, in the ground layer, under every sprite -- the same place
+   * the dash dust goes, for the same reason. It is deliberately not a per-enemy
+   * outline or tint: the sprite pass is one `drawImage` per item with no state
+   * changes, and putting a stroke or a composite mode inside it would cost the
+   * whole field to mark one entity. This costs two shapes total, allocates
+   * nothing, and restores `globalAlpha` on the way out.
+   *
+   * WHY IT EXISTS. `farmhandBlight` stops the enemy wearing the player's
+   * clothes; this gives the eye something to hunt FOR rather than only
+   * something to rule out. The two fixes are complementary and the marker is
+   * the one that survives a crowd -- nothing else in the game draws a ring on
+   * the ground, so with forty-odd bodies on the field, exactly one of them
+   * stands in a pool of light.
+   *
+   * Not drawn while the player is dead: a corpse does not hold a lamp, and the
+   * results screen is a still frame that should not have a live UI mark on it.
+   *
+   * Every number is in `tuning.playerMark`. Read `_restraintNote` there before
+   * raising any of them.
+   */
+  private drawPlayerMark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    const p = this.world.player
+    if (!p.alive) return
+    const m = TUNING.playerMark
+    const cy = y + m.footOffsetY
+
+    ctx.globalAlpha = m.shadowAlpha
+    ctx.fillStyle = m.shadowColour
+    ctx.beginPath()
+    ctx.ellipse(x, cy, m.shadowRadiusX, m.shadowRadiusY, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.globalAlpha = m.ringAlpha
+    ctx.strokeStyle = m.ringColour
+    ctx.lineWidth = m.ringWidth
+    ctx.beginPath()
+    ctx.ellipse(x, cy, m.ringRadiusX, m.ringRadiusY, 0, 0, Math.PI * 2)
+    ctx.stroke()
+
+    ctx.globalAlpha = 1
+    this.drawCalls += 2
   }
 
   private flushStains(): void {

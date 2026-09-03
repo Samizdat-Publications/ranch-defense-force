@@ -2,6 +2,10 @@
   "farmhand": {
     "name": "Farmhand",
     "sheet": "zombie",
+    "_sheetsNote": "The blighted repaint, and it is a readability fix rather than a dressing change. The delivered farmhand wore the player's straw hat and blue dungarees at the player's own size, so at wave 6 -- with the density pass putting 2.2x as many of them on the field -- you could not pick yourself out of the crowd. `farmhandBlight` is that same rig repainted offline by `npm run recolour`: rotted-black hat, rot-green cloth, pale sick-green skin. Stated here rather than in art/sprites.json because WHICH SHEET AN ENEMY WEARS is content, and `world.spawnEnemy` already reads this field.",
+    "sheets": [
+      "farmhandBlight"
+    ],
     "hp": 8,
     "speed": 82,
     "damage": 3,
