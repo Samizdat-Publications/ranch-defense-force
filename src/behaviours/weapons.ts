@@ -210,7 +210,25 @@ const rotatingJet: WeaponBehaviour = ({ world, player, slot, def, damage, tier, 
  */
 const hookFurthest: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   const range = num(def, 'range', 420)
-  const wanted = tier >= 3 ? num(def, 't3Targets', 3) : 1
+  /*
+     `projectileCount` was a declared stat that only ONE behaviour read.
+
+     `stream` (the Scattergun) has always added it to its pellet count and
+     nothing else in the game looked at it, which made it a stat that silently
+     did nothing for five weapons out of sixteen. Reading it here is a bug fix
+     with a measured motive: at T1 the Harpoon Gun hooks exactly one enemy
+     every 1.8s, and at the FURTHEST one in range, so it does not even answer
+     the thing about to touch you. The Drifter starts with it and, on 24 seeds
+     with everything else about him held still, cleared 4/24 with the harpoon
+     against 13/24 with the Scattergun. The class was not the trap; the weapon
+     was.
+
+     Nothing else in the game grants `projectileCount` -- no item, no Feed Store
+     rank -- so every existing build resolves it at 0 and this is arithmetically
+     the line it replaces. It is the class stat block that pays for extra hooks.
+  */
+  const wanted = (tier >= 3 ? num(def, 't3Targets', 3) : 1)
+    + Math.floor(player.stats.projectileCount)
   const drag = num(def, 'dragSpeed', 340)
   const landing = tier >= 2 ? 1 + num(def, 't2LandingDamageMultiplier', 0.8) : 1
 

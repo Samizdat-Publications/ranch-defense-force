@@ -18,13 +18,32 @@
  */
 import { World } from '../src/sim/world.ts'
 import { OfferPool, type Offer } from '../src/sim/offers.ts'
-import { WAVES, WEAPONS } from '../src/content/index.ts'
+import { CLASSES, WAVES, WEAPONS } from '../src/content/index.ts'
 
 const STEP = 1 / 60
 
 const runs = Number(process.argv[2] ?? 24)
+/**
+ * `both` is the original pair, `all` is every class in classes.json, and
+ * anything else is a comma-separated list of class ids.
+ *
+ * The four unlockables are content exactly like the other two, and the only
+ * reason this tool ever knew two names was the default. `_`-prefixed keys are
+ * documentation, as everywhere else in this project's JSON, so `all` skips
+ * them.
+ */
 const classArg = process.argv[3] ?? 'both'
-const classes = classArg === 'both' ? ['hand', 'kid'] : [classArg]
+const ALL = Object.keys(CLASSES).filter((k) => !k.startsWith('_'))
+const classes = classArg === 'both'
+  ? ['hand', 'kid']
+  : classArg === 'all'
+    ? ALL
+    : classArg.split(',').map((c) => c.trim()).filter(Boolean)
+for (const c of classes) {
+  if (!ALL.includes(c)) throw new Error(`unknown class "${c}" — known: ${ALL.join(', ')}`)
+}
+/** Optional 4th arg: one pilot name, to halve the runtime when you know which. */
+const pilotArg = process.argv[4] ?? ''
 
 /**
  * Two pilots, because one pilot measures one class.
@@ -38,9 +57,20 @@ const classes = classArg === 'both' ? ['hand', 'kid'] : [classArg]
  *
  * `brawler` holds ground while it is healthy and the crowd is not on top of it,
  * and breaks off when either stops being true.
+ *
+ * `spacer` is the third, added for The Veteran, whose Overwatch pays for range
+ * and charges for contact. It does not flee and it does not plant: it holds a
+ * stated distance from the crowd's centre of mass, closing when it drifts too
+ * far and backing off when the crowd closes. A kiting bot runs to the far wall
+ * and a brawling bot lets the crowd inside the penalty ring, so neither of the
+ * two existing pilots can measure a spacing class at all.
  */
-type Pilot = 'kite' | 'brawler'
-const PILOTS: Pilot[] = ['kite', 'brawler']
+type Pilot = 'kite' | 'brawler' | 'spacer'
+const PILOTS: Pilot[] = pilotArg
+  ? [pilotArg as Pilot]
+  : ['kite', 'brawler', 'spacer']
+/** The distance `spacer` tries to keep, in pixels. */
+const SPACER_RANGE = 200
 
 /** Merge what we own, then take defence, then anything. Mirrors the run test. */
 function pickSmart(offers: Offer[]): Offer | undefined {
@@ -123,6 +153,17 @@ function simulate(seed: number, classId: string, pilot: Pilot): Result {
       if (pilot === 'brawler' && healthy && near < 6) {
         mx = 0
         my = 0
+      } else if (pilot === 'spacer' && healthy && near < 6) {
+        // Hold a band, not a point. Inside it, back off; outside it, close.
+        const dx = world.player.x - cx / n
+        const dy = world.player.y - cy / n
+        const d = Math.hypot(dx, dy) || 1
+        const sign = d < SPACER_RANGE ? 1 : -1
+        mx = (dx / d) * sign + ((world.arenaW / 2 - world.player.x) / world.arenaW) * 1.5
+        my = (dy / d) * sign + ((world.arenaH / 2 - world.player.y) / world.arenaH) * 1.5
+        const m = Math.hypot(mx, my) || 1
+        mx /= m
+        my /= m
       } else {
         // Run from the crowd's centre of mass, biased back toward the middle so
         // the bot does not pin itself on a wall.
@@ -187,8 +228,20 @@ const median = (xs: number[]): number => {
 const mean = (xs: number[]): number => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 const pct = (n: number, d: number): string => (d ? `${((n / d) * 100).toFixed(0)}%` : '-')
 
-// Fixed seed ladder, so two runs of this tool compare like for like.
-const seeds = Array.from({ length: runs }, (_, i) => 1000 + i * 7919)
+/*
+   Fixed seed ladder, so two runs of this tool compare like for like.
+
+   Two ladders, selectable with a 5th argument. The default is this tool's own,
+   which every measurement in NOTES was taken on. `test` is the ladder
+   `tests/run.test.ts` uses for its parity tests, and it exists because tuning
+   a class until the HARNESS is happy and then discovering the TEST disagrees
+   is a slow way to find out that two different seed sets are two different
+   samples. When a parity test fails, measure the seeds it actually failed on.
+*/
+const ladder = process.argv[5] ?? 'balance'
+const seeds = ladder === 'test'
+  ? Array.from({ length: runs }, (_, i) => 1009 * (i + 1))
+  : Array.from({ length: runs }, (_, i) => 1000 + i * 7919)
 
 for (const classId of classes) {
  for (const pilot of PILOTS) {

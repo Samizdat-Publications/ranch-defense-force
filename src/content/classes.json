@@ -77,46 +77,48 @@
     },
     "cardPassive": "Momentum \u2014 up to +50% damage at full speed, nothing standing."
   },
-  "_abilityNote": "Four classes share the two implemented ability archetypes - `digIn` (plant and absorb) and `bolt` (dash with i-frames) - retuned per class rather than each getting a bespoke one. That is a deliberate first pass: a class with a borrowed ability is fully playable, a class with an unimplemented ability id has a button that silently does nothing. Bespoke abilities are follow-up work, and the place to add them is the `a.id ===` dispatch in world.ts and player.ts.",
+  "_abilityNote": "All six classes now carry their own passive and their own ability; the four unlockables no longer borrow `braced`/`momentum` and `digIn`/`bolt`. Each owns a different axis of a system the game already had, because The Hand and The Kid between them had already taken the MOVEMENT axis and a third variation on standing-still-versus-running would have been another stat spread. Widow: attrition (damage arrives on a delay and killing cancels it). Veteran: spacing (damage is a function of range to the target). Agronomist: status (the burns, bleeds and slows she applies hit harder and last longer). Drifter: tempo (a kill streak that a single hit ends). Abilities dispatch on `a.id` in the `tryAbility`/`updateAbility` pair in world.ts and in `updatePassive`/`onKill`/`takeWound` in player.ts; an id with no branch is a button that silently does nothing, so add both halves together.",
+  "_animRowNote": "`animRow` is read by NOTHING. It is a leftover from a plan to play a clip on the ability, and the clip names in The Hand's and The Kid's entries -- `dig` and `run` -- do not exist: the shared humanoid rig in art/sprites.json declares exactly two clips, `idle` and `walk`, and only those are packed (checked against the built atlas.json, not the design doc). The four unlockables name real clips so the field is at least honest where it is new; the two originals are left alone because their entries are not this change's to edit and nothing reads either value.",
   "widow": {
     "name": "The Widow",
     "sheet": "widow",
     "unlocked": false,
     "blurb": "Buried a husband and a harvest the same autumn. Nothing out here frightens her.",
     "stats": {
-      "maxHp": 120,
+      "maxHp": 118,
       "moveSpeedPct": -8,
       "armor": 4,
-      "hpRegen": 1.4,
+      "hpRegen": 0.3,
       "pickupRadiusPct": 15,
       "critChancePct": -20
     },
     "passive": {
-      "id": "braced",
-      "desc": "Standing still 1s grants +4% damage reduction per second to 24%. Resets on move.",
-      "stillDelay": 1,
-      "drPerSec": 4,
-      "drMax": 24
+      "id": "grit",
+      "_note": "Attrition, not mitigation. She takes the same total damage as anyone else; what changes is WHEN it reaches the health bar, and whether it gets there at all. Standing and fighting through a blow erases it. Turning and running pays all of it. hpRegen is 0.3 against the old 1.4 and maxHp 118 against a first pass at 130: Grit IS her sustain now, and it turned out to be worth a great deal more than the flat regen it replaced -- she measured 22/24 on the parity ladder, the strongest class in the game, before the body came back down. Read `_regenNote` at the bottom of this file for why a flat regen is worth so much here.",
+      "desc": "Only 55% of a blow lands at once. The rest is a wound that bleeds off over 5s -- and every kill closes a quarter of what is left.",
+      "immediatePct": 55,
+      "woundSeconds": 5,
+      "killClosePct": 25
     },
     "ability": {
-      "id": "digIn",
+      "id": "holdTheLine",
       "name": "Hold the Line",
-      "cooldown": 11,
-      "duration": 2,
-      "desc": "Immovable, 55% damage reduction, ends in a 170px knockback pulse.",
-      "damageReductionPct": 55,
-      "pulseRadius": 170,
-      "pulseKnockback": 300,
-      "animRow": "dig"
+      "cooldown": 12,
+      "duration": 4,
+      "desc": "Plants a 160px ward for 4s. Enemies in it are slowed 45%, and every one that dies in it heals 4.",
+      "radius": 160,
+      "slowPct": 45,
+      "healPerKill": 4,
+      "animRow": "idle"
     },
     "startingWeapon": "varmintRifle",
     "tag": "STEADY \u00b7 MENDS \u00b7 UNMOVED",
     "bars": {
-      "body": 78,
+      "body": 82,
       "speed": 40,
       "reach": 70
     },
-    "cardPassive": "Braced \u2014 a shorter fuse than the Hand, a lower ceiling."
+    "cardPassive": "Grit \u2014 damage arrives slowly, and killing cancels it."
   },
   "vet": {
     "name": "The Veteran",
@@ -124,38 +126,45 @@
     "unlocked": false,
     "blurb": "Came home, took the back forty, and kept the habit of watching treelines.",
     "stats": {
-      "maxHp": 105,
+      "maxHp": 115,
       "moveSpeedPct": 0,
       "armor": 3,
-      "hpRegen": 0.3,
+      "hpRegen": 0.5,
       "critChancePct": 15,
       "critDamagePct": 20
     },
     "passive": {
-      "id": "braced",
-      "desc": "Standing still 1s grants +3% damage reduction per second to 18%. Resets on move.",
-      "stillDelay": 1,
-      "drPerSec": 3,
-      "drMax": 18
+      "id": "overwatch",
+      "_note": "Spacing, which no other class cares about at all: The Hand and The Kid both ask how FAST you are moving and neither asks WHERE you are standing. It is per-target rather than per-tick -- the same shot is worth different amounts against two enemies at different ranges -- so it cannot live in the stat block or in passiveDamagePct, and joins the additive sum inside resolveDamage instead. The penalty is the point. Without it this is a flat damage bonus with extra steps.",
+      "_bandNote": "The bands are tight against the player, not against the weapon, and that is measured rather than chosen. The whole weapon ring targets the NEAREST enemy (`findNearestEnemy` in world.ts), so a range-scaling passive is graded against the closest body on the field on almost every shot. The first pass used 220/110 and Overwatch was a tax: the near penalty applied continuously in any crowd and the far bonus could essentially never be earned, and the harness had him at 0/8 kiting and 13/24 spacing. 170/80 at -20% makes the penalty a contact-range punishment and the bonus something a standoff actually reaches: 16/24 spacing.",
+      "desc": "+40% damage past 170px, and -20% inside 80px. He is worth what the ground between you is worth.",
+      "farDistance": 170,
+      "farDamagePct": 40,
+      "nearDistance": 80,
+      "nearDamagePct": -20
     },
     "ability": {
-      "id": "bolt",
-      "name": "Break Contact",
-      "cooldown": 8,
-      "dashDistance": 150,
-      "iFrames": 0.45,
-      "desc": "Dash with long i-frames, blinding pursuers 2.5s.",
-      "blindDuration": 2.5,
-      "animRow": "run"
+      "id": "claymore",
+      "name": "Claymore",
+      "cooldown": 11,
+      "desc": "Sets a mine. Arms in 0.8s, then blows on the first thing within 90px, or after 6s: 55 in a 150px ring, knockback and a 1.2s stun.",
+      "armSeconds": 0.8,
+      "fuseSeconds": 6,
+      "triggerRadius": 90,
+      "blastRadius": 150,
+      "damage": 55,
+      "knockback": 320,
+      "stunSeconds": 1.2,
+      "animRow": "idle"
     },
     "startingWeapon": "drumGun",
     "tag": "EVEN \u00b7 PRECISE \u00b7 WATCHFUL",
     "bars": {
       "body": 64,
       "speed": 58,
-      "reach": 80
+      "reach": 88
     },
-    "cardPassive": "Braced \u2014 crit-leaning, holds ground well enough."
+    "cardPassive": "Overwatch \u2014 paid for range, charged for contact."
   },
   "agronomist": {
     "name": "The Agronomist",
@@ -163,76 +172,92 @@
     "unlocked": false,
     "blurb": "Sent out to test the soil. Stayed once she worked out what was in it.",
     "stats": {
-      "maxHp": 85,
+      "maxHp": 95,
       "moveSpeedPct": 10,
       "armor": 1,
-      "hpRegen": 0.3,
+      "hpRegen": 0.4,
       "harvestPct": 35,
       "luck": 8
     },
     "passive": {
-      "id": "momentum",
-      "desc": "+1% damage per 3% of max velocity, to +30%. Zero when standing.",
-      "dmgPerVelocityPct": 0.33,
-      "dmgMax": 30
+      "id": "cultivar",
+      "_note": "Status and economy. She is the only class that makes an ELEMENT pick matter differently -- fire, acid and frost all get better in her hands, and frost gets better as crowd control rather than as damage, which is why the slow shares the multiplier and takes a cap. Applied where the payload leaves the projectile in World.applyHit, not inside applyBurn/applyBleed: those are also the entry points for the Chili Shot's death-spread, and boosting there would compound a status with itself every time it changed hands.",
+      "desc": "Burns, bleeds and slows she lands hit 70% harder and last 70% longer. Slows cap at 75%.",
+      "dotDamagePct": 70,
+      "dotDurationPct": 70,
+      "slowCapPct": 75
     },
     "ability": {
-      "id": "bolt",
+      "id": "fieldSample",
       "name": "Field Sample",
-      "cooldown": 7,
-      "dashDistance": 165,
-      "iFrames": 0.3,
-      "desc": "Dash with i-frames, leaving a blinding cloud for 3s.",
-      "blindDuration": 3,
-      "animRow": "run"
+      "cooldown": 8,
+      "desc": "Lobs a flask 190px. It leaves a 120px slick for 6s carrying whatever element she runs -- or a 50% slow if she runs none.",
+      "throwDistance": 190,
+      "radius": 120,
+      "seconds": 6,
+      "slowPct": 50,
+      "elementDpsScale": 2,
+      "animRow": "walk"
     },
     "startingWeapon": "chemSprayer",
     "tag": "CHEMICAL \u00b7 LUCKY \u00b7 CURIOUS",
     "bars": {
       "body": 46,
       "speed": 66,
-      "reach": 88
+      "reach": 84
     },
-    "cardPassive": "Momentum \u2014 modest, and +35% off every node she works."
+    "cardPassive": "Cultivar \u2014 everything she leaves behind bites harder."
   },
   "drifter": {
     "name": "The Drifter",
     "sheet": "drifter",
     "unlocked": false,
     "blurb": "Works a season, moves on. This season he did not get out in time.",
+    "_statNote": "This stat block moved a long way, and the reason is a measured PRE-EXISTING trap rather than anything the class rework did. On 24 seeds the OLD Drifter -- momentum, bolt, 70hp -- died on WAVE 2 in fourteen of them and cleared 1/24 kiting, 4/24 brawling, 2/24 spacing. He had been a trap pick since the density pass halved enemy HP and damage to buy BODIES, and nothing measured it because the parity test only ever ran The Hand and The Kid. Momentum was hiding it (+60% damage essentially for free, because a harness bot never stops moving); Hot Streak pays nothing until you are already killing, which exposed it completely.",
+    "_weaponNote": "`projectileCount: 3` is the fix, and it is aimed at the real fault, which was the STARTING WEAPON and not the class. At T1 the Harpoon Gun (`hookFurthest`) fires one shot at ONE enemy every 1.8s -- and at the FURTHEST enemy in range, so it does not even answer the thing about to touch you. Proved by swapping it: with every other number about him held still and the same 24 seeds, he cleared 4/24 holding the harpoon and 13/24 holding the Scattergun. Stat inflation had been tried first and did not work -- 95 hp, +45% attack speed and +15% damage moved 4/24 to 4/24, because no amount of body fixes a class that cannot clear wave 1. `hookFurthest` now reads `projectileCount`, a declared stat that until this change only the Scattergun's `stream` looked at, so he hooks FOUR at T1 and the harpoon is a wave-1 weapon. Nothing else in the game grants `projectileCount`, so no other build changes. At 88 hp he is still the second-smallest body in the game.",
+    "_lifestealNote": "lifestealPct 1 is the last point of the fix and the single most sensitive number on this class. He was 11/24 on the parity ladder with none, and lifesteal is what a kill-streak class should be sustained by -- kills are already his engine, and a hit still ends the streak whatever it heals. It is worth watching: at 4% he went to 21/24 and at 2% to 20/24, so this stat is roughly five clears per point at his damage output. Anything that raises his damage raises his healing with it.",
     "stats": {
-      "maxHp": 70,
+      "maxHp": 88,
       "moveSpeedPct": 25,
       "armor": 0,
-      "dodgePct": 14,
+      "dodgePct": 16,
+      "attackSpeedPct": 30,
+      "projectileCount": 3,
+      "lifestealPct": 1,
       "critChancePct": 10,
       "critDamagePct": 35,
       "hpRegen": 0
     },
     "passive": {
-      "id": "momentum",
-      "desc": "+1% damage per 1.6% of max velocity, to +60%. Zero when standing.",
-      "dmgPerVelocityPct": 0.62,
-      "dmgMax": 60
+      "id": "hotStreak",
+      "_note": "Tempo. The Kid's Momentum asks how fast you are moving; this asks how fast you are KILLING, which is a different question with a different answer in the same fight. The whole streak expires together on a window from the last kill rather than a stack at a time -- decaying singly would put the ceiling out of reach at any honest kill rate -- and any hit at all, contact or hazard, takes all of it. That is the glass half of QUICK \u00b7 GLASS \u00b7 MEAN made mechanical instead of merely printed on the card.",
+      "desc": "Each kill is +5% damage and +2.5% speed, to 12. The streak lasts 4s past the last kill, and one hit ends all of it.",
+      "windowSeconds": 4,
+      "maxStacks": 12,
+      "damagePctPerStack": 5,
+      "moveSpeedPctPerStack": 2.5
     },
     "ability": {
-      "id": "bolt",
+      "id": "lightOut",
       "name": "Light Out",
-      "cooldown": 5,
-      "dashDistance": 210,
+      "cooldown": 8,
+      "desc": "A 220px line straight through the crowd: 45 to everything crossed, shoved aside, 0.35s untouchable. Each kill on the way takes 1.5s off the cooldown.",
+      "dashDistance": 220,
       "iFrames": 0.35,
-      "desc": "A long dash with i-frames, blinding pursuers 1.5s.",
-      "blindDuration": 1.5,
-      "animRow": "run"
+      "lineRadius": 34,
+      "damage": 45,
+      "knockback": 300,
+      "cooldownRefundPerKill": 1.5,
+      "animRow": "walk"
     },
     "startingWeapon": "harpoon",
     "tag": "QUICK \u00b7 GLASS \u00b7 MEAN",
     "bars": {
-      "body": 30,
+      "body": 38,
       "speed": 98,
-      "reach": 64
+      "reach": 76
     },
-    "cardPassive": "Momentum \u2014 up to +60%, and nothing at all when standing."
+    "cardPassive": "Hot Streak \u2014 kills compound, and one hit ends them."
   },
   "_cardNote": "`tag`, `bars` and `cardPassive` are the class card's presentation, from the design's Home Screen mockup. Bars are 0-100 for the BODY/SPEED/REACH meters and are a READ of the class rather than a derivation from its stats -- Reach has no single stat behind it, and a computed bar would fight the design's intent every time balance moved.",
   "_regenNote": "hpRegen is an ABSOLUTE number and enemy contact damage was cut to 55% by the density pass in enemies.json, so every point of regen silently became almost twice as valuable. That is invisible in the class sheet and it broke `treats both classes comparably`: The Hand (regen 1.5, armour, and damage reduction to 30%) tanked a denser field comfortably while The Kid, whose only mitigation is avoidance, did not -- a 10-seed gap against a limit of 8. Raising The Kid's dodge was tried first and moved nothing, because the gap was never about avoidance. Regen is rescaled by the same 0.55 the damage was. Percentage defences -- armour, which is armor/(armor+k), and braced damage reduction -- are scale-free and deliberately untouched."

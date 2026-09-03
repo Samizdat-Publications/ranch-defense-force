@@ -63,6 +63,10 @@ interface Sample {
   fps: number
   levelUp: boolean
   shop: boolean
+  /** Seconds left on the class ability's cooldown, and on its active window.
+   *  Sampled so a run can PROVE the ability fired rather than assume it. */
+  abilityCd: number
+  abilityActive: number
   results: boolean
   paused: boolean
   over: boolean
@@ -225,7 +229,9 @@ try {
       hitstop: +(w.hitstop || 0).toFixed(2), playerAlive: !!w.player.alive,
       tick: w.tick, pauseOpen: !!sc.pause.isOpen, waveTime: +(w.spawner ? w.spawner.waveTime : 0).toFixed(1),
       alive: w.enemies.live, kills: w.kills, cleared: w.wavesCleared,
-      elapsed: Math.round(w.elapsed)
+      elapsed: Math.round(w.elapsed),
+      abilityCd: +(w.player.abilityCooldown || 0).toFixed(1),
+      abilityActive: +(w.player.abilityActive || 0).toFixed(1)
     });
   })()`
 
@@ -248,6 +254,18 @@ try {
       await page.keyboard.down(want)
       held = want
     }
+    /*
+       Press the ability every second.
+
+       It used to be pressed never, which meant every playthrough report in
+       this repo measured a class with its ability button unplugged -- fine
+       while four of the six shared two archetypes, useless now that each has
+       its own. Once a second is safely under every cooldown in classes.json
+       (the shortest is 8s), and the press is real keyboard input into the same
+       `e.code === 'Space'` latch a player uses. `abilityCd` in the sample is
+       how the report then proves it fired.
+    */
+    await page.keyboard.press('Space')
     await page.waitForTimeout(SAMPLE_MS)
 
     /*
@@ -359,10 +377,23 @@ try {
   if (held) await page.keyboard.up(held)
 
   const last = samples[samples.length - 1]
+  /*
+     How many times the ability actually went off.
+
+     A rising cooldown between two samples can only mean it was pressed and
+     accepted, so this counts firings rather than presses -- which is the claim
+     worth making. Zero here on a run of any length means the ability id in
+     classes.json has no branch in `tryAbility` and the button is dead.
+  */
+  let abilityFires = 0
+  for (let i = 1; i < samples.length; i++) {
+    if (samples[i].abilityCd > samples[i - 1].abilityCd) abilityFires++
+  }
   const lines = [
     `# Playthrough -- ${classId}, seed "${seed}", ${seconds}s requested`,
     '',
     `Ran ${samples.length}s of wall clock. rAF ticking at ~${ticks * 2}/s.`,
+    `Ability fired ${abilityFires}x (SPACE pressed once a second).`,
     '',
     '## Timeline',
     '',
@@ -473,7 +504,7 @@ try {
 
   console.log(
     `${classId} seed "${seed}" -> wave ${last?.wave ?? 0}, level ${last?.level ?? 0}, `
-    + `${last?.hp ?? 0}/${last?.maxHp ?? 0} hp`,
+    + `${last?.hp ?? 0}/${last?.maxHp ?? 0} hp, ability fired ${abilityFires}x`,
   )
   console.log(`${samples.length} samples, ${shots.length} shots -> ${report}`)
   for (const e of events) console.log(`  ${e}`)

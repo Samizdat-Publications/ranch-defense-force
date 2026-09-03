@@ -55,7 +55,41 @@ interface RunResult {
  * still and has an ability that roots it in place. Measuring both classes with
  * a kiting bot reports The Hand as weaker no matter what the game does.
  */
-type Pilot = 'kite' | 'brawl' | 'wander'
+type Pilot = 'kite' | 'brawl' | 'wander' | 'space'
+
+/**
+ * The pilot each class is flown by, and the whole reason the parity test can
+ * be run over six classes rather than two.
+ *
+ * A class is a claim about how the game should be played, so measuring it with
+ * the wrong pilot measures nothing: kiting The Hand reports his damage
+ * reduction as absent, because it is. The same is now true four more times.
+ *
+ *   hand        brawl — Braced pays for standing, Dig In roots
+ *   kid         kite  — Momentum pays for velocity
+ *   widow       brawl — Grit pays for fighting through a hit; the ward is planted
+ *   vet         space — Overwatch pays past 170px and charges inside 80px
+ *   agronomist  brawl — the Chem Sprayer is a 130px AURA; range is not an option
+ *   drifter     kite  — Hot Streak dies to one hit, so contact is the enemy
+ *
+ * The Agronomist was assigned `kite` first, on "she is fragile", and that was
+ * reading the stat block instead of the weapon: she starts holding a 130px
+ * aura, so a pilot that runs from the crowd is a pilot that turns her gun off.
+ * The harness agrees — 18/24 holding ground against 13/24 running — but the
+ * weapon is the reason and the number is the confirmation, not the other way
+ * round. Do not pick these by which score is highest; that is tuning the game
+ * to the instrument.
+ */
+const HOME_PILOT: Record<string, Pilot> = {
+  hand: 'brawl',
+  kid: 'kite',
+  widow: 'brawl',
+  vet: 'space',
+  agronomist: 'brawl',
+  drifter: 'kite',
+}
+/** The distance `space` tries to hold. Mirrors tools/balance.ts. */
+const SPACER_RANGE = 200
 
 function simulate(
   seed: number,
@@ -103,6 +137,20 @@ function simulate(
         // reduction, and Dig In, ever come into play.
         mx = 0
         my = 0
+      } else if (pilot === 'space' && healthy && near < 6) {
+        // Hold a band rather than a point: close when the crowd drifts out of
+        // Overwatch's far bracket, back off when it gets inside the near one.
+        // Neither existing pilot can measure a spacing class — one runs to the
+        // wall, the other lets the crowd into the penalty ring.
+        const dx = world.player.x - cx / n
+        const dy = world.player.y - cy / n
+        const d = Math.hypot(dx, dy) || 1
+        const sign = d < SPACER_RANGE ? 1 : -1
+        mx = (dx / d) * sign + ((world.arenaW / 2 - world.player.x) / world.arenaW) * 1.5
+        my = (dy / d) * sign + ((world.arenaH / 2 - world.player.y) / world.arenaH) * 1.5
+        const m = Math.hypot(mx, my) || 1
+        mx /= m
+        my /= m
       } else {
         const dx = world.player.x - cx / n
         const dy = world.player.y - cy / n
@@ -209,6 +257,105 @@ describe('a full run', () => {
     expect(hand).toBeGreaterThan(0)
     expect(kid).toBeGreaterThan(0)
   }, 600_000)
+
+  it('treats all six classes comparably — none is a trap pick', () => {
+    /*
+       The same question the pair test above asks, asked of the four unlockable
+       classes as well.
+
+       It exists because those four used to be stat spreads over two shared
+       passives and two shared abilities: whatever the numbers said, they could
+       not be a trap in a way the pair test would not already have caught,
+       because they were The Hand and The Kid with the dials moved. Now each
+       owns its own axis -- attrition, spacing, status, tempo -- and each can
+       fail on its own terms, so each is measured on its own.
+
+       Every class is flown by the pilot it is built for (HOME_PILOT). Flying
+       all six the same way would be the exact mistake the pair test's comment
+       spends a paragraph on, four times over.
+
+       THE TOLERANCE IS THE PAIR TEST'S, ceil(n/3). THE STATISTIC IS NOT, and
+       the difference is deliberate.
+
+       The pair test bounds |a - b| for two classes. The obvious generalisation
+       -- bound max - min over six -- is not the same test at the same number:
+       the RANGE of a sample grows with how many things are in it, so reusing
+       ceil(n/3) against six classes is silently a much stricter bar than the
+       one written for two. That is precisely the trap the pair test's own
+       comment describes about sample size, in the other axis.
+       And it would be a bar this change could not honestly meet: measured on
+       this seed ladder, The Hand at 21/24 and The Kid at 13/24 span exactly
+       ceil(24/3) = 8 BETWEEN THEM, before any unlockable class is considered.
+       A range bar over six would therefore be a test of two classes whose
+       numbers are out of scope here, wearing a six-class costume.
+
+       So each class is held within ceil(n/3) of the six-class MEAN, which is
+       the same claim -- nobody is off on their own -- stated in a way that does
+       not tighten as classes are added. Measured when written:
+
+           hand 21  kid 13  widow 20  vet 16  agronomist 18  drifter 17
+           mean 17.5, worst deviation 4.5 against a bar of 8, range 8
+
+       Read the deviation, not the pass. If it starts creeping toward 8 the
+       roster is drifting apart even while this stays green.
+    */
+    const cleared: Record<string, number> = {}
+    for (const [classId, pilot] of Object.entries(HOME_PILOT)) {
+      cleared[classId] = SEEDS
+        .map((s) => simulate(s, classId, pickSmart, pilot))
+        .filter((r) => r.cleared).length
+    }
+    const counts = Object.values(cleared)
+    const mean = counts.reduce((a, b) => a + b, 0) / counts.length
+    const table = Object.entries(cleared)
+      .map(([c, n]) => `${c} ${n}/${SEEDS.length}`).join(', ')
+
+    for (const [classId, n] of Object.entries(cleared)) {
+      expect(n, `${classId} never cleared a run — trap pick (${table})`).toBeGreaterThan(0)
+    }
+    for (const [classId, n] of Object.entries(cleared)) {
+      expect(
+        Math.abs(n - mean),
+        `${classId} is off on its own at ${n}/${SEEDS.length} against a mean of `
+        + `${mean.toFixed(1)} (${table})`,
+      ).toBeLessThanOrEqual(Math.ceil(SEEDS.length / 3))
+    }
+  }, 1_800_000)
+
+  it('gives every class an ability that does something', () => {
+    /*
+       The cheap half of "each class carries its own powers", and the half a
+       balance number can never report.
+
+       An ability id with no branch in `tryAbility` is a button that silently
+       does nothing -- the run still completes, the clear rate still looks
+       fine, and the class is simply missing a third of itself. That failure
+       shipped once already and was recorded in classes.json as a known
+       compromise for a whole milestone.
+
+       Pressing it must therefore start a cooldown, and `tryAbility` refunds
+       the cooldown for an id it has no branch for precisely so that this is
+       the difference between an implemented ability and a dead one.
+    */
+    for (const classId of Object.keys(HOME_PILOT)) {
+      const world = new World(99, classId)
+      // Far enough in that the field has bodies on it for a mine or a dash to
+      // find, but well before anything can have killed a bot walking east.
+      for (let i = 0; i < 600; i++) world.step(STEP, 1, 0, false)
+      expect(world.player.abilityCooldown, `${classId} started on cooldown`).toBe(0)
+      // A handful of presses, not one: `step` returns early during hitstop,
+      // and a crit landing on the same tick would otherwise eat the press.
+      let fired = false
+      for (let i = 0; i < 20 && !fired; i++) {
+        world.step(STEP, 1, 0, true)
+        if (world.player.abilityCooldown > 0) fired = true
+      }
+      expect(
+        fired,
+        `${classId}'s ability "${world.player.def.ability.id}" did nothing — no branch in tryAbility`,
+      ).toBe(true)
+    }
+  }, 120_000)
 
   it("each class does better at its own game than at the other's", () => {
     // The claim the parity test above rests on, made explicit: if this ever

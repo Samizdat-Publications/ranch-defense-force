@@ -153,6 +153,16 @@ export class World {
   private readonly gx: Float64Array
   private readonly gy: Float64Array
   private readonly queryOut: Int32Array
+  /**
+   * A SECOND grid-query scratch, for the one query that damages while it
+   * iterates — The Drifter's Light Out. `damageEnemy` can reach `areaDamage`
+   * through the Threshing Floor chain and the Reaper's re-swing, and both
+   * overwrite `queryOut` mid-loop.
+   */
+  private readonly dashOut: Int32Array
+  /** The telegraph ring drawn under a planted Claymore, so detonating can take
+   *  it off the field instead of leaving a marker over a crater. */
+  private mineMarker: Telegraph | null = null
 
   /** Monotonic tick counter; projectiles stamp it to avoid double-hits. */
   tick = 0
@@ -309,6 +319,7 @@ export class World {
     this.gx = new Float64Array(T.pools.enemies)
     this.gy = new Float64Array(T.pools.enemies)
     this.queryOut = new Int32Array(512)
+    this.dashOut = new Int32Array(512)
 
     this.player.init(classId, metaMods)
     this.player.x = this.arenaW / 2
@@ -1344,12 +1355,34 @@ export class World {
       // Post Driver multiplies every stun the player lands, wherever it comes from.
       e.stun = Math.max(e.stun, p.stunOnHit * this.specialItems.stunMultiplier)
     }
-    if (p.burnDps > 0) this.applyBurn(e, p.burnDps, p.burnSeconds)
-    if (p.bleedDps > 0) this.applyBleed(e, p.bleedDps, p.bleedSeconds)
+    /*
+       The Agronomist's Cultivar rides HERE, at the point the status is handed
+       from a projectile to an enemy, and not inside `applyBurn`/`applyBleed`.
+
+       Those are also the entry points for effects the player did not apply --
+       the Chili Shot's death-spread re-applies a burn that was already boosted
+       once -- and boosting there would compound a status with itself every
+       time it changed hands. Scaling the payload as it leaves the projectile
+       boosts each application exactly once.
+
+       Locals, not writes back onto `p`: a projectile is pooled and pierces,
+       so multiplying its own fields would compound per enemy hit and then
+       leak into whatever the slot is reused for.
+
+       The multipliers are 1 and the cap 100 for every other class, and every
+       `slowOnHit` in content is under 100, so this is arithmetically identical
+       for the other five and their seeds still replay.
+    */
+    const dotDmg = this.player.dotDamageMul
+    const dotLife = this.player.dotDurationMul
+    if (p.burnDps > 0) this.applyBurn(e, p.burnDps * dotDmg, p.burnSeconds * dotLife)
+    if (p.bleedDps > 0) this.applyBleed(e, p.bleedDps * dotDmg, p.bleedSeconds * dotLife)
     if (p.markPct > 0) this.applyMark(e, p.markPct, p.markSeconds)
     if (p.slowOnHit > 0) {
-      if (p.slowOnHit > e.slowPct) e.slowPct = p.slowOnHit
-      if (p.slowSeconds > e.slowLife) e.slowLife = p.slowSeconds
+      const slow = Math.min(this.player.slowCapPct, p.slowOnHit * dotDmg)
+      const slowLife = p.slowSeconds * dotLife
+      if (slow > e.slowPct) e.slowPct = slow
+      if (slowLife > e.slowLife) e.slowLife = slowLife
     }
 
     this.damageEnemy(enemyIndex, p.damage, type, isCrit)
@@ -1950,11 +1983,267 @@ export class World {
       this.burstParticles(p.px, p.py, 10, 0xd9c9a3)
       // Under the sprites: the dash trail is on the ground, not in the air.
       this.playFx('dust', p.px, p.py, p.facing, 1, 0, 0, true)
+    } else if (a.id === 'holdTheLine') {
+      this.plantWard(a)
+    } else if (a.id === 'claymore') {
+      this.plantMine(a)
+    } else if (a.id === 'fieldSample') {
+      this.throwFlask(a)
+    } else if (a.id === 'lightOut') {
+      this.harpoonDash(a)
+    } else {
+      /*
+         No branch for this id: the ability in classes.json is not implemented.
+
+         Hand the cooldown back rather than charging for it. A dead button that
+         also claims to be recharging is the failure this project shipped for a
+         milestone -- four classes with `digIn` or `bolt` bolted on precisely
+         because an unimplemented id gives the player a button that silently
+         does nothing. Refunding makes it silently do nothing *instantly*,
+         which is the same for the player and visible to a test.
+      */
+      p.abilityCooldown = 0
     }
+  }
+
+  /**
+   * The Widow's Hold the Line: a ward at her feet that slows what walks into
+   * it and pays her for what dies in it.
+   *
+   * The slow is a real `slow` hazard rather than bespoke code, so it renders
+   * with the slop puddles and is applied by the same line in `steerEnemies`
+   * that has always applied one. Only the kill payout needs the player to
+   * remember where the ward is, and that is four numbers, not an entity.
+   *
+   * She is NOT rooted by it. Dig In roots because absorbing is the whole trade;
+   * a ward you cannot leave is a worse Dig In rather than a different ability.
+   */
+  private plantWard(a: Record<string, unknown>): void {
+    const p = this.player
+    const radius = (a.radius as number) ?? 160
+    const seconds = (a.duration as number) ?? 4
+    p.wardX = p.x
+    p.wardY = p.y
+    p.wardRadius = radius
+    p.wardLife = seconds
+    p.wardHealPerKill = (a.healPerKill as number) ?? 0
+    p.abilityActive = seconds
+
+    const h = this.spawnHazard()
+    if (h) {
+      h.kind = 'slow'
+      h.x = p.x
+      h.y = p.y
+      h.radius = radius
+      h.life = seconds
+      h.maxLife = seconds
+      h.slowPct = (a.slowPct as number) ?? 45
+    }
+    this.sound('digIn')
+    this.playFx('shockwave', p.x, p.y, 0, radius / 55, 0, 0, true)
+  }
+
+  /**
+   * The Veteran's Claymore: plant, arm, then blow on the first thing that comes
+   * near or when the fuse runs out.
+   *
+   * A ring rather than the cone the brief asked for. Every piece of reach in
+   * this game is circle-vs-circle against the hash grid, and a cone would mean
+   * a second geometry on the damage path for one ability -- and would face the
+   * wrong way half the time, because a mine you walk away from has no facing
+   * that means anything by the time it goes off.
+   */
+  private plantMine(a: Record<string, unknown>): void {
+    const p = this.player
+    // The fuse is shorter than the cooldown so two can never coexist. If a
+    // future tune breaks that, the standing one goes off rather than vanishing.
+    if (p.mineLife > 0) this.detonateMine()
+    p.mineX = p.x
+    p.mineY = p.y
+    p.mineArm = (a.armSeconds as number) ?? 0.8
+    p.mineLife = (a.fuseSeconds as number) ?? 6
+    this.sound('baitDrop')
+    // A full-circle telegraph is how the game already says "this ground is
+    // about to hurt", and it is the only marker the mine gets.
+    this.addTelegraph(p.x, p.y, 0, (a.triggerRadius as number) ?? 90, 360, p.mineLife)
+    this.mineMarker = this.telegraphs[this.telegraphs.length - 1]
+  }
+
+  private updateMine(dt: number): void {
+    const p = this.player
+    const a = p.def.ability
+    p.mineLife -= dt
+    if (p.mineLife <= 0) {
+      this.detonateMine()
+      return
+    }
+    if (p.mineArm > 0) {
+      p.mineArm -= dt
+      return
+    }
+    const trigger = (a.triggerRadius as number) ?? 90
+    const n = this.grid.query(p.mineX, p.mineY, trigger, this.queryOut)
+    for (let k = 0; k < n; k++) {
+      const j = this.queryOut[k]
+      if (j >= this.enemies.live) continue
+      const e = this.enemies.items[j]
+      if (e.dying > 0) continue
+      const dx = e.x - p.mineX
+      const dy = e.y - p.mineY
+      if (dx * dx + dy * dy <= trigger * trigger) {
+        // `areaDamage` reuses `queryOut`, so nothing may read it after this.
+        this.detonateMine()
+        return
+      }
+    }
+  }
+
+  private detonateMine(): void {
+    const p = this.player
+    const a = p.def.ability
+    p.mineLife = 0
+    p.mineArm = 0
+    if (this.mineMarker) {
+      const i = this.telegraphs.indexOf(this.mineMarker)
+      if (i >= 0) this.telegraphs.splice(i, 1)
+      this.mineMarker = null
+    }
+    const radius = (a.blastRadius as number) ?? 150
+    this.playFx('explosion', p.mineX, p.mineY, 0, radius / 90)
+    this.sound('explosion')
+    this.addShake(0.4)
+    this.areaDamage(
+      p.mineX, p.mineY, radius,
+      (a.damage as number) ?? 60,
+      'ranged',
+      (a.knockback as number) ?? 320,
+      (a.stunSeconds as number) ?? 1.2,
+    )
+  }
+
+  /**
+   * The Agronomist's Field Sample: a flask lobbed a fixed distance that leaves
+   * a lasting slick carrying whatever element she is running.
+   *
+   * Deliberately not a dash. She is the one class whose answer to a crowd is to
+   * change the ground it is standing on, and giving her an escape button would
+   * make her a slower Drifter with better loot.
+   */
+  private throwFlask(a: Record<string, unknown>): void {
+    const p = this.player
+    const dist = (a.throwDistance as number) ?? 190
+    const radius = (a.radius as number) ?? 110
+    const lo = radius * 0.5
+    const x = Math.max(lo, Math.min(this.arenaW - lo, p.x + Math.cos(p.facing) * dist))
+    const y = Math.max(lo, Math.min(this.arenaH - lo, p.y + Math.sin(p.facing) * dist))
+    const seconds = ((a.seconds as number) ?? 6) * p.dotDurationMul
+
+    const h = this.spawnHazard()
+    if (h) {
+      const el = ELEMENTS[p.element]
+      const scale = (a.elementDpsScale as number) ?? 1.6
+      const dps = ((el?.burnDps ?? 0) + (el?.bleedDps ?? 0)) * scale * p.dotDamageMul
+      // No element, or a purely defensive one, and the slick is what it is on
+      // its own: ground that holds a crowd still. An element that BITES turns
+      // it into ground that kills, which is the whole shape of her build.
+      if (dps > 0) {
+        h.kind = 'acid'
+        h.dps = dps
+      } else {
+        h.kind = 'slow'
+        h.slowPct = Math.min(
+          p.slowCapPct,
+          Math.max((a.slowPct as number) ?? 40, el?.slowOnHit ?? 0) * p.dotDamageMul,
+        )
+      }
+      h.x = x
+      h.y = y
+      h.radius = radius
+      h.life = seconds
+      h.maxLife = seconds
+    }
+    this.sound('acidSizzle')
+    this.playFx('gas', x, y, 0, radius / 90)
+  }
+
+  /**
+   * The Drifter's Light Out: a dash that is a weapon.
+   *
+   * The Kid's Bolt is an escape — i-frames and a blinding trail. This crosses
+   * the same distance and charges everything on the line for it, and the
+   * cooldown comes back for each thing that dies on the way through, so it is
+   * the one ability in the game that is cheaper the more committed you are.
+   */
+  private harpoonDash(a: Record<string, unknown>): void {
+    const p = this.player
+    const dist = (a.dashDistance as number) ?? 220
+    const lineRadius = (a.lineRadius as number) ?? 34
+    const x0 = p.x
+    const y0 = p.y
+    p.invuln = (a.iFrames as number) ?? 0.35
+    p.x = Math.max(0, Math.min(this.arenaW, p.x + Math.cos(p.facing) * dist))
+    p.y = Math.max(0, Math.min(this.arenaH, p.y + Math.sin(p.facing) * dist))
+    this.sound('shootHarpoon')
+    this.burstParticles(x0, y0, 12, 0xd9c9a3)
+    this.playFx('dust', x0, y0, p.facing, 1, 0, 0, true)
+
+    const sx = p.x - x0
+    const sy = p.y - y0
+    const len2 = sx * sx + sy * sy
+    const before = this.kills
+    /*
+       One query over a circle that covers the whole swept line, then an exact
+       point-to-SEGMENT test per candidate. Sampling the line at intervals and
+       calling `areaDamage` at each would hit the enemies in the overlaps twice.
+
+       `dashOut` and not `queryOut`: this loop calls `damageEnemy`, which can
+       reach `areaDamage` through the Threshing Floor chain and the Reaper
+       re-swing, and both of those query the grid into `queryOut`. Iterating a
+       scratch array something downstream overwrites is a bug that only shows up
+       once the player owns a particular legendary.
+    */
+    const midX = (x0 + p.x) / 2
+    const midY = (y0 + p.y) / 2
+    const n = this.grid.query(midX, midY, Math.sqrt(len2) / 2 + lineRadius, this.dashOut)
+    for (let k = 0; k < n; k++) {
+      const j = this.dashOut[k]
+      if (j >= this.enemies.live) continue
+      const e = this.enemies.items[j]
+      if (e.dying > 0) continue
+      // Closest point on the segment, clamped to its ends.
+      const t = len2 > 0
+        ? Math.max(0, Math.min(1, ((e.x - x0) * sx + (e.y - y0) * sy) / len2))
+        : 0
+      const cx = x0 + sx * t
+      const cy = y0 + sy * t
+      const dx = e.x - cx
+      const dy = e.y - cy
+      const reach = lineRadius + e.radius
+      if (dx * dx + dy * dy > reach * reach) continue
+      this.damageEnemy(j, (a.damage as number) ?? 45, 'melee', this.rng.chance(p.stats.critChance))
+      if (!e.active || e.dying > 0 || e.knockbackImmune) continue
+      // Shoved off the line rather than along it — the point is that he goes
+      // through the crowd, so the crowd has to end up either side of him.
+      const d = Math.hypot(dx, dy) || 1
+      const kb = (a.knockback as number) ?? 300
+      e.kx += (dx / d) * kb
+      e.ky += (dy / d) * kb
+    }
+
+    const refund = ((a.cooldownRefundPerKill as number) ?? 0) * (this.kills - before)
+    if (refund > 0) p.abilityCooldown = Math.max(0, p.abilityCooldown - refund)
   }
 
   private updateAbility(dt: number): void {
     const p = this.player
+    // The ward and the mine outlive `abilityActive` — the mine deliberately, so
+    // it is a thing left on the ground rather than a channel — so both tick
+    // before the early return below.
+    if (p.wardLife > 0) {
+      p.wardLife -= dt
+      if (p.wardLife <= 0) p.wardLife = 0
+    }
+    if (p.mineLife > 0) this.updateMine(dt)
     if (p.abilityActive <= 0) return
     p.abilityActive -= dt
     if (p.abilityActive <= 0) {
@@ -2278,9 +2567,16 @@ export class World {
     e.lastHitMelee = type === 'melee'
 
     const typePct = type === 'melee' ? s.meleePct : type === 'ranged' ? s.rangedPct : 0
+    /*
+       The Veteran's Overwatch joins the same additive percentage sum as
+       everything else, which is the only place a PER-TARGET percentage can go
+       without breaking the single-pass rule. `overwatchPct` returns 0 on its
+       first compare for every other class.
+    */
+    const pl = this.player
     const dmg = resolveDamage(
       amount,
-      s.damagePct + this.player.passiveDamagePct,
+      s.damagePct + pl.passiveDamagePct + pl.overwatchPct(e.x - pl.x, e.y - pl.y),
       typePct,
       0,
       isCrit,
@@ -2349,6 +2645,10 @@ export class World {
   private killEnemy(index: number): void {
     const e = this.enemies.items[index]
     this.kills++
+    // Every kill-driven class effect — Grit closing a wound, Hot Streak
+    // stacking, a ward paying out — hangs off this one call, so the chain and
+    // re-swing kills below feed them exactly as an ordinary kill does.
+    this.player.onKill(e.x, e.y)
     const def = ENEMIES[e.typeId]
 
     // The Reaper's Own: "what it kills, it keeps cutting." A melee kill swings
@@ -2550,7 +2850,20 @@ export class World {
     dmg = dmg * (1 - p.stats.armor / (p.stats.armor + C.armorConstant))
 
     const taken = Math.max(environmental ? 0 : 1, dmg)
-    p.hp -= taken
+    /*
+       Grit splits the blow: part lands now, the rest is banked as a wound that
+       bleeds off over seconds and that killing cancels. `takeWound` returns the
+       amount unchanged for every other class, so this line is arithmetically
+       what it always was for the other five.
+
+       The BOOKKEEPING is deliberately not split. `damageTakenFromContact` is a
+       measure of what the field threw at the player, not of what the health bar
+       eventually lost, and the balance harness reads it to compare classes —
+       netting a wound the player then cancelled would make The Widow look like
+       she was being hit less rather than paying for it differently.
+    */
+    p.hp -= p.takeWound(taken)
+    if (taken > 0) p.onHurt()
     if (!environmental) this.sound('playerHurt')
     if (environmental) this.damageTakenFromHazards += taken
     else {
