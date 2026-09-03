@@ -11,8 +11,8 @@
  * disagree, that is worth knowing. The cost is that changes to frame selection
  * belong in both, and the comments in each say so.
  */
-import { decodePng, encodePng, blankImage, type Image } from './png.ts'
-import { readFileSync } from 'node:fs'
+import { encodePng, blankImage, type Image } from './png.ts'
+import { readAtlas, type AtlasFrame } from './atlas-read.ts'
 import { Rng } from '../src/core/rng.ts'
 import {
   TUNING, WEAPONS, decalKindsFor, projectileScaleFor, sceneryKindsFor,
@@ -60,17 +60,17 @@ const CLIP_FPS = 15
 /** Matches `tuning.combat.attackClipSeconds`, which the renderer reads. */
 const ATTACK_SECONDS = ((TUNING as unknown as { combat?: { attackClipSeconds?: number } }).combat?.attackClipSeconds) ?? 0.6
 
-export interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
-interface AtlasJson {
-  rig: { directions: string[] }
-  /** Per-sheet direction lists; a sheet absent from here is on the rig's four. */
-  dirSets?: Record<string, string[]>
-  clipLengths: Record<string, Record<string, number>>
-  frames: Record<string, Frame>
-}
+/**
+ * A frame's rect and the page it was packed onto.
+ *
+ * The atlas is several images now, not one, so a rect on its own no longer
+ * says where to read from — `imageFor(f)` completes it. Re-exported from
+ * `atlas-read.ts` rather than declared again here so the two cannot drift.
+ */
+export type Frame = AtlasFrame
 
-const atlasImg = decodePng(readFileSync('public/atlas.png'))
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as AtlasJson
+const atlas = readAtlas()
+const imageFor = atlas.imageFor
 
 export const frames = atlas.frames
 export const clipLengths = atlas.clipLengths
@@ -165,6 +165,7 @@ export function swingSprite(
 export function drawSpriteScaled(
   img: Image, f: Frame, cx: number, cy: number, scale: number,
 ): void {
+  const src = imageFor(f)
   const w = Math.max(1, Math.round(f.w * scale))
   const h = Math.max(1, Math.round(f.h * scale))
   const x0 = Math.round(cx - w / 2)
@@ -177,12 +178,12 @@ export function drawSpriteScaled(
       const sx = f.x + Math.min(f.w - 1, Math.floor((x / w) * f.w))
       const tx = x0 + x
       if (tx < 0 || tx >= img.width) continue
-      const si = (sy * atlasImg.width + sx) * 4
-      if (atlasImg.data[si + 3] === 0) continue
+      const si = (sy * src.width + sx) * 4
+      if (src.data[si + 3] === 0) continue
       const di = (ty * img.width + tx) * 4
-      img.data[di] = atlasImg.data[si]
-      img.data[di + 1] = atlasImg.data[si + 1]
-      img.data[di + 2] = atlasImg.data[si + 2]
+      img.data[di] = src.data[si]
+      img.data[di + 1] = src.data[si + 1]
+      img.data[di + 2] = src.data[si + 2]
       img.data[di + 3] = 255
     }
   }
@@ -240,13 +241,14 @@ export class WorldPainter {
    */
   private drawFrameAlpha(f: Frame, worldX: number, worldY: number, alpha: number): void {
     if (alpha <= 0.01) return
+    const src = imageFor(f)
     const dx = Math.round((worldX - this.camX) * this.zoom + f.ox * this.zoom)
     const dy = Math.round((worldY - this.camY) * this.zoom + f.oy * this.zoom)
     const { canvas } = this
     for (let y = 0; y < f.h; y++) {
       for (let x = 0; x < f.w; x++) {
-        const si = ((f.y + y) * atlasImg.width + (f.x + x)) * 4
-        const sa = atlasImg.data[si + 3]
+        const si = ((f.y + y) * src.width + (f.x + x)) * 4
+        const sa = src.data[si + 3]
         if (sa === 0) continue
         const k = (sa / 255) * alpha
         for (let py = 0; py < this.zoom; py++) {
@@ -255,9 +257,9 @@ export class WorldPainter {
             const ty = dy + y * this.zoom + py
             if (tx < 0 || ty < 0 || tx >= canvas.width || ty >= canvas.height) continue
             const di = (ty * canvas.width + tx) * 4
-            canvas.data[di] = canvas.data[di] * (1 - k) + atlasImg.data[si] * k
-            canvas.data[di + 1] = canvas.data[di + 1] * (1 - k) + atlasImg.data[si + 1] * k
-            canvas.data[di + 2] = canvas.data[di + 2] * (1 - k) + atlasImg.data[si + 2] * k
+            canvas.data[di] = canvas.data[di] * (1 - k) + src.data[si] * k
+            canvas.data[di + 1] = canvas.data[di + 1] * (1 - k) + src.data[si + 1] * k
+            canvas.data[di + 2] = canvas.data[di + 2] * (1 - k) + src.data[si + 2] * k
           }
         }
       }
@@ -299,22 +301,23 @@ export class WorldPainter {
   }
 
   private drawFrame(f: Frame, worldX: number, worldY: number): void {
+    const src = imageFor(f)
     const dx = Math.round((worldX - this.camX) * this.zoom + f.ox * this.zoom)
     const dy = Math.round((worldY - this.camY) * this.zoom + f.oy * this.zoom)
     const { canvas } = this
     for (let y = 0; y < f.h; y++) {
       for (let x = 0; x < f.w; x++) {
-        const si = ((f.y + y) * atlasImg.width + (f.x + x)) * 4
-        if (atlasImg.data[si + 3] === 0) continue
+        const si = ((f.y + y) * src.width + (f.x + x)) * 4
+        if (src.data[si + 3] === 0) continue
         for (let py = 0; py < this.zoom; py++) {
           for (let px = 0; px < this.zoom; px++) {
             const tx = dx + x * this.zoom + px
             const ty = dy + y * this.zoom + py
             if (tx < 0 || ty < 0 || tx >= canvas.width || ty >= canvas.height) continue
             const di = (ty * canvas.width + tx) * 4
-            canvas.data[di] = atlasImg.data[si]
-            canvas.data[di + 1] = atlasImg.data[si + 1]
-            canvas.data[di + 2] = atlasImg.data[si + 2]
+            canvas.data[di] = src.data[si]
+            canvas.data[di + 1] = src.data[si + 1]
+            canvas.data[di + 2] = src.data[si + 2]
             canvas.data[di + 3] = 255
           }
         }
@@ -328,6 +331,7 @@ export class WorldPainter {
    * pixel art and any filtering would be a lie about what the game draws.
    */
   private drawFrameT(f: Frame, worldX: number, worldY: number, rot: number, scale: number): void {
+    const src = imageFor(f)
     const { canvas } = this
     const cx = (worldX - this.camX) * this.zoom
     const cy = (worldY - this.camY) * this.zoom
@@ -342,15 +346,15 @@ export class WorldPainter {
         const fx = Math.floor(ux + f.w / 2)
         const fy = Math.floor(uy + f.h / 2)
         if (fx < 0 || fy < 0 || fx >= f.w || fy >= f.h) continue
-        const si = ((f.y + fy) * atlasImg.width + (f.x + fx)) * 4
-        if (atlasImg.data[si + 3] === 0) continue
+        const si = ((f.y + fy) * src.width + (f.x + fx)) * 4
+        if (src.data[si + 3] === 0) continue
         const tx = Math.round(cx + dx)
         const ty = Math.round(cy + dy)
         if (tx < 0 || ty < 0 || tx >= canvas.width || ty >= canvas.height) continue
         const di = (ty * canvas.width + tx) * 4
-        canvas.data[di] = atlasImg.data[si]
-        canvas.data[di + 1] = atlasImg.data[si + 1]
-        canvas.data[di + 2] = atlasImg.data[si + 2]
+        canvas.data[di] = src.data[si]
+        canvas.data[di + 1] = src.data[si + 1]
+        canvas.data[di + 2] = src.data[si + 2]
         canvas.data[di + 3] = 255
       }
     }

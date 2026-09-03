@@ -39,7 +39,8 @@ npm run atlas
 npm run dev
 ```
 
-`npm run atlas` builds `public/atlas.png` from `assets/`. It is gitignored — the
+`npm run atlas` builds `public/atlas-*.png` + `atlas.json` from `assets/` — one page
+per 2048x2048 sheet, for reasons measured in NOTES. They are gitignored, so the
 licensed art is never in a build output, only in `assets/`.
 
 WASD / arrows / left stick to move. Space or right trigger for your class

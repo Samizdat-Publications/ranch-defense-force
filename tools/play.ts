@@ -166,10 +166,18 @@ try {
   /*
      Throw away everything recorded before the run.
 
-     Page load blocks the main thread for tens of seconds -- a 12MB atlas and
-     the whole module graph -- and shows up as one absurd 52-60s "frame" that
-     dominates the spike table and means nothing about play. Reset here so
-     every number below is gameplay, and re-base the clock on the run.
+     Page load blocks the main thread for tens of seconds and shows up as one
+     absurd 52-60s "frame" that dominates the spike table and means nothing
+     about play. Reset here so every number below is gameplay, and re-base the
+     clock on the run.
+
+     It is the MODULE GRAPH, not the art -- this comment used to blame "a 12MB
+     atlas" and that was wrong. `tools/load-time.ts` measured it: the first
+     load into a cold browser context takes ~81s and `rdf.atlas` resolves 7ms
+     after `window.rdf` appears, because the atlas fetched and decoded in
+     parallel while vite transformed. Every later load takes ~190ms to boot and
+     ~700ms to art. The atlas is never awaited on the boot path anyway --
+     `main.ts` fires `Atlas.load` and does not wait, deliberately.
   */
   /* `RDF_NO_OVERLAY=1` toggles the dev overlay off (F1) before measuring, so
      its per-frame text and graph work can be ruled in or out. */

@@ -39,16 +39,10 @@
  * nothing structurally disappeared. Judging good is still done by looking.
  */
 import { readFileSync } from 'node:fs'
-import { decodePng } from './png.ts'
+import { readAtlas } from './atlas-read.ts'
 
-interface Frame { x: number; y: number; w: number; h: number }
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
-  frames: Record<string, Frame>
-  clipLengths: Record<string, Record<string, number>>
-  dirSets?: Record<string, string[]>
-  rig: { directions: string[] }
-}
-const sheet = decodePng(readFileSync('public/atlas.png'))
+const atlas = readAtlas()
+type Frame = (typeof atlas.frames)[string]
 
 /** The ambient scene objects — the only clips that must hold their shape. */
 const manifest = JSON.parse(readFileSync('art/sprites.json', 'utf8')) as {
@@ -60,6 +54,7 @@ const BODY_FLOOR = 0.75
 const MOVER_FLOOR = 0.45
 
 function measure(f: Frame): { body: number; mover: number } {
+  const sheet = atlas.imageFor(f)
   let body = 0
   let mover = 0
   for (let y = f.y; y < f.y + f.h; y++) {

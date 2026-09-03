@@ -1,9 +1,15 @@
 /**
- * Slices every source named in `art/sprites.json` and packs it into one
- * `public/atlas.png` + `public/atlas.json`. Runs offline — the game never sees
- * `assets/`, which is also what keeps the licensed art out of a deployed build.
+ * Slices every source named in `art/sprites.json` and packs it into
+ * `public/atlas-0.png … atlas-N.png` + one `public/atlas.json`. Runs offline —
+ * the game never sees `assets/`, which is also what keeps the licensed art out
+ * of a deployed build.
  *
  *   npm run atlas
+ *
+ * Pages, not one sheet, and the size of a page is measured: see the comment on
+ * `PAGE_MAX` down in the pack section. Every frame in `atlas.json` carries the
+ * `page` it sits on, and every reader — the renderer, the DOM sprites, the
+ * offline tools — indexes by it.
  *
  * Each frame is trimmed to its content bounds and records a bottom-centre
  * pivot, so the renderer positions by the character's feet and never has to
@@ -14,7 +20,7 @@
  * design says this has already gone wrong once. Thirty seconds of code removes
  * the entire category.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'node:fs'
 import {
   decodePng, encodePng, blankImage, blit, contentBounds, dominantBandBounds, type Image,
 } from './png.ts'
@@ -22,7 +28,9 @@ import { loadPalette, makeQuantiser } from './conform-fx.ts'
 import { wangKey, wangKeysFor, type Corner } from '../src/render/wang.ts'
 
 interface Frame {
-  /** Position in the atlas. */
+  /** Which atlas page holds it — `public/atlas-<page>.png`. */
+  page: number
+  /** Position on that page. */
   x: number
   y: number
   w: number
@@ -1193,94 +1201,181 @@ if (existsSync(TILESET_DIR)) {
 pending.sort((a, b) => b.sh - a.sh || b.sw - a.sw)
 
 /*
-   2048, not 1024, and the reason is shape rather than size.
+   PAGES OF 2048, AND THE NUMBER IS MEASURED RATHER THAN CHOSEN FOR TASTE.
 
-   The eight-direction animals add ~2,400 frames to ~1,860, and at 1024 wide
-   that packs to 1024x16384 — measured, not estimated. The AREA is fine either
-   way; a 16384 dimension is not. It is past the max texture size a lot of
-   hardware will take, and iOS Safari caps a canvas by area at around the same
-   number, so the tall page is the one that risks failing to allocate on a
-   machine that would happily hold the pixels in a different shape.
+   This used to emit one sheet and pick the narrowest width that kept both
+   dimensions under 8192. That produced 4096x8192 — 8,176 frames, 12.7MB of
+   PNG, ~134MB decoded — and `tools/atlas-bench.ts` measured what it cost on
+   the owner's machine, blitting the game's own draw load out of six different
+   sources in the same headed Chrome:
 
-   Widening halves the height for the same pixels: 2048x8192, both dimensions
-   inside limits everywhere. Nothing reads the width as a constant — the
-   renderer takes it from atlas.json and every frame carries absolute coords —
-   so this is safe to change again if the atlas keeps growing.
+   | source | 600 draws | 4000 draws | JS inside drawImage |
+   |---|---|---|---|
+   | atlas.png, 4096x8192 | 8.30ms | 41.7ms | 2.80ms |
+   | a 2048x2048 crop     | 4.20ms | 12.4ms | 0.40ms |
+   | a 1024x1024 crop     | 4.20ms | 12.4ms | 0.40ms |
+
+   Then `tools/play-trace.ts` traced a real run and found why it is more than a
+   blit cost: Chrome re-decoded the ENTIRE 12MB PNG from compressed bytes about
+   once a second, ~300ms each, for the whole run, plus a 9-17ms GPU re-upload
+   after each. A 4096x8192 RGBA surface is far past what GpuImageDecodeCache
+   will hold, so it can never be cached and is decoded at raster every time.
+
+   Three readings of that bench decide the shape of this packer:
+
+   - **2048x2048 is already as cheap as 1024x1024.** The cliff sits somewhere
+     between 2048² and 4096x8192. Going below 2048 buys nothing measurable and
+     costs pages, so 2048 is the size and there is no reason to revisit it
+     until the bench says otherwise.
+   - **Locality does not matter.** Reads confined to a single 1024 window of
+     the big atlas measured indistinguishable from reads scattered across the
+     whole of it. So this packer is deliberately NOT contorted to keep a
+     sheet's frames on one page; grouping below is tidiness, not a win.
+   - **A second surface is free.** The white-silhouette flash copy tracked the
+     colour atlas exactly at both loads, and alternating source every single
+     draw — which is what the hit flash does — cost the same again. Pages
+     inherit that: the flash copy splits with them at no charge.
 */
+const PAGE_MAX = 2048
+
+/**
+ * Groups the DOM home screen draws and the game loop never does.
+ *
+ * These are the biggest frames in the atlas by a wide margin — whole barns,
+ * complete pens, backdrop strips up to 810px across, all `noTrim` — and they
+ * are drawn once into a static scene rather than per frame in a camera. Giving
+ * them their own page means the pages the renderer samples every frame carry
+ * only field art.
+ *
+ * Verified against the source rather than assumed: every name here is reached
+ * from `src/ui/scene.ts` and from nothing under `src/render/` or
+ * `src/content/*.json`. `base.*` is deliberately NOT here — `maps.json` uses it
+ * for the lab map's scenery and wall panels as well as the home screen. Nor is
+ * `item.*`: `drawPickups` draws an item's card art as its ground pickup.
+ *
+ * Nothing about correctness depends on this list. A frame carries its page
+ * index and every reader indexes by it, so a name in the wrong bucket costs a
+ * little packing tidiness and nothing else.
+ */
+const SCREEN_GROUPS = new Set([
+  'scene', 'sceneBg', 'ranch', 'pen', 'vault', 'meta', 'portrait',
+  'vatSpecimen', 'windmill', 'scarecrow', 'wheat', 'labConsole',
+  'tankSwirl', 'tankPanel', 'tankBarrel', 'tankVat',
+])
+
 function nextPowerOfTwo(v: number): number {
   let p = 1
   while (p < v) p *= 2
   return p
 }
 
-/** Shelf-pack at a given width and report the height it needs. */
-function packAt(w: number): { placed: (Pending & { px: number; py: number })[]; height: number } {
+/*
+   Page HEIGHT rounds to 64, not to a power of two, and only the height does.
+
+   Width is a power of two because the shelf packer fills it: every page but
+   the last runs the full 2048 across. Height is whatever the shelves happened
+   to reach, and rounding that up to a power of two is what turns a page that
+   needed 1100 rows into a 2048-row texture 43% full of transparent pixels —
+   measured on the first paged build, which shipped 25.3M pixels where 20.6M
+   held all the art.
+
+   Nothing here needs a power-of-two texture. These are `drawImage` sources on
+   a 2D canvas: no mipmaps, no `REPEAT` wrap, no sampler that cares. 64 keeps
+   the rows tidy without paying for a whole doubling.
+*/
+function roundUp(v: number, to: number): number {
+  return Math.ceil(v / to) * to
+}
+
+type Placed = Pending & { px: number; py: number }
+interface Page { w: number; h: number; placed: Placed[] }
+
+/**
+ * Shelf-pack one bucket into as many `PAGE_MAX` pages as it needs.
+ *
+ * Same shelf packer as before — tallest first, rows of whatever fits — with
+ * one extra rule: when a new shelf would run off the bottom of the page, the
+ * page is closed and the next one starts. Each finished page is then shrunk to
+ * fit what actually landed on it, so a page holding a handful of frames does
+ * not ship 2048² of transparent pixels.
+ */
+function packBucket(items: Pending[], into: Page[]): void {
   let x = PAD
   let y = PAD
   let shelfHeight = 0
-  const out: (Pending & { px: number; py: number })[] = []
-  for (const p of pending) {
-    if (x + p.sw + PAD > w) {
+  let placed: Placed[] = []
+
+  const close = (): void => {
+    if (placed.length === 0) return
+    let right = 0
+    let bottom = 0
+    for (const p of placed) {
+      if (p.px + p.sw + PAD > right) right = p.px + p.sw + PAD
+      if (p.py + p.sh + PAD > bottom) bottom = p.py + p.sh + PAD
+    }
+    into.push({ w: nextPowerOfTwo(right), h: roundUp(bottom, 64), placed })
+    placed = []
+  }
+
+  for (const p of items) {
+    if (x + p.sw + PAD > PAGE_MAX) {
       x = PAD
       y += shelfHeight + PAD * 2
       shelfHeight = 0
     }
-    out.push({ ...p, px: x, py: y })
+    if (y + p.sh + PAD > PAGE_MAX) {
+      close()
+      x = PAD
+      y = PAD
+      shelfHeight = 0
+    }
+    placed.push({ ...p, px: x, py: y })
     x += p.sw + PAD * 2
     if (p.sh > shelfHeight) shelfHeight = p.sh
   }
-  return { placed: out, height: nextPowerOfTwo(y + shelfHeight + PAD * 2) }
+  close()
+}
+
+// A frame wider or taller than a page can never be placed, and silently
+// dropping it would show up much later as a missing sprite. Fail here instead.
+for (const p of pending) {
+  if (p.sw + PAD * 2 > PAGE_MAX || p.sh + PAD * 2 > PAGE_MAX) {
+    errors.push(
+      `${p.name}: ${p.sw}x${p.sh} does not fit a ${PAGE_MAX}x${PAGE_MAX} page. `
+      + `Either the source is wrong or the page size has to grow — and growing it `
+      + `past 2048 is what tools/atlas-bench.ts measured as expensive.`,
+    )
+  }
 }
 
 /*
-   THE WIDTH IS CHOSEN, NOT TYPED.
+   Field art first, home-screen scenery after, each into its own run of pages.
 
-   It used to be a hand-set constant, moved from 1024 to 2048 when the
-   eight-direction animals pushed the height to 16384. The comment that came
-   with that change said it was "safe to change again if the atlas keeps
-   growing" -- and then the atlas kept growing, hit 2048x16384 again, and
-   nothing said so. A constant that has to be revisited by a human who notices
-   is a constant that will be missed.
-
-   16384 is past the max texture size a lot of hardware will take, so a tall
-   page risks failing to allocate on a machine that would happily hold the same
-   pixels in a different shape. Widening trades height for width at identical
-   area, which is strictly better: 2048x16384 and 4096x8192 are the same 33.5M
-   pixels, and only one of them has a dimension that some GPUs refuse.
-
-   So: try the narrowest width that keeps BOTH dimensions inside the ceiling,
-   and fail loudly rather than emit a page that cannot be uploaded. Nothing
-   reads the width as a constant -- the renderer takes it from atlas.json and
-   every frame carries absolute coordinates.
+   `pending` is already sorted tallest-first, and partitioning a sorted list
+   keeps each bucket sorted, so the pack stays deterministic: the same art
+   produces the same pages produces the same atlas.json.
 */
-const DIMENSION_CEILING = 8192
-let width = 0
-let packedResult: ReturnType<typeof packAt> | null = null
-for (const w of [1024, 2048, 4096, 8192]) {
-  const attempt = packAt(w)
-  if (attempt.height <= DIMENSION_CEILING) {
-    width = w
-    packedResult = attempt
-    break
-  }
-}
-if (!packedResult) {
-  errors.push(
-    `atlas does not fit: even at ${DIMENSION_CEILING} wide the pack needs `
-    + `${packAt(DIMENSION_CEILING).height}px of height, past the ${DIMENSION_CEILING} `
-    + `ceiling. The art has outgrown one page — this needs a second atlas, not a `
-    + `bigger one.`,
-  )
-}
-const { placed, height } = packedResult ?? packAt(2048)
+const pages: Page[] = []
+packBucket(pending.filter((p) => !SCREEN_GROUPS.has(p.name.split('.')[0])), pages)
+const firstScreenPage = pages.length
+packBucket(pending.filter((p) => SCREEN_GROUPS.has(p.name.split('.')[0])), pages)
 
-const atlas = blankImage(width, height)
+if (errors.length > 0) {
+  console.error('\natlas build failed:\n')
+  for (const e of errors) console.error('  ' + e)
+  console.error('')
+  process.exit(1)
+}
+
 const frames: Record<string, Frame> = {}
-
-for (const p of placed) {
-  blit(p.img, p.sx, p.sy, p.sw, p.sh, atlas, p.px, p.py)
-  frames[p.name] = { x: p.px, y: p.py, w: p.sw, h: p.sh, ox: p.ox, oy: p.oy }
-}
+const pageImages: Image[] = pages.map((page, i) => {
+  const img = blankImage(page.w, page.h)
+  for (const p of page.placed) {
+    blit(p.img, p.sx, p.sy, p.sw, p.sh, img, p.px, p.py)
+    frames[p.name] = { page: i, x: p.px, y: p.py, w: p.sw, h: p.sh, ox: p.ox, oy: p.oy }
+  }
+  return img
+})
 
 // ------------------------------------------------------------------- ui
 //
@@ -1323,13 +1418,35 @@ try {
 }
 
 mkdirSync('public', { recursive: true })
-writeFileSync('public/atlas.png', encodePng(atlas))
+
+/*
+   Clear the previous build before writing this one.
+
+   Two things have to go: the single `atlas.png` this tool used to emit, and
+   any `atlas-N.png` from a build that needed more pages than this one does.
+   Either left behind is a file the game will never ask for and a reader might
+   — `public/` is gitignored and nothing else prunes it.
+*/
+if (existsSync('public/atlas.png')) unlinkSync('public/atlas.png')
+for (const f of readdirSync('public')) {
+  const m = f.match(/^atlas-(\d+)\.png$/)
+  if (m && Number(m[1]) >= pages.length) unlinkSync(`public/${f}`)
+}
+
+const pageBytes: number[] = []
+pageImages.forEach((img, i) => {
+  const png = encodePng(img)
+  writeFileSync(`public/atlas-${i}.png`, png)
+  pageBytes.push(png.length)
+})
+
 writeFileSync(
   'public/atlas.json',
   JSON.stringify(
     {
-      width,
-      height,
+      // One entry per `public/atlas-<i>.png`, in order. Every frame carries the
+      // index of the page it sits on; nothing reads a page size as a constant.
+      pages: pageImages.map((img) => ({ w: img.width, h: img.height })),
       rig: { directions: rig.directions, clips: rig.clips },
       // Sheets that are NOT on the humanoid rig. A sheet absent from here uses
       // the rig's four directions, so every existing sheet is untouched.
@@ -1342,8 +1459,26 @@ writeFileSync(
   ),
 )
 
-const bytes = readFileSync('public/atlas.png').length
+let totalBytes = 0
+let totalPixels = 0
+let usedPixels = 0
+pageImages.forEach((img, i) => {
+  let used = 0
+  for (const p of pages[i].placed) used += p.sw * p.sh
+  totalBytes += pageBytes[i]
+  totalPixels += img.width * img.height
+  usedPixels += used
+  console.log(
+    `  atlas-${i}.png  ${String(img.width).padStart(4)}x${String(img.height).padEnd(5)}`
+    + `${String(pages[i].placed.length).padStart(5)} frames  `
+    + `${((used / (img.width * img.height)) * 100).toFixed(0).padStart(3)}% used  `
+    + `${(pageBytes[i] / 1024).toFixed(0).padStart(5)}KB`
+    + (i === firstScreenPage ? '   <- home-screen scenery from here' : ''),
+  )
+})
 console.log(
-  `atlas: ${Object.keys(frames).length} frames, ${width}x${height}, ` +
-  `${(bytes / 1024).toFixed(0)}KB -> public/atlas.png`,
+  `atlas: ${Object.keys(frames).length} frames on ${pageImages.length} pages, `
+  + `${(usedPixels / 1e6).toFixed(1)}M of ${(totalPixels / 1e6).toFixed(1)}M pixels `
+  + `(${((usedPixels / totalPixels) * 100).toFixed(0)}%), `
+  + `${(totalBytes / 1024).toFixed(0)}KB total -> public/atlas-*.png`,
 )

@@ -24,12 +24,9 @@
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { decodePng, encodePng } from './png.ts'
+import { readAtlas } from './atlas-read.ts'
 
-interface Frame { x: number; y: number; w: number; h: number }
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
-  frames: Record<string, Frame>
-}
-const sheet = decodePng(readFileSync('public/atlas.png'))
+const atlas = readAtlas()
 const OUT = 'art/pen-quads.json'
 
 const PENS = Object.keys(atlas.frames).filter((k) => k.startsWith('pen.'))
@@ -49,6 +46,7 @@ const quads: Record<string, Quad & { content: string; footLine: number }> = {}
 
 for (const key of PENS) {
   const f = atlas.frames[key]
+  const sheet = atlas.imageFor(f)
   const at = (x: number, y: number): [number, number, number, number] => {
     const i = ((f.y + y) * sheet.width + (f.x + x)) * 4
     return [sheet.data[i], sheet.data[i + 1], sheet.data[i + 2], sheet.data[i + 3]]

@@ -32,6 +32,7 @@
  */
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { decodePng, encodePng, blankImage, blit, contentBounds, type Image } from './png.ts'
+import { readAtlas } from './atlas-read.ts'
 import { drawText } from './tinyfont.ts'
 
 /** The renderer's integer zoom. A sprite judged at 1x is not the sprite you ship. */
@@ -55,12 +56,7 @@ const CLAIMED: Record<string, string> = {
   south: 'down', north: 'up', west: 'left', east: 'right',
 }
 
-interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
-const atlasImg = decodePng(readFileSync('public/atlas.png'))
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
-  frames: Record<string, Frame>
-  clipLengths: Record<string, Record<string, number>>
-}
+const atlas = readAtlas()
 
 /** The LimeZu animals already on the field — what these have to stand next to. */
 const LIMEZU = ['sickHog', 'blownSheep', 'feralDog', 'prizeBull'] as const
@@ -165,7 +161,7 @@ function grassField(w: number, h: number): Image {
   const tw = g.w * ZOOM, th = g.h * ZOOM
   const tile = scaled((() => {
     const t = blankImage(g.w, g.h)
-    blit(atlasImg, g.x, g.y, g.w, g.h, t, 0, 0)
+    blit(atlas.imageFor(g), g.x, g.y, g.w, g.h, t, 0, 0)
     return t
   })(), ZOOM)
   for (let y = 0; y < h; y += th) for (let x = 0; x < w; x += tw) blit(tile, 0, 0, tw, th, out, x, y)
@@ -176,7 +172,7 @@ function atlasFrame(key: string): Image | null {
   const f = atlas.frames[key]
   if (!f) return null
   const img = blankImage(f.w, f.h)
-  blit(atlasImg, f.x, f.y, f.w, f.h, img, 0, 0)
+  blit(atlas.imageFor(f), f.x, f.y, f.w, f.h, img, 0, 0)
   return img
 }
 

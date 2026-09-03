@@ -22,19 +22,12 @@
  * wrong one fails SILENTLY, sliding the animation instead of stepping it, which
  * is the worst way for it to fail.
  */
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs'
-import { decodePng, encodePng, blankImage, type Image } from './png.ts'
+import { writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs'
+import { encodePng, blankImage, type Image } from './png.ts'
+import { readAtlas } from './atlas-read.ts'
 
-interface Frame { x: number; y: number; w: number; h: number; ox: number; oy: number }
-interface Atlas {
-  frames: Record<string, Frame>
-  clipLengths: Record<string, Record<string, number>>
-  dirSets?: Record<string, string[]>
-  rig: { directions: string[] }
-}
-
-const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as Atlas
-const sheet = decodePng(readFileSync('public/atlas.png'))
+const atlas = readAtlas()
+type Frame = (typeof atlas.frames)[string]
 const OUT = 'art/strips'
 
 // Rebuilt from scratch every run: a stale strip for a clip that has since been
@@ -44,6 +37,7 @@ mkdirSync(OUT, { recursive: true })
 
 /** Copy a rect out of the atlas into `dst` at (dx, dy). */
 function blit(dst: Image, f: Frame, dx: number, dy: number): void {
+  const sheet = atlas.imageFor(f)
   for (let y = 0; y < f.h; y++) {
     for (let x = 0; x < f.w; x++) {
       const si = ((f.y + y) * sheet.width + (f.x + x)) * 4

@@ -365,8 +365,8 @@ export class Renderer {
    */
   private drawOverhead(ctx: CanvasRenderingContext2D, alphaT: number, ox: number, oy: number): void {
     const cfg = this.world.map.overhead
-    const img = this.atlas?.image
-    if (!cfg || !img || !this.overhead.length) return
+    const imgs = this.atlas?.images
+    if (!cfg || !imgs || !this.overhead.length) return
 
     // Own cull bounds, derived from the camera the same way drawFog does. The
     // sprite pass computes its own inside collectSprites and does not hand them
@@ -397,7 +397,10 @@ export class Renderer {
       if (a <= 0.01) continue
       ctx.globalAlpha = a
       const f = o.frame
-      ctx.drawImage(img, f.x, f.y, f.w, f.h, Math.round(o.x + f.ox), Math.round(o.y + f.oy), f.w, f.h)
+      ctx.drawImage(
+        imgs[f.page], f.x, f.y, f.w, f.h,
+        Math.round(o.x + f.ox), Math.round(o.y + f.oy), f.w, f.h,
+      )
       this.drawCalls++
     }
     ctx.globalAlpha = 1
@@ -465,9 +468,9 @@ export class Renderer {
       return
     }
 
-    const img = this.atlas.image
+    const imgs = this.atlas.images
     const put = (f: AtlasFrame, x: number, y: number): void => {
-      g.drawImage(img, f.x, f.y, f.w, f.h, x, y, tile, tile)
+      g.drawImage(imgs[f.page], f.x, f.y, f.w, f.h, x, y, tile, tile)
     }
 
     for (let y = 0; y < rows; y++) {
@@ -544,7 +547,7 @@ export class Renderer {
     const atlas = this.atlas
     const set = b.wangSet
     if (!atlas || !set || !atlas.get(wangKey(set, 1, 1, 1, 1))) return false
-    const img = atlas.image
+    const imgs = atlas.images
     // 32, the same literal `bakeTerrain` uses -- the grid the whole atlas is on.
     const tile = 32
     const cols = Math.ceil(c.width / tile)
@@ -573,7 +576,7 @@ export class Renderer {
         // floor, which would double the bake and hide the map's real ground.
         if (!(nw || ne || sw || se)) continue
         const f = atlas.get(wangKey(set, nw, ne, sw, se))
-        if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
+        if (f) g.drawImage(imgs[f.page], f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
       }
     }
 
@@ -595,10 +598,10 @@ export class Renderer {
     g: CanvasRenderingContext2D, c: HTMLCanvasElement, b: MapBoundary,
   ): void {
     const atlas = this.atlas
-    const img = atlas?.image
+    const imgs = atlas?.images
     const kinds = (b.panels ?? [])
       .map((k) => atlas?.get(k)).filter((f): f is AtlasFrame => !!f)
-    if (!img || !kinds.length) return
+    if (!imgs || !kinds.length) return
 
     const rng = new Rng(this.world.seed ^ 0xfa11_0000)
     const PITCH = 96
@@ -609,7 +612,7 @@ export class Renderer {
       // foot meets the floor, which is what puts it in the wall rather than
       // floating over it.
       g.drawImage(
-        img, f.x, f.y, f.w, f.h,
+        imgs[f.page], f.x, f.y, f.w, f.h,
         Math.round(x - f.w / 2 + f.ox), Math.round(b.band - f.h + f.oy), f.w, f.h,
       )
     }
@@ -633,8 +636,8 @@ export class Renderer {
   private paintFence(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
     const post = this.atlas?.get('prop.fencePost')
     const rail = this.atlas?.get('prop.fenceRail')
-    const img = this.atlas?.image
-    if (!post || !img) {
+    const imgs = this.atlas?.images
+    if (!post || !imgs) {
       g.strokeStyle = '#6b5027'
       g.lineWidth = 6
       g.strokeRect(3, 3, c.width - 6, c.height - 6)
@@ -646,7 +649,10 @@ export class Renderer {
     const rng = new Rng(this.world.seed ^ 0x5eed_fe4c)
     const PITCH = 56
     const put = (f: AtlasFrame, x: number, y: number): void => {
-      g.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy), f.w, f.h)
+      g.drawImage(
+        imgs[f.page], f.x, f.y, f.w, f.h,
+        Math.round(x + f.ox), Math.round(y + f.oy), f.w, f.h,
+      )
     }
     const pick = (): AtlasFrame => (rail && rng.next() < 0.25 ? rail : post)
 
@@ -771,8 +777,8 @@ export class Renderer {
    * it; this is meant to break up the field, not to decorate it.
    */
   private paintDecals(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
-    const img = this.atlas?.image
-    if (!img) return
+    const imgs = this.atlas?.images
+    if (!imgs) return
     const kinds = decalKindsFor(this.world.map)
       .map((k) => this.atlas?.get(k))
       .filter((f): f is AtlasFrame => !!f)
@@ -786,7 +792,10 @@ export class Renderer {
       const x = rng.int(pad, c.width - pad)
       const y = rng.int(pad, c.height - pad)
       g.globalAlpha = 0.75
-      g.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy), f.w, f.h)
+      g.drawImage(
+        imgs[f.page], f.x, f.y, f.w, f.h,
+        Math.round(x + f.ox), Math.round(y + f.oy), f.w, f.h,
+      )
     }
     g.globalAlpha = 1
   }
@@ -824,7 +833,7 @@ export class Renderer {
       return false
     }
 
-    const img = atlas.image
+    const imgs = atlas.images
     // Its own RNG stream: the ground must not move a single later spawn, and
     // the seed guarantee is what every replay test rests on.
     const rng = new Rng(this.world.seed ^ 0x7e44a1)
@@ -858,7 +867,7 @@ export class Renderer {
           const sw = at[(y + 1) * vw + x] as Corner
           const se = at[(y + 1) * vw + x + 1] as Corner
           const f = atlas.get(wangKey(set, nw, ne, sw, se))
-          if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
+          if (f) g.drawImage(imgs[f.page], f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
         }
       }
     }
@@ -888,7 +897,7 @@ export class Renderer {
             const se = soil[(y + 1) * vw + x + 1] as Corner
             if (!(nw || ne || sw || se)) continue
             const f = atlas.get(wangKey(soilSet, nw, ne, sw, se))
-            if (f) g.drawImage(img, f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
+            if (f) g.drawImage(imgs[f.page], f.x, f.y, f.w, f.h, x * tile, y * tile, tile, tile)
           }
         }
       }
@@ -1432,16 +1441,20 @@ export class Renderer {
       this.order[this.bucketCursor[b]++] = i
     }
 
-    const atlasImg = this.atlas?.image
-    const flashImg = this.atlas?.flash
+    // Hoisted out of the loop: two array lookups, then an index per sprite.
+    // The pages cost nothing here — a frame's `page` is a property read the
+    // loop was already doing five of, and switching source between draws
+    // measured free (tools/atlas-bench.ts, condition e).
+    const atlasImgs = this.atlas?.images
+    const flashImgs = this.atlas?.flash
 
     for (let k = 0; k < n; k++) {
       const it = this.items[this.order[k]]
       const f = it.frame
       const plain = it.rotation === 0 && it.scaleX === 1 && it.scaleY === 1 && it.alpha === 1
 
-      if (f && atlasImg) {
-        const src = it.flash && flashImg ? flashImg : atlasImg
+      if (f && atlasImgs) {
+        const src = it.flash && flashImgs ? flashImgs[f.page] : atlasImgs[f.page]
         if (plain) {
           // The hot path: one drawImage, no state changes.
           ctx.drawImage(src, f.x, f.y, f.w, f.h, it.x + f.ox, it.y - it.liftY + f.oy, f.w, f.h)
@@ -1529,7 +1542,7 @@ export class Renderer {
       if (e.rotation !== 0) ctx.rotate(e.rotation)
       if (e.scale !== 1) ctx.scale(e.scale, e.scale)
       ctx.drawImage(
-        atlas.image,
+        atlas.images[frame.page],
         frame.x, frame.y, frame.w, frame.h,
         frame.ox, frame.oy, frame.w, frame.h,
       )
@@ -1883,7 +1896,7 @@ export class Renderer {
         const f = this.atlas?.get(h.sprite)
         if (f) {
           ctx.drawImage(
-            this.atlas!.image, f.x, f.y, f.w, f.h,
+            this.atlas!.images[f.page], f.x, f.y, f.w, f.h,
             Math.round(h.x - f.w / 2), Math.round(h.y - f.h / 2), f.w, f.h,
           )
           this.drawCalls++
@@ -1916,7 +1929,7 @@ export class Renderer {
 
   private drawPickups(ctx: CanvasRenderingContext2D, alpha: number): void {
     const w = this.world
-    const img = this.atlas?.image
+    const imgs = this.atlas?.images
     for (let i = 0; i < w.pickups.live; i++) {
       const g = w.pickups.items[i]
       const x = g.px + (g.x - g.px) * alpha
@@ -1929,8 +1942,11 @@ export class Renderer {
       const f = g.kind === 'gear' && g.itemId
         ? this.atlas?.get(itemCardSprite(g.itemId)) ?? this.atlas?.get('pickup.feed')
         : this.atlas?.get(`pickup.${g.kind}`)
-      if (f && img) {
-        ctx.drawImage(img, f.x, f.y, f.w, f.h, Math.round(x + f.ox), Math.round(y + f.oy + bob), f.w, f.h)
+      if (f && imgs) {
+        ctx.drawImage(
+          imgs[f.page], f.x, f.y, f.w, f.h,
+          Math.round(x + f.ox), Math.round(y + f.oy + bob), f.w, f.h,
+        )
       } else {
         ctx.fillStyle = g.kind === 'xp' ? PALETTE.xp : PALETTE.feed
         const s = g.kind === 'xp' ? 5 : 7

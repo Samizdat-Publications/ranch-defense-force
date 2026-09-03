@@ -2,9 +2,15 @@
  * Atlas sprites inside DOM elements.
  *
  * The screens are DOM, not canvas, so a card cannot just blit a frame. This
- * points a div's `background-image` at the same `atlas.png` the renderer uses
- * and positions it by the frame's rect — a CSS sprite sheet, with the atlas we
+ * points a div's `background-image` at the same atlas the renderer uses and
+ * positions it by the frame's rect — a CSS sprite sheet, with the atlas we
  * already generate standing in for a hand-built one.
+ *
+ * The atlas is PAGED — several images of at most 2048x2048, for reasons
+ * measured and recorded on `Atlas` — so an element's background url is the url
+ * of ITS frame's page and its `background-size` is that page's size. Get
+ * either from the wrong page and the sprite is a window onto the wrong art,
+ * which is why both go through `pageOf` below rather than being typed twice.
  *
  * The alternative was a `<canvas>` per card, which means a context, a draw call
  * and a resize path for every offer on screen, to show one static 20px picture.
@@ -12,15 +18,30 @@
  * Everything degrades to nothing: no atlas, no sprite, and the card is the text
  * card it was before.
  */
-import type { Atlas } from '../core/atlas'
+import type { Atlas, AtlasFrame } from '../core/atlas'
 
 let atlas: Atlas | null = null
 let atlasUrl = ''
 
-/** Called once the atlas resolves. Before this, sprites are simply absent. */
+/**
+ * Called once the atlas resolves. Before this, sprites are simply absent.
+ *
+ * `url` is kept for the degenerate case of an atlas that reports no pages at
+ * all; the real per-page urls come off the atlas itself.
+ */
 export function setSpriteAtlas(a: Atlas | null, url: string): void {
   atlas = a
   atlasUrl = url
+}
+
+/** The page a frame lives on: its url and its size, which CSS needs both of. */
+function pageOf(f: AtlasFrame): { url: string; w: number; h: number } {
+  const img = atlas?.images[f.page]
+  return {
+    url: atlas?.pageUrls[f.page] ?? atlasUrl,
+    w: img?.naturalWidth ?? 0,
+    h: img?.naturalHeight ?? 0,
+  }
 }
 
 /**
@@ -42,13 +63,14 @@ export function spriteEl(
   // sprite because the generated art is not one size.
   const scale = forceZoom ?? (raw >= 1 ? Math.max(1, Math.floor(raw)) : raw)
 
+  const page = pageOf(f)
   const el = document.createElement('div')
   el.className = 'card-sprite'
   el.style.width = `${Math.round(f.w * scale)}px`
   el.style.height = `${Math.round(f.h * scale)}px`
-  el.style.backgroundImage = `url('${atlasUrl}')`
+  el.style.backgroundImage = `url('${page.url}')`
   el.style.backgroundPosition = `${-f.x * scale}px ${-f.y * scale}px`
-  el.style.backgroundSize = `${atlas.image.naturalWidth * scale}px ${atlas.image.naturalHeight * scale}px`
+  el.style.backgroundSize = `${page.w * scale}px ${page.h * scale}px`
   el.style.imageRendering = 'pixelated'
   return el
 }
@@ -100,7 +122,7 @@ export function spriteTileUrl(name: string): string | null {
   const ctx = c.getContext('2d')
   if (!ctx) return null
   ctx.imageSmoothingEnabled = false
-  ctx.drawImage(atlas.image, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h)
+  ctx.drawImage(atlas.images[f.page], f.x, f.y, f.w, f.h, 0, 0, f.w, f.h)
   const url = c.toDataURL()
   tileCache.set(name, url)
   return url
@@ -163,7 +185,7 @@ export function stripUrl(
   ctx.imageSmoothingEnabled = false
   rects.forEach((f, i) => {
     ctx.drawImage(
-      atlas!.image, f.x, f.y, f.w, f.h,
+      atlas!.images[f.page], f.x, f.y, f.w, f.h,
       Math.round(i * cell + (cell - f.w) / 2),
       Math.round(cell - f.h),
       f.w, f.h,
@@ -221,14 +243,14 @@ export function sceneSprite(
   if (!f) return null
 
   const scale = height / f.h
+  const page = pageOf(f)
   const sprite = document.createElement('div')
   sprite.className = 'scene-sprite'
   sprite.style.width = `${f.w * scale}px`
   sprite.style.height = `${height}px`
-  sprite.style.backgroundImage = `url('${atlasUrl}')`
+  sprite.style.backgroundImage = `url('${page.url}')`
   sprite.style.backgroundPosition = `${-f.x * scale}px ${-f.y * scale}px`
-  sprite.style.backgroundSize =
-    `${atlas.image.naturalWidth * scale}px ${atlas.image.naturalHeight * scale}px`
+  sprite.style.backgroundSize = `${page.w * scale}px ${page.h * scale}px`
   sprite.style.imageRendering = 'pixelated'
   if (opts.flip) sprite.style.transform = 'scaleX(-1)'
 
