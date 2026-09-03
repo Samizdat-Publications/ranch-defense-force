@@ -864,13 +864,18 @@ const CARRY_MUZZLE_FALLBACK =
  *  1. The weapon that fired most recently is IN HIS HANDS. Ties go to the
  *     lowest index, which is pickup order, which makes the class's starting
  *     weapon the one he holds before a shot has been fired all run.
- *  2. Everything else claims the slot it declared in weapons.json — or the one
- *     its CLASS declares for it, which is how the Veteran shoulders his drum
- *     gun — in pickup order. A weapon that finds its slot taken walks forward
- *     through `CARRY.fallbackOrder`, wrapping, to the first free one.
- *  3. `hand` is never a resting destination: it is struck out before step 2,
- *     so a weapon that declares `hand` and is not the active one falls to the
- *     front of the order instead of stacking on the held weapon.
+ *  2. A weapon whose CLASS names a slot for it takes that slot, ahead of
+ *     everyone. This pass exists because without it the feature is invisible:
+ *     the Veteran's drum gun declares `back`, so does the Varmint Rifle, and
+ *     whichever was picked up first won — the Veteran shouldered his rifle only
+ *     on the runs where he happened not to own one. A class's own posture is
+ *     not a preference to be outranked by pickup order.
+ *  3. Everything else claims the slot it declared in weapons.json, in pickup
+ *     order. A weapon that finds its slot taken walks forward through
+ *     `CARRY.fallbackOrder`, wrapping, to the first free one.
+ *  4. `hand` is never a resting destination: it is not in `fallbackOrder` at
+ *     all, so a weapon that declares `hand` and is not the active one falls to
+ *     the front of the order instead of stacking on the held weapon.
  *
  * Six inventory slots against `hand` plus five anchors means this always fits,
  * so there is no overflow case and nothing is ever dropped.
@@ -896,13 +901,29 @@ export function assignCarrySlots(
   // A bitmask rather than a scratch array: five anchors, no allocation, and
   // nothing to reset between calls.
   let taken = 0
+  for (let i = 0; i < n; i++) out[i] = null
+
+  // The class's own postures claim their slots first. See rule 2.
+  const prefs = classId ? CARRY.classSlot?.[classId] : undefined
+  if (prefs) {
+    for (let i = 0; i < n; i++) {
+      if (i === hand || carrySlotOf(weapons[i].id) === 'none') continue
+      const pref = prefs[weapons[i].id]
+      if (!pref) continue
+      const idx = order.indexOf(pref)
+      if (idx < 0 || (taken & (1 << idx)) !== 0) continue
+      taken |= 1 << idx
+      out[i] = pref
+    }
+  }
+
   for (let i = 0; i < n; i++) {
     const declared = carrySlotOf(weapons[i].id, classId)
     if (declared === 'none') { out[i] = null; continue }
     if (i === hand) { out[i] = 'hand'; continue }
+    if (out[i]) continue
     let start = order.indexOf(declared as CarrySlot)
     if (start < 0) start = 0
-    out[i] = null
     for (let k = 0; k < order.length; k++) {
       const idx = (start + k) % order.length
       if (taken & (1 << idx)) continue
