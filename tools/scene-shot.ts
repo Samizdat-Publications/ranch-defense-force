@@ -54,6 +54,24 @@ const phase = process.argv[5] ?? ''
  * never contained a single pixel of them.
  */
 const frame = process.argv[6] ?? 'scene'
+/**
+ * The window to photograph in, as `WIDTHxHEIGHT[@DPR]`. Default 1920x1080@1.
+ *
+ * The stage is contain-fitted into whatever the window is, so a composition
+ * that reads at 1920x1080 says nothing at all about one that reads at 2560x1440
+ * -- and a fractional device pixel ratio is the whole reason the page was wider
+ * than the window in the first place. Being able to ask for a size is what
+ * makes "verify at both" a command rather than a promise.
+ *
+ *     npm run scene -- yard out.png 1600 calm page 2560x1440
+ *     npm run scene -- yard out.png 1600 calm page 1920x1080@1.25
+ */
+const size = process.argv[7] ?? '1920x1080'
+const sizeMatch = /^(\d+)x(\d+)(?:@([\d.]+))?$/.exec(size)
+if (!sizeMatch) throw new Error(`bad size '${size}' -- expected WIDTHxHEIGHT[@DPR]`)
+const VW = Number(sizeMatch[1])
+const VH = Number(sizeMatch[2])
+const DPR = Number(sizeMatch[3] ?? 1)
 const PORT = 5199
 
 /*
@@ -110,7 +128,7 @@ const candidates = store
 const exe = candidates.find((c) => existsSync(c))
 const browser = await chromium.launch(exe ? { executablePath: exe } : {})
 try {
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 })
+  const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: DPR })
 
   /*
      Ask for the scene, and for the beat of the sequence, we were told to shoot.
@@ -199,7 +217,33 @@ try {
   // -- correctly, since everything else in tools/ is a Node script.
   const imgs = await page.locator('img').count()
   const divs = await page.locator('div').count()
-  console.log(`${kind}${phase ? ` (${phase})` : ''} -> ${out}   (${imgs} img, ${divs} div)`)
+  console.log(`${kind}${phase ? ` (${phase})` : ''} -> ${out}   (${imgs} img, ${divs} div)  ${VW}x${VH}@${DPR}`)
+  /*
+     THE PAGE MUST NOT BE WIDER THAN THE WINDOW, AND THIS IS WHERE THAT IS
+     CHECKED RATHER THAN HOPED FOR.
+
+     `#stage` was `width: 100vw`, which on a fractional device pixel ratio is
+     wider than `documentElement.clientWidth` -- the right-anchored dev overlay
+     hung off the edge with `overflow: hidden` above it, so there was no
+     scrollbar to say so. A number printed on every shot is how it stays fixed.
+  */
+  const width = await page.evaluate(`(() => {
+    const d = document.documentElement
+    const dev = document.querySelector('#dev')
+    const r = dev && dev.getBoundingClientRect()
+    return {
+      client: d.clientWidth, scroll: d.scrollWidth,
+      devRight: r ? +r.right.toFixed(2) : null, devVisible: !!(r && r.width),
+    }
+  })()`) as { client: number; scroll: number; devRight: number | null; devVisible: boolean }
+  const over = width.scroll - width.client
+  console.log(`page width: client ${width.client}, scroll ${width.scroll}` +
+    `${over > 0 ? `  OVERFLOWING BY ${over}px` : '  (no overflow)'}` +
+    `${width.devVisible ? `   #dev right edge ${width.devRight}` : '   #dev hidden'}`)
+  if (over > 0) console.log('WARNING: the document is wider than the viewport')
+  if (width.devVisible && width.devRight !== null && width.devRight > width.client + 0.5) {
+    console.log(`WARNING: #dev is clipped -- its right edge is ${width.devRight} past ${width.client}`)
+  }
   console.log(`framed: ${frame === 'page' ? 'body (whole window)' : (framed ? SCENE : 'body (FALLBACK -- scene root not found)')}`)
   console.log(`surface slot: ${surfaceClass ?? '(none)'}   column: ${down ? 'descended (lab)' : 'up (surface)'}`)
   if (!shot.includes(kind === 'lab' ? 'lab' : `is-${kind}`)) {
