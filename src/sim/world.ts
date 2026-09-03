@@ -1032,8 +1032,8 @@ export class World {
       world: this, player: p, slot: null as never, def: null as never,
       tier: 1, damage: 0, dt,
     }
-    // The ring aims at whatever the weapons would shoot. Resolved once per
-    // tick for the whole ring rather than per weapon: they all target the
+    // Every weapon aims at whatever the loadout would shoot. Resolved once per
+    // tick for the whole loadout rather than per weapon: they all target the
     // nearest enemy, and twelve separate nearest-enemy scans a tick would be
     // twelve scans to reach the same answer.
     const aimTarget = this.findNearestEnemy(p.x, p.y, 900)
@@ -1044,13 +1044,13 @@ export class World {
     // fallback it costs the player nothing and fills exactly the dead seconds
     // the harvest ramp was built for -- between waves, and the opening run-up.
     const breakTarget = aimTarget >= 0 ? -1 : this.findNearestBreakable(p.x, p.y, 900)
-    let ringAim = p.facing
+    let loadoutAim = p.facing
     if (aimTarget >= 0) {
       const e = this.enemies.items[aimTarget]
-      ringAim = Math.atan2(e.y - p.y, e.x - p.x)
+      loadoutAim = Math.atan2(e.y - p.y, e.x - p.x)
     } else if (breakTarget >= 0) {
       const b = this.breakables.items[breakTarget]
-      ringAim = Math.atan2(b.y - p.y, b.x - p.x)
+      loadoutAim = Math.atan2(b.y - p.y, b.x - p.x)
     }
 
     for (const slot of p.weapons) {
@@ -1065,7 +1065,7 @@ export class World {
 
       if (slot.recoil > 0) slot.recoil -= dt
       // Melee swings where you face; everything else points at the target.
-      slot.aimAngle = def.type === 'melee' ? p.facing : ringAim
+      slot.aimAngle = def.type === 'melee' ? p.facing : loadoutAim
 
       const sustain = SUSTAIN[def.behaviour]
       if (sustain && def.cooldown === 0) {
@@ -1079,6 +1079,9 @@ export class World {
         const before = this.projectiles.live
         if (fire) fire(ctx)
         slot.recoil = T.fx.weaponRecoilSeconds
+        // Which weapon is in his HANDS is decided here and nowhere else. The
+        // renderer only reads the stamp; see WeaponSlot.firedAt.
+        slot.firedAt = this.tick
 
         // Stamp the element onto whatever that shot just produced. Done here,
         // once, rather than in each of the twelve behaviours: a behaviour
