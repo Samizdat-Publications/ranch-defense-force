@@ -176,11 +176,20 @@
 .home-seed-new:hover { filter: brightness(1.2); }
 .home-seed-new:active { transform: translateY(2px); }
 
-/* --- the Homestead, standing against the barn --- */
+/* --- the Homestead, standing against the barn ---
+
+   IT TRACKS WHICHEVER SCENE IS SHOWING. The way in is the barn door in
+   the yard, the barn door on the field's horizon, and the lift in the
+   lab, and `DOOR` in scene.ts derives all three from where the barn and
+   the lift actually are. The transition is what makes it read as the
+   same button following the camera rather than three buttons blinking
+   in and out; it is deliberately shorter than the three-second descent,
+   so the button has arrived before the room has. */
 .home-door {
   position: absolute;
   text-align: center;
   animation: card-in 700ms var(--ease-out) both 860ms;
+  transition: left 900ms var(--ease-out), top 900ms var(--ease-out);
 }
 
 .home-door-btn {
@@ -210,12 +219,32 @@
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.9);
 }
 
-/* --- the class rail, along the bottom edge --- */
+/* --- the class rail, along the bottom edge ---
+
+   THE SCENE KEEPS ITS COMPOSITION AND THE CARDS GET OUT OF ITS WAY.
+
+   That is the owner's answer to the open question in NOTES ("the class
+   cards cover the lower third of every scene ... someone has to decide
+   whether the artboards should compose around the UI or the UI should
+   move"). The artboards are composed without the interface over them,
+   which is the right way to compose a backdrop, so the interface is
+   what moves.
+
+   Measured before: the rail's cards ran y 734-1028 in stage space and
+   the selected card's gold band to 1040, over a footbar at 1054. That
+   is 294px of card sitting on Joy, the coop, the bunkhouse's foot and
+   three of the four wheat clumps. The card below is 200px — a shade
+   over two thirds — and `bottom: 46` puts it at y 834-1034 with the
+   band to 1044, ten clear pixels above the footbar. Everything from
+   the horizon down to the near fence is visible again.
+
+   `UI_RAIL` in scene.ts states this band for the scene's benefit; keep
+   the two in step. */
 .home-rail {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 52px;
+  bottom: 46px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -250,7 +279,7 @@
 
 .hero {
   position: relative;
-  width: 196px;
+  width: 176px;
   cursor: pointer;
   animation: card-in 640ms var(--ease-out) both;
   transition: transform 170ms ease-out, filter 170ms ease-out;
@@ -265,8 +294,8 @@
 /* The punched hang tab. */
 .hero-tab {
   position: relative;
-  width: 92px;
-  height: 20px;
+  width: 78px;
+  height: 14px;
   margin: 0 auto -3px;
   background: #cbb68d;
   border: 3px solid var(--paper-edge);
@@ -277,19 +306,19 @@
 }
 
 .hero-punch {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #1b1610;
   box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9);
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .hero-body {
   position: relative;
   background: var(--paper);
   border: 3px solid var(--paper-edge);
-  padding: 9px 10px 0;
+  padding: 7px 8px 0;
 }
 
 /* Inner hairline and dotted stock. */
@@ -314,19 +343,31 @@
 .hero-tag {
   position: relative;
   font-family: var(--label);
-  font-size: 7.5px;
-  letter-spacing: 0.11em;
+  font-size: 6.5px;
+  line-height: 1;
+  letter-spacing: 0.09em;
   color: var(--ink-band);
   border-bottom: 2px solid rgba(64, 49, 31, 0.5);
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
 }
 
+/*
+   68px, down from 120.
+
+   The window is where two thirds of the card's height went, and it is
+   the one measurement the shrink could have ruined: a portrait that
+   crops its own forehead is not a smaller card, it is a broken one. The
+   plates are 63-64px tall in the atlas and were drawn here at zoom 2 —
+   128px, bottom-anchored, already losing eight pixels off the top of a
+   120px window. At 68 they go in at zoom 1 (see `heroCard` in menu.ts):
+   64px of portrait, four pixels of headroom, whole-pixel and crisp.
+*/
 .hero-window {
   position: relative;
-  margin: 9px 0 0;
-  height: 120px;
+  margin: 7px 0 0;
+  height: 68px;
   background: radial-gradient(70% 74% at 50% 30%, #4a3d26 0%, #241d13 100%);
   border: 3px solid var(--paper-edge);
   box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.7);
@@ -346,7 +387,10 @@
    anchors instead, and centres by transform rather than a hard-coded half-width
    so it does not need retuning when a portrait comes back a few pixels wider.
 */
-.hero-figure { position: absolute; left: 50%; margin-left: -48px; top: -38px; }
+/* The full-body fallback: 30x52 of character at zoom 2, so 60 wide (hence the
+   -30) and pulled up 20 so the legs crop out of a 68px window and you get a
+   torso. Re-derived when the window shrank; it was -48/-38 for zoom 3. */
+.hero-figure { position: absolute; left: 50%; margin-left: -30px; top: -20px; }
 
 .hero-figure.is-portrait {
   margin-left: 0;
@@ -359,7 +403,7 @@
   position: absolute;
   left: 8px;
   right: 8px;
-  bottom: 14px;
+  bottom: 9px;
   height: 1px;
   background: rgba(224, 160, 46, 0.2);
 }
@@ -369,7 +413,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 26px;
+  height: 18px;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55));
 }
 
@@ -386,59 +430,63 @@
 }
 
 .hero-board-top {
-  top: 20px;
-  height: 26px;
+  top: 10px;
+  height: 20px;
   background: linear-gradient(180deg, #8a6a42 0%, #5f472a 100%);
   transform: rotate(-4deg);
 }
 
 .hero-board-bottom {
-  top: 78px;
-  height: 22px;
+  top: 44px;
+  height: 16px;
   background: linear-gradient(180deg, #7e6039 0%, #543f26 100%);
   transform: rotate(3deg);
 }
 
 .hero-price {
   font-family: var(--label);
-  font-size: 10px;
+  font-size: 8.5px;
   letter-spacing: 0.12em;
   color: #f2dcae;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
 }
 
+/* 16px, not 19. "The Agronomist" is the longest name in the game and it
+   still clears the 160px of inner width at this size — checked against
+   that name, not against "The Kid". */
 .hero-name {
   position: relative;
   font-family: var(--display);
-  font-size: 19px;
-  line-height: 1.05;
+  font-size: 16px;
+  line-height: 1;
   color: var(--ink);
-  margin: 9px 0 0;
+  margin: 6px 0 0;
   white-space: nowrap;
 }
 
-.hero-rule { position: relative; margin: 8px 0 0; height: 0; border-top: var(--perf); }
+.hero-rule { position: relative; margin: 6px 0 0; height: 0; border-top: var(--perf); }
 
 .hero-bars {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin: 8px 0 0;
+  gap: 3px;
+  margin: 6px 0 0;
 }
 
-.hero-bar { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 7px; }
+.hero-bar { display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 6px; }
 
 .hero-bar-label {
   font-family: var(--label);
-  font-size: 7px;
-  letter-spacing: 0.08em;
+  font-size: 6.5px;
+  line-height: 1;
+  letter-spacing: 0.06em;
   color: var(--ink-label);
 }
 
 .hero-bar-track {
   position: relative;
-  height: 8px;
+  height: 6px;
   background: rgba(64, 49, 31, 0.28);
   border: 1px solid rgba(64, 49, 31, 0.55);
 }
@@ -453,29 +501,30 @@
 
 .hero-foot {
   position: relative;
-  margin: 9px -10px 0;
-  padding: 6px 10px;
+  margin: 6px -8px 0;
+  padding: 4px 8px;
   border-top: 2px solid rgba(64, 49, 31, 0.5);
   background: rgba(64, 49, 31, 0.09);
   display: flex;
   justify-content: space-between;
   font-family: var(--label);
-  font-size: 7.5px;
-  letter-spacing: 0.09em;
+  font-size: 6.5px;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
   color: #5b4830;
 }
 
 /* The selected card wears its own call to action. */
 .hero-taking {
   position: absolute;
-  left: -8px;
-  right: -8px;
-  bottom: -12px;
-  padding: 5px 0;
+  left: -7px;
+  right: -7px;
+  bottom: -10px;
+  padding: 4px 0;
   text-align: center;
   font-family: var(--label);
-  font-size: 9px;
-  letter-spacing: 0.16em;
+  font-size: 8px;
+  letter-spacing: 0.14em;
   color: #2b1d08;
   background: var(--gold-brand);
   border-top: 2px solid var(--paper-edge-gold);
@@ -492,22 +541,70 @@
 .hero.is-locked .hero-body { background: var(--paper-dead); }
 .hero.is-locked .hero-figure { filter: brightness(0.55) saturate(0.6); }
 
-/* Dev-only backdrop toggle. Design calls this a reviewer control and does not
-   ship it; it is gated on import.meta.env.DEV in menu.ts. */
-.home-scene-toggle {
+/* ===================================================================
+   THE SCENE SELECTOR
+   ===================================================================
+   Three places you can stand while you choose who to take out: the
+   yard, the field, and the thing underneath both of them. It replaces
+   the dev-only `SCENE: YARD` toggle that used to sit bottom-right and
+   cycle — a cycle can only offer you "the next one", which is a poor
+   answer once there are three and one of them is a reveal.
+
+   Printed matter, like everything else on this screen: the same paper,
+   the same edge, the same label face. It is a list of places, not a
+   settings widget.
+
+   ## Why it moves when the dev overlay is up
+
+   `#dev` is anchored to the top-right of the VIEWPORT and this is
+   anchored to the top-right of the STAGE, and the stage is scaled. So
+   there is no fixed pair of coordinates that keeps them apart at every
+   window size — 90 CSS pixels of dev panel is 101 stage pixels at a
+   1707px window and 216 at an 800px one. `dev.ts` writes `data-dev` on
+   `<body>` whenever it shows or hides (F1 included), and this drops
+   below it when it is up. 150px clears the home screen's panel at any
+   window 1280px or wider, which is where the scale is worth having.
+   =================================================================== */
+.home-scene-pick {
   position: absolute;
-  /* Bottom-right: the top-right corner is the dev overlay's (spawn / kill all),
-     and this was sitting on top of it. Down here is empty grass. */
-  right: 22px;
-  bottom: 44px;
+  right: 24px;
+  top: 24px;
+  display: flex;
+  align-items: stretch;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+  transition: top 200ms var(--ease-out);
+}
+
+body[data-dev='on'] .home-scene-pick { top: 150px; }
+
+.home-scene-pick-label {
+  font-family: var(--label);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: #5b4830;
+  padding: 11px 10px 0 11px;
+  border-right: 1px dashed var(--rule-warm);
+}
+
+.home-scene-pick button {
   font-family: var(--label);
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: #cbbb9c;
-  background: rgba(10, 9, 8, 0.7);
-  border: 1px solid var(--rule-warm);
-  padding: 7px 11px;
+  color: #6b573b;
+  background: none;
+  border: none;
+  border-left: 1px dashed rgba(64, 49, 31, 0.4);
+  padding: 9px 12px;
   cursor: pointer;
 }
 
-.home-scene-toggle:hover { color: #f0e2c4; border-color: var(--muted-2); }
+.home-scene-pick button:first-of-type { border-left: none; }
+.home-scene-pick button:hover { color: #2b1d08; background: rgba(64, 49, 31, 0.1); }
+
+/* The one you are standing in, branded rather than merely highlighted. */
+.home-scene-pick button.is-on {
+  color: #2b1d08;
+  background: var(--gold-brand);
+  box-shadow: inset 0 0 0 1px var(--paper-edge-gold);
+}
