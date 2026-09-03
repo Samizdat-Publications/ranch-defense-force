@@ -144,6 +144,8 @@ interface Manifest {
   crops?: { _base: string; files: Record<string, string> }
   tools?: { _base: string; files: Record<string, string>; conform?: boolean }
   weaponTiers?: { _base: string; files: Record<string, string>; conform?: boolean }
+  /** The purpose-drawn carried firearms. See art/sprites.json -> carry. */
+  carry?: { _base: string; files: Record<string, string>; conform?: boolean }
   gunSheet?: {
     path: string
     conform?: boolean
@@ -694,6 +696,10 @@ interface SingleGroup {
 const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
   manifest.nodes, manifest.biome, manifest.crops, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
+  // Not `cardArt`: these ARE field art and want the size assertion, and their
+  // keys start `carry.` rather than `weapon.` so the assertion's other half —
+  // the "_Load_ pile" check — does not apply to them either way.
+  manifest.carry,
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
   // `cardArt` because these are 64px, well over the field's 32x32 rule -- and
   // legitimately so: an overhead sprite is not read at the player's scale, it is

@@ -51,7 +51,8 @@
     "recolour": "vite-node tools/recolour-sheet.ts --",
     "placements": "vite-node tools/extract-placements.ts --",
     "scene": "vite-node tools/scene-shot.ts --",
-    "play": "vite-node tools/play.ts --"
+    "play": "vite-node tools/play.ts --",
+    "carrysheet": "vite-node tools/carry-contact.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
