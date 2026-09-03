@@ -4,70 +4,102 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
-# OPEN AND UNSOLVED — the owner sees ~2fps
+# STILL OPEN — the owner sees ~2fps, and this session measured why it cannot see it
 
 **Read this before anything else in the performance line.** The owner reports
-the game running at **about 2 frames per second** while playing. That is not
-what any measurement in this repo has produced, and the gap between the two is
-the most important open question in the project.
+the game at about 2 frames per second while playing. Session 22 spent a
+measurement pass on it — no game code touched, everything under `tools/` —
+and the findings are in `docs/PERF_FINDINGS_2026-09-02.md` (the report;
+the tools that produce it are committed under `tools/`). The short version, in order of
+what it changes:
 
-## What has been measured, so nobody measures it again
+## What was measured, so nobody measures it again
 
-| where | rAF ticks per second |
+| | |
 |---|---|
-| the editor's hidden browser pane | **0** |
-| headless Chromium, throttling flags off | 2-4 |
-| headed Chrome, window covered by another | **2** |
-| headed Chrome, window fronted | 78-240 |
+| machine | RTX 5070 Ti laptop, 16 threads, 31GB, ~240Hz; `chrome://gpu` says Canvas, raster, compositing all **hardware accelerated** |
+| three real runs, seed `harvest` | fps median 228/236/236, min 64-122; frames >33ms 123/211/137 — **±35% run-to-run on the spike count** |
+| CPU profile | **55.7% idle**; `stroke` 5.4% (melee sweep + hazard rings), `drawImage` 4.6%, nothing of ours above 1.6%. **The profile is mined out.** |
+| production site vs dev server, 1920x1080 at dpr 1.25 | 179/226 vs 238 median — within the spread. No production-only slowdown. Heap flat at 6-10MB. |
+| covered window | **could not reproduce a throttle.** Half covered 151, fully covered by another Chrome window 236. |
+| `--disable-gpu` | frame cap 80Hz; 12-22fps under heavy load. Not 2. |
 
-The in-game dev overlay (`F1`) reported `218 fps frame 1.60ms` and
-`240 fps frame 1.40ms` during automated runs at wave 6 and wave 14, with 74
-enemies alive. The sim is not slow.
+## The atlas hypothesis was half right, and not the half NOTES nominated
 
-**2fps is the exact signature of a covered or minimised window.** Chrome throttles
-`requestAnimationFrame` for an occluded window and this game only advances on a
-presented frame. So the first thing to establish is *what the owner's window was
-doing* — split-screen and visible, or behind something. That is a question for
-the owner, not a code change, and it must be settled before any optimisation
-work starts, because optimising a throttle does nothing.
+Measured with `tools/atlas-bench.ts`, same Chrome, 600 and 4000 blits a frame,
+six source conditions, three repeats:
 
-## If it is NOT the window, here is where to look
+- **The 4096x8192 atlas costs 2x a 2048x2048 one at the game's own draw load**
+  (8.3ms vs 4.2ms a frame), 3.4x at heavy load, and **7x the JS self-time
+  inside `drawImage`** (2.8ms vs 0.4ms). Under software raster it is **25x**.
+- **It is the size, not the access pattern.** Reads confined to one 1024
+  window of the big atlas cost exactly what reads scattered across it cost.
+  Repacking for locality would buy nothing.
+- **2048 is already as cheap as 1024.** There is no reason to go smaller.
+- The white `flash` canvas and switching source image every draw cost
+  nothing extra.
 
-One session of profiling has already been done and it removed a real cost:
-`assertUiLayersClickable` was forcing a synchronous style recalc every frame
-(4.05s self + 2.54s in `querySelectorAll` against ~28s of non-idle JS). After
-that fix the CPU profile is dominated by `drawImage` at 5% and nothing else is
-above 2%.
+And the thing nobody had looked for, from a chrome trace of a real run
+(`tools/play-trace.ts`): **Chrome re-decodes the entire 12.7MB PNG from
+scratch about once per second for the whole run** — 291-301ms each, 6-9s of
+decode in a 28s window, plus a 9-17ms GPU re-upload every time. A 134MB
+decoded image cannot be held in the image-decode cache, so it is decoded at
+raster, forever. **On this machine that costs zero frames** (inter-frame gap
+4.16ms median with a decode in flight, 4.16ms without) because sixteen threads
+absorb it. That is the whole reason nothing here has reproduced the report:
+the cost is real and continuous, and this machine has the headroom to hide it.
 
-**The strongest untested hypothesis is the atlas.** `public/atlas.png` is
-**4096x8192 and 12MB** — 8176 frames in one texture. Every sprite drawn is a
-`drawImage` sampling that one very large image. On integrated graphics with
-limited VRAM that can thrash in a way no CPU profile will show, because the cost
-is not in JS at all. Nothing in this repo has ever measured GPU time, checked
-whether the texture is being re-uploaded per frame, or tried a smaller atlas.
-That is the first experiment worth running.
+**The per-frame texture-thrash hypothesis is dead**: 23-31 uploads in ~28s,
+not 230 a second.
 
-Second: the machine. Every measurement in this repo was taken on Chrome via
-`channel: 'chrome'` on the owner's box, but always in a fronted window driven by
-playwright. Nothing has profiled the owner's ACTUAL play session.
+## What was decided
+
+**Split the atlas into ≤2048x2048 pages.** Justified on measured grounds
+whatever the owner's window was doing: it halves per-blit cost at the game's
+own load, cuts `drawImage` self-time 7x, removes the per-second re-decode, and
+on a machine without canvas acceleration it is the difference between the game
+working and not. The atlas is 56% occupied (18.7 of 33.6 Mpx), so it is five
+or six pages. Session 22 delegated that change; see its entry below for what
+landed.
+
+**Do not optimise the renderer's JS.** It is over half idle.
+
+## What stays open, and only the owner can close it
+
+1. **Which Chrome profile.** Every measurement here ran a fresh playwright
+   profile, which had acceleration on. The owner's own profile could have "Use
+   graphics acceleration when available" off — a per-profile setting no tool
+   can see. Ask for `chrome://gpu` from the owner's own browser.
+2. **The window.** Covering the window did not throttle rAF here, most likely
+   because an attached CDP debugger suppresses renderer throttling. **That is
+   a limit of the instrument, not evidence that occlusion is harmless**: no
+   playwright-driven tool in this repo can reproduce a throttled window. The
+   owner's own answer — fronted, split-screen, or behind something — is the
+   only measurement of it that exists.
+
+## Found in passing
+
+**The live site has no audio.** `public/audio/` is gitignored (generated), the
+deploy runs `npm run atlas` but nothing regenerates sound, so every
+`sfx-*.mp3` and all three music loops 404 on GitHub Pages. The music is CC-0
+and the effects are the project's own ElevenLabs output, 7MB in 29 files.
+Committing the directory is the simple fix and it is the owner's call.
 
 ## The tools that exist for this
 
     npm run play -- hand 240 out/dir seed      a real run, real renderer
     RDF_PROFILE=1 npm run play -- ...          CPU profile via CDP, self time by function
-    RDF_SAMPLE_MS=4000 npm run play -- ...     change the sampler's own period
-    RDF_NO_OVERLAY=1 npm run play -- ...       dev overlay off
-    npm run scene -- yard out.png              photograph a title screen
+    node node_modules/vite-node/vite-node.mjs tools/gpu-report.ts     chrome://gpu, through shadow DOM
+    node node_modules/vite-node/vite-node.mjs tools/atlas-bench.ts    texture size, isolated
+    node node_modules/vite-node/vite-node.mjs tools/play-trace.ts hand 30 out seed   compositor/GPU trace
+    node node_modules/vite-node/vite-node.mjs tools/play-prod.ts <url|dev> 75 out.md  drives a build with no rdf handle, by clicking
 
-`npm run play` records every frame over 33ms and the heap beside it, writes
-`spikes.json`, and reports whether a stall was a throttled window or a stuck sim
-— that distinction cost an afternoon before it was instrumented.
-
-**One hard-won lesson from that session: when run-to-run variance is larger than
-the effect you are testing, A/B-ing suspects will never converge.** Turning the
-dev overlay off measured WORSE than leaving it on. Go and get a profile instead.
+**The standing lesson holds: when run-to-run variance is larger than the effect
+you are testing, A/B-ing suspects never converges.** The spike count varies
+±35% between identical runs. Get a profile or a trace instead.
 
 ---
+
 
 # Session 21 — the balance session, and a stutter that was a debug guard
 
