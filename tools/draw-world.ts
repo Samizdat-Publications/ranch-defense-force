@@ -15,8 +15,9 @@ import { encodePng, blankImage, type Image } from './png.ts'
 import { readAtlas, type AtlasFrame } from './atlas-read.ts'
 import { Rng } from '../src/core/rng.ts'
 import {
-  TUNING, WEAPONS, decalKindsFor, projectileScaleFor, sceneryKindsFor,
-  type MapBoundary,
+  CARRY, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf, carryAnchorOf,
+  carryHeightOf, decalKindsFor, projectileScaleFor, sceneryKindsFor,
+  type CarrySlot, type MapBoundary,
 } from '../src/content/index.ts'
 import type { World } from '../src/sim/world.ts'
 import { wangKey, type Corner } from '../src/render/wang.ts'
@@ -204,6 +205,8 @@ export class WorldPainter {
   readonly canvas: Image
   private camX = 0
   private camY = 0
+  /** Which body anchor each owned weapon is on. See `carried`. */
+  private readonly carrySlots: (CarrySlot | null)[] = [null, null, null, null, null, null, null, null]
 
   /**
    * @param viewW world pixels visible across
@@ -330,7 +333,9 @@ export class WorldPainter {
    * pixel back into the source. Nearest neighbour, because everything here is
    * pixel art and any filtering would be a lie about what the game draws.
    */
-  private drawFrameT(f: Frame, worldX: number, worldY: number, rot: number, scale: number): void {
+  private drawFrameT(
+    f: Frame, worldX: number, worldY: number, rot: number, scale: number, flip = false,
+  ): void {
     const src = imageFor(f)
     const { canvas } = this
     const cx = (worldX - this.camX) * this.zoom
@@ -341,8 +346,12 @@ export class WorldPainter {
     for (let dy = -half; dy <= half; dy++) {
       for (let dx = -half; dx <= half; dx++) {
         // Rotate the destination offset back into unrotated frame space.
-        const ux = (dx * cos + dy * sin) / (scale * this.zoom)
+        const ux0 = (dx * cos + dy * sin) / (scale * this.zoom)
         const uy = (-dx * sin + dy * cos) / (scale * this.zoom)
+        // Mirror in SOURCE space, so the composite is mirror-then-rotate, which
+        // is what `ctx.rotate` followed by a negative `ctx.scale` gives the
+        // renderer. Mirroring the destination instead would flip the pose.
+        const ux = flip ? -ux0 : ux0
         const fx = Math.floor(ux + f.w / 2)
         const fy = Math.floor(uy + f.h / 2)
         if (fx < 0 || fy < 0 || fx >= f.w || fy >= f.h) continue
@@ -767,7 +776,17 @@ export class WorldPainter {
     this.camY = Math.round(Math.min(maxY, Math.max(0, world.player.y - this.viewH / 2)))
     this.terrain(world)
 
-    const drawList: { y: number; f: Frame; x: number }[] = []
+    /*
+       One sorted list, as in the renderer -- but the carried loadout needs a
+       rotation, a scale and a mirror, so an entry can now carry a transform.
+       `lift` is the renderer's `liftY`: it moves where a thing DRAWS without
+       moving where it SORTS, which is what lets a rifle hang at shoulder
+       height and still be depth-sorted at the farmhand's feet.
+    */
+    const drawList: {
+      y: number; f: Frame; x: number
+      rot?: number; scale?: number; flip?: boolean; lift?: number
+    }[] = []
     // Scenery joins the same sorted list as everything else, as in the game.
     for (const sc of this.scenery(world)) drawList.push({ y: sc.y, x: sc.x, f: sc.f })
     // The way down, sorted with everything else. Mirrors `Renderer.collectSprites`.
@@ -823,11 +842,21 @@ export class WorldPainter {
     }
     {
       const p = world.player
+      // The loadout brackets the player sprite: behind him first, the rest
+      // after. `Array.prototype.sort` is stable, so equal y keeps that order --
+      // the same trick the renderer's bucket sort plays. Mirrors
+      // `Renderer.collectCarried`.
+      assignCarrySlots(p.weapons, this.carrySlots)
+      this.carried(world, drawList, true)
       const f = this.sheetFrame(p.classId, p.facing, p.travelled, p.vx !== 0 || p.vy !== 0)
       if (f) drawList.push({ y: p.y, x: p.x, f })
+      this.carried(world, drawList, false)
     }
     drawList.sort((a, b) => a.y - b.y)
-    for (const d of drawList) this.drawFrame(d.f, d.x, d.y)
+    for (const d of drawList) {
+      if (d.rot === undefined) this.drawFrame(d.f, d.x, d.y)
+      else this.drawFrameT(d.f, d.x, d.y - (d.lift ?? 0), d.rot, d.scale ?? 1, d.flip)
+    }
 
     // Melee sweeps and auras: swept wedges, matching the renderer. These used to
     // draw as a filled square the size of the whole hitbox — a ~100px white block
@@ -862,8 +891,6 @@ export class WorldPainter {
         : PROJECTILE_SCALE * projectileScaleFor(p.weaponId)
       this.drawFrameT(f, p.x, p.y, rot, scale)
     }
-
-    this.weaponRing(world)
 
     // Ground hazards, under the FX. The renderer fills and rims a disc per
     // hazard; this does the same flatly. Without it a Bait Drum or Chem Sprayer
@@ -951,28 +978,65 @@ export class WorldPainter {
     return projectileSprite(world, p).frame
   }
 
-  /** The weapon ring. Angles come straight from the sim, as in the renderer. */
-  private weaponRing(world: World): void {
-    for (const slot of world.player.weapons) {
+  /**
+   * The carried loadout, restated from `Renderer.collectCarried`.
+   *
+   * Restated rather than shared for the reason the whole file is: sim and
+   * render do not import each other, this is a tool, and a second independent
+   * implementation is a check on the first. What is NOT restated is the rule
+   * that decides which weapon rides where -- `assignCarrySlots` lives in
+   * content and both painters call it, because a screenshot that arms the
+   * player differently to the game is worse than no screenshot at all.
+   */
+  private carried(
+    world: World,
+    out: { y: number; f: Frame; x: number; rot?: number; scale?: number; flip?: boolean; lift?: number }[],
+    behind: boolean,
+  ): void {
+    const p = world.player
+    const dirs = atlas.dirSets?.[p.classId] ?? atlas.rig.directions
+    const dir = dirs[this.directionIndex(p.facing, dirs.length)] ?? dirs[0] ?? 'down'
+    const cfg = TUNING.fx as unknown as Record<string, number>
+    const bootY = CARRY.bootOffsetY
+
+    for (let i = 0; i < p.weapons.length; i++) {
+      const slot = p.weapons[i]
+      const anchorSlot = this.carrySlots[i]
+      if (!anchorSlot) continue
+      const a = carryAnchorOf(anchorSlot, dir)
+      if (!a || a.behind !== behind) continue
+
       const wd = (WEAPONS as Record<string, Record<string, unknown>>)[slot.id]
       const tiers = Array.isArray(wd?.tierSprites) ? (wd.tierSprites as string[]) : null
-      const key = tiers?.[Math.min(slot.tier, 4) - 1]
-        ?? (typeof wd?.sprite === 'string' ? wd.sprite : `weapon.${slot.id}`)
-      const f = frames[key]
+      const tier = Math.min(slot.tier, 4)
+      const f = frames[tiers?.[tier - 1] ?? '']
+        ?? frames[`weapon.${slot.id}.t${tier}`]
+        ?? frames[typeof wd?.sprite === 'string' ? wd.sprite : '']
+        ?? frames[`weapon.${slot.id}`]
       if (!f) continue
-      const cfg = TUNING.fx as unknown as Record<string, number>
-      const kick = slot.recoil > 0
+
+      const held = anchorSlot === 'hand'
+      const kick = held && slot.recoil > 0
         ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
         : 0
-      const r = cfg.weaponRingRadius
-      const x = world.player.x + Math.cos(slot.ringAngle) * r - Math.cos(slot.aimAngle) * kick
-      const y = world.player.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick - 14
-      const facingLeft = Math.abs(slot.aimAngle) > Math.PI / 2
-      this.drawFrameT(
-        f, x, y,
-        facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle,
-        Math.min(1.15, cfg.weaponRingTargetWidth / Math.max(8, f.w)),
-      )
+      const aims = held && carryAimsOf(slot.id)
+      const facingLeft = aims ? Math.abs(slot.aimAngle) > Math.PI / 2 : a.flip
+      const rot = aims
+        ? (facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle)
+        : (a.angle + carryAngleOf(slot.id)) * (a.flip ? -1 : 1)
+
+      out.push({
+        // Depth is the player's own y; `lift` carries the height. The headless
+        // `weaponFlash` pulse is deliberately omitted -- a shot is a still, and
+        // a two-second highlight in one would only be a puzzle.
+        y: p.y,
+        x: p.x + a.dx - Math.cos(slot.aimAngle) * kick,
+        lift: -(bootY + a.dy) + Math.sin(slot.aimAngle) * kick,
+        f,
+        rot,
+        scale: Math.min(1, carryHeightOf(slot.id) / Math.max(1, Math.max(f.w, f.h))),
+        flip: facingLeft,
+      })
     }
   }
 }
