@@ -126,22 +126,22 @@
     "unlocked": false,
     "blurb": "Came home, took the back forty, and kept the habit of watching treelines.",
     "stats": {
-      "maxHp": 105,
+      "maxHp": 115,
       "moveSpeedPct": 0,
       "armor": 3,
-      "hpRegen": 0.3,
+      "hpRegen": 0.5,
       "critChancePct": 15,
       "critDamagePct": 20
     },
     "passive": {
       "id": "overwatch",
       "_note": "Spacing, which no other class cares about at all: The Hand and The Kid both ask how FAST you are moving and neither asks WHERE you are standing. It is per-target rather than per-tick -- the same shot is worth different amounts against two enemies at different ranges -- so it cannot live in the stat block or in passiveDamagePct, and joins the additive sum inside resolveDamage instead. The penalty is the point. Without it this is a flat damage bonus with extra steps.",
-      "_bandNote": "The bands are tight against the player, not against the weapon, and that is measured rather than chosen. The whole weapon ring targets the NEAREST enemy (`findNearestEnemy` in world.ts), so a range-scaling passive is graded against the closest body on the field on almost every shot. The first pass used 220/110 and Overwatch was a tax: the near penalty applied continuously in any crowd and the far bonus could essentially never be earned, and the harness had him at 0/8 kiting. 170/85 makes the penalty a contact-range punishment and the bonus something a standoff actually reaches.",
-      "desc": "+40% damage past 170px, and -30% inside 85px. He is worth what the ground between you is worth.",
+      "_bandNote": "The bands are tight against the player, not against the weapon, and that is measured rather than chosen. The whole weapon ring targets the NEAREST enemy (`findNearestEnemy` in world.ts), so a range-scaling passive is graded against the closest body on the field on almost every shot. The first pass used 220/110 and Overwatch was a tax: the near penalty applied continuously in any crowd and the far bonus could essentially never be earned, and the harness had him at 0/8 kiting and 13/24 spacing. 170/80 at -20% makes the penalty a contact-range punishment and the bonus something a standoff actually reaches: 16/24 spacing.",
+      "desc": "+40% damage past 170px, and -20% inside 80px. He is worth what the ground between you is worth.",
       "farDistance": 170,
       "farDamagePct": 40,
-      "nearDistance": 85,
-      "nearDamagePct": -30
+      "nearDistance": 80,
+      "nearDamagePct": -20
     },
     "ability": {
       "id": "claymore",
@@ -172,31 +172,31 @@
     "unlocked": false,
     "blurb": "Sent out to test the soil. Stayed once she worked out what was in it.",
     "stats": {
-      "maxHp": 85,
+      "maxHp": 95,
       "moveSpeedPct": 10,
       "armor": 1,
-      "hpRegen": 0.3,
+      "hpRegen": 0.4,
       "harvestPct": 35,
       "luck": 8
     },
     "passive": {
       "id": "cultivar",
       "_note": "Status and economy. She is the only class that makes an ELEMENT pick matter differently -- fire, acid and frost all get better in her hands, and frost gets better as crowd control rather than as damage, which is why the slow shares the multiplier and takes a cap. Applied where the payload leaves the projectile in World.applyHit, not inside applyBurn/applyBleed: those are also the entry points for the Chili Shot's death-spread, and boosting there would compound a status with itself every time it changed hands.",
-      "desc": "Burns, bleeds and slows she lands hit 50% harder and last 60% longer. Slows cap at 75%.",
-      "dotDamagePct": 50,
-      "dotDurationPct": 60,
+      "desc": "Burns, bleeds and slows she lands hit 70% harder and last 70% longer. Slows cap at 75%.",
+      "dotDamagePct": 70,
+      "dotDurationPct": 70,
       "slowCapPct": 75
     },
     "ability": {
       "id": "fieldSample",
       "name": "Field Sample",
-      "cooldown": 9,
-      "desc": "Lobs a flask 190px. It leaves a 110px slick for 6s carrying whatever element she runs -- or a 40% slow if she runs none.",
+      "cooldown": 8,
+      "desc": "Lobs a flask 190px. It leaves a 120px slick for 6s carrying whatever element she runs -- or a 50% slow if she runs none.",
       "throwDistance": 190,
-      "radius": 110,
+      "radius": 120,
       "seconds": 6,
-      "slowPct": 40,
-      "elementDpsScale": 1.6,
+      "slowPct": 50,
+      "elementDpsScale": 2,
       "animRow": "walk"
     },
     "startingWeapon": "chemSprayer",
@@ -213,11 +213,15 @@
     "sheet": "drifter",
     "unlocked": false,
     "blurb": "Works a season, moves on. This season he did not get out in time.",
+    "_statNote": "This stat block moved a long way, and the reason is a measured PRE-EXISTING trap rather than anything the class rework did. On 24 seeds the OLD Drifter -- momentum, bolt, 70hp -- died on wave 2 in fourteen of them and cleared 1/24 kiting, 4/24 brawling, 2/24 spacing. He had been a trap pick since the density pass halved enemy HP and damage to buy BODIES, and nothing measured it because the parity test only ever ran The Hand and The Kid. Momentum was hiding it (+60% damage essentially for free, because a harness bot never stops moving); Hot Streak pays nothing until you are already killing, which exposed it completely.",
+    "_weaponNote": "`projectileCount: 3` is the fix, and it is aimed at the real fault, which was the STARTING WEAPON and not the class. At T1 the Harpoon Gun (`hookFurthest`) fires one shot at ONE enemy every 1.8s -- and at the FURTHEST enemy in range, so it does not even answer the thing about to touch you. Proved by swapping it: with every other number about him held still and the same 24 seeds, he cleared 4/24 holding the harpoon and 13/24 holding the Scattergun. Stat inflation had been tried first and did not work -- 95 hp, +45% attack speed and +15% damage moved 4/24 to 4/24, because no amount of body fixes a class that cannot clear wave 1. `hookFurthest` now reads `projectileCount`, a declared stat that until this change only the Scattergun's `stream` looked at, so he hooks FOUR at T1 and the harpoon is a wave-1 weapon: 14/24. Nothing else in the game grants `projectileCount`, so no other build changes. At 88 hp he is still the second-smallest body in the game.",
     "stats": {
-      "maxHp": 70,
+      "maxHp": 88,
       "moveSpeedPct": 25,
       "armor": 0,
-      "dodgePct": 14,
+      "dodgePct": 16,
+      "attackSpeedPct": 30,
+      "projectileCount": 3,
       "critChancePct": 10,
       "critDamagePct": 35,
       "hpRegen": 0
@@ -225,11 +229,11 @@
     "passive": {
       "id": "hotStreak",
       "_note": "Tempo. The Kid's Momentum asks how fast you are moving; this asks how fast you are KILLING, which is a different question with a different answer in the same fight. The whole streak expires together on a window from the last kill rather than a stack at a time -- decaying singly would put the ceiling out of reach at any honest kill rate -- and any hit at all, contact or hazard, takes all of it. That is the glass half of QUICK \u00b7 GLASS \u00b7 MEAN made mechanical instead of merely printed on the card.",
-      "desc": "Each kill is +4% damage and +3% speed, to 10. The streak lasts 3s past the last kill, and one hit ends all of it.",
-      "windowSeconds": 3,
-      "maxStacks": 10,
-      "damagePctPerStack": 4,
-      "moveSpeedPctPerStack": 3
+      "desc": "Each kill is +5% damage and +2.5% speed, to 12. The streak lasts 4s past the last kill, and one hit ends all of it.",
+      "windowSeconds": 4,
+      "maxStacks": 12,
+      "damagePctPerStack": 5,
+      "moveSpeedPctPerStack": 2.5
     },
     "ability": {
       "id": "lightOut",
@@ -247,9 +251,9 @@
     "startingWeapon": "harpoon",
     "tag": "QUICK \u00b7 GLASS \u00b7 MEAN",
     "bars": {
-      "body": 30,
+      "body": 38,
       "speed": 98,
-      "reach": 60
+      "reach": 76
     },
     "cardPassive": "Hot Streak \u2014 kills compound, and one hit ends them."
   },
