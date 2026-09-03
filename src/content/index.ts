@@ -626,3 +626,133 @@ export const ENEMY_IDS = Object.keys(ENEMIES).filter((id) => ENEMIES[id]?.boss !
 
 /** Every enemy id including bosses, for lookups rather than spawning. */
 export const ALL_ENEMY_IDS = Object.keys(ENEMIES)
+
+// ------------------------------------------------------------ carried loadout
+/*
+   Which weapon rides where on the farmhand's body.
+
+   Lives in content rather than in the renderer for the reason
+   `projectileScaleFor` above does: `tools/draw-world.ts` is a second,
+   deliberately independent painter, and it has to reach the same answer. The
+   ANSWER may be derived twice; the RULE that produces it may not, because the
+   rule is a design decision and a screenshot that arms the player differently
+   to the game is worse than no screenshot at all.
+
+   Nothing here touches the simulation. Slot assignment reads `firedAt`, which
+   the sim stamps, and returns a picture; no seed, no draw, no tick depends on
+   it.
+*/
+
+/** The anchors a weapon can be carried at. `hand` is dynamic; the rest rest. */
+export type CarrySlot = 'hand' | 'back' | 'backX' | 'shoulder' | 'hipR' | 'hipL'
+
+/** Where a slot sits for one facing. See tuning.json -> carry. */
+export interface CarryAnchor {
+  /** World pixels right of the player's centre. */
+  dx: number
+  /** World pixels up from his BOOTS — see `CARRY.bootOffsetY`. */
+  dy: number
+  /** Draw behind the character sprite for this facing. */
+  behind: boolean
+  /** Mirror the art horizontally; the sources all point right. */
+  flip: boolean
+  /** Resting rotation, radians. The weapon's `carryAngle` is added to it. */
+  angle: number
+}
+
+export const CARRY = tuningRaw.carry as unknown as {
+  bootOffsetY: number
+  fallbackOrder: CarrySlot[]
+  freshLiftPixels: number
+  freshScale: number
+  slots: Record<string, Record<string, CarryAnchor>>
+}
+
+/** The resting slot a weapon asks for, or `none` if it is not carried at all. */
+export function carrySlotOf(weaponId: string): CarrySlot | 'none' {
+  const c = WEAPONS[weaponId]?.carry
+  return typeof c === 'string' ? (c as CarrySlot | 'none') : 'none'
+}
+
+/** The on-screen size of the art's longest side, in world pixels. */
+export function carryHeightOf(weaponId: string): number {
+  const h = WEAPONS[weaponId]?.carryHeight
+  return typeof h === 'number' ? h : 0
+}
+
+/** True when the art is a side view that can be swung round to the aim. */
+export function carryAimsOf(weaponId: string): boolean {
+  return WEAPONS[weaponId]?.carryAim === true
+}
+
+/** Extra rotation on top of the slot's resting angle, radians. */
+export function carryAngleOf(weaponId: string): number {
+  const a = WEAPONS[weaponId]?.carryAngle
+  return typeof a === 'number' ? a : 0
+}
+
+/** The anchor for a slot and a facing name (`down`/`up`/`left`/`right`). */
+export function carryAnchorOf(slot: CarrySlot, dir: string): CarryAnchor | undefined {
+  const s = CARRY.slots[slot]
+  return s?.[dir] ?? s?.down
+}
+
+/**
+ * Decide where every owned weapon is carried this frame.
+ *
+ * Writes into `out` — one entry per weapon, `null` for the ones that are not
+ * carried — rather than returning an array, because this runs once a frame and
+ * the hot loop allocates nothing. `out` may be longer than `weapons`; only the
+ * first `weapons.length` entries are written.
+ *
+ * The rules, in order:
+ *
+ *  1. The weapon that fired most recently is IN HIS HANDS. Ties go to the
+ *     lowest index, which is pickup order, which makes the class's starting
+ *     weapon the one he holds before a shot has been fired all run.
+ *  2. Everything else claims the slot it declared in weapons.json, in pickup
+ *     order. A weapon that finds its slot taken walks forward through
+ *     `CARRY.fallbackOrder`, wrapping, to the first free one.
+ *  3. `hand` is never a resting destination: it is struck out before step 2,
+ *     so a weapon that declares `hand` and is not the active one falls to the
+ *     front of the order instead of stacking on the held weapon.
+ *
+ * Six inventory slots against `hand` plus five anchors means this always fits,
+ * so there is no overflow case and nothing is ever dropped.
+ */
+export function assignCarrySlots(
+  weapons: readonly { id: string; firedAt: number }[],
+  out: (CarrySlot | null)[],
+): void {
+  const order = CARRY.fallbackOrder
+  const n = weapons.length
+
+  let hand = -1
+  let latest = 0
+  for (let i = 0; i < n; i++) {
+    if (carrySlotOf(weapons[i].id) === 'none') continue
+    if (hand < 0 || weapons[i].firedAt > latest) {
+      hand = i
+      latest = weapons[i].firedAt
+    }
+  }
+
+  // A bitmask rather than a scratch array: five anchors, no allocation, and
+  // nothing to reset between calls.
+  let taken = 0
+  for (let i = 0; i < n; i++) {
+    const declared = carrySlotOf(weapons[i].id)
+    if (declared === 'none') { out[i] = null; continue }
+    if (i === hand) { out[i] = 'hand'; continue }
+    let start = order.indexOf(declared as CarrySlot)
+    if (start < 0) start = 0
+    out[i] = null
+    for (let k = 0; k < order.length; k++) {
+      const idx = (start + k) % order.length
+      if (taken & (1 << idx)) continue
+      taken |= 1 << idx
+      out[i] = order[idx]
+      break
+    }
+  }
+}

@@ -16,8 +16,9 @@
 import type { World } from '../sim/world'
 import { Camera } from './camera'
 import {
-  ENEMIES, NODES, TUNING, WEAPONS, decalKindsFor, itemCardSprite, projectileScaleFor,
-  sceneryKindsFor, type MapBoundary, type MapTerrain,
+  CARRY, ENEMIES, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
+  carryAnchorOf, carryHeightOf, decalKindsFor, itemCardSprite, projectileScaleFor,
+  sceneryKindsFor, type CarrySlot, type MapBoundary, type MapTerrain,
 } from '../content'
 import { Atlas, type AtlasFrame } from '../core/atlas'
 import { Rng } from '../core/rng'
@@ -97,12 +98,10 @@ interface DrawItem {
    *
    * y is both the drawn position and the depth key for everything that stands
    * on the ground, which is nearly everything, and 0 here keeps that true. The
-   * weapon ring is the exception: a carried weapon is lifted to torso height,
-   * and that lift was going into the sort as well — a weapon at the character's
-   * side sat at `p.y - 14` and therefore drew BEHIND him. That is most of why
-   * the ring read as an orbit passing around the body instead of gear held
-   * against it. Lift is a picture; depth is a position; they are not the same
-   * number.
+   * carried loadout is the exception: a weapon slung on the farmhand's back
+   * hangs at shoulder height and would otherwise sort forty pixels behind him,
+   * which is how the old weapon ring ended up drawing gear through his body.
+   * Lift is a picture; depth is a position; they are not the same number.
    */
   liftY: number
   frame: AtlasFrame | null
@@ -116,6 +115,18 @@ interface DrawItem {
   rotation: number
   outline: string | null
   alpha: number
+  /**
+   * Where inside the art the item's x/y actually sits, in SOURCE pixels.
+   *
+   * Added to the frame's own `ox`/`oy`, and applied after the rotate and the
+   * scale, so it moves the pivot rather than the item. The atlas anchors two
+   * incompatible families: the `gun.*` sprites are centred, while every
+   * `weapon.*` icon hangs bottom-centre because it was cut to stand on the
+   * ground. A carried loadout has to rotate both about the same point, and
+   * this is that correction. Zero for everything else.
+   */
+  pivotX: number
+  pivotY: number
 }
 
 const PALETTE = {
@@ -185,6 +196,15 @@ export class Renderer {
    *  arcs afterwards. Fixed length, reused; never reallocated per frame. */
   private readonly arcs: { x: number; y: number; radius: number; angle: number; aura: boolean }[] = []
 
+  /**
+   * Which body anchor each owned weapon is riding this frame, or null.
+   *
+   * Preallocated at the inventory cap and rewritten in place once per frame by
+   * `assignCarrySlots`, so the loadout costs no allocation. Read twice — once
+   * for the items that draw behind the farmhand and once for the rest.
+   */
+  private readonly carrySlots: (CarrySlot | null)[] = [null, null, null, null, null, null, null, null]
+
   private readonly items: DrawItem[] = []
   private itemCount = 0
   private readonly bucketCounts: Int32Array
@@ -224,6 +244,7 @@ export class Renderer {
       this.items.push({
         x: 0, y: 0, liftY: 0, frame: null, colour: '', w: 0, h: 0, flash: false,
         scaleX: 1, scaleY: 1, rotation: 0, outline: null, alpha: 1,
+        pivotX: 0, pivotY: 0,
       })
     }
     this.bucketRows = Math.ceil(world.arenaH / BUCKET) + 2
@@ -1055,6 +1076,8 @@ export class Renderer {
     it.rotation = 0
     it.outline = null
     it.alpha = 1
+    it.pivotX = 0
+    it.pivotY = 0
     return it
   }
 
@@ -1396,7 +1419,11 @@ export class Renderer {
       }
     }
 
-    this.collectWeaponRing()
+    // The loadout, resolved once and drawn in two passes: what goes behind the
+    // farmhand is pushed before his sprite, the rest after. Insertion order
+    // inside a y-bucket is what layers them; see `sortAndDraw`.
+    assignCarrySlots(w.player.weapons, this.carrySlots)
+    this.collectCarried(true)
     this.collectHarvestTools()
 
     const p = w.player
@@ -1415,6 +1442,8 @@ export class Renderer {
       // gets confused with the enemy hit flash.
       if (p.invuln > 0 && Math.floor(p.anim * 20) % 2 === 0) it.alpha = 0.45
     }
+
+    this.collectCarried(false)
   }
 
   private sortAndDraw(ctx: CanvasRenderingContext2D): void {
@@ -1452,6 +1481,7 @@ export class Renderer {
       const it = this.items[this.order[k]]
       const f = it.frame
       const plain = it.rotation === 0 && it.scaleX === 1 && it.scaleY === 1 && it.alpha === 1
+        && it.pivotX === 0 && it.pivotY === 0
 
       if (f && atlasImgs) {
         const src = it.flash && flashImgs ? flashImgs[f.page] : atlasImgs[f.page]
@@ -1464,7 +1494,7 @@ export class Renderer {
           if (it.rotation !== 0) ctx.rotate(it.rotation)
           if (it.scaleX !== 1 || it.scaleY !== 1) ctx.scale(it.scaleX, it.scaleY)
           if (it.alpha !== 1) ctx.globalAlpha = it.alpha
-          ctx.drawImage(src, f.x, f.y, f.w, f.h, f.ox, f.oy, f.w, f.h)
+          ctx.drawImage(src, f.x, f.y, f.w, f.h, f.ox + it.pivotX, f.oy + it.pivotY, f.w, f.h)
           ctx.restore()
         }
       } else {
@@ -1711,69 +1741,109 @@ export class Renderer {
   }
 
   /**
-   * The weapon ring: every weapon the player owns, spaced around them and
-   * pointed at what it is shooting.
+   * The carried loadout: every weapon the player owns, worn on his body.
    *
-   * This is the readout the game was missing. Six weapons all firing invisible
-   * bullets is indistinguishable from one, and picking up a seventh weapon
-   * looked like nothing had happened at all. The ring makes ownership,
-   * aiming and rate of fire legible at a glance, Brotato-style.
+   * This is the readout the game was missing and then got wrong twice. Six
+   * weapons firing invisible bullets is indistinguishable from one, and picking
+   * up a seventh looked like nothing had happened — so M5 put the icons in a
+   * ring around him. A circle of evenly spaced objects is the visual signature
+   * of ORBITING, though, and squeezing 45-60px card art down to fifteen pixels
+   * to fit that circle threw away the one thing the art was carrying: how big
+   * and how upgraded the object is. The owner's word for it was "arbitrary".
    *
-   * Angles come from the sim (`slot.ringAngle`, `slot.aimAngle`) — the renderer
-   * decides nothing about targeting, it only draws the answer.
+   * So the weapons are worn instead. The one that fired most recently is in his
+   * hands; the rest hang off his back, his shoulder and his hips at roughly
+   * life scale against a 52px man, in their own per-tier art, and a weapon on
+   * his back goes behind him when he faces the camera. Six weapons at T3 is
+   * then a visibly better-equipped farmhand than one weapon at T1, which is the
+   * whole ask.
+   *
+   * Split into two passes around the player sprite rather than sorted: the
+   * bucket sort preserves insertion order, so "behind" is simply "pushed
+   * first". See `DrawItem.liftY` for why the height is not the depth.
+   *
+   * Angles come from the sim (`slot.aimAngle`, `slot.firedAt`) — the renderer
+   * decides nothing about targeting or about which weapon is live, it only
+   * draws the answer.
    */
-  private collectWeaponRing(): void {
+  private collectCarried(behind: boolean): void {
     const atlas = this.atlas
     if (!atlas) return
     const w = this.world
     const p = w.player
     const cfg = TUNING.fx
+    // The rig's own name for this facing: down / up / left / right.
+    const dir = atlas.directionFor(p.classId, p.facing)
+    const bootY = CARRY.bootOffsetY
 
-    for (const slot of p.weapons) {
+    for (let i = 0; i < p.weapons.length; i++) {
+      const slot = p.weapons[i]
+      const anchorSlot = this.carrySlots[i]
+      // `none` — the Scythe is already orbiting him and the Barn Dog is already
+      // running about. Drawing a second one on his hip would be a lie.
+      if (!anchorSlot) continue
+      const a = carryAnchorOf(anchorSlot, dir)
+      if (!a || a.behind !== behind) continue
+
       // Tier art: merging a weapon changes the weapon. A gun steps up its
       // category, a melee tool steps up its material. Falls back to the base
       // sprite so a weapon without a tier list still draws.
       const def = WEAPONS[slot.id] as { tierSprites?: string[]; sprite?: string } | undefined
       const tierKey = def?.tierSprites?.[Math.min(slot.tier, 4) - 1]
       const frame = (tierKey ? atlas.get(tierKey) : undefined)
+        ?? atlas.get(`weapon.${slot.id}.t${Math.min(slot.tier, 4)}`)
         ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
         ?? atlas.get(`weapon.${slot.id}`)
       if (!frame) continue
       const it = this.push()
       if (!it) return
 
-      // A newly taken or merged weapon announces itself: it sits further out,
-      // rides above the ring and pulses. Two and a half seconds is long enough
-      // to find it and short enough not to become the normal look.
+      // A newly taken or merged weapon announces itself for a couple of
+      // seconds: it rides higher and draws larger. Kept from the ring, because
+      // the reason it existed is unchanged — one more object on an already
+      // busy character is otherwise easy to miss entirely.
       const fresh = p.weaponFlash.get(slot.id) ?? 0
-      const lift = fresh > 0 ? Math.sin(fresh * 12) * 3 : 0
-      const push = fresh > 0 ? 10 * Math.min(1, fresh) : 0
+      const lift = fresh > 0 ? Math.sin(fresh * 12) * CARRY.freshLiftPixels : 0
 
-      // Recoil kicks the weapon back along its own aim as it fires.
-      const kick = slot.recoil > 0
+      // Recoil kicks the weapon back along its own aim as it fires. Only the
+      // held weapon kicks: a rifle on his back does not move when the pitchfork
+      // swings, and it used to.
+      const held = anchorSlot === 'hand'
+      const kick = held && slot.recoil > 0
         ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
         : 0
-      const r = cfg.weaponRingRadius + push
-      it.x = p.x + Math.cos(slot.ringAngle) * r - Math.cos(slot.aimAngle) * kick
-      // Depth: where on the ground this weapon is, so one at his front draws
-      // over him and one behind his shoulder draws under him.
-      it.y = p.y + Math.sin(slot.ringAngle) * r - Math.sin(slot.aimAngle) * kick
-      // Picture: carried at torso height. Never folded into y — see `liftY`.
-      it.liftY = 14 - lift
+
+      it.x = p.x + a.dx - Math.cos(slot.aimAngle) * kick
+      // Depth is the player's own y: carried gear is at his feet as far as the
+      // sort is concerned, and `behind` does the rest.
+      it.y = p.y
+      it.liftY = -(bootY + a.dy) + lift + Math.sin(slot.aimAngle) * kick
+
       it.frame = frame
       it.colour = PALETTE.melee
       it.w = 10
       it.h = 10
-      // The art is drawn pointing right, so aim is the rotation directly. Left
-      // of the player it would read upside down, so it flips instead.
-      const facingLeft = Math.abs(slot.aimAngle) > Math.PI / 2
-      it.rotation = facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle
-      // Normalise to a target width rather than applying one flat scale. The
-      // sources are not the same size: a tool icon fills a 32px cell while a
-      // gun is drawn ~20px wide to be HELD by a 32px character. One shared
-      // multiplier shrank the guns twice and left them unreadable.
-      const fit = Math.min(1.15, cfg.weaponRingTargetWidth / Math.max(8, frame.w))
-        * (fresh > 0 ? 1.35 : 1)
+
+      // Both anchor families rotate about the art's own centre. `weapon.*` is
+      // cut bottom-centre to stand on the ground and `gun.*` is centred; this
+      // is the one place that difference is reconciled.
+      it.pivotX = -(frame.ox + frame.w / 2)
+      it.pivotY = -(frame.oy + frame.h / 2)
+
+      // Only the side-view art can be swung round to the aim, and only while it
+      // is being held. A 3/4 watering can pointed at a chicken reads as a bug.
+      const aims = held && carryAimsOf(slot.id)
+      const facingLeft = aims ? Math.abs(slot.aimAngle) > Math.PI / 2 : a.flip
+      it.rotation = aims
+        ? (facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle)
+        : (a.angle + carryAngleOf(slot.id)) * (a.flip ? -1 : 1)
+
+      // Scaled by its LONGEST side, and never enlarged. The art is pixel art
+      // at an integer world zoom, so an upscale is a visible lie about the
+      // grid; a weapon whose `carryHeight` exceeds its source simply draws at
+      // native size, and that is the standing note that it wants better art.
+      const fit = Math.min(1, carryHeightOf(slot.id) / Math.max(1, Math.max(frame.w, frame.h)))
+        * (fresh > 0 ? CARRY.freshScale : 1)
       it.scaleX = fit * (facingLeft ? -1 : 1)
       it.scaleY = fit
     }
@@ -1782,9 +1852,9 @@ export class Renderer {
   /**
    * The pickaxe and axe, carried at the player's hips.
    *
-   * Kept out of the weapon ring on purpose. They are not weapons, they never
-   * aim at anything, and folding them into the ring would both eat two of its
-   * slots and imply they fire. Hanging them low and angled at the ground reads
+   * Kept out of the carried loadout on purpose. They are not weapons, they
+   * never aim at anything, and giving them body anchors would both eat two of
+   * the six and imply they fire. Hanging them low and angled at the ground reads
    * as equipment, and it is the only place a tier upgrade is ever visible —
    * buying a Titanium Pickaxe is otherwise a number nobody sees.
    */
@@ -1823,8 +1893,8 @@ export class Renderer {
       it.w = 8
       it.h = 8
       it.rotation = side * (0.7 + swing)
-      it.scaleX = TUNING.fx.weaponRingScale * 0.85 * side
-      it.scaleY = TUNING.fx.weaponRingScale * 0.85
+      it.scaleX = TUNING.fx.harvestToolScale * side
+      it.scaleY = TUNING.fx.harvestToolScale
     }
   }
 

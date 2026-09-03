@@ -95,9 +95,7 @@
   "_rates": "Hit sparks on every hit would be 200 sparks a frame in a late wave and would bury the enemies. `hitSparkChance` is the fraction of non-crit hits that spark; crits always do, because a crit is the thing you want to notice.",
   "hitSparkChance": 0.35,
   "muzzleChance": 0.5,
-  "_ring": "The weapon ring drawn around the player. radius is how far the icons sit from the player's centre, scale shrinks the 32px source art to something that reads beside a 32px character, and recoil is how far a weapon kicks back along its aim when it fires.",
-  "weaponRingRadius": 24,
-  "weaponRingScale": 0.45,
+  "_recoil": "How long a weapon's firing kick lasts and how far it travels. The ring these once belonged to is gone (see `carry` below); the kick survived it, because a kick is what makes a weapon read as FIRING rather than as an icon that happens to be there.",
   "weaponRecoilSeconds": 0.12,
   "weaponRecoilPixels": 6,
   "_newClips": "Clips from the unTied projectile packs. shockwave replaces the conformed FX-pack ring for ground pulses; arrowImpact and bigImpact are the dedicated impact animations those packs ship, which the FX pack had no equivalent of.",
@@ -113,10 +111,8 @@
    "life": 0.34,
    "scale": 0.8
   },
-  "_ringScaleNote": "Ring icons are normalised to weaponRingTargetWidth rather than scaled by a flat factor, because the sources differ: a 32px tool icon and a ~20px gun drawn to be held need different multipliers to end up the same size on screen.",
-  "weaponRingTargetWidth": 15,
-  "weaponRingSpreadDegrees": 250,
-  "_weaponRingSpreadNote": "The ARC the weapons fan across, centred on the direction the character faces (down/front). 360 puts them on a perfect circle at even spacing, which reads as an ORBIT — a thing going around him — rather than as gear carried at his sides. Leaving a gap behind the head is most of the difference, and it costs nothing."
+  "_harvestToolNote": "The pickaxe and axe hanging at the player's feet are not weapons and are not part of the carried loadout — see `Renderer.collectHarvestTools`. This is the flat multiplier they draw at; it used to be `weaponRingScale * 0.85` and is now written out, because the ring it borrowed from no longer exists.",
+  "harvestToolScale": 0.38
  },
  "arena": {
   "edgePadding": 24
@@ -135,6 +131,56 @@
   "ringWidth": 1,
   "_footNote": "NEGATIVE, and measured, not assumed: the character sheets are 32x64 cells drawn from bottom-centre, but the art stands with its feet at cell row 52 -- twelve pixels ABOVE the cell floor (tools/pixellab-cut.ts, and the LimeZu farmer sheets share the baseline). The player origin is therefore the cell floor, not his boots, and an ellipse drawn there reads as a hole he is hovering over; the owner saw exactly that. -10 puts it on the boot row with the couple of pixels of bias that stops it striping the boots.",
   "footOffsetY": -10
+ },
+ "carry": {
+  "_note": "Where a weapon sits ON THE BODY. This replaces the weapon ring — six icons at 15px on a perfect circle, which read as an orbit and told you nothing about how armed the farmhand was. A carried loadout is the same information drawn as equipment: the thing that just fired is in his hands, everything else hangs off him at roughly life scale, and its per-tier art means a merged weapon visibly becomes a better object.",
+  "_anchorNote": "`dx`/`dy` are the anchor for a slot, in world pixels, PER FACING, and `dy` is measured from the BOOTS (negative is up) rather than from the player origin — the origin is the character cell's floor, twelve pixels under his feet, and every anchor here would otherwise carry that twelve around with it. `bootOffsetY` is the one place that conversion lives. See playerMark._footNote for where the measurement comes from. For scale: the drawn farmhand is 52px tall and 30px wide in front view and about 20px wide in profile, so his hips are about -20, his shoulders about -38 and the top of his hat about -50. The slots are a LADDER and nothing shares a rung -- hips -18, hand -23, backX -29, back -35, shoulder -37 -- because in profile he is only twenty pixels wide and anchors on the same rung all land on the same twenty pixels. That is what put three weapons on his chin the first time.",
+  "_behindNote": "`behind` says whether this slot draws BEHIND the character for that facing, and it is the whole of the depth handling: carried items are pushed at the player's own y, and the sprite pass is a counting sort that preserves insertion order inside a bucket, so `behind` items are simply pushed before the player sprite and the rest after. A rifle slung on his back is behind him when he faces the camera and in front of him when he walks away, which is what stops the loadout reading as decals stuck on top of him. Use it sparingly: an item drawn behind a 30px-wide body is mostly an item you cannot see, which is why the back slots sit off-centre.",
+  "_flipNote": "`flip` mirrors the art horizontally for that facing. All the source art points right, so the left-facing views need it. `angle` is the resting rotation in radians, clockwise, and a weapon's own `carryAngle` in weapons.json is ADDED to it.",
+  "bootOffsetY": -8,
+  "_orderNote": "The slot a weapon asks for is its RESTING slot; `hand` is dynamic and belongs to whichever weapon fired most recently (`slot.firedAt`, a sim tick stamp). Everything else claims its declared slot in pickup order, and a weapon that finds its slot taken walks forward through this cycle, wrapping, until it finds a free one. `hand` is struck out of the free set first, so a resting weapon never lands in it. Six inventory slots against `hand` plus five anchors means the loadout always fits exactly, with no overflow case to invent.",
+  "fallbackOrder": ["back", "shoulder", "hipR", "hipL", "backX"],
+  "_freshNote": "A weapon just taken or just merged announces itself for a couple of seconds: it rides a little higher and draws a little larger. Same signal the ring used, and the reason it existed is unchanged — a seventh thing appearing on a busy character is otherwise easy to miss entirely.",
+  "freshLiftPixels": 3,
+  "freshScale": 1.3,
+  "slots": {
+   "hand": {
+    "down": { "dx": 9, "dy": -23, "behind": false, "flip": false, "angle": 0.35 },
+    "up": { "dx": -9, "dy": -25, "behind": true, "flip": false, "angle": -0.35 },
+    "left": { "dx": -10, "dy": -23, "behind": false, "flip": true, "angle": 0.35 },
+    "right": { "dx": 10, "dy": -23, "behind": false, "flip": false, "angle": 0.35 }
+   },
+   "back": {
+    "down": { "dx": -6, "dy": -35, "behind": true, "flip": false, "angle": -0.62 },
+    "up": { "dx": 6, "dy": -35, "behind": false, "flip": false, "angle": -0.62 },
+    "left": { "dx": 8, "dy": -34, "behind": false, "flip": true, "angle": -0.62 },
+    "right": { "dx": -8, "dy": -34, "behind": false, "flip": false, "angle": -0.62 }
+   },
+   "backX": {
+    "down": { "dx": 7, "dy": -29, "behind": true, "flip": false, "angle": 0.62 },
+    "up": { "dx": -7, "dy": -29, "behind": false, "flip": false, "angle": 0.62 },
+    "left": { "dx": 12, "dy": -25, "behind": false, "flip": true, "angle": 0.62 },
+    "right": { "dx": -12, "dy": -25, "behind": false, "flip": false, "angle": 0.62 }
+   },
+   "shoulder": {
+    "down": { "dx": -12, "dy": -37, "behind": false, "flip": false, "angle": -1.05 },
+    "up": { "dx": 12, "dy": -37, "behind": false, "flip": false, "angle": -1.05 },
+    "left": { "dx": 0, "dy": -38, "behind": false, "flip": true, "angle": -1.05 },
+    "right": { "dx": 0, "dy": -38, "behind": false, "flip": false, "angle": -1.05 }
+   },
+   "hipR": {
+    "down": { "dx": -12, "dy": -18, "behind": false, "flip": false, "angle": 1.15 },
+    "up": { "dx": 12, "dy": -18, "behind": false, "flip": false, "angle": 1.15 },
+    "left": { "dx": 5, "dy": -18, "behind": true, "flip": true, "angle": 1.15 },
+    "right": { "dx": -6, "dy": -18, "behind": false, "flip": false, "angle": 1.15 }
+   },
+   "hipL": {
+    "down": { "dx": 12, "dy": -18, "behind": false, "flip": false, "angle": -1.15 },
+    "up": { "dx": -12, "dy": -18, "behind": false, "flip": false, "angle": -1.15 },
+    "left": { "dx": -6, "dy": -18, "behind": false, "flip": true, "angle": -1.15 },
+    "right": { "dx": 5, "dy": -18, "behind": true, "flip": false, "angle": -1.15 }
+   }
+  }
  },
  "harvest": {
   "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",

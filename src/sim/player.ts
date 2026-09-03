@@ -9,8 +9,6 @@ import { emptyDerived, resolveStats, type DerivedStats } from './stats'
 import { xpToNext } from './formulas'
 
 const P = TUNING.player
-/** The arc the carried weapons fan across. See `layOutWeaponRing`. */
-const RING_SPREAD_DEGREES = (TUNING.fx as unknown as Record<string, number>).weaponRingSpreadDegrees
 
 export interface OwnedItem {
   id: string
@@ -26,19 +24,28 @@ export interface WeaponSlot {
   /** Per-weapon scratch: orbit angle, minion index, and so on. */
   t0: number
 
-  // --- what the weapon ring around the player draws from -----------------
+  // --- what the carried loadout draws from --------------------------------
   // The sim owns these because targeting is a simulation decision; the
   // renderer reads them and never works out who a weapon is pointing at.
 
   /** Where this weapon is pointing, radians. */
   aimAngle: number
   /** Seconds of firing kick left, counted down by the weapon pass. Drives the
-   *  visible recoil, which is most of what makes a full ring read as six
-   *  weapons working rather than one player with a lot of icons. */
+   *  visible recoil, which is most of what makes a loadout read as several
+   *  weapons working rather than one player wearing a lot of objects. */
   recoil: number
-  /** Position in the ring, radians, assigned on pickup so weapons do not all
-   *  shuffle round when one is added. */
-  ringAngle: number
+  /**
+   * The world tick this weapon last fired on, or -1 if it never has.
+   *
+   * This is what decides which weapon is IN HIS HANDS: the most recent firer
+   * is held, everything else hangs off a body anchor. A tick stamp rather than
+   * a seconds stamp, and set in the sim rather than inferred in the renderer,
+   * because the answer has to be identical in the game, in `npm run shot` and
+   * in a replay of the same seed. `recoil` cannot stand in for it — it expires
+   * after 0.12s and would hand the loadout back and forth between weapons
+   * between shots.
+   */
+  firedAt: number
 }
 
 export const MAX_WEAPON_SLOTS = 6
@@ -205,7 +212,7 @@ export class Player {
     this.metaMods = metaMods
     this.weapons = [{
       id: this.def.startingWeapon, tier: 1, cooldownLeft: 0, t0: 0,
-      aimAngle: 0, recoil: 0, ringAngle: -Math.PI / 2,
+      aimAngle: 0, recoil: 0, firedAt: -1,
     }]
     this.items = []
     this.pickaxeTier = 0
@@ -429,52 +436,21 @@ export class Player {
     if (this.weapons.length >= MAX_WEAPON_SLOTS) return false
     this.weapons.push({
       id, tier: 1, cooldownLeft: 0, t0: 0,
-      aimAngle: 0, recoil: 0, ringAngle: 0,
+      aimAngle: 0, recoil: 0, firedAt: -1,
     })
-    this.layOutWeaponRing()
-    // The ring is a readout, and a seventh icon appearing in a ring of six is
-    // easy to miss entirely — which is exactly what happened in play.
+    // The loadout is a readout, and one more object on an already-equipped man
+    // is easy to miss entirely — which is exactly what happened in play.
     this.weaponFlash.set(id, 2.5)
     return true
   }
 
   /**
-   * Space the weapons evenly around the full circle.
+   * Seconds of "this one is new" highlight left on each carried weapon.
    *
-   * Recomputed whenever the set changes rather than derived from the index at
-   * draw time, so the ring is stable state the renderer just reads — and so a
-   * sixth weapon spreads the other five apart instead of appearing on top of
-   * one of them.
+   * Keyed by weapon id rather than by slot index because a merge changes a
+   * weapon without adding one, and that is just as much news as a pickup is.
    */
-  /** Seconds of "this one is new" highlight left on each ring slot. */
   weaponFlash = new Map<string, number>()
-
-  /**
-   * Where each weapon is CARRIED, as an angle from the player's centre.
-   *
-   * They used to be spaced evenly around a full circle, and that is what made
-   * the ring read as an ORBIT — a thing travelling around the character — where
-   * the reference (Brotato) reads as gear held at his sides. A circle of evenly
-   * spaced objects is the visual signature of orbiting, and no amount of art
-   * fixes it.
-   *
-   * So they fan across an ARC centred on the way he faces, leaving a gap behind
-   * his head. Same weapons, same radius, same aiming; the emptiness at the top
-   * is what tells you these are being carried rather than circling.
-   *
-   * Angles only. Whether a weapon then draws in front of him or behind him is
-   * the renderer's `liftY`/depth split, not this.
-   */
-  private layOutWeaponRing(): void {
-    const n = this.weapons.length
-    const spread = ((RING_SPREAD_DEGREES ?? 250) * Math.PI) / 180
-    // PI/2 is down in screen space: in front of the character.
-    const centre = Math.PI / 2
-    for (let i = 0; i < n; i++) {
-      const t = n === 1 ? 0.5 : i / (n - 1)
-      this.weapons[i].ringAngle = centre - spread / 2 + t * spread
-    }
-  }
 
   hasWeapon(id: string): boolean {
     return this.weapons.some((w) => w.id === id)
