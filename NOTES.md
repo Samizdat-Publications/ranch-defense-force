@@ -136,6 +136,119 @@ drop; the composition stays), and the home screen gets a scene sequence — calm
 lightning, blight, then a camera descent through the soil to the lab that is
 "secretly right under the farm."
 
+## The atlas is pages now, and the per-second re-decode is gone
+
+Acting on `docs/PERF_FINDINGS_2026-09-02.md` §3 and §4, which are the
+measurements this is built on and are not repeated here.
+
+`public/atlas.png` was one 4096x8192 sheet, 8,176 frames, 12.7MB of PNG,
+~134MB decoded, 56% occupied. It is now `public/atlas-0.png … atlas-6.png`,
+each at most 2048x2048, and one `atlas.json` whose every frame carries the
+`page` it sits on. `public/atlas.png` is not built any more; `npm run atlas`
+deletes a stale one.
+
+| page | size | frames | used | PNG |
+|---|---|---|---|---|
+| 0 | 2048x2048 | 987 | 82% | 1647KB |
+| 1 | 2048x2048 | 1521 | 82% | 2631KB |
+| 2 | 2048x2048 | 1658 | 83% | 2666KB |
+| 3 | 2048x2048 | 1943 | 81% | 2746KB |
+| 4 | 2048x1216 | 1854 | 72% | 1165KB |
+| 5 | 2048x2048 | 191 | 75% | 1231KB |
+| 6 | 2048x64 | 22 | 34% | 18KB |
+
+23.6M pixels against 33.6M, 79% occupied against 56%, 12,105KB of PNG against
+12,433KB. The number that matters is not any of those: it is that no single
+surface is above 16MB decoded any more, where one was 134MB.
+
+### What it bought, measured on the owner's machine
+
+Three `npm run play -- hand 90 <dir> harvest` runs each side, and one
+`play-trace.ts hand 30` each side, machine otherwise idle.
+
+| | before | after |
+|---|---|---|
+| `Decode Image` (png) per ~30s of play | 35, median 337ms, 11.3s total | 1, 52ms, 0.1s |
+| `GpuImageDecodeCache::UploadImage` | 36 | 1 |
+| `DrawFrame` in the window | 6937 | 7063 |
+| fps median | 242 / 242 / 238 | 242 / 238 / 242 |
+| fps min | 222 / 154 / 104 | 222 / 200 / 234 |
+| frames over 33ms | 82 / 74 / 101 | 12 / 30 / 10 |
+
+**The frame rate does not move and was never going to** — this machine absorbs
+the cost. What moves is the stall count, 74-101 down to 10-30, and the fps
+floor, 104-222 up to 200-234. Those two ranges do not overlap, which is more
+than the previous session could say about anything it A/B-ed.
+
+Caveat when reading the traces: the BEFORE trace reports "152.2s of trace" in
+its own header where the after reports 30.0s. 6937 presented frames at ~235fps
+is ~30s, so that denominator is wrong and its per-second column is deflated 5x.
+Compare counts.
+
+### What was decided and why
+
+- **2048, and not smaller.** The bench measured 2048 exactly as cheap as 1024
+  at both loads. Below 2048 buys nothing and costs pages.
+- **The packer is NOT arranged for locality.** Measured irrelevant. Frames are
+  grouped only so the home screen's very large scenery (`scene`, `sceneBg`,
+  `ranch`, `pen`, `vault`, `meta`, `portrait`, and the animated props
+  `vatSpecimen`/`windmill`/`scarecrow`/`wheat`/`labConsole`/`tank*`) lands on
+  pages 5-6 and the pages the renderer samples every frame carry only field
+  art. That grouping is tidiness; a frame carries its page and every reader
+  indexes by it. `base.*` is deliberately field — `maps.json` uses it for the
+  lab map. So is `item.*`: `drawPickups` draws an item's card art as its
+  ground pickup.
+- **Page height rounds to 64, not to a power of two.** These are `drawImage`
+  sources on a 2D canvas — no mipmaps, no wrap — and POT rounding turned a page
+  needing 1216 rows into 2048, 43% full. 25.3M pixels became 23.6M.
+- **The flash copy split for free**: one white silhouette canvas per page.
+
+### Where the page index shows up
+
+`Atlas` holds `images[]`, `flash[]` and `pageUrls[]`, loads the manifest first
+(it says how many pages) then every page in parallel. `AtlasFrame` gains
+`page`. The renderer's hot path is still one `drawImage`, no state change, no
+allocation — `images[f.page]` is an array index beside five property reads the
+loop already did. `src/ui/sprite.ts` gives each DOM sprite its frame's page url
+AND that page's `background-size` through one `pageOf()`; its exported helpers
+are unchanged and `card.ts`/`menu.ts`/`scene.ts` needed no edits. The nine
+offline tools that used to open `public/atlas.png` go through
+`tools/atlas-read.ts`.
+
+### Evidence the pixels did not move
+
+- `npm run shot -- 600 … harvest hand` is sha256-identical before and after,
+  and again after wiping `public/` and rebuilding.
+- `npm run strips` rewrote all 714 strips and `npm run catalog` every contact
+  sheet with **zero diff**. That is the page indexing checked against 714
+  files, which is better evidence than one screenshot.
+- `npm run scene -- yard` is NOT deterministic — the yard has a timed CSS
+  entrance, so two consecutive shots differ. Do not use it as an A/B.
+
+### Two corrections made in passing
+
+**`tools/play.ts` blamed the atlas for slow page load, and that was wrong.**
+`tools/load-time.ts` (new) separates boot (`goto` → `window.rdf`) from art
+(`goto` → `rdf.atlas`). A cold browser context takes ~81s and `rdf.atlas`
+resolves **7ms** after `window.rdf` — the atlas fetched in parallel while vite
+transformed the module graph. It is vite, not the art. Later loads: ~190ms to
+boot, ~700ms to art; the atlas's own share went from ~750ms to ~490ms.
+
+**`build-atlas.ts` had an error flush in the wrong place.** `errors` was
+printed before the tileset and pack sections, so "tileset is incomplete" and
+"the atlas does not fit" were pushed and never seen. There is a second flush
+after the pack now. A build that previously shipped a holed tileset will fail.
+
+`tools/atlas-bench.ts` can no longer open a 4096x8192 file, so it composes one
+from `atlas-0.png` and round-trips it through `toBlob`; pointing condition (a)
+at a page would have turned the experiment into 2048-vs-2048 and had it report
+"no difference" forever. Re-run on this tree it still reproduces the original
+result.
+
+Unrelated and still true: `tools/animal-check.png` in the repo is stale
+(2336x4590 committed against 2400x11352 regenerated).
+
+
 ## The farmhand takes off the player's hat
 
 Session 20 filed it and session 21 filed it again, in the same words both
