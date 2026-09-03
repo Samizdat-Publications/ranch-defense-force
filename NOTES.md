@@ -136,6 +136,127 @@ drop; the composition stays), and the home screen gets a scene sequence — calm
 lightning, blight, then a camera descent through the soil to the lab that is
 "secretly right under the farm."
 
+## The four locked classes now answer the game differently
+
+The standing directive is done. `widow`, `vet`, `agronomist` and `drifter` were
+three `braced`s and three `momentum`s with `digIn` or `bolt` bolted on. Each now
+owns an axis of a system the game already had, chosen because **The Hand and The
+Kid had already taken the MOVEMENT axis between them** and a third variation on
+standing-versus-running is another stat spread whatever the numbers say.
+
+- **Widow / attrition.** `grit` splits a blow: 55% lands now, the rest is a wound
+  that bleeds off over 5s and that each kill closes a quarter of. Fighting
+  through a hit erases it; running pays all of it. `holdTheLine` plants a ward
+  that slows and pays per kill inside, and does NOT root her — a ward you cannot
+  leave is a worse Dig In. Her flat regen came down 1.4 → 0.3 because Grit IS
+  her sustain now.
+- **Veteran / spacing.** `overwatch` pays +40% past 170px, charges -20% inside
+  80px. PER-TARGET, so it joins the additive sum in `resolveDamage` — the stat
+  block and `passiveDamagePct` are both one number for the whole tick.
+  `claymore` plants a mine: arms in 0.8s, trips on the first thing within 90px
+  or a 6s fuse, 55 in a ring plus knockback and a 1.2s stun. A ring, not a
+  cone: all reach here is circle-vs-circle, and a mine you walked away from
+  has no facing.
+- **Agronomist / status.** `cultivar` makes every burn, bleed and slow she
+  applies hit 70% harder and last 70% longer (slows capped at 75%), at the point
+  the payload leaves the projectile. She is the one class for whom the element
+  pick changes character. `fieldSample` lobs a flask 190px that leaves a slick
+  carrying her element, or a 50% slow if she has none. Not a dash.
+- **Drifter / tempo.** `hotStreak` stacks +5% damage and +2.5% speed per kill to
+  twelve, on a 4s window from the last kill; any hit at all takes the lot. The
+  Kid's Momentum asks how fast you MOVE; this asks how fast you KILL. `lightOut`
+  is a 220px line through the crowd: 45 to everything crossed, shoved aside,
+  0.35s untouchable, and 1.5s off the cooldown per kill on the way.
+
+### The balance table, before from a revert and not from memory
+
+24 seeds, `npm run balance`, home pilot in bold. "Before" is the pre-change code
+re-measured after reverting `src/sim` and `classes.json` to b6b0b6a4.
+
+| class | pilot | kite | brawler | spacer |
+|---|---|---|---|---|
+| hand | brawl | 33% | **79%** | 58% |
+| kid | kite | **58%** | 46% | 75% |
+| widow | brawl | 42% → 88% | **75% → 83%** | 92% → 79% |
+| vet | space | 13% → 38% | 33% → 46% | **54% → 67%** |
+| agronomist | brawl | 46% → 54% | **50% → 75%** | 67% → 71% |
+| drifter | kite | **4% → 58%** | 17% → 54% | 8% → 79% |
+
+On the test's seed ladder (home pilots, /24): hand 21, kid 13, widow 22 → 20,
+vet 13 → 16, agronomist 11 → 18, drifter 1 → 17. Mean 17.5, worst deviation
+4.5 against a bar of 8. `spacer` is a new pilot in `tools/balance.ts` that
+holds ~200px, because a range class flown by a brawler measures the wrong game.
+
+### The Drifter was a trap pick, and had been for a while
+
+**1/24 kiting, 4/24 brawling, 2/24 spacing — dying on WAVE 2 in fourteen of
+twenty-four, on the code that was already committed.** He had been broken since
+the density pass halved enemy hp and damage to buy BODIES. Nothing caught it
+because **the parity test only ever ran The Hand and The Kid**, and Momentum was
+hiding it: +60% damage essentially free, since a harness bot never stops
+moving. Hot Streak pays nothing until you are already killing, which exposed it.
+
+The cause is the STARTING WEAPON, proved rather than argued: every other number
+held still, 4/24 holding the Harpoon Gun and 13/24 holding the Scattergun. At
+T1 `hookFurthest` fires one shot at ONE enemy every 1.8s, at the FURTHEST enemy
+in range, so it does not even answer the thing about to touch you. **Stat
+inflation was tried first and refused to move it — 95 hp, +45% attack speed and
++15% damage took 4/24 to 4/24.**
+
+The fix is that `hookFurthest` now reads `projectileCount`, a declared stat
+that until now **only the Scattergun's `stream` looked at**. Nothing in the game
+grants it, so every existing build resolves it at 0 and the line is
+arithmetically the one it replaces; the Drifter's stat block pays for extra
+hooks. The Harpoon Gun is still a bad T1 weapon for everyone else — a T1 rider
+on the weapon, or a different starting weapon, is a design call.
+
+### The weapon ring targets the NEAREST enemy, and that shapes range passives
+
+Overwatch shipped at 220/110 and measured 0/8 kiting. `findNearestEnemy` means a
+range-scaling passive is graded against the closest body on nearly every shot,
+so the near penalty applied continuously in any crowd and the far bonus could
+never be earned. 170/80 makes the penalty a contact-range punishment and the
+bonus something a standoff reaches: 16/24.
+
+### The parity bar was about to measure the wrong thing
+
+The six-class test keeps the pair test's TOLERANCE, `ceil(n/3)`, and
+deliberately not its statistic. Bounding `max - min` over six classes at a
+number written for `|a - b|` over two is silently far stricter, because a
+sample's range grows with how many things are in it. It would also have been a
+test of two classes out of scope: The Hand at 21/24 and The Kid at 13/24 span
+exactly ceil(24/3) = 8 between them before any unlockable is considered. Each
+class is held within `ceil(n/3)` of the six-class mean instead. Read the
+deviation, not the pass: 4.5 against a bar of 8. 207 tests now.
+
+### Facts found along the way
+
+- **`animRow` is read by nothing**, and the names in The Hand's and The Kid's
+  entries (`dig`, `run`) are fiction. The shared humanoid rig declares exactly
+  `idle` and `walk`, checked against the built `atlas.json`. The four new
+  entries name real clips and a `_animRowNote` records it.
+- **`npm run play` never pressed SPACE.** Every playthrough report in this repo
+  until now measured a class with its ability button unplugged. It presses once
+  a second now and reports how many times the ability fired.
+- `tryAbility` refunds the cooldown for an id it has no branch for, so a dead
+  button is instantly dead rather than also lying about recharging.
+- The balance harness presses the ability once every 400 ticks (6.67s), so it
+  under-measures every cooldown shorter than that. Light Out's kill-refund is
+  essentially invisible to it.
+
+### What wants a human playing it
+
+- **Whether Grit reads as anything.** The wound is invisible: nothing in the HUD
+  shows outstanding damage, so what a player sees is a health bar that keeps
+  falling after the hit and stops when they kill something. That is the whole
+  class and it has no readout.
+- **`lifestealPct: 1` on the Drifter is doing a lot of work** — 4% put him at
+  21/24 and 2% at 20/24, roughly five clears per point.
+- **The Claymore may be invisible in practice.** Its only marker is the
+  TRIGGER-radius telegraph; the larger blast radius is never drawn.
+- Overwatch's bands have no on-screen expression at all.
+
+
 ## The atlas is pages now, and the per-second re-decode is gone
 
 Acting on `docs/PERF_FINDINGS_2026-09-02.md` §3 and §4, which are the
