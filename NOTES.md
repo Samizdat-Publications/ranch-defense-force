@@ -101,6 +101,115 @@ you are testing, A/B-ing suspects never converges.** The spike count varies
 ---
 
 
+# Session 22 — measured first, then four agents in four worktrees
+
+The 2fps report got a measurement pass before anything else (the section above
+is its result). Then the session split into four isolated worktrees, each with
+its own `npm ci` and `npm run atlas`, and merged them onto an integration
+branch as they landed: the farmhand silhouette, the four locked classes, the
+home screen, and the atlas split. Each subsection below is the agent's own
+account, edited only for accuracy against the diff.
+
+The owner also settled two open Design questions in this session, by looking at
+the live site: **the class cards get out of the scene's way** (they shrink and
+drop; the composition stays), and the home screen gets a scene sequence — calm,
+lightning, blight, then a camera descent through the soil to the lab that is
+"secretly right under the farm."
+
+## The farmhand takes off the player's hat
+
+Session 20 filed it and session 21 filed it again, in the same words both
+times: **enemy humanoids share the player's silhouette.** Same straw hat, same
+blue dungarees, same 32x64, and the density pass put 2.2x as many of them on
+the field. At wave 6 you cannot find yourself in the crowd. Two things were
+wrong at once and they needed different fixes.
+
+### The obvious fix was to generate a new character, and it was wrong
+
+`docs/PIXELLAB_INVENTORY.md` holds four turned farmhands and **all four are
+already claimed**: `9bcb41fd` is the superseded 40x40 first pass sitting in
+`farmhand_orig/`, `7418d20d` is the sheet actually in use (confirmed against
+the live account — walk 8f, hit 6f, death 7f, which is exactly what
+`sprites.json` declares), `f6e8c1fb` is `bloatedFarmhand` and `371055e3` is
+`acidZombie`. Nothing unclaimed, nothing in review. So the art we already own
+gets repainted, and this session spent **zero generations**.
+
+### tools/recolour-sheet.ts
+
+Every pixel goes into one of four colour FAMILIES by its Oklab hue and chroma,
+and each family is re-ramped onto blight anchors taken from the cursed block of
+`art/palette.json` — the block that exists because "cursed art is grey-green
+rot ... those greens must be DISTINCT from the healthy pasture greens".
+
+    straw    the hat and its leather   ->  rotted brown-black
+    denim    the dungarees             ->  rot-green work cloth
+    flesh    mouth, wounds, blood      ->  still red, taken down
+    pallor   skin, shirt, grime        ->  sick pale green, and BRIGHTER
+
+Classification is by colour and never by position, which is the whole reason it
+is cheap: one rule set covers all 88 frames of a four-direction rig without
+anyone hand-masking a hat. Run `--mask` and look at the output — the hat, the
+dungarees and the skin fall out of the hue boundaries almost perfectly, and the
+few stray pixels read as grime. Two things are never touched: anything below
+`INK_L` is outline and stays black, and the sickly yellow eye is already the
+right horror cue.
+
+**The reason it works is value, not hue.** The player is a bright hat over a
+dark body. The farmhand is now a dark hat over a body darker still, with a pale
+green head — the arrangement inverted, not merely recoloured. Hue is what you
+notice at 8x in a contact sheet; value is what survives 32 pixels on a 520px
+camera. Squint any wave-7 shot down to 25% and that is the whole difference.
+
+Output is `assets/pixellab/character/farmhandBlight/`: identical filenames,
+identical cells, identical strip widths, identical alpha. Only colours differ,
+so every packed offset, measured anchor and clip length carried over untouched.
+Committed rather than gitignored, the same call `assets/generated/characters/`
+already makes — a fresh clone must be able to run `npm run atlas` without
+first running every upstream tool. `npm run recolour` re-runs it.
+
+### The other half: a mark the crowd never has
+
+Repainting the enemy tells the eye what to rule OUT. It needed something to
+hunt FOR as well, so the player now stands in a soft contact shadow with a
+faint lamp ring round it — `Renderer.drawPlayerMark`, once per frame, in the
+ground layer where the dash dust goes.
+
+Deliberately NOT a per-enemy outline or tint. The sprite pass is one
+`drawImage` per item with no state changes at all, and putting a stroke or a
+composite mode inside it would cost the whole field to mark one entity. This
+costs two shapes, allocates nothing, and puts `globalAlpha` back.
+
+All ten numbers are in `tuning.playerMark`, and its `_restraintNote` is the
+part worth keeping: this is a farm at dusk, not a MOBA. The shadow does most
+of the work by GROUNDING him; the ring only has to survive a squint. Raise
+`ringAlpha` before `ringWidth` — a thick ring reads as UI painted over the
+world, a faint wide one reads as lamplight on grass.
+
+### Where the sheet choice is stated, and why there
+
+`enemies.json` gained `farmhand.sheets: ["farmhandBlight"]`. Which sheet an
+enemy WEARS is content, `world.spawnEnemy` already read the field and
+`tests/content.test.ts` already validated it, so nothing in `src/sim` changed.
+The straw `farmhand` entry was DELETED from `sprites.json` rather than left
+beside the new one — packing both would spend 88 frames on art nothing draws.
+`art/sprites.json` cannot express "this sheet lives at that path": the packer
+derives the directory from the sheet id (`${_base}${id}/`), so the sheet id IS
+the path, which is why the directory is `farmhandBlight`.
+
+### Still open from this
+
+- **`bloatedFarmhand` and `acidZombie` still wear the straw hat.** Neither has
+  the same problem — one is 60% belly, the other vivid green. But the hat is
+  now the player's signature, and leaving it on any enemy weakens the rule.
+  `npm run recolour` handles either in one command; a trial of the bloated one
+  looked right. Design's call, not code's.
+- **The arena's bottom edge is still a hard black band** below the boundary
+  tiles. Session 20 filed it with the silhouette complaint; only one of the two
+  is fixed.
+
+
+---
+
 # Session 21 — the balance session, and a stutter that was a debug guard
 
 The owner played it split-screen while this ran and gave two verdicts: too easy,
