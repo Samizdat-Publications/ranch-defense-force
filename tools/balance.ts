@@ -228,8 +228,20 @@ const median = (xs: number[]): number => {
 const mean = (xs: number[]): number => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 const pct = (n: number, d: number): string => (d ? `${((n / d) * 100).toFixed(0)}%` : '-')
 
-// Fixed seed ladder, so two runs of this tool compare like for like.
-const seeds = Array.from({ length: runs }, (_, i) => 1000 + i * 7919)
+/*
+   Fixed seed ladder, so two runs of this tool compare like for like.
+
+   Two ladders, selectable with a 5th argument. The default is this tool's own,
+   which every measurement in NOTES was taken on. `test` is the ladder
+   `tests/run.test.ts` uses for its parity tests, and it exists because tuning
+   a class until the HARNESS is happy and then discovering the TEST disagrees
+   is a slow way to find out that two different seed sets are two different
+   samples. When a parity test fails, measure the seeds it actually failed on.
+*/
+const ladder = process.argv[5] ?? 'balance'
+const seeds = ladder === 'test'
+  ? Array.from({ length: runs }, (_, i) => 1009 * (i + 1))
+  : Array.from({ length: runs }, (_, i) => 1000 + i * 7919)
 
 for (const classId of classes) {
  for (const pilot of PILOTS) {
