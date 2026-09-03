@@ -121,6 +121,21 @@
  "arena": {
   "edgePadding": 24
  },
+ "playerMark": {
+  "_note": "The mark under the player's feet, and the only thing on the field that is his alone. Enemy humanoids share his rig, and repainting the farmhand fixed his CLOTHES without giving the eye anything positive to lock onto in a crowd -- so this is the other half: a soft contact shadow with a faint lamp ring around it, drawn once per frame in the ground layer under every sprite, exactly where the dash dust goes. Nothing else in the game draws one, so it never needs to compete.",
+  "_restraintNote": "This is a farm at dusk, not a MOBA. The numbers below are deliberately near the bottom of what still reads: the shadow does most of the work by GROUNDING him, the ring only has to survive a squint. Raise ringAlpha before raising ringWidth -- a thick ring reads as UI drawn over the world, a faint wide one reads as lamplight on grass. If it ever starts to look like a selection circle it has gone too far.",
+  "shadowRadiusX": 11,
+  "shadowRadiusY": 4.5,
+  "shadowColour": "#161c12",
+  "shadowAlpha": 0.32,
+  "ringRadiusX": 17,
+  "ringRadiusY": 7,
+  "ringColour": "#f0d79a",
+  "ringAlpha": 0.26,
+  "ringWidth": 1,
+  "_footNote": "Sprites are drawn from bottom-centre of a 32x64 cell, so the player's origin is already at his feet; this only nudges the ellipse off the exact pixel so it does not stripe the boot row.",
+  "footOffsetY": 2
+ },
  "harvest": {
   "_note": "Proximity harvesting. `radius` is how far from the player a node is worked, before the harvestPct stat widens it. Node HP, payouts and the tool ladder live in nodes.json; this is only the reach and the feedback timing.",
   "radius": 46,
