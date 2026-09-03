@@ -158,8 +158,8 @@ State of `session-22-integration` at the stop:
 | **home screen**: page-width bug, dev overlay hidden in prod, smaller cards, scene selector, calm→lightning→blight→descend-to-lab sequence, lab actor patrols | merged (4f11ab69), after the session was told to wrap up; its own account is `docs/HOME_SEQUENCE_HANDOFF.md` and the section below |
 
 `npm run typecheck` clean and **207/207 tests pass** on the integration branch
-before the home screen merged; the suite was started again on the final state
-as the session closed and its result belongs in the next entry. The main checkout has the paged
+with everything above merged, home screen included — the final state of the
+branch at 0c959623+, run after the last merge. The main checkout has the paged
 atlas built and the other session's vite server on port 5180 was serving it.
 
 ### Observations still owed by the owner
