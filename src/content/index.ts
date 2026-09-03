@@ -15,6 +15,7 @@ import elementsRaw from './elements.json'
 import audioRaw from './audio.json'
 import mapsRaw from './maps.json'
 import breakablesRaw from './breakables.json'
+import { FOUR_WAY, directionIndex } from '../core/facing'
 
 /** Every stat the resolver knows about. Keys ending `Pct` are percentages
  *  summed additively; everything else is a flat addend. */
@@ -643,8 +644,17 @@ export const ALL_ENEMY_IDS = Object.keys(ENEMIES)
    it.
 */
 
-/** The anchors a weapon can be carried at. `hand` is dynamic; the rest rest. */
-export type CarrySlot = 'hand' | 'back' | 'backX' | 'shoulder' | 'hipR' | 'hipL'
+/**
+ * The anchors something can hang from. `hand` is dynamic; the rest rest.
+ *
+ * `beltR`/`beltL` are NOT weapon slots and are deliberately outside
+ * `CARRY.fallbackOrder`: the pickaxe and the axe hang there, and they are not
+ * weapons — they never aim and they never fire, and letting them into the six
+ * would have cost a third of the loadout to two things that only ever dangle.
+ * No weapon names them and the assignment loop cannot reach them.
+ */
+export type CarrySlot =
+  | 'hand' | 'back' | 'backX' | 'shoulder' | 'hipR' | 'hipL' | 'beltR' | 'beltL'
 
 /** Where a slot sits for one facing. See tuning.json -> carry. */
 export interface CarryAnchor {
@@ -665,19 +675,116 @@ export const CARRY = tuningRaw.carry as unknown as {
   fallbackOrder: CarrySlot[]
   freshLiftPixels: number
   freshScale: number
-  slots: Record<string, Record<string, CarryAnchor>>
+  /** Per slot: the four facings, plus an optional `byClass` override block. */
+  slots: Record<string, Record<string, CarryAnchor> & {
+    byClass?: Record<string, Record<string, Partial<CarryAnchor>>>
+  }>
+  /** Per class: which resting slot a weapon asks for, overriding weapons.json. */
+  classSlot?: Record<string, Record<string, CarrySlot>>
 }
 
-/** The resting slot a weapon asks for, or `none` if it is not carried at all. */
-export function carrySlotOf(weaponId: string): CarrySlot | 'none' {
+const FACINGS = ['down', 'up', 'left', 'right'] as const
+
+/**
+ * Every anchor a class can ask for, merged once, at load.
+ *
+ * `byClass` in tuning.json names only the fields it changes — `{ "dy": -40 }`
+ * raises a shoulder without restating its dx, its depth or its angle — and
+ * merging that against the default is an object built per lookup, which is a
+ * per-frame allocation for every weapon the player owns. So it is done here
+ * instead, once, into complete anchors: `carryAnchorOf` stays a lookup.
+ *
+ * Keyed `slot|classId` with `slot|` as the default row. A string key rather
+ * than nested maps because the miss case has to be as cheap as the hit — five
+ * of the six classes have no override for most slots.
+ */
+const CARRY_ANCHORS: Record<string, CarryAnchor> = (() => {
+  const out: Record<string, CarryAnchor> = {}
+  for (const [slot, byFacing] of Object.entries(CARRY.slots ?? {})) {
+    // `_`-prefixed keys are design notes, not slots. The same filter as
+    // `defsOf`, for the same reason it exists: a note that walks into a table
+    // as data fails silently and a long way from here.
+    if (slot.startsWith('_')) continue
+    for (const dir of FACINGS) {
+      const base = byFacing[dir] ?? byFacing.down
+      if (!base) continue
+      out[`${slot}||${dir}`] = base
+      for (const [classId, dirs] of Object.entries(byFacing.byClass ?? {})) {
+        const over = dirs[dir]
+        out[`${slot}|${classId}|${dir}`] = over ? { ...base, ...over } : base
+      }
+    }
+  }
+  return out
+})()
+
+/**
+ * The resting slot a weapon asks for, or `none` if it is not carried at all.
+ *
+ * A class may override it — the Veteran shoulders the drum gun that every
+ * other class wears on its back. The override cannot conjure a slot for a
+ * weapon that declared `none`: the Scythe is already orbiting him and the Barn
+ * Dog is already running about, and no class carries either.
+ */
+export function carrySlotOf(weaponId: string, classId?: string): CarrySlot | 'none' {
   const c = WEAPONS[weaponId]?.carry
-  return typeof c === 'string' ? (c as CarrySlot | 'none') : 'none'
+  const declared = typeof c === 'string' ? (c as CarrySlot | 'none') : 'none'
+  if (declared === 'none' || !classId) return declared
+  return CARRY.classSlot?.[classId]?.[weaponId] ?? declared
 }
 
 /** The on-screen size of the art's longest side, in world pixels. */
 export function carryHeightOf(weaponId: string): number {
   const h = WEAPONS[weaponId]?.carryHeight
   return typeof h === 'number' ? h : 0
+}
+
+/**
+ * The atlas frame the BODY draws for this weapon, or `''` for the card art.
+ *
+ * A carried weapon and a carded weapon are two different pictures and this is
+ * the seam between them. The six firearms card off the bundled 132-gun sheet,
+ * which is drawn to be held by a 32px character — at our 52px a rifle across
+ * the back reads as a carbine, and `gun.pistol.0` is 3x2. `carry.*` is drawn
+ * for the body at 28-31px and has no tiers, because a carried gun does not
+ * change shape when it merges. Everything without one falls through to the
+ * tier art exactly as before.
+ */
+export function carrySpriteOf(weaponId: string): string {
+  const s = WEAPONS[weaponId]?.carrySprite
+  return typeof s === 'string' ? s : ''
+}
+
+/**
+ * Where the hand grips the art, as a fraction of its own length. Default 0.5.
+ *
+ * A gun rotated about its centre sweeps its stock through the farmhand's chest
+ * as it tracks — the tell that a sprite is being spun rather than held. This
+ * moves the turning point to the trigger, and it is also what tells the muzzle
+ * flash where the muzzle is: `1 - carryPivot` of the length, forward.
+ */
+export function carryPivotOf(weaponId: string): number {
+  const p = WEAPONS[weaponId]?.carryPivot
+  return typeof p === 'number' ? p : 0.5
+}
+
+/**
+ * The atlas frame a weapon's CARD draws at a tier — HUD slot, offer, shop.
+ *
+ * Here rather than in the HUD because three callers ask the same question and
+ * answering it three times is how they drift; `itemCardSprite` exists for the
+ * same reason. `cardSprite` opts a weapon out of the tier ladder entirely, and
+ * exactly one does: the Harpoon Gun's family is `gun.pistol.*`, which is three
+ * pixels by two at T1 and eleven by four at T4. It drew as a blank rectangle at
+ * every tier, so it shows its carried art instead and its tier is read off the
+ * slot's own pips rather than off art nobody can see.
+ */
+export function weaponCardSprite(weaponId: string, tier: number): string {
+  const def = WEAPONS[weaponId] as
+    { cardSprite?: string; tierSprites?: string[]; sprite?: string } | undefined
+  if (!def) return ''
+  if (typeof def.cardSprite === 'string') return def.cardSprite
+  return def.tierSprites?.[Math.min(Math.max(tier, 1), 4) - 1] ?? def.sprite ?? ''
 }
 
 /** True when the art is a side view that can be swung round to the aim. */
@@ -691,11 +798,58 @@ export function carryAngleOf(weaponId: string): number {
   return typeof a === 'number' ? a : 0
 }
 
-/** The anchor for a slot and a facing name (`down`/`up`/`left`/`right`). */
-export function carryAnchorOf(slot: CarrySlot, dir: string): CarryAnchor | undefined {
-  const s = CARRY.slots[slot]
-  return s?.[dir] ?? s?.down
+/**
+ * The anchor for a slot and a facing name (`down`/`up`/`left`/`right`).
+ *
+ * `classId` picks the class's own version of that anchor where it has one and
+ * the shared one where it does not — the Kid's hand is six pixels lower than
+ * everyone's, her back is exactly everyone's. Pre-merged; see `CARRY_ANCHORS`.
+ */
+export function carryAnchorOf(
+  slot: CarrySlot, dir: string, classId = '',
+): CarryAnchor | undefined {
+  return CARRY_ANCHORS[`${slot}|${classId}|${dir}`]
+    ?? CARRY_ANCHORS[`${slot}||${dir}`]
+    ?? CARRY_ANCHORS[`${slot}||down`]
 }
+
+/**
+ * Where the muzzle of the HELD weapon is, relative to the player's origin.
+ *
+ * Written into `out` rather than returned, and `out` is a caller-owned scratch
+ * object: this runs on the frame a gun fires and the hot loop allocates
+ * nothing.
+ *
+ * Here, in content, for the same reason `assignCarrySlots` is: the anchors are
+ * content, and the alternative was the SIM reaching into the renderer to ask
+ * where it had drawn something. The sim owns `aimAngle` and the tick that
+ * stamps `firedAt`, so the weapon that is firing is by definition the weapon
+ * that will be in his hands on the next frame — the `hand` anchor is the right
+ * one without having to run the slot assignment.
+ *
+ * The geometry: the hand anchor gives the grip; the muzzle is the far end of
+ * the art, `1 - carryPivot` of its drawn length forward along the aim. `dy` is
+ * from the boots, so `bootOffsetY` converts it back to the origin the sim
+ * works in — the same one conversion the painters make.
+ *
+ * Nothing here is allowed to reach the simulation. It moves a decoration; see
+ * `playFx`, which takes no RNG for exactly this reason.
+ */
+export function carryMuzzleOffset(
+  classId: string, weaponId: string, facing: number, aim: number,
+  out: { x: number; y: number },
+): void {
+  const dir = FOUR_WAY[directionIndex(facing, 4)] ?? 'down'
+  const a = carryAnchorOf('hand', dir, classId)
+  const len = carryHeightOf(weaponId) || CARRY_MUZZLE_FALLBACK
+  const reach = len * (1 - carryPivotOf(weaponId))
+  out.x = (a?.dx ?? 0) + Math.cos(aim) * reach
+  out.y = CARRY.bootOffsetY + (a?.dy ?? 0) + Math.sin(aim) * reach
+}
+
+/** How far a weapon with no carried art throws its flash. See tuning.json. */
+const CARRY_MUZZLE_FALLBACK =
+  (tuningRaw.carry as unknown as { muzzleReachFallback?: number }).muzzleReachFallback ?? 0
 
 /**
  * Decide where every owned weapon is carried this frame.
@@ -710,9 +864,10 @@ export function carryAnchorOf(slot: CarrySlot, dir: string): CarryAnchor | undef
  *  1. The weapon that fired most recently is IN HIS HANDS. Ties go to the
  *     lowest index, which is pickup order, which makes the class's starting
  *     weapon the one he holds before a shot has been fired all run.
- *  2. Everything else claims the slot it declared in weapons.json, in pickup
- *     order. A weapon that finds its slot taken walks forward through
- *     `CARRY.fallbackOrder`, wrapping, to the first free one.
+ *  2. Everything else claims the slot it declared in weapons.json — or the one
+ *     its CLASS declares for it, which is how the Veteran shoulders his drum
+ *     gun — in pickup order. A weapon that finds its slot taken walks forward
+ *     through `CARRY.fallbackOrder`, wrapping, to the first free one.
  *  3. `hand` is never a resting destination: it is struck out before step 2,
  *     so a weapon that declares `hand` and is not the active one falls to the
  *     front of the order instead of stacking on the held weapon.
@@ -723,6 +878,7 @@ export function carryAnchorOf(slot: CarrySlot, dir: string): CarryAnchor | undef
 export function assignCarrySlots(
   weapons: readonly { id: string; firedAt: number }[],
   out: (CarrySlot | null)[],
+  classId = '',
 ): void {
   const order = CARRY.fallbackOrder
   const n = weapons.length
@@ -730,7 +886,7 @@ export function assignCarrySlots(
   let hand = -1
   let latest = 0
   for (let i = 0; i < n; i++) {
-    if (carrySlotOf(weapons[i].id) === 'none') continue
+    if (carrySlotOf(weapons[i].id, classId) === 'none') continue
     if (hand < 0 || weapons[i].firedAt > latest) {
       hand = i
       latest = weapons[i].firedAt
@@ -741,7 +897,7 @@ export function assignCarrySlots(
   // nothing to reset between calls.
   let taken = 0
   for (let i = 0; i < n; i++) {
-    const declared = carrySlotOf(weapons[i].id)
+    const declared = carrySlotOf(weapons[i].id, classId)
     if (declared === 'none') { out[i] = null; continue }
     if (i === hand) { out[i] = 'hand'; continue }
     let start = order.indexOf(declared as CarrySlot)

@@ -6,7 +6,7 @@
  * Updated from the world every frame, but only writes to the DOM when a value
  * actually changes — layout thrash in a 60fps loop is not free.
  */
-import { ENEMIES, WEAPONS } from '../content'
+import { ENEMIES, WEAPONS, weaponCardSprite } from '../content'
 import type { World } from '../sim/world'
 import { clear, el } from './dom'
 import { frameOf, spriteEl } from './sprite'
@@ -21,16 +21,15 @@ import { frameOf, spriteEl } from './sprite'
  * would have quietly fallen back to a text caption, which is the thing this
  * change exists to remove.
  *
- * `tierSprites` is the weapon's icon at each tier, and merging is supposed to
- * visibly change the weapon. It was authored in `weapons.json` for all sixteen
- * at all four tiers and, until now, read by nothing at all.
+ * `weaponCardSprite` answers it now, in content, because the offer cards ask the
+ * same question and answering it in two places is how the two drift apart. It
+ * is also where the Harpoon Gun's exception lives: its `gun.pistol.*` family is
+ * three pixels by two at T1, so the slot drew a blank rectangle at every tier.
  *
  * Verified: all 64 weapon-tier icons resolve in the packed atlas.
  */
 function weaponArtKey(id: string, tier: number): string | null {
-  const def = WEAPONS[id]
-  if (!def) return null
-  const key = def.tierSprites?.[tier - 1] ?? def.sprite
+  const key = weaponCardSprite(id, tier)
   return key && frameOf(key) ? key : null
 }
 

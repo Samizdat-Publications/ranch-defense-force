@@ -1,5 +1,5 @@
 {
-  "_carryNote": "Where the weapon rides on the farmhand's body when it is not the thing he just fired: one of `hand`, `back`, `backX`, `shoulder`, `hipR`, `hipL`, or `none` for the weapons that are already on the field in their own right (the Scythe orbits him, the Barn Dog runs about). The anchors themselves -- position, depth and rest angle, per facing -- are in tuning.json under `carry`; this only says which one a weapon asks for. `carryHeight` is the on-screen size of the art's LONGEST side in world pixels, against a farmhand who is 52px tall: it only ever SHRINKS the art, never enlarges it, so a value larger than the source is a no-op and a standing note that this weapon wants a purpose-drawn carried sprite. `carryAim` is true for the weapons whose art is a side view pointing right and can therefore be swung round to the aim; the 3/4-view tool icons cannot, and are held at their slot's rest angle instead. `carryAngle` is added to that rest angle.",
+  "_carryNote": "Where the weapon rides on the farmhand's body when it is not the thing he just fired: one of `hand`, `back`, `backX`, `shoulder`, `hipR`, `hipL`, or `none` for the weapons that are already on the field in their own right (the Scythe orbits him, the Barn Dog runs about). The anchors themselves -- position, depth and rest angle, per facing and now per CLASS -- are in tuning.json under `carry`; this only says which one a weapon asks for. `carryHeight` is the on-screen size of the art's LONGEST side in world pixels, against a farmhand who is 52px tall: it only ever SHRINKS the art, never enlarges it. `carryAim` is true for the weapons whose art is a side view pointing right and can therefore be swung round to the aim; the 3/4-view tool icons cannot, and are held at their slot's rest angle instead. `carryAngle` is added to that rest angle.",
   "scattergun": {
     "name": "Scattergun",
     "type": "ranged",
@@ -8,8 +8,10 @@
     "cooldown": 0.22,
     "behaviour": "stream",
     "carry": "hand",
-    "carryHeight": 24,
+    "carrySprite": "carry.scattergun",
+    "carryHeight": 31,
     "carryAim": true,
+    "carryPivot": 0.4,
     "projectileSpeed": 420,
     "spreadDegrees": 14,
     "t2SpreadMultiplier": 0.8,
@@ -41,8 +43,10 @@
     "cooldown": 0.5,
     "behaviour": "pierceShot",
     "carry": "back",
-    "carryHeight": 30,
+    "carrySprite": "carry.varmintRifle",
+    "carryHeight": 28,
     "carryAim": true,
+    "carryPivot": 0.32,
     "pierce": 2,
     "burnDps": 4,
     "burnDuration": 3,
@@ -76,8 +80,10 @@
     "cooldown": 1.1,
     "behaviour": "arcLob",
     "carry": "shoulder",
-    "carryHeight": 26,
+    "carrySprite": "carry.grenadeLauncher",
+    "carryHeight": 28,
     "carryAim": true,
+    "carryPivot": 0.26,
     "splashRadius": 50,
     "t2SplashMultiplier": 1.3,
     "t3RindRadius": 70,
@@ -111,8 +117,10 @@
     "cooldown": 0.9,
     "behaviour": "bounceSplit",
     "carry": "back",
+    "carrySprite": "carry.drumGun",
     "carryHeight": 30,
     "carryAim": true,
+    "carryPivot": 0.3,
     "bounces": 2,
     "t2BonusBounces": 1,
     "t3Shards": 4,
@@ -145,8 +153,10 @@
     "cooldown": 2,
     "behaviour": "throwPuddle",
     "carry": "hipR",
-    "carryHeight": 18,
+    "carrySprite": "carry.tarBomb",
+    "carryHeight": 28,
     "carryAim": true,
+    "carryPivot": 0.26,
     "puddleRadius": 90,
     "puddleDuration": 5,
     "slowPct": 50,
@@ -179,8 +189,10 @@
     "cooldown": 1.8,
     "behaviour": "hookFurthest",
     "carry": "hipL",
-    "carryHeight": 18,
+    "carrySprite": "carry.harpoon",
+    "carryHeight": 29,
     "carryAim": true,
+    "carryPivot": 0.31,
     "range": 420,
     "dragSpeed": 340,
     "t2LandingDamageMultiplier": 0.8,
@@ -203,7 +215,8 @@
     },
     "projectileScale": 1.93,
     "rarity": "epic",
-    "source": "shop"
+    "source": "shop",
+    "cardSprite": "carry.harpoon"
   },
   "chemSprayer": {
     "name": "Chem Sprayer",
@@ -534,5 +547,7 @@
       "3": "two passes",
       "4": "the pass stuns"
     }
-  }
+  },
+  "_carrySpriteNote": "`carrySprite` is the art the BODY draws, and it is a different question from `sprite`/`tierSprites`, which are what a CARD draws. The six firearms borrow the bundled 132-gun sheet for their cards, and that sheet is drawn to be held by a 32px character: at our 52px a rifle across the back read as a carbine and `gun.pistol.0` -- the Harpoon Gun at T1 -- is three pixels by two. The `carry.*` family is purpose-drawn at 28-31px for exactly this and draws at NATIVE size, which is why every `carryHeight` here now equals its art's own longest side: fit is exactly 1, nothing is resampled, and the number is a statement of intent rather than a shrink. The tier still lives on the card; a carried gun does not change shape when it merges, and six guns that each changed shape four times is 24 more generations for a difference nobody would read at 30px in a fight.",
+  "_carryPivotNote": "`carryPivot` is where the HAND is along the art's own length -- 0 at the left edge, 1 at the right, 0.5 (the default) at the centre. It exists because a gun that turns about its centre swings its stock through the farmhand's chest as it tracks a target, which is the tell that the sprite is being spun rather than held. Set it at the trigger. It is also the one number the muzzle flash needs: the muzzle is the far end, `(1 - carryPivot)` of the drawn length forward along the aim."
 }

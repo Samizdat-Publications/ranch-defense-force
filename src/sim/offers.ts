@@ -8,7 +8,10 @@
  * fix, if it feels bad in play, is the short memory implemented here as
  * `recentlyOffered` — not two separate pools.
  */
-import { ITEMS, RARITY, TUNING, WEAPONS, type ItemDef, type StatMods, type WeaponDef } from '../content'
+import {
+  ITEMS, RARITY, TUNING, WEAPONS, weaponCardSprite,
+  type ItemDef, type StatMods, type WeaponDef,
+} from '../content'
 import type { Rng } from '../core/rng'
 import type { Player } from './player'
 
@@ -258,14 +261,14 @@ ${stats}` : stats
     const rarity: Rarity = nextTier === null
       ? 'common'
       : nextTier >= 4 ? 'legendary' : nextTier === 3 ? 'epic' : 'uncommon'
-    const tierSprites = Array.isArray(def.tierSprites) ? (def.tierSprites as string[]) : null
     return {
       kind: 'weapon',
       id,
       name: def.name,
       detail,
-      sprite: tierSprites?.[Math.min(nextTier ?? 1, 4) - 1]
-        ?? (typeof def.sprite === 'string' ? def.sprite : undefined),
+      // One question, one answer, in content: the HUD slot asks it too, and
+      // the Harpoon Gun's `gun.pistol.*` art is unreadable at every tier.
+      sprite: weaponCardSprite(id, nextTier ?? 1) || undefined,
       cost: nextTier ? 14 + nextTier * 8 : 20,
       rarity,
       mods: {},

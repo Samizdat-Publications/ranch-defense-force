@@ -22,6 +22,14 @@
  * what the first one costs and no more, and alternating between them every
  * draw costs nothing on top of that.
  */
+import { directionIndex } from './facing'
+
+/**
+ * Re-exported: it moved to `core/facing.ts` when the sim and the content layer
+ * both needed it and neither may import the atlas reader. Callers here are
+ * unchanged.
+ */
+export { directionIndex } from './facing'
 export interface AtlasFrame {
   /** Which page holds it — index into `Atlas.images` / `Atlas.flash`. */
   page: number
@@ -145,25 +153,3 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   })
 }
 
-/**
- * Facing angle to a direction index. Screen space: +y is down.
- *
- * The two rigs are indexed differently because their direction lists are
- * ordered differently, and neither order is arbitrary:
- *
- * - **Four** is the humanoid rig's `[down, up, left, right]`, which is not
- *   angle-sorted. It is picked apart by comparison so it can BIAS toward the
- *   side views, which carry more information than the front-on pose.
- * - **Eight** is angle-sorted from east, turning clockwise, so it is a single
- *   rounded division. There is no bias to apply: with a diagonal of its own
- *   for every 45 degrees, the nearest direction is always the right one.
- */
-export function directionIndex(facing: number, count = 4): number {
-  if (count === 8) {
-    return ((Math.round(facing / (Math.PI / 4)) % 8) + 8) % 8
-  }
-  const c = Math.cos(facing)
-  const s = Math.sin(facing)
-  if (Math.abs(c) >= Math.abs(s) * 0.85) return c < 0 ? 2 : 3
-  return s > 0 ? 0 : 1
-}

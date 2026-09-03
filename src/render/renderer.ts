@@ -17,7 +17,8 @@ import type { World } from '../sim/world'
 import { Camera } from './camera'
 import {
   CARRY, ENEMIES, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
-  carryAnchorOf, carryHeightOf, decalKindsFor, itemCardSprite, projectileScaleFor,
+  carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, decalKindsFor, itemCardSprite,
+  projectileScaleFor,
   sceneryKindsFor, type CarrySlot, type MapBoundary, type MapTerrain,
 } from '../content'
 import { Atlas, type AtlasFrame } from '../core/atlas'
@@ -57,6 +58,14 @@ const PIXELS_PER_WALK_FRAME = 11
  * burst, and the per-weapon multiplier is what lets each round be drawn at the
  * size its silhouette needs to be recognised at.
  */
+/**
+ * The two harvest tools, in the order they hang: pickaxe right, axe left.
+ *
+ * A module constant because the alternative is an array literal inside a
+ * per-frame method, which is what this used to be.
+ */
+const HARVEST_TOOLS = ['pickaxe', 'axe'] as const
+
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile clips are authored at 15fps. */
 const PROJECTILE_FPS = 15
@@ -1422,9 +1431,9 @@ export class Renderer {
     // The loadout, resolved once and drawn in two passes: what goes behind the
     // farmhand is pushed before his sprite, the rest after. Insertion order
     // inside a y-bucket is what layers them; see `sortAndDraw`.
-    assignCarrySlots(w.player.weapons, this.carrySlots)
+    assignCarrySlots(w.player.weapons, this.carrySlots, w.player.classId)
     this.collectCarried(true)
-    this.collectHarvestTools()
+    this.collectHarvestTools(true)
 
     const p = w.player
     const it = this.push()
@@ -1444,6 +1453,7 @@ export class Renderer {
     }
 
     this.collectCarried(false)
+    this.collectHarvestTools(false)
   }
 
   private sortAndDraw(ctx: CanvasRenderingContext2D): void {
@@ -1782,15 +1792,21 @@ export class Renderer {
       // `none` — the Scythe is already orbiting him and the Barn Dog is already
       // running about. Drawing a second one on his hip would be a lie.
       if (!anchorSlot) continue
-      const a = carryAnchorOf(anchorSlot, dir)
+      const a = carryAnchorOf(anchorSlot, dir, p.classId)
       if (!a || a.behind !== behind) continue
 
-      // Tier art: merging a weapon changes the weapon. A gun steps up its
-      // category, a melee tool steps up its material. Falls back to the base
-      // sprite so a weapon without a tier list still draws.
+      // Purpose-drawn carried art wins outright where it exists — the six
+      // firearms — because it is the only art in the atlas drawn to be held by
+      // a man this size. It has no tiers on purpose; see `carrySpriteOf`.
+      //
+      // Everything else falls through to tier art: merging a weapon changes the
+      // weapon, a gun steps up its category and a melee tool steps up its
+      // material, and the base sprite catches anything without a tier list.
+      const carryKey = carrySpriteOf(slot.id)
       const def = WEAPONS[slot.id] as { tierSprites?: string[]; sprite?: string } | undefined
       const tierKey = def?.tierSprites?.[Math.min(slot.tier, 4) - 1]
-      const frame = (tierKey ? atlas.get(tierKey) : undefined)
+      const frame = (carryKey ? atlas.get(carryKey) : undefined)
+        ?? (tierKey ? atlas.get(tierKey) : undefined)
         ?? atlas.get(`weapon.${slot.id}.t${Math.min(slot.tier, 4)}`)
         ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
         ?? atlas.get(`weapon.${slot.id}`)
@@ -1824,10 +1840,14 @@ export class Renderer {
       it.w = 10
       it.h = 10
 
-      // Both anchor families rotate about the art's own centre. `weapon.*` is
-      // cut bottom-centre to stand on the ground and `gun.*` is centred; this
-      // is the one place that difference is reconciled.
-      it.pivotX = -(frame.ox + frame.w / 2)
+      // All three anchor families turn about a point stated as a fraction of
+      // the art's own box. `weapon.*` is cut bottom-centre to stand on the
+      // ground, `gun.*` is centred and `carry.*` is bottom-centre again; this
+      // is the one place those differences are reconciled. The fraction is
+      // 0.5 — the centre — for everything but the purpose-drawn guns, which
+      // name their trigger so they turn in the hand rather than about the
+      // middle of the barrel.
+      it.pivotX = -(frame.ox + frame.w * carryPivotOf(slot.id))
       it.pivotY = -(frame.oy + frame.h / 2)
 
       // Only the side-view art can be swung round to the aim, and only while it
@@ -1850,19 +1870,31 @@ export class Renderer {
   }
 
   /**
-   * The pickaxe and axe, carried at the player's hips.
+   * The pickaxe and axe, hung off the farmhand's belt.
    *
-   * Kept out of the carried loadout on purpose. They are not weapons, they
-   * never aim at anything, and giving them body anchors would both eat two of
-   * the six and imply they fire. Hanging them low and angled at the ground reads
-   * as equipment, and it is the only place a tier upgrade is ever visible —
-   * buying a Titanium Pickaxe is otherwise a number nobody sees.
+   * Kept out of the carried LOADOUT on purpose — they are not weapons, they
+   * never aim at anything, and giving them two of the six anchors would both
+   * cost the loadout a third of itself and imply they fire. So they get two
+   * rungs of their own, `beltR` and `beltL`, which no weapon can reach because
+   * neither is in `CARRY.fallbackOrder` and nothing in weapons.json names them.
+   *
+   * They used to draw at the player's ORIGIN minus four, and the origin is the
+   * character cell's floor — twelve pixels below his boots. Two tools at ankle
+   * height that never moved with him read as tools he was standing over rather
+   * than tools he owns, which is the same mistake the player mark made. They
+   * are on the anchor ladder now, at a rung of their own below the hips, and
+   * they go behind him when the side he wears them on is the far side.
+   *
+   * It is also the only place a tier upgrade is ever visible: buying a Titanium
+   * Pickaxe is otherwise a number nobody sees.
    */
-  private collectHarvestTools(): void {
+  private collectHarvestTools(behind: boolean): void {
     const atlas = this.atlas
     if (!atlas) return
     const w = this.world
     const p = w.player
+    const dir = atlas.directionFor(p.classId, p.facing)
+    const bootY = CARRY.bootOffsetY
 
     // Do the tools have something to chew on right now?
     let working = false
@@ -1870,13 +1902,17 @@ export class Renderer {
       if (w.props.items[i].working > 0) { working = true; break }
     }
 
-    const carry: [string, number, number][] = [
-      ['pickaxe', p.pickaxeTier, -1],
-      ['axe', p.axeTier, 1],
-    ]
-    for (const [toolId, tierIndex, side] of carry) {
+    // Read off a module-level constant rather than built here: this runs every
+    // frame and the hot loop allocates nothing. The array literal that used to
+    // sit on this line was two arrays and two tuples a frame, forever.
+    for (let k = 0; k < HARVEST_TOOLS.length; k++) {
+      const toolId = HARVEST_TOOLS[k]
+      const anchorSlot: CarrySlot = k === 0 ? 'beltR' : 'beltL'
+      const a = carryAnchorOf(anchorSlot, dir, p.classId)
+      if (!a || a.behind !== behind) continue
       const tiers = NODES.tools[toolId]?.tiers
       if (!Array.isArray(tiers) || tiers.length === 0) continue
+      const tierIndex = k === 0 ? p.pickaxeTier : p.axeTier
       const tier = tiers[Math.min(tierIndex, tiers.length - 1)]
       const frame = atlas.get(`tool.${toolId}.${tier.id}`)
       if (!frame) continue
@@ -1885,15 +1921,20 @@ export class Renderer {
 
       // A small swing while they are cutting, so the automatic tools do not
       // look idle while they work.
-      const swing = working ? Math.sin(w.elapsed * 24 + side) * 0.5 : 0
-      it.x = p.x + side * 15
-      it.y = p.y - 4
+      const swing = working ? Math.sin(w.elapsed * 24 + k) * 0.5 : 0
+      it.x = p.x + a.dx
+      // Depth is the player's own y, height is the lift — the same split the
+      // carried weapons use, and the reason `behind` is enough to layer them.
+      it.y = p.y
+      it.liftY = -(bootY + a.dy)
       it.frame = frame
       it.colour = PALETTE.melee
       it.w = 8
       it.h = 8
-      it.rotation = side * (0.7 + swing)
-      it.scaleX = TUNING.fx.harvestToolScale * side
+      it.rotation = a.angle + (a.flip ? -swing : swing)
+      it.pivotX = -(frame.ox + frame.w / 2)
+      it.pivotY = -(frame.oy + frame.h / 2)
+      it.scaleX = TUNING.fx.harvestToolScale * (a.flip ? -1 : 1)
       it.scaleY = TUNING.fx.harvestToolScale
     }
   }

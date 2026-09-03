@@ -138,47 +138,118 @@
   "_behindNote": "`behind` says whether this slot draws BEHIND the character for that facing, and it is the whole of the depth handling: carried items are pushed at the player's own y, and the sprite pass is a counting sort that preserves insertion order inside a bucket, so `behind` items are simply pushed before the player sprite and the rest after. A rifle slung on his back is behind him when he faces the camera and in front of him when he walks away, which is what stops the loadout reading as decals stuck on top of him. Use it sparingly: an item drawn behind a 30px-wide body is mostly an item you cannot see, which is why the back slots sit off-centre.",
   "_flipNote": "`flip` mirrors the art horizontally for that facing. All the source art points right, so the left-facing views need it. `angle` is the resting rotation in radians, clockwise, and a weapon's own `carryAngle` in weapons.json is ADDED to it.",
   "bootOffsetY": -8,
+  "_muzzleNote": "The muzzle flash leaves the END OF THE HELD WEAPON now, not a fixed sixteen pixels along the way the man happens to be walking -- which put the flash behind him whenever he fired at something he was not facing, which for an auto-targeting weapon is most of the time. It is derived, not authored: the `hand` anchor for his class and facing gives the grip, and the muzzle is `1 - carryPivot` of the weapon's `carryHeight` forward along its AIM. `muzzleReachFallback` is the old sixteen, kept for anything that fires without carried art so nothing regressed on the way in. Decoration only: `playFx` draws no random numbers, so this cannot move the sim's RNG stream and a seed still replays.",
+  "muzzleReachFallback": 16,
   "_orderNote": "The slot a weapon asks for is its RESTING slot; `hand` is dynamic and belongs to whichever weapon fired most recently (`slot.firedAt`, a sim tick stamp). Everything else claims its declared slot in pickup order, and a weapon that finds its slot taken walks forward through this cycle, wrapping, until it finds a free one. `hand` is struck out of the free set first, so a resting weapon never lands in it. Six inventory slots against `hand` plus five anchors means the loadout always fits exactly, with no overflow case to invent.",
   "fallbackOrder": ["back", "shoulder", "hipR", "hipL", "backX"],
   "_freshNote": "A weapon just taken or just merged announces itself for a couple of seconds: it rides a little higher and draws a little larger. Same signal the ring used, and the reason it existed is unchanged — a seventh thing appearing on a busy character is otherwise easy to miss entirely.",
   "freshLiftPixels": 3,
   "freshScale": 1.3,
+  "_classNote": "Each class carries its kit its own way, and it is the cheapest characterisation in the game: no new art, no new stat, one block of numbers. A slot's four facings are the DEFAULT; `byClass` beside them overrides any field of any facing for one class, and only the fields it names -- so `{ \"dy\": -40 }` raises a shoulder without restating its dx, its depth or its angle. `classSlot` is the other half: it overrides which RESTING slot a weapon asks for, for one class, which is how the Veteran's drum gun goes to his shoulder when weapons.json says every drum gun rides on the back. Both are resolved into complete anchors ONCE at load, so the merge never runs in the frame loop and the loadout still allocates nothing.",
+  "_classPickNote": "The overrides were chosen to be VISIBLE, and that ruled out the obvious ones. A class's starting weapon is the weapon it fires, so it is in his hands almost every frame of the run and its RESTING slot is the thing you never see: a low hip holster for the scattergun The Kid never holsters would have been a change nobody could photograph. So the two classes whose signature is about the held weapon -- The Kid low at the hip, The Widow braced in on the centreline -- move the `hand` anchor, and the four whose signature is a weapon at rest move the resting one.",
+  "classSlot": {
+   "hand": { "pitchfork": "back" },
+   "widow": { "varmintRifle": "backX" },
+   "vet": { "drumGun": "shoulder" },
+   "agronomist": { "chemSprayer": "back" },
+   "drifter": { "harpoon": "shoulder" }
+  },
   "slots": {
    "hand": {
     "down": { "dx": 9, "dy": -23, "behind": false, "flip": false, "angle": 0.35 },
     "up": { "dx": -9, "dy": -25, "behind": true, "flip": false, "angle": -0.35 },
     "left": { "dx": -10, "dy": -23, "behind": false, "flip": true, "angle": 0.35 },
-    "right": { "dx": 10, "dy": -23, "behind": false, "flip": false, "angle": 0.35 }
+    "right": { "dx": 10, "dy": -23, "behind": false, "flip": false, "angle": 0.35 },
+    "byClass": {
+     "hand": {
+      "down": { "dy": -27 }, "up": { "dy": -28 }, "left": { "dy": -27 }, "right": { "dy": -27 }
+     },
+     "kid": {
+      "down": { "dx": 11, "dy": -17 }, "up": { "dx": -11, "dy": -18 },
+      "left": { "dx": -12, "dy": -17 }, "right": { "dx": 12, "dy": -17 }
+     },
+     "widow": {
+      "down": { "dx": 4, "dy": -26 }, "up": { "dx": -4, "dy": -27 },
+      "left": { "dx": -5, "dy": -26 }, "right": { "dx": 5, "dy": -26 }
+     }
+    }
    },
    "back": {
     "down": { "dx": -6, "dy": -35, "behind": true, "flip": false, "angle": -0.62 },
     "up": { "dx": 6, "dy": -35, "behind": false, "flip": false, "angle": -0.62 },
     "left": { "dx": 8, "dy": -34, "behind": false, "flip": true, "angle": -0.62 },
-    "right": { "dx": -8, "dy": -34, "behind": false, "flip": false, "angle": -0.62 }
+    "right": { "dx": -8, "dy": -34, "behind": false, "flip": false, "angle": -0.62 },
+    "byClass": {
+     "hand": {
+      "down": { "dy": -37, "angle": -1.25 }, "up": { "dy": -37, "angle": -1.25 },
+      "left": { "dy": -36, "angle": -1.25 }, "right": { "dy": -36, "angle": -1.25 }
+     },
+     "agronomist": {
+      "down": { "dx": 0, "dy": -32, "angle": 0 }, "up": { "dx": 0, "dy": -32, "angle": 0 },
+      "left": { "dx": 3, "dy": -31, "angle": 0 }, "right": { "dx": -3, "dy": -31, "angle": 0 }
+     }
+    }
    },
    "backX": {
     "down": { "dx": 7, "dy": -29, "behind": true, "flip": false, "angle": 0.62 },
     "up": { "dx": -7, "dy": -29, "behind": false, "flip": false, "angle": 0.62 },
     "left": { "dx": 12, "dy": -25, "behind": false, "flip": true, "angle": 0.62 },
-    "right": { "dx": -12, "dy": -25, "behind": false, "flip": false, "angle": 0.62 }
+    "right": { "dx": -12, "dy": -25, "behind": false, "flip": false, "angle": 0.62 },
+    "byClass": {
+     "widow": {
+      "down": { "dx": 0, "dy": -28, "behind": false, "angle": 0.45 },
+      "up": { "dx": 0, "dy": -28, "behind": true, "angle": 0.45 },
+      "left": { "dx": 4, "dy": -27, "behind": false, "angle": 0.45 },
+      "right": { "dx": -4, "dy": -27, "behind": false, "angle": 0.45 }
+     }
+    }
    },
    "shoulder": {
     "down": { "dx": -12, "dy": -37, "behind": false, "flip": false, "angle": -1.05 },
     "up": { "dx": 12, "dy": -37, "behind": false, "flip": false, "angle": -1.05 },
     "left": { "dx": 0, "dy": -38, "behind": false, "flip": true, "angle": -1.05 },
-    "right": { "dx": 0, "dy": -38, "behind": false, "flip": false, "angle": -1.05 }
+    "right": { "dx": 0, "dy": -38, "behind": false, "flip": false, "angle": -1.05 },
+    "byClass": {
+     "vet": {
+      "down": { "dx": -10, "dy": -40, "angle": -0.55 }, "up": { "dx": 10, "dy": -40, "angle": -0.55 },
+      "left": { "dx": 3, "dy": -40, "angle": -0.55 }, "right": { "dx": -3, "dy": -40, "angle": -0.55 }
+     },
+     "drifter": {
+      "down": { "dx": -13, "dy": -36, "angle": -1.35 }, "up": { "dx": 13, "dy": -36, "angle": -1.35 },
+      "left": { "dx": 4, "dy": -37, "angle": -1.35 }, "right": { "dx": -4, "dy": -37, "angle": -1.35 }
+     }
+    }
    },
    "hipR": {
     "down": { "dx": -12, "dy": -18, "behind": false, "flip": false, "angle": 1.15 },
     "up": { "dx": 12, "dy": -18, "behind": false, "flip": false, "angle": 1.15 },
     "left": { "dx": 5, "dy": -18, "behind": true, "flip": true, "angle": 1.15 },
-    "right": { "dx": -6, "dy": -18, "behind": false, "flip": false, "angle": 1.15 }
+    "right": { "dx": -6, "dy": -18, "behind": false, "flip": false, "angle": 1.15 },
+    "byClass": {
+     "kid": { "down": { "dy": -14 }, "up": { "dy": -14 }, "left": { "dy": -14 }, "right": { "dy": -14 } }
+    }
    },
    "hipL": {
     "down": { "dx": 12, "dy": -18, "behind": false, "flip": false, "angle": -1.15 },
     "up": { "dx": -12, "dy": -18, "behind": false, "flip": false, "angle": -1.15 },
     "left": { "dx": -6, "dy": -18, "behind": false, "flip": true, "angle": -1.15 },
-    "right": { "dx": 5, "dy": -18, "behind": true, "flip": false, "angle": -1.15 }
+    "right": { "dx": 5, "dy": -18, "behind": true, "flip": false, "angle": -1.15 },
+    "byClass": {
+     "kid": { "down": { "dy": -14 }, "up": { "dy": -14 }, "left": { "dy": -14 }, "right": { "dy": -14 } }
+    }
+   },
+   "_beltNote": "The pickaxe and the axe. They are NOT weapons -- they never aim, they never fire, and the two of them would have eaten a third of the six anchors -- so they get two rungs of their own that no weapon can reach: `beltR` and `beltL` are absent from `fallbackOrder`, and nothing in weapons.json names them, so `assignCarrySlots` can never put a gun here. Before this they drew at the player's ORIGIN minus four, which is below his boots, and read as two tools lying on the ground he happened to be standing on. The rung is -12, a new one below the hips at -18, which is the outside of the thigh.",
+   "beltR": {
+    "down": { "dx": -14, "dy": -12, "behind": false, "flip": false, "angle": 0.7 },
+    "up": { "dx": 14, "dy": -12, "behind": true, "flip": false, "angle": 0.7 },
+    "left": { "dx": 6, "dy": -12, "behind": true, "flip": true, "angle": 0.7 },
+    "right": { "dx": -8, "dy": -12, "behind": false, "flip": false, "angle": 0.7 }
+   },
+   "beltL": {
+    "down": { "dx": 14, "dy": -12, "behind": false, "flip": false, "angle": -0.7 },
+    "up": { "dx": -14, "dy": -12, "behind": true, "flip": false, "angle": -0.7 },
+    "left": { "dx": -8, "dy": -12, "behind": false, "flip": true, "angle": -0.7 },
+    "right": { "dx": 6, "dy": -12, "behind": true, "flip": false, "angle": -0.7 }
    }
   }
  },

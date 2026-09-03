@@ -16,7 +16,7 @@ import { readAtlas, type AtlasFrame } from './atlas-read.ts'
 import { Rng } from '../src/core/rng.ts'
 import {
   CARRY, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf, carryAnchorOf,
-  carryHeightOf, decalKindsFor, projectileScaleFor, sceneryKindsFor,
+  carryHeightOf, carryPivotOf, carrySpriteOf, decalKindsFor, projectileScaleFor, sceneryKindsFor,
   type CarrySlot, type MapBoundary,
 } from '../src/content/index.ts'
 import type { World } from '../src/sim/world.ts'
@@ -335,6 +335,7 @@ export class WorldPainter {
    */
   private drawFrameT(
     f: Frame, worldX: number, worldY: number, rot: number, scale: number, flip = false,
+    pivot = 0.5,
   ): void {
     const src = imageFor(f)
     const { canvas } = this
@@ -352,7 +353,11 @@ export class WorldPainter {
         // is what `ctx.rotate` followed by a negative `ctx.scale` gives the
         // renderer. Mirroring the destination instead would flip the pose.
         const ux = flip ? -ux0 : ux0
-        const fx = Math.floor(ux + f.w / 2)
+        // `pivot` is the turning point as a fraction of the frame's own width;
+        // 0.5 is the centre and is what everything but the purpose-drawn guns
+        // uses. Mirroring happens above, in source space and about this same
+        // column, so a flipped gun grips in the same place.
+        const fx = Math.floor(ux + f.w * pivot)
         const fy = Math.floor(uy + f.h / 2)
         if (fx < 0 || fy < 0 || fx >= f.w || fy >= f.h) continue
         const si = ((f.y + fy) * src.width + (f.x + fx)) * 4
@@ -785,7 +790,7 @@ export class WorldPainter {
     */
     const drawList: {
       y: number; f: Frame; x: number
-      rot?: number; scale?: number; flip?: boolean; lift?: number
+      rot?: number; scale?: number; flip?: boolean; lift?: number; pivot?: number
     }[] = []
     // Scenery joins the same sorted list as everything else, as in the game.
     for (const sc of this.scenery(world)) drawList.push({ y: sc.y, x: sc.x, f: sc.f })
@@ -846,7 +851,7 @@ export class WorldPainter {
       // after. `Array.prototype.sort` is stable, so equal y keeps that order --
       // the same trick the renderer's bucket sort plays. Mirrors
       // `Renderer.collectCarried`.
-      assignCarrySlots(p.weapons, this.carrySlots)
+      assignCarrySlots(p.weapons, this.carrySlots, p.classId)
       this.carried(world, drawList, true)
       const f = this.sheetFrame(p.classId, p.facing, p.travelled, p.vx !== 0 || p.vy !== 0)
       if (f) drawList.push({ y: p.y, x: p.x, f })
@@ -855,7 +860,7 @@ export class WorldPainter {
     drawList.sort((a, b) => a.y - b.y)
     for (const d of drawList) {
       if (d.rot === undefined) this.drawFrame(d.f, d.x, d.y)
-      else this.drawFrameT(d.f, d.x, d.y - (d.lift ?? 0), d.rot, d.scale ?? 1, d.flip)
+      else this.drawFrameT(d.f, d.x, d.y - (d.lift ?? 0), d.rot, d.scale ?? 1, d.flip, d.pivot)
     }
 
     // Melee sweeps and auras: swept wedges, matching the renderer. These used to
@@ -990,7 +995,10 @@ export class WorldPainter {
    */
   private carried(
     world: World,
-    out: { y: number; f: Frame; x: number; rot?: number; scale?: number; flip?: boolean; lift?: number }[],
+    out: {
+      y: number; f: Frame; x: number
+      rot?: number; scale?: number; flip?: boolean; lift?: number; pivot?: number
+    }[],
     behind: boolean,
   ): void {
     const p = world.player
@@ -1003,13 +1011,16 @@ export class WorldPainter {
       const slot = p.weapons[i]
       const anchorSlot = this.carrySlots[i]
       if (!anchorSlot) continue
-      const a = carryAnchorOf(anchorSlot, dir)
+      const a = carryAnchorOf(anchorSlot, dir, p.classId)
       if (!a || a.behind !== behind) continue
 
       const wd = (WEAPONS as Record<string, Record<string, unknown>>)[slot.id]
       const tiers = Array.isArray(wd?.tierSprites) ? (wd.tierSprites as string[]) : null
       const tier = Math.min(slot.tier, 4)
-      const f = frames[tiers?.[tier - 1] ?? '']
+      // Purpose-drawn carried art first, then the tier ladder. Same order as
+      // the renderer, and it has to be: this file is the check on that one.
+      const f = frames[carrySpriteOf(slot.id)]
+        ?? frames[tiers?.[tier - 1] ?? '']
         ?? frames[`weapon.${slot.id}.t${tier}`]
         ?? frames[typeof wd?.sprite === 'string' ? wd.sprite : '']
         ?? frames[`weapon.${slot.id}`]
@@ -1036,6 +1047,7 @@ export class WorldPainter {
         rot,
         scale: Math.min(1, carryHeightOf(slot.id) / Math.max(1, Math.max(f.w, f.h))),
         flip: facingLeft,
+        pivot: carryPivotOf(slot.id),
       })
     }
   }
