@@ -162,7 +162,29 @@ with everything above merged, home screen included — the final state of the
 branch at 0c959623+, run after the last merge. The main checkout has the paged
 atlas built and the other session's vite server on port 5180 was serving it.
 
-### Observations still owed by the owner
+### Day two: shipped, and two loose ends closed
+
+- **The stutter is gone.** The owner played the integration build to wave 7 and
+  spawned several hundred enemies at once with no hitch. The once-a-second
+  stutter on the live site was the atlas re-decode and the per-shot audio 404,
+  both removed here; the 2fps was the backgrounded window. Closed.
+- **main is at the integration head and deployed.** Verified on the live site:
+  atlas-0..6.png, atlas.json and public/audio all serve; atlas.png 404s, as it
+  should.
+- **The dev server crawled because of the agent worktrees.** Four of them sat
+  under .claude/worktrees/ with a full node_modules each, inside the folder vite
+  watches and OneDrive syncs -- ten seconds per module, a page that never
+  loaded. Removed; vite and vitest both ignore .claude/ now (vite.config.ts).
+  The first request after a cold start still pays ~17s of vite warm-up.
+- **The player mark was drawn in a hole.** Character origins are the cell floor,
+  twelve pixels below the boots; footOffsetY is -10 now. The owner saw it first.
+- **Open, by the owner, for next time: the weapon ring.** Tiny icons in a perfect
+  circle; it is purely decorative (projectiles spawn from facing, not from the
+  ring). Proposal on the table: carried, not orbited -- weapons on body anchors
+  at natural scale, per-tier art the atlas already holds, orbiters keep
+  orbiting, items stay on the HUD until there is wearable art. Not built.
+
+### Observations still owed by the owner (answered above, day two)
 
 - **The once-a-second stutter.** Fronted, on the LIVE build (old atlas, no
   audio), the owner saw good fps but a stutter on every shot, roughly once a
