@@ -23,6 +23,33 @@ const SCENE_PICK: readonly { id: SceneKind; label: string }[] = [
 ]
 
 /**
+ * Every state the home screen's sequence passes through, named for a dev
+ * picker rather than for the sequence's own `Phase` union -- a surface scene
+ * splits into two entries here (calm/blighted) where the sequence carries that
+ * as a second axis, because the point of this list is "jump straight there
+ * and hold", not "describe the state machine".
+ *
+ * `barn` is not a `Phase` at all -- the Homestead is a different `Screen`
+ * (`HomesteadScreen`), reached through `onHomestead`, never through this
+ * screen's own column. Listed here anyway because the owner's ask was every
+ * home-screen STATE, and the barn is one, even though jumping to it means
+ * leaving this screen rather than holding a phase on it.
+ */
+type DevSceneId = 'yard-calm' | 'yard-blight' | 'field-calm' | 'field-blight'
+  | 'flash' | 'down' | 'lab' | 'barn'
+
+const DEV_SCENE_PICK: readonly { id: DevSceneId; label: string }[] = [
+  { id: 'yard-calm', label: 'YARD CALM' },
+  { id: 'yard-blight', label: 'YARD BLIGHT' },
+  { id: 'field-calm', label: 'FIELD CALM' },
+  { id: 'field-blight', label: 'FIELD BLIGHT' },
+  { id: 'flash', label: 'FLASH' },
+  { id: 'down', label: 'DESCENT' },
+  { id: 'lab', label: 'LAB' },
+  { id: 'barn', label: 'HOMESTEAD' },
+]
+
+/**
  * THE STORY THE TITLE SCREEN TELLS ITSELF WHILE YOU CHOOSE.
  *
  * The screen used to pick one of three backdrops per page load and sit on it.
@@ -108,6 +135,9 @@ export class MenuScreen {
   /** The reduced-motion fade's half-way timer. See `descend`. */
   private cutTimer: ReturnType<typeof setTimeout> | null = null
   private readonly pickBtns = new Map<SceneKind, HTMLButtonElement>()
+  /** The dev-only state picker's buttons, and which one was last pressed. */
+  private readonly devPickBtns = new Map<DevSceneId, HTMLButtonElement>()
+  private devHeld: DevSceneId | null = null
 
   constructor(
     parent: HTMLElement,
@@ -422,6 +452,65 @@ export class MenuScreen {
     else this.settle(kind, false)
   }
 
+  /**
+   * The dev picker: jump straight to any state the sequence carries and hold
+   * there, no different from a manual scene pick except that it also reaches
+   * the two graded (blighted) surfaces and the mid-descent frame directly,
+   * neither of which the shipping selector exposes.
+   *
+   * Only reachable through `.home-dev-pick`, which CSS shows only under
+   * `body[data-dev='on']` -- see the note on that element in `renderUi`. This
+   * method itself has no visibility gate of its own; it does not need one,
+   * because nothing calls it unless the button was clickable.
+   */
+  private devJump(id: DevSceneId): void {
+    this.devHeld = id
+    if (id === 'barn') { this.onHomestead?.(); this.paintDevPick(); return }
+    this.stopSequence()
+    this.flashEl.classList.remove('is-striking', 'is-held')
+    switch (id) {
+      /*
+         `settle()`'s own `dress()` rebuilds off `this.surface`, not off the
+         kind it was passed -- see `pick()`, which sets `this.surface` first
+         for exactly this reason. Skipping that step here would show "FIELD"
+         picked while quietly redressing whichever surface was already up.
+      */
+      case 'yard-calm': this.surface = 'yard'; this.settle('yard', false); break
+      case 'yard-blight': this.surface = 'yard'; this.settle('yard', true); break
+      case 'field-calm': this.surface = 'field'; this.settle('field', false); break
+      case 'field-blight': this.surface = 'field'; this.settle('field', true); break
+      case 'lab': this.settle('lab', false); break
+      case 'flash':
+        this.settle(this.surface, false)
+        this.strike()
+        this.flashEl.classList.add('is-held')
+        this.phase = 'flash'
+        break
+      case 'down':
+        /*
+           The same frozen halfway position `begin()` parks on for
+           `rdf.homePhase === 'down'` -- see that method for why the transition
+           is killed rather than let run and caught mid-flight.
+        */
+        this.jump(false)
+        this.dress(true)
+        this.column.style.transition = 'none'
+        this.column.style.transform = `translateY(${-(1080 + SOIL_H) / 2}px)`
+        this.showing = this.surface
+        this.markScene()
+        this.setDoor(this.surface)
+        this.fitScene()
+        this.phase = 'down'
+        break
+    }
+    this.paintDevPick()
+  }
+
+  /** Brand the dev state last jumped to, same idea as `paintPick`. */
+  private paintDevPick(): void {
+    for (const [id, btn] of this.devPickBtns) btn.classList.toggle('is-on', id === this.devHeld)
+  }
+
   /** The `is-*` class the bleed and the tests read off the root. */
   private markScene(): void {
     this.root.classList.toggle('is-field', this.showing === 'field')
@@ -468,6 +557,7 @@ export class MenuScreen {
   private renderUi(): void {
     clear(this.uiEl)
     this.pickBtns.clear()
+    this.devPickBtns.clear()
     const def = CLASSES[this.selected]
     const { x: doorX, y: doorY } = DOOR[this.showing]
 
@@ -549,8 +639,35 @@ export class MenuScreen {
       pick.append(btn)
     }
 
-    this.uiEl.append(title, playing, seedBox, door, rail, foot, pick)
+    /*
+       The dev state picker. Every state the sequence carries, one click to
+       hold on it -- built for inspecting the blighted surfaces and the
+       mid-descent frame, neither of which the shipping selector above can
+       reach, without waiting out the loop or hand-editing localStorage.
+       `npm run scene` accepts the same eight ids -- see tools/scene-shot.ts.
+
+       SHOWN ONLY WHEN THE DEV OVERLAY IS VISIBLE, and that gate is CSS, not
+       JS: `.home-dev-pick` is `display:none` in home-ui.css and
+       `body[data-dev='on'] .home-dev-pick { display:flex }` is the only rule
+       that turns it on. `dev.ts` writes `data-dev` on F1/backtick and starts
+       hidden in production (`DevOverlay.visible = import.meta.env.DEV`), so
+       this panel is built every load, costs nothing while hidden, and is one
+       keypress away rather than a rebuild away -- which is the "turn it off
+       later" the owner asked for: production ships with it present but dark,
+       and F1 is the switch.
+    */
+    const devPick = el('div', { class: 'home-dev-pick' }, [
+      el('div', { class: 'home-scene-pick-label', text: 'DEV: STATE' }),
+    ])
+    for (const { id, label } of DEV_SCENE_PICK) {
+      const btn = el('button', { text: label, onClick: () => this.devJump(id) }) as HTMLButtonElement
+      this.devPickBtns.set(id, btn)
+      devPick.append(btn)
+    }
+
+    this.uiEl.append(title, playing, seedBox, door, rail, foot, pick, devPick)
     this.paintPick()
+    this.paintDevPick()
   }
 
   /**
@@ -679,8 +796,24 @@ export class MenuScreen {
   open(): void {
     this.root.style.display = ''
     this.fitScene()
-    // Back to the calm farm, and running again — unless a hand stopped it.
-    if (!this.held) this.step('calm')
+    /*
+       Back to the calm farm, and running again — unless a hand stopped it,
+       OR unless the machine is already running.
+
+       `main.ts` calls this immediately after construction, on the same
+       synchronous boot as `begin()` -- so on a normal start `begin()` has
+       already called `step('calm')` and restarting it here is merely
+       redundant. On a persisted `lab` start it is worse than redundant:
+       `begin()` settled on the lab and scheduled its own `step('up')` timer
+       to carry the loop back up out of it, and calling `step('calm')` here
+       would abandon that scene (back to the surface, on a stray SECOND
+       timer nothing ever clears) before the lab was on screen for even one
+       frame. `this.timer !== null` is true whenever a beat is already
+       scheduled -- from `begin()` on this exact boot, or from a still-live
+       sequence on a screen that was never `close()`d -- and is the signal
+       that there is nothing here to restart.
+    */
+    if (!this.held && this.timer === null) this.step('calm')
   }
 
   /**

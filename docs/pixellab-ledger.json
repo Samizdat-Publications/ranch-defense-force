@@ -828,13 +828,13 @@
   },
   {
    "id": "b4f0be5e-289f-431f-b629-c94d95519468",
-   "verdict": "packed-unused",
-   "where": "title screen horizon (the corn wall is the default; this is the alternative) — sceneBg.treeline packed, drawn by nothing"
+   "verdict": "unclaimed",
+   "where": "title screen horizon (the corn wall is the default; this is the alternative) — nothing packed under sceneBg.treeline"
   },
   {
    "id": "a1d48aa4-de4e-4a51-a931-6ce154f7b16a",
-   "verdict": "packed-unused",
-   "where": "title screen horizon — sceneBg.cornWall packed, drawn by nothing"
+   "verdict": "wired",
+   "where": "title screen horizon (sceneBg.cornWall)"
   },
   {
    "id": "835aa5ae-754b-406b-b102-bf75a6c309a8",
@@ -1768,8 +1768,8 @@
   },
   {
    "id": "2d863647-f4a6-4596-9331-2391022520e1",
-   "verdict": "packed-unused",
-   "where": "title screen horizon alternative — sceneBg.treeline packed, drawn by nothing"
+   "verdict": "unclaimed",
+   "where": "title screen horizon alternative — nothing packed under sceneBg.treeline"
   },
   {
    "id": "66625599-1400-4702-a6bd-c79df5607fb1",
@@ -1903,18 +1903,18 @@
   },
   {
    "id": "192f8a0c-ef90-43db-b95c-16920d16d167",
-   "verdict": "packed-unused",
-   "where": "title screen yard — scene.nest packed, drawn by nothing"
+   "verdict": "wired",
+   "where": "title screen yard (scene.nest)"
   },
   {
    "id": "202e7c3a-5efe-4c43-8caf-61434bf2380e",
-   "verdict": "packed-unused",
-   "where": "title screen yard — scene.nest packed, drawn by nothing"
+   "verdict": "surplus",
+   "where": "another roll of scene.nest"
   },
   {
    "id": "59d0bde2-4cf6-45e1-8e2d-0833fac26131",
-   "verdict": "packed-unused",
-   "where": "title screen yard — scene.nest packed, drawn by nothing"
+   "verdict": "surplus",
+   "where": "another roll of scene.nest"
   },
   {
    "id": "67070efb-fcac-4d67-ac7c-a662e84a3d4f",
@@ -2623,8 +2623,8 @@
   },
   {
    "id": "e92b093a-8b9d-4f2b-ad45-2d71ed6e99b1",
-   "verdict": "wired",
-   "where": "Hot As It Comes card icon (rdf-wired-card-hotAsItComes) (item.hotAsItComes)"
+   "verdict": "open",
+   "where": "UNMAPPED — add a row to tools/pixellab-ledger.ts"
   },
   {
    "id": "9098d3d2-e042-4320-81b7-265ada85050f",
@@ -2839,7 +2839,7 @@
   {
    "id": "575c305a-416b-4103-94fc-ddd537c1822a",
    "verdict": "wired",
-   "where": "field dressing (wired by this audit) and the title screen (ranch.fenceRail)"
+   "where": "field dressing (wired by this audit) and the title screen (ranch.fenceRail, scene.fenceRail)"
   },
   {
    "id": "7a39dc9e-bd81-4e3b-b508-691b92f7c1e3",
@@ -4199,7 +4199,7 @@
   {
    "id": "2a07b9cf-27cd-4762-b7bf-09509c31825f",
    "verdict": "wired",
-   "where": "title screen yard (ranch.nestBox)"
+   "where": "title screen yard (ranch.nestBox, scene.nest)"
   },
   {
    "id": "5d11a885-e1c1-437b-9c12-03126e967e03",

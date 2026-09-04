@@ -608,3 +608,60 @@ body[data-dev='on'] .home-scene-pick { top: 150px; }
   background: var(--gold-brand);
   box-shadow: inset 0 0 0 1px var(--paper-edge-gold);
 }
+
+/* ===================================================================
+   The dev-only state picker.
+
+   Same print language as `.home-scene-pick` just above, stacked below it
+   rather than beside it -- eight buttons is wider than three, and a second
+   row at `.home-scene-pick`'s own top would either collide with it or with
+   `#dev`, which is the one thing this element is not allowed to do.
+
+   THE VISIBILITY GATE IS THIS RULE, NOT JAVASCRIPT. `display:none` here,
+   `display:flex` only under `body[data-dev='on']` -- the same attribute
+   `dev.ts` writes on F1/backtick and the same one `.home-scene-pick` already
+   reads to move out from under the panel. The overlay starts hidden in a
+   production build, so this ships present but dark and is one keypress away
+   rather than a rebuild away.
+   =================================================================== */
+.home-dev-pick {
+  display: none;
+  position: absolute;
+  right: 24px;
+  top: 194px;
+  flex-wrap: wrap;
+  max-width: 320px;
+  align-items: stretch;
+  background: var(--paper);
+  border: 3px solid var(--paper-edge);
+}
+
+body[data-dev='on'] .home-dev-pick { display: flex; }
+
+.home-dev-pick .home-scene-pick-label {
+  flex-basis: 100%;
+  border-right: none;
+  border-bottom: 1px dashed var(--rule-warm);
+  padding: 6px 10px;
+}
+
+.home-dev-pick button {
+  font-family: var(--label);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: #6b573b;
+  background: none;
+  border: none;
+  border-left: 1px dashed rgba(64, 49, 31, 0.4);
+  padding: 7px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.home-dev-pick button:hover { color: #2b1d08; background: rgba(64, 49, 31, 0.1); }
+
+.home-dev-pick button.is-on {
+  color: #2b1d08;
+  background: var(--gold-brand);
+  box-shadow: inset 0 0 0 1px var(--paper-edge-gold);
+}

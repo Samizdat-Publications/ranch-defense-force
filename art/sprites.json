@@ -1941,13 +1941,12 @@
     "_varietyNote": "Three drum groupings, not one. Two copies of a single rank read as two neat lines and the scene lost the variety it had when drums were placed individually. `drumScatter` is six at different angles, `drumStack` is a pallet stacked two high, `drumRank` is the ordered row. Mix them."
   },
   "sceneBg": {
-    "_note": "Backdrop strips for the title scenes. `sceneBg.treeline` is one wide sprite for the horizon, which Claude Design called the weakest thing left on screen when it was faking one with nine tree sprites and a gradient. Carded on generation and stripped with `npm run rmbg`.",
+    "_note": "Backdrop strips for the title scenes. Carded on generation and stripped with `npm run rmbg`.",
     "_base": "assets/pixellab/scene-bg/",
     "noTrim": true,
     "files": {
-      "sceneBg.treeline": "treeline.png",
       "sceneBg.cornWall": "cornWall.png"
     },
-    "_cornNote": "`sceneBg.cornWall` is the RIGHT horizon for this farm and the treeline is the alternative, not the default. The owner's note: standing corn is what the real scenery outside Canton looks like, and a conifer treeline reads as somewhere else entirely. Both are packed; a scene picks one, or layers corn in front of trees."
+    "_cornNote": "`sceneBg.cornWall` is the RIGHT horizon for this farm, per the owner's note: standing corn is what the real scenery outside Canton looks like. Wired into `field()` in scene.ts, tiled at the horizon and layered in front of the oak treeline. `sceneBg.treeline` -- the conifer alternative this note used to describe as equally valid -- is RETIRED as of the scene-pass audit: the corn was chosen, and drawing both would duplicate the oak band `scene.oak` already provides."
   }
 }
