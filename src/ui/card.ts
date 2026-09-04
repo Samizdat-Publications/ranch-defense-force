@@ -25,6 +25,19 @@ export interface CardStat {
 export interface CardSpec {
   /** The band across the top: WEAPON, ITEM, CLASS, UPGRADE… */
   kind: string
+  /**
+   * The draw's own quota axis (docs/UPGRADE_ROSTER.md §7.1), printed at the
+   * right of the kind band: ON-HIT, LOAD, ALLY… so a board reads at a glance
+   * as more than a wall of names. Undefined draws nothing — the Homestead's
+   * purchase cards and class-select have no `OfferCategory` to show.
+   */
+  category?: string
+  /**
+   * §7.7: this card cannot appear at a level-up. A small gold flag beside the
+   * category rather than a second badge, because it answers the same
+   * question ("why is this card here") the category already sits next to.
+   */
+  exclusive?: boolean
   name: string
   blurb?: string
   /** Atlas key for the art window. */
@@ -130,7 +143,16 @@ export function card(spec: CardSpec): HTMLElement {
   root.append(tab)
   if (spec.clipped) root.append(el('div', { class: 'pcard-clip' }))
 
-  root.append(el('div', { class: 'pcard-kind', text: spec.kind }))
+  const kindBand = el('div', { class: 'pcard-kind' }, [
+    el('span', { class: 'pcard-kind-main', text: spec.kind }),
+  ])
+  if (spec.category || spec.exclusive) {
+    const tags = el('span', { class: 'pcard-kind-tags' })
+    if (spec.exclusive) tags.append(el('b', { class: 'pcard-kind-shop', text: 'SHOP ONLY' }))
+    if (spec.category) tags.append(el('span', { class: 'pcard-kind-cat', text: spec.category }))
+    kindBand.append(tags)
+  }
+  root.append(kindBand)
 
   const window = el('div', { class: 'pcard-window' })
   const art = spec.sprite ? spriteEl(spec.sprite, 96, spec.zoom) : null

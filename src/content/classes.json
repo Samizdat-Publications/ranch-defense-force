@@ -5,14 +5,14 @@
   "unlocked": true,
   "blurb": "Thirty years on this ground. Slow, hard to move, and not especially worried.",
   "stats": {
-   "maxHp": 180,
+   "maxHp": 165,
    "moveSpeedPct": -20,
    "armor": 6,
-   "hpRegen": 2.5,
+   "hpRegen": 1.4,
    "pickupRadiusPct": 40,
    "critChancePct": -50,
    "dodgePct": 15,
-   "_dodgeNote": "docs/UPGRADE_ROSTER.md batch 3: maxHp 160->180, hpRegen 0.9->2.5, and dodgePct 0->15 (new). Braced pays nothing while kiting or wandering -- it needs standing still -- so The Hand's flat numbers, not his passive, are what two acceptance tests in tests/run.test.ts measure, and batch 3's 11 new items (all uncommon+, none of them stat cards) reseeded the offer stream enough to break both with nothing else touched: hand+kite's >=12/24 bar fell to 3/24, and the single-seed 'merging beats taking whatever came up' check (seed 4242, pilot wander) flipped outright -- pickSmart reached wave 12 against pickFirst's 26, backwards from the >= the test requires. Brawl held at 11/24 throughout, since Braced does the work there; this is scoped to flat survivability. Measured directly against both failing tests, not guessed: hpRegen alone plateaued kite at 9/24 however far it was pushed, the same 'lever runs out' shape the passive's own note describes; dodge was what moved it, and moved the wander seed too, since neither Braced nor Momentum-style speed passives touch a bot that never stops moving. 170/2/12 cleared kite at 13/24 but left the wander seed still failing (12 against 26); 180/2.5/15 clears both, kite landing exactly on the 12/24 line -- stable rather than fragile, since every seed here is fixed and replays identically -- and wander a clean 26/26 with maxTier 4 against 3. Re-measure if the item roster grows again."
+   "_dodgeNote": "docs/UPGRADE_ROSTER.md batch 5, the retune. Lever (a) in the doc's own order: 'roll back The Hand's batch-3 flat bumps toward batch 1's 160/0.9/0 dodge and see whether batch 4's cards now carry him.' A full rollback (160hp/0.9 regen/0 dodge) went too far the other way: hand/brawler (this file's home pilot, tools/balance.ts's default seed ladder) landed at 14/24 -- fine -- but hand/kite on tests/run.test.ts's OWN seed ladder (`1009*(i+1)`, not the balance tool's default) fell to 5/24, well under the >=12/24 'completes all 25 waves on most seeds' bar. Restoring dodge alone (160/0.9/15) still left kite at 11/24 on that ladder, one short. 165hp/1.4 regen/15 dodge -- roughly halfway back on hp and regen, dodge unchanged from batch 3 -- clears both: hand/brawler 12/24 default ladder (was 17/24, target 11-15), hand/kite 13/24 on run.test.ts's ladder (was passing before this batch touched anything, and still is), hand/brawler 17/32 vs hand/kite 12/32 on the 32-seed crossover ladder (brawl still clearly ahead, as the crossover test requires). Deaths on brawler spread w6-w19, not clustered. Dodge turns out to be the load-bearing half of batch 3's fix for a bot that never stands still (kite, wander) -- hp and regen matter more to brawler, and only needed pushing back up about a third of the way, not all the way, once batch 4's own cards existed to help carry the rest."
   },
   "passive": {
    "id": "braced",
@@ -49,12 +49,13 @@
   "unlocked": true,
   "blurb": "Home from school for the summer. Only ever safe at speed; stopping is the mistake.",
   "stats": {
-   "maxHp": 75,
+   "maxHp": 65,
    "moveSpeedPct": 35,
    "armor": 0,
    "dodgePct": 10,
    "critDamagePct": 25,
-   "hpRegen": 0
+   "hpRegen": 0,
+   "_hpNote": "docs/UPGRADE_ROSTER.md batch 5, the retune: maxHp 75 -> 65. The Kid was never a class this batch's numbers named as broken -- she was the one class that landed in the 11-15 target (kite, this file's home pilot) on its own, purely off the RNG-stream shift five new Field & Ledger cards cause by existing in the pool at all (SS7.8: the same seed draws a different run once the roster changes size). She measured 16/24 once the rest of the batch's item and class edits had settled, one over the target ceiling. Contact damage taken over a full clear is under 20 total either way -- she is almost never hit directly, dodge and speed do that work -- so the cut lands on the pool she still draws from every hazard tick and every hit that gets through anyway. 65hp clears 15/24, deaths spread w2-w12, not clustered on one wave."
   },
   "passive": {
    "id": "momentum",
@@ -89,18 +90,19 @@
   "unlocked": false,
   "blurb": "Buried a husband and a harvest the same autumn. Nothing out here frightens her.",
   "stats": {
-   "maxHp": 118,
+   "maxHp": 80,
    "moveSpeedPct": -8,
-   "armor": 4,
-   "hpRegen": 0.3,
+   "armor": 1,
+   "hpRegen": 0,
    "pickupRadiusPct": 15,
    "critChancePct": -20
   },
   "passive": {
    "id": "grit",
    "_note": "Attrition, not mitigation. She takes the same total damage as anyone else; what changes is WHEN it reaches the health bar, and whether it gets there at all. Standing and fighting through a blow erases it. Turning and running pays all of it. hpRegen is 0.3 against the old 1.4 and maxHp 118 against a first pass at 130: Grit IS her sustain now, and it turned out to be worth a great deal more than the flat regen it replaced -- she measured 22/24 on the parity ladder, the strongest class in the game, before the body came back down. Read `_regenNote` at the bottom of this file for why a flat regen is worth so much here.",
-   "desc": "Only 55% of a blow lands at once. The rest is a wound that bleeds off over 5s -- and every kill closes a quarter of what is left.",
-   "immediatePct": 55,
+   "_immediateNote": "docs/UPGRADE_ROSTER.md batch 5, the retune's lever (c): `killEnemy`'s close is MULTIPLICATIVE against the outstanding wound (`wound -= wound * closePct/100`), so at a brawler's kill rate -- 4000+ over a clear -- the wound is closed almost as fast as it grows regardless of `killClosePct`; measured directly, cutting killClosePct 25 -> 10 (a bigger cut than Black Dress's own +15 bonus ever gave back) moved her clear rate 21/24 -> 20/24, one seed. Contact damage taken over a full clear sat under 200 total either way -- she was never losing the wound she banked, she was banking almost none of it. `immediatePct` is what actually controls how much of a blow reaches the health bar before the kill-closing pipeline ever touches it, and it is the number this batch moved: 55 -> 85. Measured together with the flat-stat trim below (95hp/1 armor was tried first and barely moved her either, for the same reason): 80hp/1 armor/0 regen with immediatePct 85 clears 14/24 (was 21/24 before this batch touched anything), deaths spread w11-w25 rather than piling on one wave. `desc` below is rewritten to match the shipped number.",
+   "desc": "85% of a blow lands at once. The rest is a wound that bleeds off over 5s -- and every kill closes a quarter of what is left.",
+   "immediatePct": 85,
    "woundSeconds": 5,
    "killClosePct": 25
   },
@@ -181,7 +183,8 @@
    "armor": 1,
    "hpRegen": 0.4,
    "harvestPct": 35,
-   "luck": 8
+   "luck": 8,
+   "_batch5Note": "docs/UPGRADE_ROSTER.md batch 5, the retune: UNTOUCHED. She was measured at 17-19/24 mid-batch, above the 11-15 target, but that reading was taken while `waveHpScalar` was still carrying lever (b)'s since-reverted steepening (see formulas.ts) and before the five new Field & Ledger items had settled the offer stream (SS7.8: a bigger pool is a different run off the same seed). With the curve back to its shipped value and the rest of the batch's content in place, she lands at 12/24 on her own -- no card in this file needed to move for her."
   },
   "passive": {
    "id": "cultivar",
@@ -219,7 +222,7 @@
   "blurb": "Works a season, moves on. This season he did not get out in time.",
   "_statNote": "This stat block moved a long way, and the reason is a measured PRE-EXISTING trap rather than anything the class rework did. On 24 seeds the OLD Drifter -- momentum, bolt, 70hp -- died on WAVE 2 in fourteen of them and cleared 1/24 kiting, 4/24 brawling, 2/24 spacing. He had been a trap pick since the density pass halved enemy HP and damage to buy BODIES, and nothing measured it because the parity test only ever ran The Hand and The Kid. Momentum was hiding it (+60% damage essentially for free, because a harness bot never stops moving); Hot Streak pays nothing until you are already killing, which exposed it completely.",
   "_weaponNote": "`projectileCount: 3` is the fix, and it is aimed at the real fault, which was the STARTING WEAPON and not the class. At T1 the Harpoon Gun (`hookFurthest`) fires one shot at ONE enemy every 1.8s -- and at the FURTHEST enemy in range, so it does not even answer the thing about to touch you. Proved by swapping it: with every other number about him held still and the same 24 seeds, he cleared 4/24 holding the harpoon and 13/24 holding the Scattergun. Stat inflation had been tried first and did not work -- 95 hp, +45% attack speed and +15% damage moved 4/24 to 4/24, because no amount of body fixes a class that cannot clear wave 1. `hookFurthest` now reads `projectileCount`, a declared stat that until this change only the Scattergun's `stream` looked at, so he hooks FOUR at T1 and the harpoon is a wave-1 weapon. Nothing else in the game grants `projectileCount`, so no other build changes. At 88 hp he is still the second-smallest body in the game.",
-  "_lifestealNote": "lifestealPct 1 is the last point of the fix and the single most sensitive number on this class. He was 11/24 on the parity ladder with none, and lifesteal is what a kill-streak class should be sustained by -- kills are already his engine, and a hit still ends the streak whatever it heals. It is worth watching: at 4% he went to 21/24 and at 2% to 20/24, so this stat is roughly five clears per point at his damage output. Anything that raises his damage raises his healing with it.",
+  "_lifestealNote": "lifestealPct 1 is the last point of the fix and the single most sensitive number on this class. He was 11/24 on the parity ladder with none, and lifesteal is what a kill-streak class should be sustained by -- kills are already his engine, and a hit still ends the streak whatever it heals. It is worth watching: at 4% he went to 21/24 and at 2% to 20/24, so this stat is roughly five clears per point at his damage output. Anything that raises his damage raises his healing with it.\n\ndocs/UPGRADE_ROSTER.md batch 5, the retune: three batches of new items later, 1% measured 16/24 -- above the 11-15 target, and the note above already flagged this stat as the one to watch. The curve is a cliff rather than a slope in this range: 0.5% fell to 8/24, 0.7-0.85% sat flat at 11/24 (the same 24 seeds resolve identically across that whole band -- not every value moves a result), and 0.95% is what actually cleared it, at 12/24 with deaths spread w3-w12. Re-measure this stat first, before anything else on this class, if the roster changes size again.",
   "stats": {
    "maxHp": 88,
    "moveSpeedPct": 25,
@@ -227,7 +230,7 @@
    "dodgePct": 16,
    "attackSpeedPct": 30,
    "projectileCount": 3,
-   "lifestealPct": 1,
+   "lifestealPct": 0.95,
    "critChancePct": 10,
    "critDamagePct": 35,
    "hpRegen": 0

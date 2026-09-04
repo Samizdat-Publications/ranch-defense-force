@@ -59,6 +59,15 @@
   color: #9a8e76;
 }
 
+/* §7.7: what this visit uniquely sells — the pitch for stopping at all. */
+.pshop-exclusive {
+  font-family: var(--label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--gold-brand, #c99a3d);
+  margin-top: 6px;
+}
+
 /* Cards and the counter, on one baseline. The counter is a column of
    the row rather than a sidebar, so it wraps under the cards on a
    narrow window instead of being cropped off the edge. */

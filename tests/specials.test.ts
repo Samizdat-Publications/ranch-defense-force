@@ -62,6 +62,8 @@ describe('every declared special is dispatched', () => {
       'turret', 'trapField', 'coop', 'tripWireRider', 'gooseMinion',
       'secondDog', 'shieldPerWave', 'revive', 'touchSlow', 'hazardResist',
       'windbreak',
+      // docs/UPGRADE_ROSTER.md batch 5: the Field & Ledger cards.
+      'ledgerInterest', 'feedBonus',
     ])
     expect([...declared].filter((s) => !handled.has(s))).toEqual([])
   })
@@ -357,5 +359,45 @@ describe('batch 3: allies, placeables, shield and revive', () => {
       return s
     }
     expect(totalKb(wb)).toBeGreaterThanOrEqual(totalKb(plain))
+  })
+})
+
+describe('docs/UPGRADE_ROSTER.md batch 5: the Field & Ledger cards', () => {
+  /** Drop one pickup at the player's own position and let one tick collect it. */
+  function collectOne(w: World, kind: 'feed' | 'xp', value: number): void {
+    const g = w.pickups.acquire()
+    if (!g) throw new Error('pickup pool exhausted')
+    g.kind = kind
+    g.x = w.player.x
+    g.y = w.player.y
+    g.value = value
+    w.step(1 / 60, 0, 0, false)
+  }
+
+  it('Ledger Book raises the interest cap and rate', () => {
+    const bare = arena()
+    const withBook = arena('ledgerBook')
+    // Same feed either side, well past both caps, so the comparison is the
+    // cap and rate moving rather than the base formula being exercised twice.
+    expect(withBook.interestFor(2000)).toBeGreaterThan(bare.interestFor(2000))
+  })
+
+  it('Early Bird adds flat value to every feed pickup', () => {
+    const bare = arena()
+    collectOne(bare, 'feed', 5)
+    const withBird = arena('earlyBird')
+    collectOne(withBird, 'feed', 5)
+    expect(withBird.player.feed).toBeGreaterThan(bare.player.feed)
+  })
+
+  it('Seed Corn raises XP gained from a pickup', () => {
+    const bare = arena()
+    collectOne(bare, 'xp', 10)
+    const withCorn = arena('seedCorn')
+    collectOne(withCorn, 'xp', 10)
+    // xpPct is additive with harvestPct in World.collect's 'xp' case, so a
+    // higher xp value moves the level-progress bar further for the same
+    // pickup — read through `xp` directly rather than levels, which round.
+    expect(withCorn.player.xp).toBeGreaterThan(bare.player.xp)
   })
 })

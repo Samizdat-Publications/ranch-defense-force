@@ -98,6 +98,31 @@ export function groupOf(category: OfferCategory): OfferGroup {
 }
 
 /**
+ * §7.1's category, as the level-up and shop screens print it (part 1 of
+ * batch 5's UI work: "the level-up board shows the category band on each
+ * card"). One table rather than two, so the level-up and the shop cannot
+ * drift into calling the same category two different things.
+ */
+const CATEGORY_LABEL: Record<OfferCategory, string> = {
+  stat: 'STAT',
+  merge: 'MERGE',
+  newWeapon: 'NEW WEAPON',
+  load: 'LOAD',
+  rider: 'LOAD RIDER',
+  onHit: 'ON-HIT',
+  onKill: 'ON-KILL',
+  ally: 'ALLY',
+  body: 'BODY',
+  ledger: 'LEDGER',
+  weaponMod: 'UPGRADE',
+  class: 'CLASS',
+}
+
+export function categoryLabel(category: OfferCategory): string {
+  return CATEGORY_LABEL[category] ?? category.toUpperCase()
+}
+
+/**
  * How likely a tier is to be drawn, before the recency penalty.
  *
  * Both numbers come from `rarity.json`: the base weight, and how hard a point
@@ -171,6 +196,14 @@ export interface Offer {
   /** Tiers a weapon merge jumps: 2 when boosted, 1 otherwise. */
   tierJump: number
   locked?: boolean
+  /**
+   * §7.7: true for a card a level-up can never deal — `source: 'shop'` in
+   * content, or `swap`, which only ever exists in shop mode (`draw`'s
+   * `mode === 'shop'` guard on `swapOffer`). Declared on the offer rather
+   * than re-derived in the UI so the shop screen's "why stop here" badge and
+   * the draw's own gate read the same fact.
+   */
+  exclusive: boolean
 }
 
 export type DrawMode = 'levelup' | 'shop'
@@ -628,6 +661,8 @@ ${stats}` : stats
       stacks: null,
       boosted: false,
       tierJump: 1,
+      // A merge or a new pickup can appear at a level-up too.
+      exclusive: false,
     }
   }
 
@@ -680,6 +715,7 @@ ${stats}` : stats
       stacks: max > 0 ? { n, max } : null,
       boosted: false,
       tierJump: 1,
+      exclusive: (def.source ?? 'both') === 'shop',
     }
   }
 
@@ -714,6 +750,8 @@ ${stats}` : stats
       stacks: null,
       boosted: false,
       tierJump: 1,
+      // §7.5: `swapOffer` is only ever called from `mode === 'shop'`.
+      exclusive: true,
     }
   }
 }

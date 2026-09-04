@@ -13,8 +13,8 @@
  */
 import type { Audio } from '../core/audio'
 import type { World } from '../sim/world'
-import { ITEMS, WEAPONS } from '../content'
 import { clear, el } from './dom'
+import { buildLedger } from './ledger'
 
 export class PauseScreen {
   private readonly root: HTMLElement
@@ -111,21 +111,31 @@ export class PauseScreen {
       ])
     }
 
-    // Everything the run is currently carrying, as chips.
+    /*
+     * The ledger (docs/UPGRADE_ROSTER.md batch 5, part 1): weapons with the
+     * mods each slot has taken, class cards, and everything else with its
+     * stack printed n/N — the same footer the card itself shows. One builder
+     * in `ledger.ts` shared with the shop, so the two cannot say two
+     * different things about the same run.
+     */
+    const ledger = buildLedger(world.player)
     const chips = el('div', { class: 'psheet-chips' })
-    for (const w of world.player.weapons) {
+    for (const w of ledger.weapons) {
       chips.append(el('span', {
         class: 'psheet-chip',
-        text: `${WEAPONS[w.id]?.name ?? w.id} T${w.tier}`,
+        text: w.mods.length > 0 ? `${w.name} T${w.tier} — ${w.mods.join(', ')}` : `${w.name} T${w.tier}`,
       }))
     }
-    for (const it of world.player.items) {
+    for (const name of ledger.classCards) {
+      chips.append(el('span', { class: 'psheet-chip is-class', text: name }))
+    }
+    for (const it of ledger.items) {
       chips.append(el('span', {
         class: 'psheet-chip',
-        text: `${ITEMS[it.id]?.name ?? it.id}${it.boosted ? ' 2x' : ''}`,
+        text: it.stack ? `${it.name} ${it.stack}` : it.name,
       }))
     }
-    if (!world.player.weapons.length && !world.player.items.length) {
+    if (!ledger.weapons.length && !ledger.classCards.length && !ledger.items.length) {
       chips.append(el('span', { class: 'psheet-chip', text: 'nothing yet' }))
     }
 

@@ -406,6 +406,17 @@ export class World {
      *  enemy that collides with a neighbour hurts both. */
     knockbackBonusPct: 0,
     collideDamage: 0,
+
+    // --- docs/UPGRADE_ROSTER.md batch 5 -----------------------------------
+    /** Ledger Book: `interestOn`'s cap and rate, read by `ShopScreen.open`
+     *  through the `interestFor` getter below rather than the pure formula —
+     *  an owned item is per-run state, not a content constant. */
+    interestCapBonus: 0,
+    interestPctBonus: 0,
+    /** Early Bird: every feed pickup, whatever kind, is worth this much more.
+     *  Applied once at the single collection site rather than at every
+     *  spawn site, the same way `harvestPct` already is. */
+    feedBonusFlat: 0,
   }
 
   /** Broody Hen's kill counter. Every Nth kill hatches one. */
@@ -422,6 +433,20 @@ export class World {
    */
   private playerShield = 0
   get shield(): number { return this.playerShield }
+  /**
+   * Ledger Book (batch 5): interest on the feed a shop visit opens with,
+   * `formulas.ts`'s `interestOn` plus this run's `interestCapBonus`/
+   * `interestPctBonus`. A per-run item is per-run state, not a content
+   * constant, so `ShopScreen.open` reads it through here rather than calling
+   * the pure formula directly the way it did before this card existed.
+   */
+  interestFor(feed: number): number {
+    const s = this.specialItems
+    return Math.min(
+      WAVES.economy.interestCap + s.interestCapBonus,
+      Math.floor((feed * (WAVES.economy.interestPct + s.interestPctBonus)) / 100),
+    )
+  }
   /** Windbreak (batch 3, body): the multiplier every PLAYER-applied knockback
    *  goes through. 1 for a run that does not own it, so every existing
    *  `e.kx += (dx/d) * knockback` call site multiplies by exactly the number
@@ -2340,14 +2365,21 @@ export class World {
   private collect(g: Pickup): void {
     switch (g.kind) {
       case 'xp': {
-        const gained = g.value * (1 + this.player.stats.harvestPct / 100)
+        // H15: xpPct is additive with harvestPct, which already scaled XP
+        // pickups — Seed Corn's whole card is this one line.
+        const gained = g.value *
+          (1 + (this.player.stats.harvestPct + this.player.stats.xpPct) / 100)
         const levels = this.player.gainXp(gained)
         if (levels > 0) this.events.onLevelUp?.(levels)
         return
       }
       case 'feed':
         this.sound('pickupFeed')
+        // Early Bird (batch 5): every feed pickup, whatever spawned it, is
+        // worth more — added flat, after the harvest scaling, the same way
+        // `killHeal` is a flat add after a percentage elsewhere in this file.
         this.player.feed += Math.round(g.value * (1 + this.player.stats.harvestPct / 100))
+          + this.specialItems.feedBonusFlat
         return
       case 'heal':
         this.sound('pickupHeal')
@@ -4373,6 +4405,10 @@ export class World {
     s.hazardReductionPct = 0
     s.knockbackBonusPct = 0; s.collideDamage = 0
 
+    // --- batch 5 -------------------------------------------------------
+    s.interestCapBonus = 0; s.interestPctBonus = 0
+    s.feedBonusFlat = 0
+
     const num = (d: Record<string, unknown>, k: string, f = 0): number =>
       typeof d[k] === 'number' ? (d[k] as number) : f
 
@@ -4591,6 +4627,21 @@ export class World {
         case 'windbreak':
           s.knockbackBonusPct += num(def, 'knockbackBonusPct', 40) * mult
           s.collideDamage = num(def, 'collideDamage', 12)
+          break
+
+        // --- batch 5 (docs/UPGRADE_ROSTER.md), Field & Ledger --------------
+        // Ledger Book: interest cap and rate, summed per stack like every
+        // other flat bonus here. `interestFor` below is what actually reads
+        // these; `formulas.ts`'s `interestOn` stays the content-documented
+        // base for a run that owns none of it.
+        case 'ledgerInterest':
+          s.interestCapBonus += num(def, 'interestCapBonus', 6) * mult
+          s.interestPctBonus += num(def, 'interestPctBonus', 1.5) * mult
+          break
+        // Early Bird: every feed pickup is worth more, whatever spawned it —
+        // read once at the single collection site in `collect()`.
+        case 'feedBonus':
+          s.feedBonusFlat += num(def, 'feedBonusPerStack', 1) * mult
           break
 
         default: break // bullMinion is spawned, not flattened; see summonFor

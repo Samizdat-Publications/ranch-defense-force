@@ -155,6 +155,11 @@
   text-transform: uppercase;
 }
 
+/* A class card reads differently from an ordinary carry — gold edge, same
+   chip shape, so "this changed how the class itself plays" is legible at a
+   glance in the pause ledger. */
+.psheet-chip.is-class { border-color: var(--gold-edge, #a9781f); }
+
 /* Sliders, drawn as a filled gauge with a handle rather than a range input. */
 .psheet-sliders {
   display: grid;
