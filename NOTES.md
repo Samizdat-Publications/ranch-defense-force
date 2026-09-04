@@ -181,8 +181,8 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. Queue: batch 1's 19 card icons on Sonnet; the 57 packed-unused
-  sprites; roster batches 2-5.
+  merged. Queue: roster batch 2 (48 weapon upgrades) on Sonnet; the 57 packed-unused
+  sprites; batches 3-5.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -712,6 +712,18 @@ side, but the ~1,050 untouched rows still carry the previous run's tags and
 `carry.pitchfork` has no inventory row until the next refresh. The 57
 packed-unused sprites want the same treatment the audit gave the first 29.
 Batch 1's 19 stand-in card icons are the next art task.
+
+### Batch 1's cards draw their own icons
+
+The 22 new cards borrowed stand-ins on the day they shipped (Tar Load was a
+barrel, Font Water a trough, Quicklime an ash decal). They draw their own art
+now: Rock Salt, Hot As It Comes and Broody Hen claimed objects already sitting
+paid-for on the account; the other 17 were generated as one style-anchored
+batch, $1.80 in total, two prompts re-rolled after "fence insulator" and "two
+mismatched jars" came back as RPG potions and backpacks. Everything is packed
+under item.<id>, verified on docs/progress/cards-batch1-icons.png, 216/216.
+One loose end: the 17 fresh images are not PixelLab "objects", so the ledger's
+family table needs rows for them or the next refresh reports them as open.
 
 ## The four locked classes now answer the game differently
 
