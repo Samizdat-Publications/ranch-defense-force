@@ -197,6 +197,7 @@
     }
   },
   "carry": {
+    "_seventhNote": "The pitchfork is the seventh, and the first melee tool in this family. It is here for a different reason than the guns: the guns were too SMALL on the bundled sheet, the pitchfork was the wrong VIEW. `weapon.pitchfork.t1` is a 3/4 tool icon standing up -- fine on a card, and on the body it hung at whatever angle its slot happened to declare and could never point along the aim, because a sprite drawn diagonally cannot be aimed (see `_pivotNote`). This one is side-on and points right like the six, so `carryAim` works on it and it can be thrust. The tier ladder is untouched: `tierSprites` still cards the four materials, and `carrySprite` is what the body draws. See tuning.json `_jabNote`.",
     "_note": "Purpose-drawn CARRIED weapons — the six firearms as they hang off and are held by the farmhand, drawn side-on and pointing right at the scale a 52px man wants. Generated for exactly this, because the bundled gun sheet is drawn to be held by a 32px character: at our scale a rifle across the back read as a carbine and gun.pistol.0 (the Harpoon Gun at T1) is three pixels by two. These are 28-31px long against his 52px, which is the real proportion of a long gun to a man, and they draw at NATIVE size — no downscale, no lie about the pixel grid.",
     "_pivotNote": "Every one of them points RIGHT along +x with the grip toward the left end, because `carryAim` swings the sprite to the aim angle and `carryPivot` in weapons.json says how far along that axis the hand is. A sprite drawn diagonally cannot be aimed; the first harpoon came back on a 45-degree diagonal and was rerolled for that reason alone.",
     "_conformNote": "NOT conformed, and deliberately. `conform` quantises a frame to art/palette.json and exists for the packs drawn by another hand — the FX pack, the tool icons, the gun sheet. These were generated in the house style to begin with, like every other `assets/pixellab/` family, and quantising them cost the rifle its walnut stock: the nearest palette entry to a warm gun-metal brown is a cold blue-grey, and conform matches a palette, it cannot shift one.",
@@ -207,7 +208,8 @@
       "carry.grenadeLauncher": "grenadeLauncher.png",
       "carry.drumGun": "drumGun.png",
       "carry.tarBomb": "tarBomb.png",
-      "carry.harpoon": "harpoon.png"
+      "carry.harpoon": "harpoon.png",
+      "carry.pitchfork": "pitchfork.png"
     }
   },
   "weaponTiers": {
