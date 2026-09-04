@@ -691,7 +691,7 @@
   "stackBlurb": "Every gun you own fires rock salt. No damage of its own — every hit MARKS for +30% damage taken, 4s.",
   "mods": {},
   "element": "salt",
-  "cardSprite": "node.saltRock"
+  "cardSprite": "item.saltRounds"
  },
  "limeRounds": {
   "name": "Quicklime",
@@ -710,7 +710,7 @@
   "stackBlurb": "Every gun you own fires quicklime. Marks for +20% for 5s, and slows 25% for 3s.",
   "mods": {},
   "element": "lime",
-  "cardSprite": "decal.ash"
+  "cardSprite": "item.limeRounds"
  },
  "fenceRounds": {
   "name": "Fence Charge",
@@ -728,7 +728,7 @@
   "stackBlurb": "Every gun you own fires live. Every hit arcs to 1 more enemy within 120px for 60%.",
   "mods": {},
   "element": "spark",
-  "cardSprite": "prop.fencePost"
+  "cardSprite": "item.fenceRounds"
  },
  "keroseneRounds": {
   "name": "Kerosene Load",
@@ -766,7 +766,7 @@
   "stackBlurb": "Every gun you own fires tar. Slows 35% for 2.5s, and a kill leaves a 46px slick — 4s, 40% slow.",
   "mods": {},
   "element": "tar",
-  "cardSprite": "prop.oilDrum"
+  "cardSprite": "item.tarRounds"
  },
  "fontRounds": {
   "name": "Font Water",
@@ -784,7 +784,7 @@
   "stackBlurb": "Every gun you own fires font water. No burn, no bleed: every hit knocks back 70, every kill heals 4.",
   "mods": {},
   "element": "font",
-  "cardSprite": "prop.trough"
+  "cardSprite": "item.fontRounds"
  },
  "secondPass": {
   "name": "Second Pass",
@@ -804,7 +804,7 @@
   "mods": {},
   "special": "loadPotency",
   "dotDamagePct": 25,
-  "cardSprite": "item.cropDuster"
+  "cardSprite": "item.secondPass"
  },
  "deepSoak": {
   "name": "Deep Soak",
@@ -824,7 +824,7 @@
   "mods": {},
   "special": "loadDuration",
   "loadBonusSeconds": 1.5,
-  "cardSprite": "item.wetRag"
+  "cardSprite": "item.deepSoak"
  },
  "hotAsItComes": {
   "name": "Hot As It Comes",
@@ -845,7 +845,7 @@
   "mods": {},
   "special": "slickPotency",
   "slickDamagePct": 100,
-  "cardSprite": "prop.burnBarrel"
+  "cardSprite": "item.hotAsItComes"
  },
  "crossContam": {
   "name": "Cross-Contamination",
@@ -864,7 +864,7 @@
   "mods": {},
   "special": "crossContamination",
   "crossMarkPct": 30,
-  "cardSprite": "prop.troughFouled"
+  "cardSprite": "item.crossContam"
  },
  "throughAndThrough": {
   "name": "Through and Through",
@@ -884,7 +884,7 @@
   "mods": {},
   "special": "extraPierce",
   "extraPierce": 1,
-  "cardSprite": "proj.dart.2"
+  "cardSprite": "item.throughAndThrough"
  },
  "ricochetPlate": {
   "name": "Ricochet Plate",
@@ -905,7 +905,7 @@
   "ricochetCount": 1,
   "ricochetRange": 150,
   "ricochetMul": 0.6,
-  "cardSprite": "node.scrapHeap"
+  "cardSprite": "item.ricochetPlate"
  },
  "splitShot": {
   "name": "Split Shot",
@@ -926,7 +926,7 @@
   "special": "splitOnKill",
   "splitCount": 2,
   "splitMul": 0.6,
-  "cardSprite": "proj.shard.1"
+  "cardSprite": "item.splitShot"
  },
  "burrLoad": {
   "name": "Burr Load",
@@ -945,7 +945,7 @@
   "mods": {},
   "special": "homing",
   "homingRate": 100,
-  "cardSprite": "scene.wheat2"
+  "cardSprite": "item.burrLoad"
  },
  "moonshineJug": {
   "name": "Moonshine Jug",
@@ -966,7 +966,7 @@
   "burstChance": 20,
   "burstRadius": 52,
   "burstMul": 0.7,
-  "cardSprite": "prop.milkCans"
+  "cardSprite": "item.moonshineJug"
  },
  "broadSide": {
   "name": "Broad Side",
@@ -985,7 +985,7 @@
   "mods": {},
   "special": "projectileRadius",
   "projectileRadiusPct": 15,
-  "cardSprite": "proj.slug.2"
+  "cardSprite": "item.broadSide"
  },
  "weakSeam": {
   "name": "Weak Seam",
@@ -1006,7 +1006,7 @@
   "special": "critMark",
   "critMarkPct": 28,
   "critMarkSeconds": 3,
-  "cardSprite": "node.oreRed"
+  "cardSprite": "item.weakSeam"
  },
  "feedTheBirds": {
   "name": "Feed the Birds",
@@ -1050,7 +1050,7 @@
   "chickDamage": 14,
   "chickSeconds": 8,
   "minionSprite": "scene.chick",
-  "cardSprite": "scene.chick"
+  "cardSprite": "item.broodyHen"
  },
  "bloodMeal": {
   "name": "Blood Meal",
@@ -1069,7 +1069,7 @@
   "mods": {},
   "special": "killHeal",
   "killHeal": 1.5,
-  "cardSprite": "prop.feedBin"
+  "cardSprite": "item.bloodMeal"
  },
  "rotUnderfoot": {
   "name": "Rot Underfoot",
@@ -1094,7 +1094,7 @@
   "killPoolRadius": 42,
   "killPoolSeconds": 3,
   "killPoolDps": 20,
-  "cardSprite": "decal.mud"
+  "cardSprite": "item.rotUnderfoot"
  },
  "lastRites": {
   "name": "Last Rites",
@@ -1115,7 +1115,7 @@
   "special": "markedBurst",
   "burstPct": 55,
   "burstRadius": 70,
-  "cardSprite": "prop.graveMarker"
+  "cardSprite": "item.lastRites"
  },
  "_categoryNote": "SS7.1: `category` is DECLARED, never sniffed. The draw quotas its board on it (at most one `stat`, at most one `merge`, one gated slot, one behavioural slot), and a draw that guesses its own quotas changes meaning every time a card gains a field. `tags` is SS4: the draw biases toward tags the build already holds, so a build FORMS instead of accumulating. Both are content; offers.ts reads and never infers.",
  "_gateNote": "`requiresLoad`, `requiresWeapon`, `requiresClass` and `requiresItem` are the gates that make the pool GROW through a run instead of shrinking. A gated card costs the early game nothing because it cannot appear yet, and it is where two runs stop looking alike. Only `requiresLoad` is used in batch 1 (the four Load Riders, which are meaningless without a Load on); the other three are read by offers.ts so batches 2 and 4 are a content edit.",
