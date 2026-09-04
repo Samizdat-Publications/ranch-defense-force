@@ -21,7 +21,7 @@ import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar, waveHpScalar } from './formulas'
 import {
   BREAKABLES, BREAKABLE_CLASSES, ELEMENTS, ENEMIES, FIELD_GEAR_POOL, ITEMS, MAPS,
-  NODES, TUNING, WAVES, WEAPONS, carryMuzzleOffset, pickMapId, swingStyleOf,
+  NODES, TUNING, WAVES, WEAPONS, carryMuzzleOffset, elementStat, pickMapId, swingStyleOf,
   type BreakableClass, type DropRow, type MapDef, type NodeVariant, type StatMods,
 } from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
@@ -3040,25 +3040,40 @@ export class World {
    * fires actual fireballs, an acid build fires acid — and carries the lasting
    * damage on the payload fields the tier riders already use, so it needed no
    * new damage plumbing.
+   *
+   * Every number is read through `elementStat`, which folds in
+   * `player.loadStacks` (`elements.json` `_stackNote`): a second Tracer Rounds
+   * used to re-assert `element = 'fire'` over itself and do nothing, which is
+   * the "what does buying fire 5 times do" complaint. `elementStat` returns
+   * exactly `base` when there is no `<field>PerStack` to add, so this reads
+   * identically for the six Loads that can only ever be at stack 1.
    */
   private applyElementTo(fromIndex: number): void {
     const el = ELEMENTS[this.player.element]
     const s = this.specialItems
+    const stacks = this.player.loadStacks
     if (el && this.player.element !== 'none') {
+      const burnDps = elementStat(el, 'burnDps', stacks)
+      const burnSeconds = elementStat(el, 'burnSeconds', stacks)
+      const bleedDps = elementStat(el, 'bleedDps', stacks)
+      const bleedSeconds = elementStat(el, 'bleedSeconds', stacks)
+      const slowOnHit = elementStat(el, 'slowOnHit', stacks)
+      const slowSeconds = elementStat(el, 'slowSeconds', stacks)
+      const mark = elementStat(el, 'markPct', stacks)
+      const markSeconds = elementStat(el, 'markSeconds', stacks)
+      const kb = elementStat(el, 'knockback', stacks)
       for (let i = fromIndex; i < this.projectiles.live; i++) {
         const p = this.projectiles.items[i]
         // Backpack Tank: this ONE shot's load lasts longer. 1 for every shot
         // that is not the Chem Sprayer's jet with the card taken.
         const durMul = p.loadDurationMul
-        if (el.burnDps) { p.burnDps = Math.max(p.burnDps, el.burnDps); p.burnSeconds = Math.max(p.burnSeconds, (el.burnSeconds ?? 0) * durMul) }
-        if (el.bleedDps) { p.bleedDps = Math.max(p.bleedDps, el.bleedDps); p.bleedSeconds = Math.max(p.bleedSeconds, (el.bleedSeconds ?? 0) * durMul) }
-        if (el.slowOnHit) { p.slowOnHit = Math.max(p.slowOnHit, el.slowOnHit); p.slowSeconds = Math.max(p.slowSeconds, (el.slowSeconds ?? 0) * durMul) }
+        if (burnDps) { p.burnDps = Math.max(p.burnDps, burnDps); p.burnSeconds = Math.max(p.burnSeconds, burnSeconds * durMul) }
+        if (bleedDps) { p.bleedDps = Math.max(p.bleedDps, bleedDps); p.bleedSeconds = Math.max(p.bleedSeconds, bleedSeconds * durMul) }
+        if (slowOnHit) { p.slowOnHit = Math.max(p.slowOnHit, slowOnHit); p.slowSeconds = Math.max(p.slowSeconds, slowSeconds * durMul) }
         // Rock Salt and Quicklime carry no damage of their own: they open the
         // target up. Same payload field the Harpoon's T4 rider already uses.
-        const mark = el.markPct as number | undefined
-        if (mark) { p.markPct = Math.max(p.markPct, mark); p.markSeconds = Math.max(p.markSeconds, (el.markSeconds as number ?? 0) * durMul) }
+        if (mark) { p.markPct = Math.max(p.markPct, mark); p.markSeconds = Math.max(p.markSeconds, markSeconds * durMul) }
         // Font Water buys space instead of doing damage over time.
-        const kb = el.knockback as number | undefined
         if (kb) p.knockback = Math.max(p.knockback, kb)
       }
     }

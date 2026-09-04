@@ -5,10 +5,12 @@ import {
   waveIncome, waveScalar, xpToNext,
 } from '../src/sim/formulas'
 import { Player, hasMod } from '../src/sim/player'
+import { World } from '../src/sim/world'
 import { Spawner } from '../src/sim/spawner'
-import { OfferPool, applySwap } from '../src/sim/offers'
+import { OfferPool, applySwap, describeItem, loadStatDelta } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
-import { CLASSES, ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES } from '../src/content'
+import { CLASSES, ELEMENTS, ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES, elementStat } from '../src/content'
+import { loadItemFor } from '../src/ui/hud'
 
 describe('stat resolution', () => {
   it('sums percentages additively, never multiplicatively', () => {
@@ -200,6 +202,130 @@ describe('Player build', () => {
     kid.init('kid')
     expect(kid.stats.moveSpeed).toBeGreaterThan(hand.stats.moveSpeed)
     expect(hand.stats.maxHp).toBeGreaterThan(kid.stats.maxHp)
+  })
+})
+
+/**
+ * The Load family (items.json `_familyNote`, elements.json `_stackNote`).
+ *
+ * Before this, `Player.addItem` set `element` and stopped: a second or third
+ * copy of the SAME Load re-asserted the same string over itself and did
+ * nothing, and the ledger could show two maxed Loads at once with no way to
+ * tell which one, if either, was doing anything. These are that report,
+ * turned into assertions.
+ */
+describe('Loads', () => {
+  it('replaces the active load rather than stacking two at once', () => {
+    const p = new Player()
+    p.init('hand')
+    p.addItem('tracerRounds') // fire
+    expect(p.element).toBe('fire')
+    p.addItem('coldRounds') // frost
+    expect(p.element).toBe('frost')
+    // Superseded, not refunded (the simpler of the two options) -- the old
+    // copy stays on the ledger, it just no longer drives anything.
+    expect(p.itemIds).toContain('tracerRounds')
+    expect(p.itemIds).toContain('coldRounds')
+  })
+
+  it('deepens a load that is taken again, additively', () => {
+    const p = new Player()
+    p.init('hand')
+    p.addItem('tracerRounds')
+    expect(p.loadStacks).toBe(1)
+    p.addItem('tracerRounds')
+    expect(p.loadStacks).toBe(2)
+    p.addItem('tracerRounds')
+    expect(p.loadStacks).toBe(3) // tracerRounds' own maxStacks
+  })
+
+  it('resumes a load\'s depth on switching back rather than restarting it', () => {
+    const p = new Player()
+    p.init('hand')
+    p.addItem('tracerRounds')
+    p.addItem('tracerRounds') // fire at 2
+    p.addItem('coldRounds') // switch to frost
+    expect(p.element).toBe('frost')
+    expect(p.loadStacks).toBe(1)
+    p.addItem('tracerRounds') // back to fire -- the two earlier copies still count
+    expect(p.element).toBe('fire')
+    expect(p.loadStacks).toBe(3)
+  })
+
+  it('scales burn/bleed/slow by stack count, off content, not a hardcoded step', () => {
+    const fire = ELEMENTS.fire
+    expect(elementStat(fire, 'burnDps', 1)).toBe(fire.burnDps)
+    expect(elementStat(fire, 'burnDps', 2)).toBe((fire.burnDps ?? 0) + (fire.burnDpsPerStack ?? 0))
+    expect(elementStat(fire, 'burnDps', 3))
+      .toBe((fire.burnDps ?? 0) + (fire.burnDpsPerStack ?? 0) * 2)
+    // A Load with no `<field>PerStack` (every batch-1 Load, `maxStacks: 1`) is
+    // unaffected regardless of the stack argument -- the "one rule" applies
+    // uniformly rather than special-casing the three that can go past 1.
+    const salt = ELEMENTS.salt
+    expect(elementStat(salt, 'markPct', 1)).toBe(salt.markPct)
+    expect(elementStat(salt, 'markPct', 3)).toBe(salt.markPct)
+  })
+
+  it('applies the deepened numbers to a live shot, not just the content table', () => {
+    // `applyElementTo` is private, so the assertion goes through the public
+    // number it is supposed to change: a fired shot must burn at the
+    // 3-stack rate, not the flat base `elements.json` used to leave it at.
+    const w = new World(9001, 'hand')
+    w.player.addWeapon('scattergun')
+    w.player.addItem('tracerRounds')
+    w.player.addItem('tracerRounds')
+    w.player.addItem('tracerRounds') // 3/3
+    w.spawnEnemy('farmhand', w.player.x + 100, w.player.y, false)
+    // 'hand' starts with the Pitchfork, a melee weapon elements do not touch,
+    // so this waits for the scattergun's OWN shot rather than assuming index 0.
+    let shot: { burnDps: number } | undefined
+    for (let i = 0; i < 60 && !shot; i++) {
+      w.step(1 / 60, 0, 0, false)
+      for (let j = 0; j < w.projectiles.live; j++) {
+        if (w.projectiles.items[j].weaponId === 'scattergun') { shot = w.projectiles.items[j]; break }
+      }
+    }
+    expect(shot).toBeDefined()
+    const burnAt3 = elementStat(ELEMENTS.fire, 'burnDps', 3)
+    expect(shot?.burnDps).toBe(burnAt3)
+  })
+
+  it('states a delta only from the second copy on, off the same numbers the sim applies', () => {
+    expect(loadStatDelta('fire', 1)).toBeNull()
+    const at2 = loadStatDelta('fire', 2)
+    const at3 = loadStatDelta('fire', 3)
+    expect(at2).toMatch(/burn 7 → 10 dps/)
+    expect(at3).toMatch(/burn 10 → 13 dps/)
+    // A Load stuck at stack 1 forever (every batch-1 one) never has a delta
+    // to show -- `stack` here is what `itemCount(id) + 1` would be, and a
+    // `maxStacks: 1` item's offer is never drawn past `stack === 1` anyway.
+    expect(loadStatDelta('spark', 2)).toBeNull()
+  })
+
+  it('tells the card it is about to replace the current load', () => {
+    const fireDef = ITEMS.tracerRounds
+    const frostDef = ITEMS.coldRounds
+    // Taking Fire while nothing is active: no replace notice.
+    expect(describeItem(fireDef, 1, 'none')).not.toMatch(/Replaces/)
+    // Taking Frost while Fire is active: the card says so.
+    expect(describeItem(frostDef, 1, 'fire')).toMatch(/Replaces your current load \(Fire\)\./)
+    // Taking a SECOND Fire while Fire is already active is a deepen, not a
+    // replace, and states the concrete delta instead.
+    expect(describeItem(fireDef, 2, 'fire')).toMatch(/2\/3 — burn 7 → 10 dps/)
+  })
+
+  it('names the right item for the HUD\'s Load slot, one per element', () => {
+    expect(loadItemFor('none')).toBeNull()
+    for (const [id, def] of Object.entries(ITEMS)) {
+      const element = (def as { element?: string }).element
+      if (typeof element !== 'string') continue
+      expect(loadItemFor(element)).toBe(id)
+    }
+    // Every element the HUD can be asked to show has a name to print.
+    for (const el of Object.keys(ELEMENTS)) {
+      if (el === 'none') continue
+      expect(ELEMENTS[el].name).toBeTruthy()
+    }
   })
 })
 

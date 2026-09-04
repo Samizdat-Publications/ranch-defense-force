@@ -5,6 +5,7 @@
   "_riderNote": "docs/UPGRADE_ROSTER.md batch 1 took the Loads from three to nine, and the six new ones are not all damage-over-time. `chain*`, `hitHazard*`, `killHazard*` and `killHeal` are the LOAD'S OWN riders and they live here rather than on the item in items.json for one reason: a Load is exclusive -- taking one replaces the last -- but the ITEM stays in player.items forever. A rider read off the item would keep firing after its Load had been swapped away. World.refreshSpecialItems reads these off the ACTIVE element, so exactly one Load's riders are ever live. hitHazard rides H6's spawnHazard at the on-hit call site; killHazard rides it in killEnemy; chain is H1; killHeal is H11.",
   "_artNote": "The six new Loads ship with NO projectile colourway. renderer.ts falls back to the weapon's base clip when `proj.<clip>.<element>` was never packed, so a new Load is legible on day one and the recolour pass (npm run recolour over the 7 signature clips) is a follow-up rather than a blocker.",
   "_retuneNote": "Batch 1's Loads were authored in docs/UPGRADE_ROSTER.md SS6 and then MEASURED, and the six new ones came in under the three they compete with. A Load converts every ranged weapon you own, so it is the largest single multiplier in the game and a new one that is a downgrade is worse than no new one at all: the shop would be diluting its own best slot three to one. salt 22 -> 30, lime 12 -> 20, spark 0.45 -> 0.6, kerosene 10 -> 16 dps, font 3 -> 4 heal. The retune pass SS9 reserves for batch 5 starts here rather than there, because the harness would not have let it wait.",
+  "_stackNote": "A `<field>PerStack` beside a base field is what a SECOND (or third) copy of the same Load adds on top of it, additive, read by `World.applyElementTo` and by `offers.ts`' `loadStatDelta` off the identical formula: value at stack N is `base + perStack * (N - 1)`. Only fire/acid/frost carry one today because they are the only Loads with `maxStacks > 1` in items.json -- the six batch-1 Loads are `maxStacks: 1` (`ONE ONLY`, per docs/UPGRADE_ROSTER.md's own table), so `N` can never exceed 1 for them and the formula is a no-op, not a special case. That is the 'one rule' Part 2 asked for: nothing here checks an item id, only whether a `PerStack` field exists. Before this, `Player.addItem` set `this.element` and stopped -- a second or third Tracer Rounds re-asserted 'fire' over itself and changed nothing, which is exactly the owner's 'what does buying fire 5 times do' complaint.",
   "elements": {
     "none": {
       "name": "None",
@@ -15,7 +16,9 @@
       "_note": "Burns, and sets slop slicks alight — a fire build turns the Chem Sprayer's puddle from a slow into a killing field.",
       "impact": "bigImpact",
       "burnDps": 7,
+      "burnDpsPerStack": 3,
       "burnSeconds": 3,
+      "burnSecondsPerStack": 1,
       "ignitesSlicks": true,
       "slickDps": 14
     },
@@ -24,14 +27,18 @@
       "_note": "Corrodes. Lower burst than fire, longer bite, and it stacks with the armour-shredding fantasy of the late waves.",
       "impact": "arrowImpact",
       "bleedDps": 5,
-      "bleedSeconds": 5
+      "bleedDpsPerStack": 2,
+      "bleedSeconds": 5,
+      "bleedSecondsPerStack": 1
     },
     "frost": {
       "name": "Frost",
       "_note": "No damage over time; it buys space instead. The one element that is defensive, so an element pick is not purely a damage race.",
       "impact": "arrowImpact",
       "slowOnHit": 45,
-      "slowSeconds": 2
+      "slowOnHitPerStack": 15,
+      "slowSeconds": 2,
+      "slowSecondsPerStack": 0.5
     },
     "salt": {
       "name": "Rock Salt",

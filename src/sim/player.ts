@@ -319,6 +319,21 @@ export class Player {
   element = 'none'
 
   /**
+   * How many copies of the ACTIVE load the run holds — `tracerRounds` x3
+   * reads 3, not "3 items that each independently do nothing".
+   *
+   * Derived, not assigned: it is a straight count of `this.items` whose
+   * `ITEMS[id].element` matches `this.element`, recomputed in `addItem`
+   * whenever an element card lands. Switching load — taking `coldRounds`
+   * while Fire is active — does NOT clear the fire copies out of `items`
+   * (the simpler of the two choices §Part 2 asked for: supersede, don't
+   * refund) so this can go back UP on its own if the run ever returns to a
+   * load it already invested in, which is the one place "simpler" and
+   * "free" turned out to be the same answer.
+   */
+  loadStacks = 0
+
+  /**
    * H10 (docs/UPGRADE_ROSTER.md batch 3): Second Wind's remaining charges.
    *
    * Set from `World.specialItems.revives` in `refreshSpecialItems`, which
@@ -342,6 +357,7 @@ export class Player {
     this.pickaxeTier = 0
     this.axeTier = 0
     this.element = 'none'
+    this.loadStacks = 0
     this.level = 1
     this.xp = 0
     this.xpNeeded = xpToNext(1)
@@ -604,8 +620,24 @@ export class Player {
       { toolUpgrade?: string; element?: string; weaponMod?: string; requiresWeapon?: string }
       | undefined
 
-    // An element replaces whatever was on the weapons before.
-    if (def?.element) this.element = def.element
+    /*
+       An element/Load replaces whatever was on the weapons before — one
+       active Load, exclusive, same as it always was. What changed: the run's
+       investment in a Load now actually MEANS something when you take the
+       same one again. `loadStacks` is a plain count of every item this run
+       owns whose `element` matches whichever one just became active, so
+       Tracer Rounds x3 reads as 3 and not as three separately-inert cards.
+       It is recomputed rather than incremented so switching Loads and
+       switching back resumes at whatever depth was already bought — the
+       "refund or supersede, pick the simpler" call landed on supersede: nothing
+       is ever removed from `items`, so nothing needs refunding.
+    */
+    if (def?.element) {
+      this.element = def.element
+      this.loadStacks = this.items.filter(
+        (it) => (ITEMS[it.id] as { element?: string } | undefined)?.element === def.element,
+      ).length
+    }
 
     if (def?.toolUpgrade) {
       const steps = boosted ? 2 : 1

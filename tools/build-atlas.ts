@@ -1020,9 +1020,24 @@ if (gunSheet) {
  * frame width differs per type (a kunai is 16x8, a shockwave 64x32), and a
  * single assumed cell size would have been wrong for nine of the twelve.
  *
- * Conformed to the LimeZu palette on the way in, like the fx clips — the whole
- * point of §10 step 3 is that a second artist's work should not read as a
- * second artist's work.
+ * The BASE (no-element) clip is conformed to the LimeZu palette on the way in,
+ * like the fx clips — the whole point of §10 step 3 is that a second artist's
+ * work should not read as a second artist's work.
+ *
+ * The `.fire`/`.acid`/`.frost` variants are deliberately left OUT of that
+ * conform. `art/palette.json` holds 32 colours pulled from the farm tileset,
+ * characters and animals — nothing warm-vs-hot or cold-vs-corrosive was ever a
+ * source for it, so the nearest-Oklab match for "orange" and the nearest match
+ * for "yellow" turned out to be the SAME palette entry: `proj.pellet.fire.0`
+ * packed 0 pixels different from `proj.pellet.0`, which is the literal
+ * "fire round draws as the plain round" bug reported after a full run.
+ * `elements.json`'s own `_designNote` says an element must be "visible
+ * everywhere, which is what makes it read as a build decision" — a bullet
+ * that has to stay legible at a ~20px on-screen size against green grass needs
+ * the saturation the source pack already drew it in, not the muted farm ramp.
+ * The un-conformed frame is still built through `contentBounds` off the same
+ * sheet, so its trim and pivot maths are identical; only the colour pass is
+ * skipped.
  */
 const projectiles = manifest.projectiles
 if (projectiles && Object.keys(projectiles.clips ?? {}).length > 0) {
@@ -1033,6 +1048,7 @@ if (projectiles && Object.keys(projectiles.clips ?? {}).length > 0) {
     errors.push((e as Error).message)
   }
 
+  const ELEMENT_SUFFIX = /\.(fire|acid|frost)$/
   for (const [name, clip] of Object.entries(projectiles.clips)) {
     const dir = projectiles._base + clip.path
     let sheet: Image
@@ -1061,7 +1077,7 @@ if (projectiles && Object.keys(projectiles.clips ?? {}).length > 0) {
       height: sheet.height,
       data: new Uint8Array(sheet.data),
     }
-    quantiser?.conform(conformed)
+    if (!ELEMENT_SUFFIX.test(name)) quantiser?.conform(conformed)
 
     let packed = 0
     for (let f = 0; f < rects.length; f++) {

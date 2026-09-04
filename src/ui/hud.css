@@ -190,13 +190,32 @@
   50% { filter: brightness(1.16); }
 }
 
-/* --- weapon ring, bottom-centre --- */
-.hud-weapons {
+/* --- weapon ring, bottom-centre, with the active Load riding beside it --- */
+.hud-weapon-row {
   position: absolute;
   left: 50%; bottom: 58px;
   transform: translateX(-50%);
   display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.hud-weapons {
+  display: flex;
   gap: 8px;
+}
+
+/*
+   The Load slot borrows `.hud-slot`'s whole anatomy (art window, stamped
+   name, tier-style chip for the stack count) so it reads as the same kind of
+   object a weapon slot is, set apart only by the accent border that names
+   what it is: the one choice that touches every weapon on the ring beside it.
+   Hidden outright at `element: 'none'` rather than shown empty — an empty
+   Load slot asks a question a run that never bought one should never be asked.
+*/
+.hud-load {
+  border-color: var(--gold);
+  margin-left: 6px;
 }
 
 /*
