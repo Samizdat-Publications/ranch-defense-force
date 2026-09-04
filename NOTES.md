@@ -179,8 +179,8 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The player mark was drawn in a hole.** Character origins are the cell floor,
   twelve pixels below the boots; footOffsetY is -10 now. The owner saw it first.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
-  Queue now: the inventory audit (every PixelLab object claimed and wired, or
-  retired with a reason), then the upgrade roster in batches.
+  The inventory audit is done (section below). Queue now: the upgrade roster
+  in batches, batch 1 with the aura ring in flight.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -409,6 +409,97 @@ draw-rule redesign, five shippable batches, and 31 icons batched so nothing is
 generated unwired. Seven items already point at stand-in art while their own
 generated icons sit packed. Batch 1 (draw rules, card text, 22 behavioural
 cards) is the one the owner feels; it starts on the owner's word.
+
+## Every PixelLab asset ends somewhere now, and 29 of them ended on screen
+
+The owner's complaint was that every session opens by discovering art that was
+generated, paid for and never used, and that nothing ever gets done about it.
+Session 18 found the barn, farmhouse, silo, coop, windmill and well. Session 22
+found four blighted-scarecrow candidates and seven item cards pointing at
+stand-ins while their own icons sat packed. All of it was in
+`docs/PIXELLAB_INVENTORY.md` the whole time, because that file answers *what
+does the account hold* and nobody had ever asked *what is on screen*.
+
+`docs/PIXELLAB_LEDGER.md` asks the second question. 1,103 rows — every object,
+character and tileset — each ending in exactly one of seven states: wired (192),
+packed-unused (19, all tilesets no map stands on), surplus (600, other rolls of
+a wired prompt), unclaimed (132), review (40), retired (43, tagged with a
+reason), or a named open question with a recommendation (77 rows, 15
+decisions). There is no eighth state. `npm run ledger` rebuilds it;
+`npm run tag` writes the same verdicts onto the account, so
+`list_objects(tags="rdf-open")` is the queue. Zero generations in this pass.
+
+**The join is exact where the data allows and honest where it does not.** There
+is no PixelLab id anywhere in `art/sprites.json` and never has been — the
+manifest names files, downloaded by hand across twenty-two sessions. Objects
+join by FAMILY, which is the unit that matters: nobody needs to know which of
+four identical barn rolls is packed, only that the barn is in the game and
+three rolls are surplus. The keys are then checked against the built atlas and
+every reference in `src/`, so wired-or-not is exact even where provenance is
+not. An unmapped family reports as `open` and is counted at the top; it is zero.
+
+### Twenty-nine sprites that were packed and drawn by nothing
+
+Seven item cards took their own icons (`saltLick` and `saltCircle` both drew
+`node.rockSmall`; `barbedWire` drew a silver ore node). Five firearm cards took
+their `carry.*` art — `gun.shotgun.0` is 8x4 in a 96px window; the tier is
+carried by the tin plate and its pips. Six ranch fixtures and a muck decal went
+into the field dressing on every surface map. Two container-shaped ones went to
+`breakables.json` as skins, because an unbreakable trough beside a breakable
+one is the one thing no feedback recovers from. `vault.drumWeeping` is in the
+lab — `art/sprites.json` calls it "the story of the game in one asset" in the
+same file that never placed it. Six stalactites hang in the descent column.
+
+**The blighted scarecrow is the one that had a note where the art should have
+been.** Four `rdf-scene-scarecrow-wrong` candidates from session 15; one
+picked on silhouette — the only one on a vertical post with the head centred,
+which matters because the scene places props by the top-left of the full 96
+box. The other three are retired with reasons; one wears the player's own
+blue denim, the thing the recolour pass spent itself taking off the enemies.
+
+### A cosmetic draw was living in the sim's RNG stream
+
+Giving a breakable class a second skin fired a `this.rng.int` branch that had
+never fired — every class carried exactly one skin — which shifted every
+downstream draw and dropped the 24-seed clear rate from 14 to 10. Red, from a
+change that only picks a different PNG. It is on `skinRng` now, its own
+stream, the rule the fog, overhead, scenery and decal layers already follow:
+nothing decorative may move a spawn. `tests/maps.test.ts` asserted the default
+dressing EQUALS the old farm list — a freeze, not a guarantee, and the only
+thing between paid-for art and the field. It is a prefix check now.
+
+### `npm run cards`
+
+`cardSprite` is a string and every atlas key resolves to SOMETHING, so a
+stand-in typechecks and passes 207 tests for months. This builds every card
+through the real `card()` in a real browser off the real content, photographs
+them, and fails on any window that draws nothing.
+
+### Still open: fifteen decisions, in the ledger's roll-up
+
+Biggest first: the five cave webs (composite one over the crate and drum
+offline, free); six orphan weapon icons (hold for roster batch 2); the barn
+interior — eight assets waiting on one scene, and the Homestead is already
+entered through the barn door; the LimeZu signs, dog strips, calf and pen
+pieces, superseded by generated art and recommendable for deletion from the
+manifest; `ranch.coopBroken`, which came back inside a drawn frame `decard`
+cannot take; `base.blastDoor1-4`, where a second door in the wall reads as a
+second exit. The 40 review packs stay in review, per-row reasons tagged,
+because `dismiss_review` deletes and the brief said not to.
+
+### Two things worth writing down
+
+A `git add -A` in this pass swept three `.claude/data/healthcare/*.sqlite`
+files — another plugin's database, nothing to do with the game — into a commit
+on a branch of a PUBLIC repository. The branch was rebuilt commit by commit
+without them before it merged; `main`'s history never carried them, verified
+with `git log --diff-filter=A -- '.claude/data/*'`. `.claude/data/` and
+`.claude/worktrees/` are ignored now. **Never `git add -A` in this repo.**
+
+And two agents shared one checkout and one PixelLab account during this pass:
+commits from the loadout fix and two smudge-pot objects from the roster batch
+landed in the audit's window. The ledger attributes them rather than wiring
+them. CLAUDE.md's warning about the repo is just as true of the account.
 
 ## The four locked classes now answer the game differently
 
