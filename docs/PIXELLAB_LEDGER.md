@@ -19,13 +19,13 @@ state and there is no fourth.
 
 | state | meaning | count |
 |---|---|---|
-| **wired** | packed in the atlas AND something in `src/` draws its key | 200 |
+| **wired** | packed in the atlas AND something in `src/` draws its key | 201 |
 | **packed-unused** | packed, drawn by nothing — a job, not a resting state | 29 |
 | **surplus** | another roll of a prompt whose keeper is already wired | 617 |
 | **unclaimed** | on the account, never downloaded into `assets/` | 153 |
 | **review** | a candidate pack nobody has picked from — already paid for | 40 |
 | **retired** | tagged `rdf-retired` on the account, with a reason tag | 64 |
-| **open** | a real question for the owner; the row says which | 1 |
+| **open** | a real question for the owner; the row says which | 0 |
 
 1104 rows: 1027 objects, 28 characters, 49 tilesets.
 
@@ -52,7 +52,7 @@ reference so that assembled keys (`playFx('explosion')` drawing
 
 | n | the question |
 |---|---|
-| 1 | UNMAPPED — add a row to tools/pixellab-ledger.ts |
+
 
 ## How the join is made
 
@@ -222,7 +222,7 @@ session hunting for a use that already exists, or deleting art the game draws.
 
 ## Objects — 1027
 
-### wired — 156
+### wired — 157
 
 | id | size | what | state | where it ends up |
 |---|---|---|---|---|
@@ -305,6 +305,7 @@ session hunting for a use that already exists, or deleting art the game draws.
 | `a01507b2` | 96x96 | a rusted crop duster tractor rig with a wide spray boom and b… | **wired** | the Duster boss, its own animated sheet (duster) |
 | `a0dd3d82` | 64x64 | a rusted iron horse plough, isolated on nothing, no grass, no… | **wired** | field scenery fixture (prop.plough) |
 | `be07b9ae` | 64x64 | a rusted steel barrel burning, flames and smoke rising from t… | **wired** | breakables.json class (prop.burnBarrel) |
+| `e92b093a` | 64x64 | a rusted steel barrel burning, flames and smoke rising from t… | **wired** | Hot As It Comes card icon (rdf-wired-card-hotAsItComes) (item.hotAsItComes) |
 | `80bdadfd` | 48x128 | a rusted steel ladder bolted flat against a concrete wall, ru… | **wired** | the barn interior, spanning loft to floor (`barn()` in src/ui/scene.ts) (ranch.barnLadder) |
 | `b46bc5bd` | 128x128 | a rusted steel oil drum, dented, standing upright | **wired** | breakables.json oilDrum class (prop.oilDrum) |
 | `481c0630` | 48x48 | a rusted steel oil drum, isolated on nothing, no grass, no gr… | **wired** | breakables.json class (prop.oilDrum) |
@@ -1277,10 +1278,4 @@ session hunting for a use that already exists, or deleting art the game draws.
 | `9fcfaa36` | 32x32 | side view of a machine gun with a big round drum magazine poi… | **retired** | plum not farm palette |
 | `357b3f92` | 32x32 | side view of a squat scrap-metal tar mortar launcher pointing… | **retired** | unreadable blob |
 | `4534e618` | 84x141 | wooden rowboat with oar | **retired** | not this game -- a stray from the first session, before the farm was decided |
-
-### open — 1
-
-| id | size | what | state | where it ends up |
-|---|---|---|---|---|
-| `e92b093a` | 64x64 | a rusted steel barrel burning, flames and smoke rising from t… | **open** | UNMAPPED — add a row to tools/pixellab-ledger.ts |
 

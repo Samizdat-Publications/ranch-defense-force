@@ -181,10 +181,8 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. All five roster batches are merged; the roster is 56 → 164 cards. Queue: the
-  57 packed-unused sprites the ledger surfaced; human play of the roster and
-  the six classes; PIXELLAB_API_KEY in the shell so npm run inventory and
-  npm run tag --write can refresh the account-side tags.
+  merged. All five roster batches are merged; the roster is 56 → 164 cards. Queue: human play of the roster and
+  the six classes — nothing else is outstanding; the key fallback landed and the account tags are refreshed.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -878,6 +876,49 @@ than assumed. 241/241 tests.
 pilot that cannot dodge, aim or read a card. The owner's verdicts so far
 (session 21 "too easy", the density pass) came from a human; the roster
 wants the same, and the ladder above is the baseline to compare against.
+
+### The PixelLab tools find the key the MCP server already has
+
+Every pass this session that needed `npm run inventory` or `npm run tag --write`
+reported "no PIXELLAB_API_KEY in the shell" and worked around it through the
+MCP, leaving the account-side tags stale. The key was on the machine the whole
+time, in the gitignored `.mcp.json` the MCP server reads. `tools/pixellab-key.ts`
+resolves it now — env var first, then that file — and eight tools use it. The
+unblocked refresh retagged 94 assets and closed the ledger's last open row.
+Two gaps remain by construction: the icons from roster batches 1 and 3 were
+made with `create_image_pro`, which never registers an object, so the ledger
+cannot have rows for them; they are verified wired through `art/sprites.json`
+and `items.json` instead. **Never print the key**: the tools mask it, and the
+check after every commit is a grep for its first characters returning zero.
+
+### The 57 packed-unused sprites, resolved or explained, and a picker for every state
+
+`sceneBg.cornWall` (the corn horizon whose own manifest note called it "the
+RIGHT horizon for this farm"), `scene.nest`, `scene.fenceRail` and
+`ranch.fenceRail` are wired — the first three into the yard and field scenes,
+the last into the field dressing. `sceneBg.treeline` is retired as the
+alternative corn superseded. **Nineteen Wang ground sets were retired outright
+and deleted from `assets/tilesets/`** — session 17 found this family reads as
+wallpaper against a full field of enemies, a combat-readability call no
+screenshot can make, so they were not wired blind. They remain on the PixelLab
+account and in git history if a map ever wants one. The atlas dropped from
+8174 frames on 7 pages to 7902 on 6. What remains packed-unused (29) is two
+recorded decisions: the 25 weapon-icon rolls held for future weapons, and the
+four chicken-run enclosures that are Design's call.
+
+**A dev picker for every home-screen state** — YARD CALM, YARD BLIGHT, FIELD
+CALM, FIELD BLIGHT, FLASH, DESCENT, LAB, HOMESTEAD — sits beside the scene
+selector and shows only while the F1 dev overlay is on (`body[data-dev='on']`,
+a CSS gate, so there is no JS visibility to drift). Production starts with the
+overlay hidden, so the picker is off on the live site and one keypress away;
+turning it off for good is removing that gate. `npm run scene -- <state>`
+accepts the same eight names, and `docs/progress/scene-<state>.png` holds one
+shot of each.
+
+Found in passing: `MenuScreen.open()` restarted the sequence from calm on every
+boot, silently dropping a persisted lab hold back onto the surface — the
+documented "come back underground" behaviour had never worked across a reload.
+It skips the restart when a beat is already scheduled.
 
 ## The four locked classes now answer the game differently
 
