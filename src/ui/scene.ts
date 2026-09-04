@@ -695,6 +695,13 @@ function yard(): (HTMLElement | null)[] {
   push(plate('ranch.feedPan', 889, 749, 53, 'filter:brightness(0.94);'))
   push(plate('ranch.eggClutch', 1105, 730, 28))
   push(plate('ranch.eggClutch', 985, 786, 28))
+  /*
+     `scene.nest` -- straw bedding and a nesting box, distinct from the smaller
+     `ranch.nestBox` above -- was packed for this yard sessions ago and never
+     placed. Set past the coop's right edge, clear of the wandering hens'
+     start points and the egg clutches already on the ground here.
+  */
+  push(plate('scene.nest', 1148, 706, 46, 'filter:brightness(0.9);'))
 
   // -- the flock. Two peck in place; four wander a fixed beat.
   push(shadow(848, 740, 32, 9, 0.5, 3))
@@ -714,6 +721,14 @@ function yard(): (HTMLElement | null)[] {
   push(wander('tabbyCat', 'left', 760, 792, 36, -120, '71s', '0.7s', [4, 29, 30, 8, 0.48]))
 
   // -- the stock
+  /*
+     `scene.fenceRail` -- a standalone post-and-rail section, distinct from the
+     tiled `scene.fencePicket` band nearer the camera -- marks the near corner
+     of the stock pen. Packed for this yard and never placed; behind the stock
+     tank so paint order reads it as the pen boundary rather than a prop lying
+     in the open.
+  */
+  push(plate('scene.fenceRail', 1600, 706, 90, 'filter:brightness(0.76) saturate(0.9);'))
   push(plate('ranch.stockTank', 1558, 750, 52, 'filter:brightness(0.94);'))
   push(shadow(1468, 792, 76, 16, 0.5, 5))
   push(clipActorAt('fjordPony', 'graze', 'downRight', 1450, 704, 96, '5.3s'))
@@ -977,6 +992,22 @@ function field(): (HTMLElement | null)[] {
   // 3px blur — because those are what make it read as distance rather than as
   // a row of trees in the middle ground.
   L.push(treeline())
+
+  /*
+     A second, nearer band: standing corn beyond the crop rows.
+
+     `sceneBg.cornWall` sat packed and drawn by nothing since it was generated
+     -- its own note in art/sprites.json calls it "the RIGHT horizon for this
+     farm... standing corn is what the real scenery outside Canton looks
+     like" and says a scene may "layer corn in front of trees" rather than
+     choosing one over the other. Pushed AFTER `treeline()` so paint order puts
+     it in front of the oaks, tiled at 1x (the art is a 400x120 band, not a
+     seamless texture, so the repeat shows at the seams the way the wheat bands'
+     does -- acceptable at this opacity and this far from the camera).
+  */
+  L.push(tileBand('sceneBg.cornWall',
+    'left:-40px;right:-40px;top:470px;height:120px;opacity:0.82;' +
+    'filter:blur(1px) brightness(0.86) saturate(0.94);', 400, 120))
 
   // The far end of the place, all at 1x on the horizon line. Distance comes
   // from position and haze, never from scale.

@@ -29,8 +29,27 @@ import { existsSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
 
-const kind = process.argv[2] ?? 'yard'
-const out = process.argv[3] ?? `tools/scene-${kind}.png`
+/**
+ * The eight names the dev picker in `src/ui/menu.ts` lists (`DEV_SCENE_PICK`)
+ * are accepted here too, so a state photographed by clicking it in the
+ * browser and a state photographed by this tool are asked for the same way.
+ * Each expands to the `[kind, phase]` pair the rest of this file already
+ * understood -- `barn` is the one that is not a phase at all, see below.
+ */
+const DEV_STATE: Readonly<Record<string, readonly [string, string]>> = {
+  'yard-calm': ['yard', 'calm'],
+  'yard-blight': ['yard', 'blight'],
+  'field-calm': ['field', 'calm'],
+  'field-blight': ['field', 'blight'],
+  flash: ['yard', 'flash'],
+  down: ['yard', 'down'],
+  lab: ['lab', ''],
+  barn: ['homestead', ''],
+}
+
+const arg2 = process.argv[2] ?? 'yard'
+const [kind, devPhase] = DEV_STATE[arg2] ?? [arg2, '']
+const out = process.argv[3] ?? `tools/scene-${arg2}.png`
 const settle = Number(process.argv[4] ?? 1200)
 /**
  * Which beat of the home screen's sequence to photograph.
@@ -44,7 +63,7 @@ const settle = Number(process.argv[4] ?? 1200)
  *     npm run scene -- yard tools/play/home/blight.png 1400 blight
  *     npm run scene -- yard tools/play/home/soil.png   1400 down
  */
-const phase = process.argv[5] ?? ''
+const phase = process.argv[5] ?? devPhase
 /**
  * `scene` frames the backdrop alone; `page` frames the whole window.
  *

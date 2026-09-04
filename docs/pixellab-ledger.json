@@ -1,5 +1,5 @@
 {
- "taken": "2026-09-04T01:08:36.757Z",
+ "taken": "2026-09-04T19:50:13.425Z",
  "objects": [
   {
    "id": "5bf9663a-d0c9-4728-9488-3c3d1e67f726",
@@ -239,17 +239,17 @@
   {
    "id": "76afd046-0060-41c9-bfd9-33d6eddb82df",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: the dog in the yard is `joy`, a generated CHARACTER with idle and walk clips, and it has been since session 20. These are static profile objects; the LimeZu strip they were bought…"
+   "where": "the yard dog is joy animated"
   },
   {
    "id": "392cd931-84e4-4fa1-8a33-60f2a7a2414b",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: the dog in the yard is `joy`, a generated CHARACTER with idle and walk clips, and it has been since session 20. These are static profile objects; the LimeZu strip they were bought…"
+   "where": "the yard dog is joy animated"
   },
   {
    "id": "f3b7bb1b-4868-44df-a263-952c3f282243",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: the dog in the yard is `joy`, a generated CHARACTER with idle and walk clips, and it has been since session 20. These are static profile objects; the LimeZu strip they were bought…"
+   "where": "the yard dog is joy animated"
   },
   {
    "id": "0941f2e2-b81c-47a3-925a-ee4477738c1b",
@@ -664,27 +664,27 @@
   {
    "id": "55763793-010d-458c-b2db-58c3ca95d6dc",
    "verdict": "wired",
-   "where": "field dressing (wired by this audit) (ranch.fenceRun, ranch.fenceCorner)"
+   "where": "field dressing (wired by this audit) (ranch.fenceRun, ranch.fenceRail, ranch.fenceCorner)"
   },
   {
    "id": "8e869c04-4058-44cd-9f52-1c060da8f7e7",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
+   "where": "never downloaded ranch silo is used"
   },
   {
    "id": "5639c5f7-e514-4e59-a3be-46180dde4a7a",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
+   "where": "never downloaded ranch silo is used"
   },
   {
    "id": "dcdc6229-aa42-48f1-9f79-d18fb117b606",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
+   "where": "never downloaded ranch silo is used"
   },
   {
    "id": "f33f3add-3063-49d2-9a31-cdee7ed20417",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
+   "where": "never downloaded ranch silo is used"
   },
   {
    "id": "e81388b4-9adb-43cc-87cb-19af545374ac",
@@ -828,13 +828,13 @@
   },
   {
    "id": "b4f0be5e-289f-431f-b629-c94d95519468",
-   "verdict": "packed-unused",
-   "where": "title screen horizon (the corn wall is the default; this is the alternative) — sceneBg.treeline packed, drawn by nothing"
+   "verdict": "unclaimed",
+   "where": "title screen horizon (the corn wall is the default; this is the alternative) — nothing packed under sceneBg.treeline"
   },
   {
    "id": "a1d48aa4-de4e-4a51-a931-6ce154f7b16a",
-   "verdict": "packed-unused",
-   "where": "title screen horizon — sceneBg.cornWall packed, drawn by nothing"
+   "verdict": "wired",
+   "where": "title screen horizon (sceneBg.cornWall)"
   },
   {
    "id": "835aa5ae-754b-406b-b102-bf75a6c309a8",
@@ -1342,6 +1342,11 @@
    "where": "another roll of carry"
   },
   {
+   "id": "ee9859f9-4a9f-476e-acb0-dcb6d8be6f26",
+   "verdict": "surplus",
+   "where": "another roll of carry"
+  },
+  {
    "id": "32395426-6e91-40d0-9869-6efbaa14c9c4",
    "verdict": "review",
    "where": "OPEN: review pack; decal.ash is already packed and drawn"
@@ -1763,8 +1768,8 @@
   },
   {
    "id": "2d863647-f4a6-4596-9331-2391022520e1",
-   "verdict": "packed-unused",
-   "where": "title screen horizon alternative — sceneBg.treeline packed, drawn by nothing"
+   "verdict": "unclaimed",
+   "where": "title screen horizon alternative — nothing packed under sceneBg.treeline"
   },
   {
    "id": "66625599-1400-4702-a6bd-c79df5607fb1",
@@ -1898,18 +1903,18 @@
   },
   {
    "id": "192f8a0c-ef90-43db-b95c-16920d16d167",
-   "verdict": "packed-unused",
-   "where": "title screen yard — scene.nest packed, drawn by nothing"
+   "verdict": "wired",
+   "where": "title screen yard (scene.nest)"
   },
   {
    "id": "202e7c3a-5efe-4c43-8caf-61434bf2380e",
-   "verdict": "packed-unused",
-   "where": "title screen yard — scene.nest packed, drawn by nothing"
+   "verdict": "surplus",
+   "where": "another roll of scene.nest"
   },
   {
    "id": "59d0bde2-4cf6-45e1-8e2d-0833fac26131",
-   "verdict": "packed-unused",
-   "where": "title screen yard — scene.nest packed, drawn by nothing"
+   "verdict": "surplus",
+   "where": "another roll of scene.nest"
   },
   {
    "id": "67070efb-fcac-4d67-ac7c-a662e84a3d4f",
@@ -2333,7 +2338,7 @@
   },
   {
    "id": "9e66e60a-dad0-472c-b6af-c4d397b46413",
-   "verdict": "unclaimed",
+   "verdict": "wired",
    "where": "HELD for the upgrade roster: generated by the roster batch, not by the audit or the art pass, and it is that work's to wire. Tagged rdf-hold-batch2 on the account so it is visible from the other side…"
   },
   {
@@ -2618,8 +2623,8 @@
   },
   {
    "id": "e92b093a-8b9d-4f2b-ad45-2d71ed6e99b1",
-   "verdict": "surplus",
-   "where": "another roll of prop.burnBarrel"
+   "verdict": "open",
+   "where": "UNMAPPED — add a row to tools/pixellab-ledger.ts"
   },
   {
    "id": "9098d3d2-e042-4320-81b7-265ada85050f",
@@ -2833,18 +2838,18 @@
   },
   {
    "id": "575c305a-416b-4103-94fc-ddd537c1822a",
-   "verdict": "packed-unused",
-   "where": "field dressing (wired by this audit) and the title screen — ranch.fenceRail, scene.fenceRail packed, drawn by nothing"
+   "verdict": "wired",
+   "where": "field dressing (wired by this audit) and the title screen (ranch.fenceRail, scene.fenceRail)"
   },
   {
    "id": "7a39dc9e-bd81-4e3b-b508-691b92f7c1e3",
-   "verdict": "packed-unused",
-   "where": "field dressing (wired by this audit) and the title screen — ranch.fenceRail, scene.fenceRail packed, drawn by nothing"
+   "verdict": "surplus",
+   "where": "another roll of ranch.fenceRail"
   },
   {
    "id": "07997165-1c0d-4fdd-9720-837f7dfb6a9d",
-   "verdict": "packed-unused",
-   "where": "field dressing (wired by this audit) and the title screen — ranch.fenceRail, scene.fenceRail packed, drawn by nothing"
+   "verdict": "surplus",
+   "where": "another roll of ranch.fenceRail"
   },
   {
    "id": "5c2e9546-591e-46f7-9d31-68e559cf3344",
@@ -2954,17 +2959,17 @@
   {
    "id": "38227db3-fe5c-4386-861d-1b470d3cbfcd",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: no scene ever placed the calf, and the LimeZu calf and its graze strip left art/sprites.json in the same pass. The yard's cattle is `scene.cow` with its own graze loop; a calf sta…"
+   "where": "no scene ever placed the calf"
   },
   {
    "id": "f88cb9d4-ae36-409d-815c-62b46a71c479",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: no scene ever placed the calf, and the LimeZu calf and its graze strip left art/sprites.json in the same pass. The yard's cattle is `scene.cow` with its own graze loop; a calf sta…"
+   "where": "no scene ever placed the calf"
   },
   {
    "id": "9c7edd2a-848a-44e0-95ff-162df571b70c",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: no scene ever placed the calf, and the LimeZu calf and its graze strip left art/sprites.json in the same pass. The yard's cattle is `scene.cow` with its own graze loop; a calf sta…"
+   "where": "no scene ever placed the calf"
   },
   {
    "id": "0a4e2bae-6e47-4e11-af44-9e7f1165d4f8",
@@ -3124,7 +3129,7 @@
   {
    "id": "6cea4472-3981-4749-8d2e-1b251beb26f1",
    "verdict": "wired",
-   "where": "title screen (ranch.coop)"
+   "where": "title screen (ranch.coop, scene.coop)"
   },
   {
    "id": "8608c416-7179-42a3-a667-79859383ee35",
@@ -3154,37 +3159,37 @@
   {
    "id": "d396d1cc-68f9-4b15-b924-5b74782aea2e",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
+   "where": "never downloaded no scene signs things"
   },
   {
    "id": "9969127c-2442-4313-a05a-1053a4d6199b",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
+   "where": "never downloaded no scene signs things"
   },
   {
    "id": "e8a76271-cccf-42ac-8964-43c92b0e0c40",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
+   "where": "never downloaded no scene signs things"
   },
   {
    "id": "6873fac2-bb6f-43b1-a2f1-715d36eebc65",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
+   "where": "never downloaded no scene signs things"
   },
   {
    "id": "18d260ce-c8a1-43d5-b0b6-2d1346f3f90d",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
+   "where": "never downloaded no scene signs things"
   },
   {
    "id": "0df4cc53-736b-4c99-a505-7927f519660a",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
+   "where": "never downloaded no scene signs things"
   },
   {
    "id": "87516e65-d575-43bb-8511-151194252911",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
+   "where": "never downloaded no scene signs things"
   },
   {
    "id": "4e4d7cc8-e4ec-426b-97cf-997a021d89ae",
@@ -3494,22 +3499,22 @@
   {
    "id": "ea38c9a8-0c2c-449f-ba42-83449ce38693",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
+   "where": "never downloaded nothing asks for one"
   },
   {
    "id": "46db86c5-4c6e-45ad-901d-9d44187a6323",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
+   "where": "never downloaded nothing asks for one"
   },
   {
    "id": "cf4b50f1-59f8-4471-ab31-263f1cd339de",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
+   "where": "never downloaded nothing asks for one"
   },
   {
    "id": "b7753e18-32ed-49ed-8449-126dc66d7206",
    "verdict": "retired",
-   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
+   "where": "never downloaded nothing asks for one"
   },
   {
    "id": "551417ef-31b9-4373-8178-7cdab54526da",
@@ -4194,7 +4199,7 @@
   {
    "id": "2a07b9cf-27cd-4762-b7bf-09509c31825f",
    "verdict": "wired",
-   "where": "title screen yard (ranch.nestBox)"
+   "where": "title screen yard (ranch.nestBox, scene.nest)"
   },
   {
    "id": "5d11a885-e1c1-437b-9c12-03126e967e03",
