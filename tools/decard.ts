@@ -19,11 +19,21 @@
  * the scale table published it as 210x126 when the truth is 210x49 -- 2.6x too
  * tall. The card is a scale bug wearing a cosmetic bug's clothes.
  *
- * Method: 4-connected flood from every border pixel, matching the corner colour
+ * Method: 4-connected flood from every border pixel, matching any CARD COLOUR
  * within a tolerance, opaque pixels only. Only background-connected regions go;
  * a pixel of the same grey inside a drum is never reached. Enclosed pockets of
  * card colour that the flood cannot reach are counted and REPORTED rather than
  * removed, because a pocket is as likely to be a highlight as it is a gap.
+ *
+ * A card colour is one the BORDER RING is substantially made of -- at least
+ * `MIN_BORDER_SHARE` of it -- and there may be more than one. That is the fix
+ * for the shape the ledger called "a drawn frame `decard` cannot take": a few
+ * assets came back as a white card with a black rule drawn down two sides, and
+ * matching only the corner's colour cut the white, left the rule, and therefore
+ * left the content box exactly the size of the canvas. `ranch.coopBroken` --
+ * good art, 50% card, unusable for two sessions -- is the one that made this
+ * worth writing. The share floor is what keeps it safe: art that happens to
+ * touch an edge is not a quarter of the ring.
  *
  * Verifies after writing rather than assuming the write worked, same contract
  * as `rmbg`.
@@ -36,6 +46,8 @@ import { decodePng, encodePng } from './png.ts'
 const TOLERANCE = 12
 /** Below this share of the canvas, a border-connected region is art, not a card. */
 const MIN_CARD_SHARE = 0.15
+/** Below this share of the BORDER RING, a colour is art touching an edge. */
+const MIN_BORDER_SHARE = 0.25
 
 const args = process.argv.slice(2).filter((a) => a !== '--')
 const checkOnly = args.includes('--check')
@@ -52,14 +64,38 @@ for (const path of files) {
   const { width: W, height: H, data } = img
   const at = (x: number, y: number) => (y * W + x) * 4
 
-  const seed = [data[0], data[1], data[2], data[3]] as const
-  if (seed[3] <= 8) { console.log(`  ${name}: already cut out (transparent corner)`); continue }
+  if (data[3]! <= 8) { console.log(`  ${name}: already cut out (transparent corner)`); continue }
 
-  const isCard = (i: number) =>
-    data[i + 3] > 8 &&
-    Math.abs(data[i] - seed[0]) <= TOLERANCE &&
-    Math.abs(data[i + 1] - seed[1]) <= TOLERANCE &&
-    Math.abs(data[i + 2] - seed[2]) <= TOLERANCE
+  /*
+     Every colour the border ring is substantially made of, clustered within
+     TOLERANCE. Usually one; two when the generator drew a rule down the side
+     of the card, which is the case this loop exists for.
+  */
+  const ring: number[] = []
+  for (let x = 0; x < W; x++) ring.push(at(x, 0), at(x, H - 1))
+  for (let y = 0; y < H; y++) ring.push(at(0, y), at(W - 1, y))
+  const seeds: { r: number; g: number; b: number; n: number }[] = []
+  for (const i of ring) {
+    if (data[i + 3]! <= 8) continue
+    const hit = seeds.find((c) =>
+      Math.abs(c.r - data[i]!) <= TOLERANCE
+      && Math.abs(c.g - data[i + 1]!) <= TOLERANCE
+      && Math.abs(c.b - data[i + 2]!) <= TOLERANCE)
+    if (hit) hit.n++
+    else seeds.push({ r: data[i]!, g: data[i + 1]!, b: data[i + 2]!, n: 1 })
+  }
+  const cards = seeds.filter((c) => c.n / ring.length >= MIN_BORDER_SHARE)
+  if (!cards.length) { console.log(`  ${name}: no card (no colour holds a quarter of the border)`); continue }
+
+  const isCard = (i: number) => {
+    if (data[i + 3]! <= 8) return false
+    for (const c of cards) {
+      if (Math.abs(data[i]! - c.r) <= TOLERANCE
+        && Math.abs(data[i + 1]! - c.g) <= TOLERANCE
+        && Math.abs(data[i + 2]! - c.b) <= TOLERANCE) return true
+    }
+    return false
+  }
 
   // Flood 4-connected from every border pixel.
   const card = new Uint8Array(W * H)

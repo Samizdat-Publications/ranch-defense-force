@@ -834,11 +834,11 @@
   "scene": {
     "_note": "Backdrop crops for the home screen's yard, cut from the LimeZu farm pack by Design. These are DOM background art, not field sprites, so they are exempt from the 32x32 rule -- a barn is 480x224 and a silo 224x448. They go through the atlas like everything else so the one shipping rule holds: assets/ never deploys, only the packed atlas does.",
     "_noTrimNote": "PACKED UNTRIMMED, and this is load-bearing. Design's scene coordinates are the top-left of the sprite's FULL BOX, so a trimmed frame is drawn at the right place and the wrong offset -- the scarecrow trimmed 96x96 to 84x78 and stood 12px left and 18px high of where it belongs, silently, on every prop in both scenes. Trimming is right for a field sprite drawn from a pivot; it is wrong for anything positioned by its box.",
+    "_supersededNote": "Eight LimeZu cuts left this manifest on 2026-09-04: `scene.signCow`, `scene.dogIdleStrip`, `scene.calf`, `scene.calfGrazeStrip`, `scene.penC1`, `scene.penGate`, `scene.penH`, `scene.penV`. Every one was packed and drawn by NOTHING -- the ledger's finding, and the same defect the generated `ranch.*` family was created to fix. The dog is `joy` now, generated; the pens are the `pen.*` whole enclosures; the signs and the calf were never placed by any scene in twenty-two sessions. The PNGs stay in `assets/scene/` (they are Design's delivered cut sheet and not ours to prune); what changed is that the atlas stops carrying them. A packed key nothing draws is not free -- it is the thing that sends the next session hunting for a use that was never written.",
     "_base": "assets/scene/",
     "noTrim": true,
     "files": {
       "scene.barn": "barn.png",
-      "scene.calf": "calf.png",
       "scene.chick": "chick.png",
       "scene.coop": "coop.png",
       "scene.cow": "cow.png",
@@ -851,12 +851,8 @@
       "scene.house": "house.png",
       "scene.milkcan": "milkcan.png",
       "scene.nest": "nest.png",
-      "scene.penC1": "pen_c1.png",
-      "scene.penGate": "pen_gate.png",
-      "scene.penV": "pen_v.png",
       "scene.scarecrow": "scarecrow.png",
       "scene.sheep": "sheep.png",
-      "scene.signCow": "sign_cow.png",
       "scene.silo": "silo.png",
       "scene.tractorLeft": "tractor_left.png",
       "scene.treeOak": "tree_oak.png",
@@ -874,7 +870,6 @@
     "files": {
       "scene.chickenPeckStrip": "chicken_peck_strip.png",
       "scene.chickenWalkLeftStrip": "chicken_walk_left_strip.png",
-      "scene.penH": "pen_h.png",
       "scene.farmerWalkStrip": "farmer_walk_strip.png",
       "scene.farmerWalkUpStrip": "farmer_walk_up_strip.png",
       "scene.fencePicket": "fence_picket.png",
@@ -885,10 +880,8 @@
       "scene.roosterCrowStrip": "rooster_crow_strip.png",
       "scene.cowGrazeStrip": "cow_graze_strip.png",
       "scene.sheepGrazeStrip": "sheep_graze_strip.png",
-      "scene.dogIdleStrip": "dog_idle_strip.png",
       "scene.chickPeckStrip": "chick_peck_strip.png",
       "scene.farmerIdleBreatheStrip": "farmer_idle_breathe_strip.png",
-      "scene.calfGrazeStrip": "calf_graze_strip.png",
       "scene.farmer2IdleBreatheStrip": "farmer2_idle_breathe_strip.png",
       "scene.scarecrowSwayStrip": "scarecrow_sway_strip.png"
     },
@@ -1727,6 +1720,15 @@
     },
     "_branchNote": "The dead branches are overhead art for the SURFACE maps -- a dead orchard has a canopy and the player walks under it. Drawn from directly below looking up, which is the only angle that works: a branch drawn in three-quarter view reads as a branch lying on the ground, and the whole point of this layer is that it is above you."
   },
+  "webbed": {
+    "_note": "Webbed variants, made OFFLINE by `npm run webbed` out of art the account already held. Five webs (`cave.web0..5`) were generated, packed, and drawn by nothing for two sessions -- sixteen rows and the biggest single group in the ledger's open queue. `cave._webNote` had already worked out why: they are corner-anchored, they are not overhead art, and hung in the air they read as floating rags. A web belongs ON something, and the breakable-variant list is where that is said.",
+    "_howNote": "Nothing is resampled. The webs are 64x64 and these are 32x45 and 48x48; scaling a web down to fit is the obvious move and the one this repo does not make, for the same reason a carried weapon is never enlarged past its source. A RECTANGLE of the web is cut at 1:1 and laid in a corner, which is also the truer picture -- what belongs on a crate is the corner of a web, not a whole web shrunk to crate size. The DARK webs were used, at 0.85 alpha: `cave.web1` and `cave.web5` are dense pale sheets drawn as subjects in their own right, and at drum scale they composite as a white patch pasted on rather than as a web over something.",
+    "_base": "assets/pixellab/webbed/",
+    "files": {
+      "prop.oilDrumWebbed": "oil_drum_webbed.png",
+      "base.cratePalletWebbed": "cratePallet_webbed.png"
+    }
+  },
   "ranch": {
     "_note": "The generated ranch: buildings, vehicles, fencing and feed. These replace the LimeZu `scene.*` equivalents, which are the last purchased art in the title screen.",
     "_whyThisExists": "Claimed in PixelLab four sessions ago and never DOWNLOADED, so they were invisible to anything reading the atlas -- and a scene can only draw atlas keys. Claude Design duly built a title screen on `scene.barn`, `scene.house` and `scene.silo`, because those were the only barn, house and silo that existed as far as the repo was concerned. The art had been bought the whole time. Claiming is not packing.",
@@ -1780,6 +1782,7 @@
     "_verticalFenceNote": "THERE IS NO RECEDING FENCE SPRITE AND THERE IS NOT GOING TO BE. Three attempts at 'a fence running away from the viewer', in three different phrasings -- as a viewpoint, as a perspective, and as a pure shape ('three posts stacked with two rails between') -- all returned a single tall post. It is the same failure as 'seen from below' on the ceiling pieces: the generator draws OBJECTS and does not take instruction about the angle you are looking at one from.\nThe answer is compositional and it is what pixel games actually do: build a vertical pen side by REPEATING `ranch.fenceCornerPost` down the screen at a fixed spacing, with the gap between posts reading as the rail at this scale -- or drop `ranch.fenceRail` between each pair if the run is close to camera. `ranch.fenceRun` stays the horizontal answer."
   },
   "base": {
+    "_doorNote": "SIX blast doors were generated and TWO are packed: `base.blastDoor0` is the level exit and `base.blastDoor5` is the lab scene's wall. 1-4 were dropped from this manifest on 2026-09-04. They are four more rolls of the same door, and a second heavy sealed door in the same wall does not read as decoration -- it reads as a SECOND EXIT, which is the one lie a level-exit sprite must not tell. The rolls stay on the account, tagged retired with that reason; nothing here is deleted from PixelLab.",
     "_note": "The military base under the farm -- see docs/SUBTERRANEAN.md. Blast doors with stencilled SECTOR numbering, lift cage gates with floor indicator dials, and specimen containment tanks.",
     "_whyItLooksDifferent": "Deliberately the opposite visual language to the farm on every axis: cold not warm, metal not wood, rectilinear not organic, lit by fixtures not by the sun. That contrast IS the monotony break -- a player dropping from the field into the base should feel the change before reading a single label.",
     "_viewNote": "Drawn front-on rather than top-down, and that is correct rather than a mistake: these mount on WALLS, and a wall in a top-down game is seen from the front. The floor pieces -- grating, pipe runs, concrete -- want top-down and are not generated yet.",
@@ -1787,10 +1790,6 @@
     "noTrim": true,
     "files": {
       "base.blastDoor0": "blastDoor0.png",
-      "base.blastDoor1": "blastDoor1.png",
-      "base.blastDoor2": "blastDoor2.png",
-      "base.blastDoor3": "blastDoor3.png",
-      "base.blastDoor4": "blastDoor4.png",
       "base.blastDoor5": "blastDoor5.png",
       "base.lift0": "lift0.png",
       "base.lift1": "lift1.png",
