@@ -12,7 +12,7 @@
 import { writeFileSync } from 'node:fs'
 import { WorldPainter, encodePng } from './draw-world.ts'
 import { World } from '../src/sim/world.ts'
-import { OfferPool, type Offer } from '../src/sim/offers.ts'
+import { OfferPool, applySwap, type Offer } from '../src/sim/offers.ts'
 import { TUNING } from '../src/content/index.ts'
 
 const STEP = 1 / 60
@@ -57,6 +57,7 @@ for (let i = 0; i < ticks; i++) {
     const o = pickSmart(offers.draw(world.player, 4, world.elapsed, world.player.stats.luck, 'levelup'))
     if (o) {
       if (o.kind === 'weapon') world.player.addWeapon(o.id, o.tierJump)
+      else if (o.kind === 'swap') applySwap(world.player, world.rng)
       else { world.player.addItem(o.id, o.boosted); world.refreshSpecialItems() }
     }
     pending--

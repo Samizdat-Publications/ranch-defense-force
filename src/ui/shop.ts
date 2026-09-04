@@ -183,7 +183,8 @@ export class ShopScreen {
       const held = this.locked[i] !== null
 
       const c = card({
-        kind: offer.kind,
+        // §5: a weapon-upgrade card names its weapon; `swap` shows plainly.
+        kind: offer.band ?? offer.kind,
         name: offer.name,
         blurb: offer.detail,
         sprite: offer.sprite,

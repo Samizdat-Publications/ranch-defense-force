@@ -26,7 +26,7 @@
  * "how thin is the pool" question is the one the roster has to answer.
  */
 import { World } from '../src/sim/world.ts'
-import { OfferPool, type Offer } from '../src/sim/offers.ts'
+import { OfferPool, applySwap, type Offer } from '../src/sim/offers.ts'
 import { CLASSES, ITEMS, WAVES, WEAPONS } from '../src/content/index.ts'
 import type { Player } from '../src/sim/player.ts'
 
@@ -61,6 +61,10 @@ type Category = 'stat' | 'merge' | 'newWeapon' | 'special'
  */
 function categorise(o: Offer): Category {
   if (o.kind === 'weapon') return o.mergesTo === null ? 'newWeapon' : 'merge'
+  // §7.5: the `swap` offer trades a weapon for a weapon, so it buckets with
+  // `newWeapon` rather than falling through to the item sniff below, which
+  // would misread it as a `stat` card (`ITEMS['swap']` does not exist).
+  if (o.kind === 'swap') return 'newWeapon'
   /*
      §7.1 made the category a DECLARED field, so the instrument reads it rather
      than sniffing for `special` / `element` / `toolUpgrade`.
@@ -91,13 +95,18 @@ function categorise(o: Offer): Category {
  */
 function candidateIds(player: Player, mode: 'levelup' | 'shop'): string[] {
   const out: string[] = []
+  let anyUnownedWhileFull = false
   for (const id of Object.keys(WEAPONS)) {
     if (id.startsWith('_')) continue
     const owned = player.hasWeapon(id)
     if (owned && player.weaponAtMaxTier(id)) continue
-    if (!owned && player.slotsFull) continue
+    if (!owned && player.slotsFull) { anyUnownedWhileFull = true; continue }
     out.push(id)
   }
+  // §7.5: the shop's `swap` offer, mirroring `OfferPool.draw` — one
+  // candidate, shop-only, once the loadout is full and something is left
+  // unowned.
+  if (mode === 'shop' && anyUnownedWhileFull) out.push('swap')
   for (const id of Object.keys(ITEMS)) {
     if (id.startsWith('_')) continue
     const def = ITEMS[id] as Record<string, unknown>
@@ -194,6 +203,7 @@ function simulate(seed: number, classId: string): RunRecord {
 
   const take = (o: Offer): void => {
     if (o.kind === 'weapon') world.player.addWeapon(o.id, o.tierJump)
+    else if (o.kind === 'swap') applySwap(world.player, world.rng)
     else { world.player.addItem(o.id, o.boosted); world.refreshSpecialItems() }
   }
 

@@ -32,13 +32,21 @@
  * moved. Everything after it has.
  */
 import {
-  ITEMS, RARITY, TUNING, WEAPONS, weaponCardSprite,
+  ITEMS, RARITY, TUNING, WEAPON_IDS, WEAPONS, weaponCardSprite,
   type ItemDef, type StatMods, type WeaponDef,
 } from '../content'
 import type { Rng } from '../core/rng'
 import type { Player } from './player'
 
-export type OfferKind = 'weapon' | 'item'
+/**
+ * `'swap'` is §7.5's answer to a full loadout: shop-only, and it trades the
+ * player's own lowest-tier weapon for one drawn fresh rather than naming a
+ * target when the card is dealt. Naming one at draw time would mean building
+ * the candidate list — otherwise RNG-free, see `draw()` — had to spend a
+ * `next()` whether or not the card is ever taken; picking it at `applySwap`
+ * time means the cost is paid only when the trade actually happens.
+ */
+export type OfferKind = 'weapon' | 'item' | 'swap'
 /**
  * Five tiers, rarest last. Every offer carries one — there is no unrated card.
  *
@@ -139,6 +147,13 @@ export interface Offer {
   category: OfferCategory
   /** Synergy tags (§4). Drives the tag bias; no RNG is consumed by it. */
   tags: readonly string[]
+  /**
+   * §5's kind band, when it is not the offer's own `kind`: a weapon-upgrade
+   * card names the weapon it belongs to (`ItemDef.requiresWeapon` drives it —
+   * batch 4's class cards will do the same off `requiresClass`). Undefined
+   * means the UI falls back to `kind`, which is every card before this batch.
+   */
+  band?: string
   /** Stat changes, for the delta line. Empty for behavioural weapons. */
   mods: StatMods
   /** Set when taking this would merge an owned weapon up a tier. */
@@ -220,14 +235,26 @@ export class OfferPool {
     void now
     const candidates: Offer[] = []
 
+    let anyUnownedWhileFull = false
     for (const [id, def] of Object.entries(WEAPONS) as [string, WeaponDef][]) {
       if (!this.isAvailable(id)) continue
       const owned = player.hasWeapon(id)
       // A weapon you can neither take nor merge is not an offer.
       if (owned && player.weaponAtMaxTier(id)) continue
-      if (!owned && player.slotsFull) continue
+      if (!owned && player.slotsFull) { anyUnownedWhileFull = true; continue }
       candidates.push(this.weaponOffer(id, def, player))
     }
+    /*
+       §7.5: slots full. New-weapon offers are still filtered out above — the
+       six owned weapons instead contribute up to 18 weapon-upgrade cards
+       (via `itemOffer`'s `requiresWeapon` gate below), which is the bigger
+       pool the doc measures against the six merges this replaces. `swap` is
+       the shop's own recourse for a run that filled its slots with the wrong
+       thing: one candidate, not one per unowned weapon, so it competes for a
+       slot rather than crowding the board the way six new-weapon offers used
+       to before `slotsFull` existed at all.
+    */
+    if (mode === 'shop' && anyUnownedWhileFull) candidates.push(this.swapOffer(player))
 
     for (const [id, def] of Object.entries(ITEMS) as [string, ItemDef][]) {
       if (!this.isAvailable(id)) continue
@@ -461,28 +488,42 @@ export class OfferPool {
       if (boost && picked.length > before) picked[before] = boosted(picked[before])
     }
     /*
-       Slot B — gated, and until batch 2 lands there are almost none.
+       Slot B — "the card that exists because of what you are already
+       holding". Batch 1 read that as gated-or-else-a-weapon, because there
+       were no gated cards yet. Batch 2 tried "gated, full stop" — SS7.2's own
+       words, "must be a weaponMod or class card if any is available" — and
+       `tests/run.test.ts`'s hand/kite acceptance run (24 seeds, pickSmart —
+       merge what it owns, then defence, then whatever is first) found the
+       same failure batch 1's comment already described, in a new shape: 12+
+       of 24 clearing fell to 4, dying by mid-run with weapons stuck at tier
+       1-2 across the board instead of the tier 4 a clearing run reaches.
 
-       §7.2's fallback chain starts at `behavioural`, which is right for the
-       full roster and wrong here: slot C's quota is ALSO behavioural, so with
-       no gated cards to draw, B and C both fill with the same kind of card and
-       three of the four slots end up behavioural. That is the measured
-       40%-of-boards-are-four-of-a-kind shape reproduced in a different colour,
-       and the balance harness said so in as many words — a bot that had been
-       clearing 79% of hand/brawler runs fell to 13%, dying on wave 6 with a
-       tier-1 loadout, because the board had stopped offering it weapons.
+       The cause is the same mechanism as before, not a new one. Once the
+       Pitchfork's first upgrade exists — level 1, always — GATED never comes
+       back empty, so the "or a weapon" fallback that used to fill slot B
+       every time now never fires AT ALL. A merge lost the one slot the
+       redesign had quietly been guaranteeing it (slot A only offers
+       uncommon+, and a merge's rarity qualifies there too, but that is one
+       slot doing the work two used to). `pickSmart` is exactly the build
+       that guarantee was propping up, and the acceptance test flies it.
 
-       So slot B takes a WEAPON card as its second choice: a merge, or one it
-       does not own. A gated card is a card about a weapon you already carry,
-       and until those exist the closest thing to one is the weapon itself.
-       This is the slot the roster means to be "the card that exists because of
-       what you are already holding", and it keeps that meaning either way.
+       So a weapon card is back in the SAME quota rather than a fallback
+       behind it: gated and a merge (or an unowned weapon) compete on ONE
+       weighted draw, not gated-else-weapon in strict priority. That alone
+       recovered 4/24 -> 7/24 — real, not enough. `weaponOfferWeight` is what
+       closed the rest: it had been 1.6 since batch 1, tuned against a
+       forty-item roster with no gated competition for this slot; batch 2
+       both adds another ~85 candidates AND gives slot B's OWN quota a real
+       alternative for the first time, so a weapon offer needs to outweigh
+       many more candidates than it did to win the same fraction of draws.
+       Re-measured empirically against this exact test rather than assumed:
+       1.6-4 still failed (4-8/24), 6 passed all eight `run.test.ts` cases
+       including the six-class parity and both crossover tests, 8-15 were no
+       better and sometimes worse (noise at n=24, not a further trend) — see
+       `_weaponWeightNote`.
     */
     if (want > 1) {
-      fill(
-        (o) => GATED.has(o.category),
-        (o) => o.category === 'merge' || o.category === 'newWeapon',
-      )
+      fill((o) => GATED.has(o.category) || o.category === 'merge' || o.category === 'newWeapon')
     }
     if (want > 2) fill((o) => BEHAVIOURAL.has(o.category))
     /*
@@ -599,18 +640,35 @@ ${stats}` : stats
       ?? (def.special ? 'rare' : Object.keys(mods).length > 1 ? 'uncommon' : 'common')
     const max = typeof def.maxStacks === 'number' ? def.maxStacks : 0
     const n = player.itemCount(id) + 1
+
+    /*
+       §5/§10: a weapon-upgrade card names its weapon in the band and shows
+       the weapon's OWN tier art rather than anything drawn for the card —
+       "zero new art" for all 48+3 of them. `requiresWeapon` is the single
+       field that drives both, so a card that gates on a weapon always reads
+       as belonging to it without a second field to keep in sync.
+    */
+    const requiresWeapon = typeof def.requiresWeapon === 'string' ? def.requiresWeapon : undefined
+    const ownedTier = requiresWeapon
+      ? player.weapons.find((w) => w.id === requiresWeapon)?.tier ?? 1
+      : 1
+    const sprite = typeof def.cardSprite === 'string'
+      ? def.cardSprite
+      : requiresWeapon
+        ? weaponCardSprite(requiresWeapon, ownedTier) || undefined
+        : undefined
+
     return {
       kind: 'item',
       id,
       name: def.name,
       detail: describeItem(def, n),
-      // Elements and tool upgrades have real art; ordinary stat items do not,
-      // and a card without a sprite simply shows no sprite.
-      sprite: typeof def.cardSprite === 'string' ? def.cardSprite : undefined,
+      sprite,
       cost: def.cost,
       rarity,
       category: categoryOf(def),
       tags: Array.isArray(def.tags) ? (def.tags as string[]) : EMPTY_TAGS,
+      band: requiresWeapon ? WEAPONS[requiresWeapon]?.name : undefined,
       mods,
       mergesTo: null,
       stacks: max > 0 ? { n, max } : null,
@@ -618,7 +676,69 @@ ${stats}` : stats
       tierJump: 1,
     }
   }
+
+  /**
+   * §7.5: the `swap` offer. Shop-only, `rare`, and it does not name its
+   * target until it is bought (see the `OfferKind` doc comment) — the card
+   * says what the trade IS, and `applySwap` resolves WHICH weapon it hands
+   * back, weighted by rarity exactly as a fresh pickup would be.
+   *
+   * Its art borrows the weapon that is about to leave, which is the half of
+   * the trade that is already known: `player.lowestTierWeaponId()` is never
+   * null here, because a `slotsFull` player owns six.
+   */
+  private swapOffer(player: Player): Offer {
+    const leavingId = player.lowestTierWeaponId()
+    const leaving = leavingId ? WEAPONS[leavingId] as WeaponDef | undefined : undefined
+    const leavingTier = leavingId ? player.weapons.find((w) => w.id === leavingId)?.tier ?? 1 : 1
+    return {
+      kind: 'swap',
+      id: 'swap',
+      name: 'Trade-In',
+      detail: leaving
+        ? `Trade your ${leaving.name} (tier ${leavingTier}) for a weapon you do not own, at tier 1.`
+        : 'Trade your lowest-tier weapon for one you do not own, at tier 1.',
+      sprite: leavingId ? weaponCardSprite(leavingId, leavingTier) || undefined : undefined,
+      cost: SWAP_COST,
+      rarity: 'rare',
+      category: 'newWeapon',
+      tags: EMPTY_TAGS,
+      mods: {},
+      mergesTo: null,
+      stacks: null,
+      boosted: false,
+      tierJump: 1,
+    }
+  }
 }
+
+/**
+ * §7.5: apply a bought `swap` offer. Picks the weapon that comes BACK —
+ * weighted by rarity, off the sim's own stream, exactly as a fresh pickup's
+ * rarity would be — then does the trade: the lowest-tier weapon leaves,
+ * the new one arrives at tier 1.
+ *
+ * Exported rather than inlined at each of the offer's six call sites
+ * (`main.ts` and five tools that all apply an `Offer` the same way): a
+ * `kind: 'swap'` is otherwise a card-shaped `if` repeated six times, and one
+ * of those six drifting from the other five is exactly the bug class this
+ * project keeps finding in its own art manifest.
+ */
+export function applySwap(player: Player, rng: Rng): void {
+  const unowned = WEAPON_IDS.filter((id) => !player.hasWeapon(id))
+  if (unowned.length === 0) return
+  const weights = unowned.map((id) => {
+    const w = WEAPONS[id] as WeaponDef | undefined
+    return rarityWeight((w?.rarity as Rarity | undefined) ?? 'common', player.stats.luck)
+  })
+  const picked = unowned[rng.weightedIndex(weights)]
+  const leaving = player.lowestTierWeaponId()
+  if (leaving) player.removeWeapon(leaving)
+  player.addWeapon(picked, 1)
+}
+
+/** §7.5/§7.7: the swap's feed price. Content, beside `weaponOfferWeight`. */
+const SWAP_COST = (TUNING as unknown as { offers: { swapCost: number } }).offers.swapCost
 
 const EMPTY_TAGS: readonly string[] = []
 

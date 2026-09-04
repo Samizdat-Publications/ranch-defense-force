@@ -15,7 +15,7 @@ import {
   type Particle, type Pickup, type Projectile,
   type Prop,
 } from './entities'
-import { Player } from './player'
+import { Player, hasMod } from './player'
 import { tierHpMultiplier } from './meta'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar, waveHpScalar } from './formulas'
@@ -355,6 +355,12 @@ export class World {
 
   /** Spent when the wave's first hit lands; restored on wave complete. */
   private shieldReady = false
+  /** Blood Up (Barn Dog epic): kills THIS wave, capped by `bloodUpMaxPct`
+   *  divided by `bloodUpPerKillPct`, reset at every wave boundary below. */
+  private bloodUpKillsThisWave = 0
+  /** Public read of the above — `minionHunt` (a different module) reads it
+   *  the same way `orbit` already reads `scytheSecondBlade`. */
+  get bloodUpKills(): number { return this.bloodUpKillsThisWave }
   /** Seconds until the gas trail drops its next puddle. */
   private trailAcc = 0
   /** Guard so a chained kill cannot chain again. */
@@ -975,6 +981,7 @@ export class World {
       this.wavesCleared = wasWave
       // One save per wave, not one per run.
       if (this.specialItems.firstHitShield > 0) this.shieldReady = true
+      this.bloodUpKillsThisWave = 0
       // Wave boundaries sweep up everything on the ground (§11).
       this.magnetiseAll()
       const next = wasWave + 1
@@ -1057,6 +1064,10 @@ export class World {
         if (hz.kind === 'lure' && d > 4) {
           e.vx += ((hz.x - e.x) / d) * hz.pullForce
           e.vy += ((hz.y - e.y) / d) * hz.pullForce
+          // Spoiled Feed: whatever this lure is pulling takes more from
+          // everything. 0 for every lure but the Bait Drum's own with the
+          // card taken.
+          if (hz.markPct > 0) this.applyMark(e, hz.markPct, hz.markSeconds)
         }
       }
       const scale = 1 - slow
@@ -1175,7 +1186,18 @@ export class World {
         continue
       }
 
-      slot.cooldownLeft -= dt * p.stats.attackSpeedMultiplier
+      /*
+         Batch 2, Post Hole Auger: Two Speed is a per-weapon attack-speed
+         upgrade, and attack speed is applied as a DEPLETION RATE on
+         `cooldownLeft` rather than a scale on the refill (see below) — so
+         this weapon's own rate gets its own extra multiplier rather than
+         touching the player-wide `attackSpeedMultiplier`. 1 for every other
+         weapon and every run that has not taken the card.
+      */
+      const twoSpeedMul = hasMod(slot, 'twoSpeed')
+        ? 1 + (typeof def.twoSpeedAttackSpeedPct === 'number' ? def.twoSpeedAttackSpeedPct : 40) / 100
+        : 1
+      slot.cooldownLeft -= dt * p.stats.attackSpeedMultiplier * twoSpeedMul
       if (slot.cooldownLeft <= 0) {
         const fire = FIRE[def.behaviour]
         const before = this.projectiles.live
@@ -1234,6 +1256,70 @@ export class World {
           this.playFx('explosion', p.x, p.y, 0, p.t0 / 60)
           // T3 "leaves a slippery rind": t1 carries the radius, 0 when untiered.
           if (p.t1 > 0) this.leaveRind(p.x, p.y, p.t1, p.weaponId)
+          // Batch 2, Grenade Launcher: Willie Pete and Rifled Cup both fire on
+          // this same detonation. Neither is tier-gated, so both are read off
+          // the slot's own mods rather than `p.t1`/`p.t0`.
+          const glDef = WEAPONS[p.weaponId]
+          const glSlot = this.player.weapons.find((w) => w.id === p.weaponId)
+          if (glSlot && hasMod(glSlot, 'williePete')) {
+            const radius = typeof glDef?.williePeteRadius === 'number' ? glDef.williePeteRadius : 60
+            const seconds = typeof glDef?.williePeteSeconds === 'number' ? glDef.williePeteSeconds : 3
+            const dps = typeof glDef?.williePeteDps === 'number' ? glDef.williePeteDps : 12
+            const h = this.spawnHazard()
+            if (h) {
+              h.kind = 'damage'
+              h.x = p.x
+              h.y = p.y
+              h.radius = radius
+              h.growth = 0
+              h.maxLife = seconds
+              h.life = seconds
+              h.dps = dps
+              h.playerDps = 0
+              h.slowPct = 0
+              h.playerSlowPct = 0
+              h.pullForce = 0
+            }
+          }
+          // Rifled Cup: relaunches once, at 60%, toward whatever is nearest
+          // the blast. `p.ricochets` is otherwise unused by this behaviour —
+          // set on the RELAUNCHED shell so it cannot bounce a second time.
+          if (glSlot && hasMod(glSlot, 'rifledCup') && p.ricochets === 0) {
+            const rifledTarget = this.findNearestEnemy(p.x, p.y, 260)
+            if (rifledTarget >= 0) {
+              const te = this.enemies.items[rifledTarget]
+              const s2 = this.spawnProjectile()
+              if (s2) {
+                const mul = typeof glDef?.rifledCupMul === 'number' ? glDef.rifledCupMul : 0.6
+                const d = Math.hypot(te.x - p.x, te.y - p.y) || 1
+                const flight = Math.min(0.6, d / 420)
+                s2.weaponId = p.weaponId
+                s2.type = 'ranged'
+                s2.behaviour = 'arcLob'
+                s2.attached = false
+                s2.x = p.x
+                s2.y = p.y
+                s2.px = s2.x
+                s2.py = s2.y
+                s2.vx = ((te.x - p.x) / d) * (d / flight)
+                s2.vy = ((te.y - p.y) / d) * (d / flight)
+                s2.radius = 7
+                s2.damage = p.damage * mul
+                s2.life = flight
+                s2.pierce = -1
+                s2.t0 = p.t0
+                s2.t1 = p.t1
+                s2.knockback = 60
+                s2.hitStamp = -1
+                s2.ricochets = 1 // spent: this one detonates without bouncing again
+              }
+            }
+          }
+        }
+        // Batch 2, Crow Bell: Tolls Twice's delayed second peal.
+        if (p.behaviour === 'tollsTwice') {
+          this.areaDamage(p.x, p.y, p.t0, p.damage, 'melee', 60)
+          this.playFx('shockwave', p.x, p.y, 0, p.t0 / 55, 0, 0, true)
         }
         this.projectiles.free(i)
         continue
@@ -1302,7 +1388,16 @@ export class World {
          Turning `homingRate` degrees a second is the same promise whatever it
          is bolted to, and it is the promise the card prints.
       */
-      if (this.specialItems.homingRate > 0 && p.type === 'ranged' && !p.attached) {
+      /*
+         Batch 2: Match Barrel rides the same steering with its OWN rate,
+         set once at spawn on the round itself (`p.homingRate`) rather than on
+         `specialItems` — Burr Load's rate is player-wide (every ranged shot),
+         Match Barrel's is one weapon's own round. The higher of the two wins
+         rather than summing them, which keeps this arithmetically identical
+         to the line it replaces for every run that owns neither or only one.
+      */
+      const homingRate = Math.max(this.specialItems.homingRate, p.homingRate)
+      if (homingRate > 0 && p.type === 'ranged' && !p.attached) {
         const target = this.findNearestEnemy(p.x, p.y, 420)
         if (target >= 0) {
           const e = this.enemies.items[target]
@@ -1311,7 +1406,7 @@ export class World {
           let d = want - have
           while (d > Math.PI) d -= Math.PI * 2
           while (d < -Math.PI) d += Math.PI * 2
-          const step = (this.specialItems.homingRate * Math.PI) / 180 * dt
+          const step = (homingRate * Math.PI) / 180 * dt
           const a = have + Math.max(-step, Math.min(step, d))
           const speed = Math.hypot(p.vx, p.vy)
           p.vx = Math.cos(a) * speed
@@ -1364,13 +1459,25 @@ export class World {
    */
   private splitShards(p: Projectile, count: number, bounces = 0): void {
     const shardDef = WEAPONS[p.weaponId]
-    const mul = typeof shardDef?.shardDamageMultiplier === 'number'
+    // Batch 2, Drum Gun: Frangible adds shards and hits harder per shard;
+    // Live Wire gives every shard its own one-hop chain (H1, per-projectile —
+    // see `applyOnHitRiders`). Both read off the SLOT rather than the def,
+    // because they are cards taken, not numbers a tier grants.
+    const slot = this.player.weapons.find((w) => w.id === p.weaponId)
+    const frangible = slot ? hasMod(slot, 'frangible') : false
+    const liveWire = slot ? hasMod(slot, 'liveWire') : false
+    const bonusShards = frangible && typeof shardDef?.frangibleBonusShards === 'number'
+      ? shardDef.frangibleBonusShards : frangible ? 2 : 0
+    const total = count + bonusShards
+    const frangibleMul = frangible && typeof shardDef?.frangibleDamageMul === 'number'
+      ? shardDef.frangibleDamageMul : frangible ? 1.25 : 1
+    const mul = (typeof shardDef?.shardDamageMultiplier === 'number'
       ? shardDef.shardDamageMultiplier
-      : 0.55
-    for (let i = 0; i < count; i++) {
+      : 0.55) * frangibleMul
+    for (let i = 0; i < total; i++) {
       const s = this.spawnProjectile()
       if (!s) return
-      const a = (i / count) * Math.PI * 2
+      const a = (i / total) * Math.PI * 2
       s.weaponId = p.weaponId
       s.type = 'ranged'
       s.behaviour = bounces > 0 ? 'bounceSplit' : 'stream'
@@ -1389,6 +1496,13 @@ export class World {
       s.hitStamp = -1
       s.t0 = bounces
       s.t1 = 0 // a bouncing shard splits into nothing: no recursion
+      if (liveWire) {
+        s.chainCount = 1
+        s.chainRange = typeof shardDef?.liveWireChainRange === 'number'
+          ? shardDef.liveWireChainRange : 130
+        s.chainMul = typeof shardDef?.liveWireChainMul === 'number'
+          ? shardDef.liveWireChainMul : 0.4
+      }
     }
   }
 
@@ -1518,6 +1632,12 @@ export class World {
     }
 
     const isCrit = this.rng.chance(this.player.stats.critChance)
+    // Batch 2: which weapon actually landed this, for the one card that asks
+    // ("Straw Chopper: its kills leave..."). Chain hits, hazard ticks and
+    // corpse splits go through `damageEnemy` directly rather than here, so
+    // this is deliberately "the last WEAPON that hit it", not "the last
+    // damage of any kind" — which is exactly what a per-weapon card wants.
+    e.lastHitWeaponId = p.weaponId
 
     // Statuses land BEFORE the damage, so a killing blow still leaves them on
     // the corpse. Applying them after meant a chili shot that killed outright
@@ -1576,7 +1696,10 @@ export class World {
     this.damageEnemy(enemyIndex, p.damage, type, isCrit)
     if (p.burnDps > 0) this.igniteSlicksNear(p.x, p.y)
     // H1/H2/H5/H6 — one call, one cached boolean, nothing allocated (§8).
-    if (sp.anyOnHitRider) this.applyOnHitRiders(enemyIndex, p)
+    // Batch 2's Live Wire rides the same call site with its own per-shard
+    // chain (see `applyOnHitRiders`), so the gate also opens on THAT — still
+    // one compare for a run that owns neither.
+    if (sp.anyOnHitRider || p.chainCount > 0) this.applyOnHitRiders(enemyIndex, p)
 
     if (!e.active || e.dying > 0) return
     if (p.knockback > 0 && !e.knockbackImmune) {
@@ -2710,6 +2833,13 @@ export class World {
     p.ricochets = 0
     p.t0 = 0
     p.t1 = 0
+    // Batch 2, H1/H4 per-projectile overrides (see entities.ts) — zero unless
+    // the behaviour that just spawned this round sets one.
+    p.homingRate = 0
+    p.chainCount = 0
+    p.chainRange = 0
+    p.chainMul = 0
+    p.loadDurationMul = 1
     return p
   }
 
@@ -2727,13 +2857,16 @@ export class World {
     if (el && this.player.element !== 'none') {
       for (let i = fromIndex; i < this.projectiles.live; i++) {
         const p = this.projectiles.items[i]
-        if (el.burnDps) { p.burnDps = Math.max(p.burnDps, el.burnDps); p.burnSeconds = Math.max(p.burnSeconds, el.burnSeconds ?? 0) }
-        if (el.bleedDps) { p.bleedDps = Math.max(p.bleedDps, el.bleedDps); p.bleedSeconds = Math.max(p.bleedSeconds, el.bleedSeconds ?? 0) }
-        if (el.slowOnHit) { p.slowOnHit = Math.max(p.slowOnHit, el.slowOnHit); p.slowSeconds = Math.max(p.slowSeconds, el.slowSeconds ?? 0) }
+        // Backpack Tank: this ONE shot's load lasts longer. 1 for every shot
+        // that is not the Chem Sprayer's jet with the card taken.
+        const durMul = p.loadDurationMul
+        if (el.burnDps) { p.burnDps = Math.max(p.burnDps, el.burnDps); p.burnSeconds = Math.max(p.burnSeconds, (el.burnSeconds ?? 0) * durMul) }
+        if (el.bleedDps) { p.bleedDps = Math.max(p.bleedDps, el.bleedDps); p.bleedSeconds = Math.max(p.bleedSeconds, (el.bleedSeconds ?? 0) * durMul) }
+        if (el.slowOnHit) { p.slowOnHit = Math.max(p.slowOnHit, el.slowOnHit); p.slowSeconds = Math.max(p.slowSeconds, (el.slowSeconds ?? 0) * durMul) }
         // Rock Salt and Quicklime carry no damage of their own: they open the
         // target up. Same payload field the Harpoon's T4 rider already uses.
         const mark = el.markPct as number | undefined
-        if (mark) { p.markPct = Math.max(p.markPct, mark); p.markSeconds = Math.max(p.markSeconds, (el.markSeconds as number) ?? 0) }
+        if (mark) { p.markPct = Math.max(p.markPct, mark); p.markSeconds = Math.max(p.markSeconds, (el.markSeconds as number ?? 0) * durMul) }
         // Font Water buys space instead of doing damage over time.
         const kb = el.knockback as number | undefined
         if (kb) p.knockback = Math.max(p.knockback, kb)
@@ -2775,19 +2908,26 @@ export class World {
     const ox = e.x
     const oy = e.y
 
-    // H1 — Fence Charge arcs to its neighbours.
-    if (s.chainCount > 0 && p.type !== 'melee' && p.type !== 'orbit') {
+    // H1 — Fence Charge arcs to its neighbours, player-wide. Batch 2's Live
+    // Wire is the same arc scoped to one weapon's own shard, carried on the
+    // projectile rather than `specialItems` (see entities.ts) — the higher of
+    // the two counts and ranges wins rather than summing, so a run with both
+    // gets the bigger chain rather than two separate ones stacking.
+    const chainCount = Math.max(s.chainCount, p.chainCount)
+    if (chainCount > 0 && p.type !== 'melee' && p.type !== 'orbit') {
+      const chainRange = Math.max(s.chainRange, p.chainRange)
+      const chainMul = p.chainCount > s.chainCount ? p.chainMul : s.chainMul
       this.chaining = true
-      let left = s.chainCount
-      const n = this.grid.query(ox, oy, s.chainRange, this.queryOut)
+      let left = chainCount
+      const n = this.grid.query(ox, oy, chainRange, this.queryOut)
       for (let k = 0; k < n && left > 0; k++) {
         const j = this.queryOut[k]
         if (j >= this.enemies.live || j === enemyIndex) continue
         const other = this.enemies.items[j]
         if (other.dying > 0) continue
-        if (Math.hypot(other.x - ox, other.y - oy) > s.chainRange) continue
+        if (Math.hypot(other.x - ox, other.y - oy) > chainRange) continue
         left--
-        this.damageEnemy(j, p.damage * s.chainMul, 'ranged', false)
+        this.damageEnemy(j, p.damage * chainMul, 'ranged', false)
       }
       this.playFx('shock', ox, oy)
       this.chaining = false
@@ -2962,6 +3102,8 @@ export class World {
     h.slowPct = 0
     h.playerSlowPct = 0
     h.pullForce = 0
+    h.markPct = 0
+    h.markSeconds = 0
     h.sprite = ''
     return h
   }
@@ -3087,6 +3229,12 @@ export class World {
     this.player.onKill(e.x, e.y)
     const def = ENEMIES[e.typeId]
 
+    // Blood Up (Barn Dog epic): every kill this wave counts, regardless of
+    // what killed it — the dog is faster because the FIELD is bloody, not
+    // because it personally made the kill.
+    const bdSlot = this.player.weapons.find((w) => w.id === 'barnDog')
+    if (bdSlot && hasMod(bdSlot, 'bloodUp')) this.bloodUpKillsThisWave++
+
     // The Reaper's Own: "what it kills, it keeps cutting." A melee kill swings
     // again through the same space for a fraction. Guarded by `chaining` too,
     // so a re-swing kill cannot re-swing — the same runaway the chain guard
@@ -3155,6 +3303,23 @@ export class World {
           b1.killPoolKind === '' ? 'acid' : b1.killPoolKind, e.x, e.y,
           b1.killPoolRadius, b1.killPoolSeconds, b1.killPoolDps, 0,
         )
+      }
+
+      // Batch 2, Straw Chopper: the Combine Head's OWN kills leave stubble
+      // burning behind them. Gated on `lastHitWeaponId` rather than a
+      // player-wide flag — a different weapon's kill must not trigger it.
+      if (e.lastHitWeaponId === 'combineHead') {
+        const chSlot = this.player.weapons.find((w) => w.id === 'combineHead')
+        if (chSlot && hasMod(chSlot, 'strawChopper')) {
+          const chDef = WEAPONS.combineHead
+          this.dropRiderHazard(
+            'damage', e.x, e.y,
+            typeof chDef?.strawChopperRadius === 'number' ? chDef.strawChopperRadius : 40,
+            typeof chDef?.strawChopperSeconds === 'number' ? chDef.strawChopperSeconds : 3,
+            typeof chDef?.strawChopperDps === 'number' ? chDef.strawChopperDps : 10,
+            0,
+          )
+        }
       }
 
       this.chaining = false
@@ -3385,6 +3550,10 @@ export class World {
   areaDamage(
     x: number, y: number, radius: number, amount: number,
     type: 'melee' | 'ranged', knockback: number, stun = 0,
+    // Batch 2, Cracked Bell: an AoE that also slows. Defaulted to 0 so every
+    // existing call site — there were none that needed it before this card —
+    // is arithmetically unchanged.
+    slowPct = 0, slowSeconds = 0,
   ): void {
     const n = this.grid.query(x, y, radius, this.queryOut)
     for (let k = 0; k < n; k++) {
@@ -3403,6 +3572,10 @@ export class World {
         e.ky += (dy / d) * knockback
       }
       if (stun > 0 && e.active) e.stun = Math.max(e.stun, stun * this.specialItems.stunMultiplier)
+      if (slowPct > 0 && e.active) {
+        if (slowPct > e.slowPct) e.slowPct = slowPct
+        if (slowSeconds > e.slowLife) e.slowLife = slowSeconds
+      }
     }
   }
 

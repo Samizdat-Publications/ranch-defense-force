@@ -13,7 +13,7 @@ import { Input } from './core/input'
 import { Audio, type SfxName, type MusicLayer } from './core/audio'
 import { Rng, seedFromString } from './core/rng'
 import { World } from './sim/world'
-import { OfferPool, type Offer } from './sim/offers'
+import { OfferPool, applySwap, type Offer } from './sim/offers'
 import { Renderer } from './render/renderer'
 import { Atlas } from './core/atlas'
 import { Hud } from './ui/hud'
@@ -233,6 +233,7 @@ function applyOffer(offer: Offer): void {
   if (!world) return
   audio.play('purchase')
   if (offer.kind === 'weapon') world.player.addWeapon(offer.id, offer.tierJump)
+  else if (offer.kind === 'swap') applySwap(world.player, world.rng)
   else {
     world.player.addItem(offer.id, offer.boosted)
     world.refreshSpecialItems()
