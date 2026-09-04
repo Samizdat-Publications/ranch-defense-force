@@ -16,7 +16,7 @@
 import type { World } from '../sim/world'
 import { Camera } from './camera'
 import {
-  CARRY, ENEMIES, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
+  CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
   carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, decalKindsFor, itemCardSprite,
   projectileScaleFor,
   sceneryKindsFor, type CarrySlot, type MapBoundary, type MapTerrain,
@@ -1712,8 +1712,16 @@ export class Renderer {
   ): AtlasFrame | undefined {
     const atlas = this.atlas
     if (!atlas) return undefined
-    // The barn dog is a real animal, not an icon.
+    // The barn dog is a real animal, not an icon -- and so is Broody Hen's
+    // chick, which rides the same minion path. The sprite is named in content
+    // (items.json `minionSprite`) rather than switched on here, so the next
+    // card that hatches something needs no renderer edit.
     if (p.behaviour === 'minionHunt') {
+      const minion = (ITEMS[p.weaponId] as { minionSprite?: string } | undefined)?.minionSprite
+      if (minion) {
+        const f = atlas.get(minion)
+        if (f) return f
+      }
       return atlas.get('feralDog.idle.down.0') ?? atlas.get('feralDog.walk.down.0')
     }
 

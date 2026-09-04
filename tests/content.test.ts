@@ -71,6 +71,36 @@ describe('offers', () => {
     expect(bare).toEqual([])
   })
 
+  /*
+     No card ever shows a raw placeholder.
+
+     `{total}` was specified in the card-text contract and then not
+     implemented, and the failure is invisible to a typechecker and to every
+     other test: the card renders, it is the right size, and it reads
+     "{total}% of kills drop a feed token". A real run through the browser is
+     what found it. This is that run, as an assertion.
+  */
+  it('substitutes every placeholder in every stack blurb', async () => {
+    const { describeItem } = await import('../src/sim/offers')
+    for (const [id, def] of Object.entries(ITEMS)) {
+      if (typeof def.stackBlurb !== 'string') continue
+      for (const stack of [1, 2, 5]) {
+        const text = describeItem(def, stack)
+        expect(text, `${id} at stack ${stack}`).not.toMatch(/\{\w+\}/)
+      }
+    }
+  })
+
+  /** A `{total}` with no `stackPer` silently prints the stack count instead. */
+  it('gives every {total} blurb the per-copy number it multiplies', () => {
+    const missing = Object.entries(ITEMS)
+      .filter(([, d]) => typeof d.stackBlurb === 'string'
+        && d.stackBlurb.includes('{total}')
+        && typeof d.stackPer !== 'number')
+      .map(([id]) => id)
+    expect(missing).toEqual([])
+  })
+
   /** `_`-prefixed notes are documentation; a bare string in a roster crashes. */
   it('keeps design notes out of the rosters', () => {
     for (const rec of [WEAPONS, ITEMS, ELEMENTS]) {

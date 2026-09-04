@@ -35,6 +35,15 @@ export interface CardSpec {
   stats?: CardStat[]
   /** Footer left slot. The design calls it a lot number. */
   lot?: string
+  /**
+   * The stack counter, beside the lot number (docs/UPGRADE_ROSTER.md §5).
+   *
+   * `3/5` for a stackable, `ONE ONLY` for a card that can never come back, and
+   * `4/4 · LAST` on the final copy — the one case the contract calls out as
+   * still missing, because "this was your last one" is the difference between
+   * spending a level-up on a card and regretting it.
+   */
+  stack?: string
   /** Footer right slot — where the card came from, or its price. */
   source?: string
   /** Shop and Homestead: the price, rendered in the footer. */
@@ -151,7 +160,13 @@ export function card(spec: CardSpec): HTMLElement {
   }
 
   const foot = el('div', { class: 'pcard-foot' })
-  foot.append(el('div', { text: spec.lot ?? '' }))
+  // The lot number and the stack counter share the footer's left slot: the lot
+  // is flavour, the stack is the only place the card says whether taking it
+  // again will do anything. When both are present the stack wins the emphasis.
+  const left = el('div', { class: 'pcard-lot' })
+  left.append(el('span', { text: spec.lot ?? '' }))
+  if (spec.stack) left.append(el('b', { class: 'pcard-stack', text: spec.stack }))
+  foot.append(left)
   if (typeof spec.price === 'number') {
     foot.append(el('div', {
       class: 'pcard-price',

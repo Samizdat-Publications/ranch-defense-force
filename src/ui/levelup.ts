@@ -7,7 +7,7 @@
  * "from → to" against the live build, not as the raw modifier.
  */
 import { STAT_LABELS, WAVES } from '../content'
-import type { Offer } from '../sim/offers'
+import { stackLabel, type Offer } from '../sim/offers'
 import type { OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta } from '../sim/stats'
@@ -109,6 +109,8 @@ export class LevelUpScreen {
           }
         }),
         lot: lotOf(offer.id),
+        // §5: the card says what taking it AGAIN does, or that it cannot be.
+        stack: stackLabel(offer.stacks),
         source: offer.kind === 'weapon' ? 'WEAPON' : 'ITEM',
         onClick: () => this.pick(offer),
       })

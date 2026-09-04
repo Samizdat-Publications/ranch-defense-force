@@ -5,19 +5,20 @@
     "unlocked": true,
     "blurb": "Thirty years on this ground. Slow, hard to move, and not especially worried.",
     "stats": {
-      "maxHp": 140,
+      "maxHp": 160,
       "moveSpeedPct": -20,
       "armor": 6,
-      "hpRegen": 0.8,
+      "hpRegen": 0.9,
       "pickupRadiusPct": 40,
       "critChancePct": -50
     },
     "passive": {
       "id": "braced",
-      "desc": "Standing still 1s grants +6% damage reduction per second to 30%. Resets on move.",
+      "desc": "Standing still 1s grants +9% damage reduction per second to 45%. Resets on move.",
       "stillDelay": 1,
-      "drPerSec": 6,
-      "drMax": 30
+      "drPerSec": 9,
+      "drMax": 45,
+      "_bracedNote": "Braced was 6%/s to 30% and The Hand carried 140 hp and 0.8 regen. The upgrade-roster rebuild (docs/UPGRADE_ROSTER.md batch 1) cut the stat share of the offer stream from 65% to 26%, and The Hand was the one build in the game whose survival was ENTIRELY stacked common maxHp and armour -- five Feed Sacks and five sets of Fence Staples is roughly +100 hp and +10 armour, and it was 79% cleared on the brawler pilot, the strongest thing in the game. With that flood gone he fell to 33% and stopped preferring to stand at all, which is his whole identity. Restored HERE, in the passive, which is where docs/UPGRADE_ROSTER.md batch 4 was always going to put it: \"Deep Rooted -- Braced caps at 45%, not 30%\" is that batch's own card, and 45 is its own number. Measured, not guessed: at a fixed 140/0.8 the brawler went 8/24 -> 11/24 when drMax went 30 -> 45, and did not move again at 65 -- the pilot stops standing once six enemies are on it, so past the cap Braced has no more standing time to convert. drPerSec 6 -> 20 moved nothing either, for the same reason. 45 is where the lever runs out, and it is the number the design had already chosen."
     },
     "ability": {
       "id": "digIn",
@@ -37,7 +38,8 @@
       "speed": 24,
       "reach": 46
     },
-    "cardPassive": "Braced \u2014 standing still stacks damage reduction to 30%."
+    "cardPassive": "Braced \u2014 standing still stacks damage reduction to 45%.",
+    "_flatNote": "maxHp 140 -> 160 and hpRegen 0.8 -> 0.9 are the second half, and they are deliberately small. Braced alone restored the STANDING PREFERENCE (run.test.ts's \"each class does better at its own game\" passes on drMax 45 with the flat stats untouched) but not the raw clear rate, and \"completes all 25 waves on most seeds\" flies him KITING, where Braced never applies at all. Flat stats reliably favour the kiter over the brawler in this harness -- a kiter converts hp into runway, a brawler standing in a crowd takes damage that scales with the crowd -- so the flat half is kept to the minimum that clears the bar. hpRegen 2.5 was measured and is NOT the answer: kiting went to 14/24 and standing fell to 9/24, which is the gap reopening the wrong way round."
   },
   "kid": {
     "name": "The Kid",

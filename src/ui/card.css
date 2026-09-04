@@ -317,6 +317,26 @@
   color: var(--ink-label);
 }
 
+/* The lot number and the stack counter share the footer's left slot. */
+.pcard-lot {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+}
+
+/*
+   The stack counter ("3/5", "ONE ONLY", "4/4 · LAST").
+
+   Darker than the lot number beside it, because the lot is flavour and this is
+   the only thing on the card that answers "does taking this again do
+   anything". Same size and letter-spacing, so it reads as part of the same
+   stamped line rather than as a badge stuck on afterwards.
+*/
+.pcard-stack {
+  color: var(--ink);
+  font-weight: 700;
+}
+
 /* --- the deal --- */
 /*
    Two beats on purpose: the card arrives, and THEN the plate stamps.

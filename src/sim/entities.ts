@@ -198,6 +198,17 @@ export interface Projectile {
   /** Movement slow the hit applies. */
   slowOnHit: number
   slowSeconds: number
+  /**
+   * H2 (docs/UPGRADE_ROSTER.md §8): ricochets this round has already taken.
+   *
+   * Its own field rather than the `t0`/`t1` scratch, for the reason stated at
+   * the top of the payload block: the scratch means a different thing per
+   * behaviour, and `bounceSplit` is already using both of them for its bounce
+   * count and its shard budget. A rider sharing that would be a bug waiting
+   * for the next weapon — which is exactly what the payload fields exist to
+   * avoid.
+   */
+  ricochets: number
 }
 
 export function makeProjectile(): Projectile {
@@ -208,7 +219,7 @@ export function makeProjectile(): Projectile {
     orbitRadius: 0, knockback: 0, type: 'ranged', t0: 0, t1: 0,
     hitsLeft: 999, rearm: 0, stunOnHit: 0, burnDps: 0, burnSeconds: 0,
     bleedDps: 0, bleedSeconds: 0, markPct: 0, markSeconds: 0,
-    slowOnHit: 0, slowSeconds: 0,
+    slowOnHit: 0, slowSeconds: 0, ricochets: 0,
   }
 }
 

@@ -176,6 +176,7 @@ function simulate(
     }
     if (shopQueued) {
       shopQueued = false
+      offers.beginShopVisit()
       // The arena clears at a shop, as it does in the real loop.
       for (let i = world.enemies.live - 1; i >= 0; i--) world.enemies.free(i)
       for (let s = 0; s < 4; s++) {

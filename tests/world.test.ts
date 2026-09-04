@@ -397,3 +397,81 @@ describe('World invariants', () => {
     expect(w2.rng.next()).toBe(before)
   })
 })
+
+/**
+ * The Smudge Pot — docs/UPGRADE_ROSTER.md batch 1's aura weapon.
+ *
+ * The owner asked for "a floating ring around you that causes damage in a
+ * radius around you and powers up with larger size area/circle or more
+ * damage". The three things that can go wrong with one are all here: it can
+ * spawn a hitbox per tick and eat the pool, it can fail to grow with the tier,
+ * and it can be carried — which the farmhand's loadout has no answer for.
+ */
+describe('the aura weapon', () => {
+  const equip = (w: World): void => {
+    w.player.weapons.length = 0
+    w.player.addWeapon('smudgePot')
+  }
+
+  const ringOf = (w: World): { x: number; y: number; radius: number; type: string; attached: boolean } | null => {
+    for (let i = 0; i < w.projectiles.live; i++) {
+      const p = w.projectiles.items[i]
+      if (p.weaponId === 'smudgePot') return p
+    }
+    return null
+  }
+
+  it('keeps exactly one ring alive however long it runs', () => {
+    const w = new World(11, 'hand')
+    equip(w)
+    for (let i = 0; i < 600; i++) w.step(STEP, 0, 0, false)
+    let rings = 0
+    for (let i = 0; i < w.projectiles.live; i++) {
+      if (w.projectiles.items[i].weaponId === 'smudgePot') rings++
+    }
+    // One, not six hundred. A ring that spawned a hitbox per tick would fill
+    // the pool inside ten seconds and starve every other weapon of a slot.
+    expect(rings).toBe(1)
+    const ring = ringOf(w)!
+    expect(ring.type).toBe('aura')
+    expect(ring.attached).toBe(true)
+    // On the player, so it moves with him. That is the whole ask.
+    expect(Math.hypot(ring.x - w.player.x, ring.y - w.player.y)).toBeLessThan(1)
+  })
+
+  it('kills things on its own', () => {
+    const w = new World(12, 'hand')
+    equip(w)
+    for (let i = 0; i < 3600; i++) w.step(STEP, 0, 0, false)
+    expect(w.kills).toBeGreaterThan(0)
+  })
+
+  it('grows its radius with the tier, which is the upgrade the card promises', () => {
+    const radiusAt = (tier: number): number => {
+      const w = new World(13, 'hand')
+      equip(w)
+      w.player.weapons[0].tier = tier
+      for (let i = 0; i < 10; i++) w.step(STEP, 0, 0, false)
+      return ringOf(w)?.radius ?? 0
+    }
+    const t1 = radiusAt(1)
+    const t2 = radiusAt(2)
+    expect(t1).toBeGreaterThan(0)
+    expect(t2).toBeGreaterThan(t1)
+    expect(radiusAt(4)).toBeGreaterThan(t2)
+  })
+
+  it('is carried by nothing, and the loadout copes', async () => {
+    const { assignCarrySlots } = await import('../src/content')
+    const w = new World(14, 'hand')
+    equip(w)
+    w.player.addWeapon('scattergun')
+    const out: (string | null)[] = [null, null, null, null, null, null, null, null]
+    assignCarrySlots(w.player.weapons, out as never, 'hand')
+    // `carry: "none"` means the farmhand never tries to hang a smoking pot off
+    // his belt — the same answer the Scythe and the Barn Dog already give, and
+    // `assignCarrySlots` skips it without needing to know why.
+    expect(out[0]).toBe(null)
+    expect(out[1]).toBe('hand')
+  })
+})
