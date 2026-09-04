@@ -179,8 +179,9 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The player mark was drawn in a hole.** Character origins are the cell floor,
   twelve pixels below the boots; footOffsetY is -10 now. The owner saw it first.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
-  The inventory audit is done (section below). Queue now: the upgrade roster
-  in batches, batch 1 with the aura ring in flight.
+  The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
+  Queue: the art pass (pitchfork thrust + fifteen ledger decisions) in flight;
+  then batch 1's 19 card icons; then roster batches 2-5.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -500,6 +501,116 @@ And two agents shared one checkout and one PixelLab account during this pass:
 commits from the loadout fix and two smudge-pot objects from the roster batch
 landed in the audit's window. The ledger attributes them rather than wiring
 them. CLAUDE.md's warning about the repo is just as true of the account.
+
+## Batch 1 of the upgrade roster: the board was structurally incapable
+
+`drawLevelUp` filled its boosted slot from the uncommon-or-better cards and
+then filled **every remaining slot from `commonIdx` alone**. A merge's rarity
+is its next tier, never `common`, so a merge — or an element, or a special, or
+any uncommon item — could not appear in slots 2, 3 or 4 of a level-up at any
+point in any run. Measured: 100.0% of the 6,090 uncommon+ level-up cards were
+the one boosted slot, and the eleven common stat items took 46.3% of every card
+the player ever saw. The pool was never thin. The draw could not show it.
+
+Two more, both structural. The suppression memory was 90 SECONDS and the shops
+are 200 seconds apart, so it had always expired by the time it was needed —
+100.0% of shop visits reshowed an id from the previous one. And the shop had no
+memory of its own visit, so a reroll could hand back the board it had just
+swept away.
+
+All four slots draw from the whole candidate set now, under quotas: boosted,
+gated, behavioural, free, with at most one stat card and at most one merge on a
+board — and at least one stat card, because the design's own sentence is the
+rule ("still the reliable filler a player wants; there are just no longer four
+of them at once"). Memory counts boards. The shop bans its previous visit and
+everything this visit has already shown.
+
+    metric                        before    after    target
+    stat share of all cards       64.9%     25.0%    <=35%
+    all-one-category boards       40.0%      0.0%    <=5%
+    shop reshowed prev visit     100.0%      0.0%     0%    (1 visit in 317; 0.0% of cards)
+    distinct ids by L10            33.3      39.1    >=40   (missed by 0.9)
+    5 consecutive level-ups       74.2%     94.6%    >=90%
+    candidates at L30-34             27        40
+
+**Every recorded seed replays as a different run.** The draw consumes a
+different number of `next()` calls. The map pick is untouched — still the first
+draw and still exactly one — so the arena a seed produces has not moved.
+
+### The cards
+
+22: six Loads, four Load Riders, seven On-Hit, five On-Kill. Six sim hooks at
+four call sites, plus nine cards that needed no hook because they are numbers
+the sim already read. `applyOnHitRiders` early-outs on one cached boolean;
+chain and ricochet reuse `queryOut`, hazards reuse the hazard pool, Broody
+Hen's chick rides the minion path the Barn Dog already flies. No new pools. The
+Loads' riders live on the ELEMENT, not on the item that granted it, because a
+Load is exclusive but the item stays in `player.items` forever.
+
+The card text states its delta now. A merge reads "Tier 3: +2 pellets — 1 → 3
+pellets · 9.6 → 15.4 damage": 48 authored strings beside the numbers they
+describe. Stackables print 3/5, non-stackables ONE ONLY, the last copy
+4/4 · LAST.
+
+**Art debt, stated:** about half the 22 new cards borrow existing art as
+stand-ins (Tar Load is a barrel, Font Water a trough, Quicklime an ash decal,
+Rock Salt a rock). The roster doc planned 19 icons for this batch; the brief
+allowed one generation. `npm run cards` shows them all; a small art task owes
+the rest, under the wiring rule.
+
+### The Smudge Pot
+
+Seventeenth weapon, and the genre staple the roster did not have: an orchard
+heater you never put out. `cooldown: 0` puts it on SUSTAIN beside the Scythe —
+ONE attached projectile repositioned every tick, re-armed on an interval, not a
+hitbox per frame. `drawArcs` already stroked aura rings for the Chem Sprayer,
+so it needed no renderer change. 96px/10dps to 156px/65.5dps across four tiers,
+a knockback pulse at T3, a slow at T4. One generation (20 candidates, $0.00 in
+credits), wired the same task; `carry: "none"`.
+
+### Three things only a real run could find
+
+The rebuild hit every offer target and a run through the browser still
+photographed four percentages at level 6. `unlockedItems` was
+`Object.keys(ITEMS).slice(0, 12)` — the first twelve keys of items.json in
+AUTHORING order — and eleven of those are the commons. **A fresh save's entire
+item pool was the eleven stat cards.** Neither harness calls `setUnlocked`, so
+neither could see it. The starting sets are named in meta.json now; the weapons
+had it worse, since the first eight keys contain no melee weapon at all. Also:
+the fallback loop gave up the board caps before the recency memory, and
+`{total}` was in the card-text contract and never implemented, so Feed the
+Birds rendered "{total}% of kills drop a feed token" on the card.
+
+### The Hand, restored the way batch 4 would have
+
+Batch 1 did what it was for and it cost one build everything. The Hand was the
+only character whose survival was ENTIRELY stacked common maxHp and armour, and
+he was the strongest thing in the game at 79% cleared standing. Cut the stat
+share from 65% to 25% and he falls to 33% and stops preferring to stand at all,
+which is his whole identity. Two acceptance tests went red with him.
+
+Fixed in the passive, where batch 4 was always going to fix it: "Deep Rooted —
+Braced caps at 45%, not 30%" is that batch's own card and 45 is its own number.
+Braced 6%/s→30% becomes 9%/s→45%, plus maxHp 140→160 and hpRegen 0.8→0.9. The
+Kid is untouched.
+
+    hand, 24 seeds                        kite   brawl   spacer
+    batch 1 as it stood                     11       8       10
+    Braced 9%/s to 45%                      11    * 11       10
+      + stillDelay 1s -> 0.5s               11       9       10
+      + drPerSec 20  (155hp, 1.1 regen)     12      10       10
+      + drMax 65     (155hp, 1.1 regen)      -      10        -
+      + 160hp, 2.5 regen                     14       9       14
+    SHIPPED: Braced 9/45, 160hp, 0.9        11    * 12       10
+
+**Braced saturates at 45** — 45→65 bought nothing, drPerSec 6→20 bought nothing;
+the pilot stops standing once six enemies are on it, so past the cap there is no
+standing time left to convert. **Flat stats favour the kiter, every time** — a
+kiter turns hp into runway, a brawler in a crowd takes damage that scales with
+the crowd; regen 2.5 sent kiting to 14 and standing down to 9. And **batch 4's
+other Hand card, "Set Feet — Braced starts at 0.5s", measured WORSE** (11→9);
+recorded in classes.json, re-measure before shipping it. The six-class ladder
+came back to 82/144 against 84 before batch 1, with the spread narrower. 216/216.
 
 ## The four locked classes now answer the game differently
 

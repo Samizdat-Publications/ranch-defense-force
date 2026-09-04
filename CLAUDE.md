@@ -33,20 +33,21 @@ session worked, another session pushed a commit to the same branch.
 
 ```bash
 npm install
-npm run atlas    # REQUIRED: builds public/atlas.png from assets/
+npm run atlas    # REQUIRED: builds public/atlas-0..6.png (seven pages of <=2048px) from assets/
 npm run dev
 ```
 
-`public/atlas.png` and `atlas.json` are **gitignored** — they are generated, and
+`public/atlas-*.png` and `atlas.json` are **gitignored** — they are generated, and
 keeping them out is what stops licensed art landing in a build output. A fresh
 clone renders coloured squares until `npm run atlas` runs, by design: a missing
 atlas costs the art, not the game.
 
 | Command | What |
 |---|---|
-| `npm test` | 205 tests, including a headless full-run acceptance test |
+| `npm test` | 216 tests, including headless full-run acceptance tests for all six classes |
 | `npm run typecheck` | game and tools (they have separate tsconfigs) |
-| `npm run atlas` | slice + pack `art/sprites.json` → `public/atlas.*` |
+| `npm run atlas` | slice + pack `art/sprites.json` → `public/atlas-*.png` + `atlas.json` (a frame carries its `page`) |
+| `npm run cards` / `ledger` / `tag` / `facings` / `carrysheet` / `blight` / `offer-stream` | session-22 instruments: photograph every card; the PixelLab ledger; write verdicts to the account; a class in four facings with a full kit; carried-art contact sheet; assert the home-screen blight mapping; measure the offer stream |
 | `npm run shot -- [ticks] [out] [seed] [class]` | headless screenshot: runs the sim, draws it, writes a PNG. No browser. |
 | `npm run inspect -- <sheet.png>` | report a sprite sheet's frame grid |
 | `npm run inventory` | refresh `docs/PIXELLAB_INVENTORY.md` — **grep that before generating art** |
@@ -175,7 +176,7 @@ text in front of them. That permission is specific to this repo — it is not a
 general grant, so do not copy `assets/` into another project or republish the
 packs elsewhere.
 
-`assets/` still never deploys. Only the packed `public/atlas.png` ships, which
+`assets/` still never deploys. Only the packed `public/atlas-*.png` ships, which
 is the "edit and use the asset in a project" the licence explicitly allows.
 Credit LimeZu (limezu.itch.io) in the title screen and README; the UI pack's
 licence requires it.
