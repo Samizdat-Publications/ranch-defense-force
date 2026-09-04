@@ -2010,6 +2010,24 @@ export class World {
         e.slowPct = Math.max(e.slowPct, sp.touchSlowPct)
         e.slowLife = Math.max(e.slowLife, sp.touchSlowSeconds)
       }
+
+      /*
+         H13 — Anchor Stone (The Hand, epic): at Braced's cap, anything that
+         reaches him is slowed. §6 writes this as a 90px aura; it rides the
+         touch loop instead of a second grid query, the same simplification
+         Straw Hat's "enemies within 60px" already makes here — contact
+         damage only ever fires from something already touching him, so for
+         a class whose whole identity is standing still and letting the
+         crowd arrive, "on touch" and "in a small ring around him" are the
+         same enemies. Rides the same status fields Hobnails does; the two
+         cannot both be owned (different classes), so `Math.max` is
+         defensive rather than load-bearing.
+      */
+      const cb = pl.classBonus
+      if (cb.bracedCapSlowPct > 0 && pl.bracedAtCap) {
+        e.slowPct = Math.max(e.slowPct, cb.bracedCapSlowPct)
+        e.slowLife = Math.max(e.slowLife, cb.bracedCapSlowSeconds)
+      }
     }
     void dt
   }
@@ -2428,6 +2446,28 @@ export class World {
       this.burstParticles(p.px, p.py, 10, 0xd9c9a3)
       // Under the sprites: the dash trail is on the ground, not in the air.
       this.playFx('dust', p.px, p.py, p.facing, 1, 0, 0, true)
+      /*
+         H13 — Dust Devil (The Kid, epic): the blinding dust trail catches.
+         One pooled hazard centred on the dash rather than a segment swept
+         along it — the pool this rides already exists (`spawnHazard`, the
+         same one Hold the Line's ward and every slick uses), a second
+         travelling hazard per dash would not — and the trail IS the blind
+         cloud, which sits roughly where the dash crossed, not at one end
+         of it. Radius covers half the dash so a pursuer following the
+         blind trail is in it, not chasing behind it.
+      */
+      if (p.classBonus.boltTrailDps > 0) {
+        const h = this.spawnHazard()
+        if (h) {
+          h.kind = 'acid'
+          h.x = (p.px + p.x) / 2
+          h.y = (p.py + p.y) / 2
+          h.radius = Math.max(40, dist / 2)
+          h.life = p.classBonus.boltTrailSeconds
+          h.maxLife = p.classBonus.boltTrailSeconds
+          h.dps = p.classBonus.boltTrailDps
+        }
+      }
     } else if (a.id === 'holdTheLine') {
       this.plantWard(a)
     } else if (a.id === 'claymore') {
@@ -3437,6 +3477,44 @@ export class World {
             typeof chDef?.strawChopperDps === 'number' ? chDef.strawChopperDps : 10,
             0,
           )
+        }
+      }
+
+      /*
+         H13 — Volunteer Strain (The Agronomist, epic): a kill that dies
+         carrying 2+ statuses spreads them to nearby survivors. `>= 2` is
+         hardcoded rather than a content field for the same reason
+         Cross-Contamination's own gate above is — it is the card's own
+         stated trigger, not a tunable magnitude. Reuses `queryOut`; nothing
+         between this query and the end of its loop reads it again, the same
+         discipline `areaDamage` and the blocks above already keep.
+      */
+      const cb = this.player.classBonus
+      if (cb.cultivarSpreadCount > 0 && this.statusCount(e) >= 2) {
+        const n = this.grid.query(e.x, e.y, cb.cultivarSpreadRadius, this.queryOut)
+        let spread = 0
+        for (let k = 0; k < n && spread < cb.cultivarSpreadCount; k++) {
+          const j = this.queryOut[k]
+          if (j === index || j >= this.enemies.live) continue
+          const t = this.enemies.items[j]
+          if (t.dying > 0) continue
+          if (e.burnLife > 0) {
+            t.burnDps = Math.max(t.burnDps, e.burnDps)
+            t.burnLife = Math.max(t.burnLife, e.burnLife)
+          }
+          if (e.bleedLife > 0) {
+            t.bleedDps = Math.max(t.bleedDps, e.bleedDps)
+            t.bleedLife = Math.max(t.bleedLife, e.bleedLife)
+          }
+          if (e.slowLife > 0) {
+            t.slowPct = Math.max(t.slowPct, e.slowPct)
+            t.slowLife = Math.max(t.slowLife, e.slowLife)
+          }
+          if (e.markLife > 0) {
+            t.markPct = Math.max(t.markPct, e.markPct)
+            t.markLife = Math.max(t.markLife, e.markLife)
+          }
+          spread++
         }
       }
 

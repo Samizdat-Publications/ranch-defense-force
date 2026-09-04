@@ -2211,6 +2211,365 @@
   "reviveClearRadius": 200,
   "cardSprite": "item.secondWind"
  },
+ "handSetFeet": {
+  "name": "Set Feet",
+  "icon": "handSetFeet",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "class",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "armour"
+  ],
+  "requiresClass": "hand",
+  "blurb": "Braced comes on faster — standing still for 0.75s starts it, not 1s — and eight more seasons of dirt under him.",
+  "mods": {
+   "maxHp": 8
+  },
+  "classBonus": {
+   "bracedStillDelayDelta": -0.25
+  },
+  "cardSprite": "portrait.hand"
+ },
+ "handDeepRooted": {
+  "name": "Deep Rooted",
+  "icon": "handDeepRooted",
+  "rarity": "rare",
+  "source": "both",
+  "category": "class",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "armour"
+  ],
+  "requiresClass": "hand",
+  "blurb": "Braced climbs higher — damage reduction caps at 55%, not 45% — and he carries twelve more hard-won pounds.",
+  "mods": {
+   "maxHp": 12
+  },
+  "classBonus": {
+   "bracedDrMaxBonus": 10
+  },
+  "cardSprite": "portrait.hand"
+ },
+ "handAnchorStone": {
+  "name": "Anchor Stone",
+  "icon": "handAnchorStone",
+  "rarity": "epic",
+  "source": "both",
+  "category": "class",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "armour"
+  ],
+  "requiresClass": "hand",
+  "blurb": "At Braced's cap, anything that reaches you is slowed 30% for 2s — and eighteen more pounds of him to slow it with.",
+  "mods": {
+   "maxHp": 18
+  },
+  "classBonus": {
+   "bracedCapSlowPct": 30,
+   "bracedCapSlowSeconds": 2
+  },
+  "cardSprite": "portrait.hand"
+ },
+ "kidLongStride": {
+  "name": "Long Stride",
+  "icon": "kidLongStride",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "class",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresClass": "kid",
+  "blurb": "Momentum scales harder. Full speed reaches +70% damage, not +50%.",
+  "mods": {},
+  "classBonus": {
+   "momentumDmgMaxBonus": 20,
+   "momentumRatePctBonus": 0.2
+  },
+  "cardSprite": "portrait.kid"
+ },
+ "kidFollowingWind": {
+  "name": "Following Wind",
+  "icon": "kidFollowingWind",
+  "rarity": "rare",
+  "source": "both",
+  "category": "class",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresClass": "kid",
+  "blurb": "Momentum eases off instead of cutting out — it bleeds away over about a second when you stop, rather than dropping to zero.",
+  "mods": {},
+  "classBonus": {
+   "momentumDecayPctPerSec": 60
+  },
+  "cardSprite": "portrait.kid"
+ },
+ "kidDustDevil": {
+  "name": "Dust Devil",
+  "icon": "kidDustDevil",
+  "rarity": "epic",
+  "source": "both",
+  "category": "class",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "dash"
+  ],
+  "requiresClass": "kid",
+  "blurb": "Bolt's dust trail catches — 8 dps for 3s.",
+  "mods": {},
+  "classBonus": {
+   "boltTrailSeconds": 3,
+   "boltTrailDps": 8
+  },
+  "cardSprite": "portrait.kid"
+ },
+ "widowSetJaw": {
+  "name": "Set Jaw",
+  "icon": "widowSetJaw",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "class",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "bleed"
+  ],
+  "requiresClass": "widow",
+  "blurb": "Less of a blow lands at once. 45% now, not 55% — the rest is a wound to fight through.",
+  "mods": {},
+  "classBonus": {
+   "gritImmediatePctDelta": -10
+  },
+  "cardSprite": "portrait.widow"
+ },
+ "widowLongMourning": {
+  "name": "Long Mourning",
+  "icon": "widowLongMourning",
+  "rarity": "rare",
+  "source": "both",
+  "category": "class",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "bleed"
+  ],
+  "requiresClass": "widow",
+  "blurb": "The wound bleeds off slower. 8s to clear, not 5.",
+  "mods": {},
+  "classBonus": {
+   "gritWoundSecondsDelta": 3
+  },
+  "cardSprite": "portrait.widow"
+ },
+ "widowBlackDress": {
+  "name": "Black Dress",
+  "icon": "widowBlackDress",
+  "rarity": "epic",
+  "source": "both",
+  "category": "class",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "kill",
+   "bleed"
+  ],
+  "requiresClass": "widow",
+  "blurb": "A kill closes 40% of the wound, not 25%. Closing one fully heals 6.",
+  "mods": {},
+  "classBonus": {
+   "gritKillClosePctBonus": 15,
+   "gritFullCloseHeal": 6
+  },
+  "cardSprite": "portrait.widow"
+ },
+ "vetRangeCard": {
+  "name": "Range Card",
+  "icon": "vetRangeCard",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "class",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "armour"
+  ],
+  "requiresClass": "vet",
+  "blurb": "The far band starts sooner — 140px, not 170 — and two more plates in the vest.",
+  "mods": {
+   "armor": 2
+  },
+  "classBonus": {
+   "overwatchFarDistanceDelta": -30
+  },
+  "cardSprite": "portrait.vet"
+ },
+ "vetColdBore": {
+  "name": "Cold Bore",
+  "icon": "vetColdBore",
+  "rarity": "rare",
+  "source": "both",
+  "category": "class",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "armour"
+  ],
+  "requiresClass": "vet",
+  "blurb": "The far bonus hits harder — +60% damage, not +40% — and three more plates besides.",
+  "mods": {
+   "armor": 3
+  },
+  "classBonus": {
+   "overwatchFarDamagePctBonus": 20
+  },
+  "cardSprite": "portrait.vet"
+ },
+ "vetEnfilade": {
+  "name": "Enfilade",
+  "icon": "vetEnfilade",
+  "rarity": "epic",
+  "source": "both",
+  "category": "class",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "armour"
+  ],
+  "requiresClass": "vet",
+  "blurb": "The near penalty is gone — contact is neutral, not -20% — and five more plates for when it is not.",
+  "mods": {
+   "armor": 5
+  },
+  "classBonus": {
+   "overwatchNearDamagePctDelta": 20
+  },
+  "cardSprite": "portrait.vet"
+ },
+ "agronomistFieldTrial": {
+  "name": "Field Trial",
+  "icon": "agronomistFieldTrial",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "class",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresClass": "agronomist",
+  "blurb": "Whatever she leaves behind lasts longer — statuses last +110%, not +70% — and she is knitting a little faster herself.",
+  "mods": {
+   "hpRegen": 0.15
+  },
+  "classBonus": {
+   "cultivarDotDurationPctBonus": 40
+  },
+  "cardSprite": "portrait.agronomist"
+ },
+ "agronomistSelectiveBreeding": {
+  "name": "Selective Breeding",
+  "icon": "agronomistSelectiveBreeding",
+  "rarity": "rare",
+  "source": "both",
+  "category": "class",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresClass": "agronomist",
+  "blurb": "Cultivar bites harder — +110% damage, not +70% — and the same stock keeps her on her feet longer.",
+  "mods": {
+   "hpRegen": 0.25
+  },
+  "classBonus": {
+   "cultivarDotDamagePctBonus": 40
+  },
+  "cardSprite": "portrait.agronomist"
+ },
+ "agronomistVolunteerStrain": {
+  "name": "Volunteer Strain",
+  "icon": "agronomistVolunteerStrain",
+  "rarity": "epic",
+  "source": "both",
+  "category": "class",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "kill"
+  ],
+  "requiresClass": "agronomist",
+  "blurb": "An enemy dying with 2 or more statuses spreads them to 3 neighbours within 90px, and the field pays her back faster for it.",
+  "mods": {
+   "hpRegen": 0.4
+  },
+  "classBonus": {
+   "cultivarSpreadCount": 3,
+   "cultivarSpreadRadius": 90
+  },
+  "cardSprite": "portrait.agronomist"
+ },
+ "drifterLongSeason": {
+  "name": "Long Season",
+  "icon": "drifterLongSeason",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "class",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "kill"
+  ],
+  "requiresClass": "drifter",
+  "blurb": "Hot Streak's window is longer. 6s since the last kill, not 4.",
+  "mods": {},
+  "classBonus": {
+   "hotStreakWindowBonus": 2
+  },
+  "cardSprite": "portrait.drifter"
+ },
+ "drifterNothingToLose": {
+  "name": "Nothing To Lose",
+  "icon": "drifterNothingToLose",
+  "rarity": "rare",
+  "source": "both",
+  "category": "class",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "kill"
+  ],
+  "requiresClass": "drifter",
+  "blurb": "Hot Streak climbs higher. Caps at 18 stacks, not 12.",
+  "mods": {},
+  "classBonus": {
+   "hotStreakMaxStacksBonus": 6
+  },
+  "cardSprite": "portrait.drifter"
+ },
+ "drifterCutAndRun": {
+  "name": "Cut and Run",
+  "icon": "drifterCutAndRun",
+  "rarity": "epic",
+  "source": "both",
+  "category": "class",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "kill"
+  ],
+  "requiresClass": "drifter",
+  "blurb": "A hit takes half the streak, not all of it.",
+  "mods": {},
+  "classBonus": {
+   "hotStreakKeepPctOnHit": 50
+  },
+  "cardSprite": "portrait.drifter"
+ },
+ "_classCardNote": "docs/UPGRADE_ROSTER.md batch 4, H13 — the 18 class cards, three per class, `requiresClass` gated, `maxStacks: 1`, cost 20/30/44 at uncommon/rare/epic, `category: \"class\"`. Art is zero-generation per SS10: `portrait.<classId>`, the same plate class select already draws. `classBonus` is the overlay `Player.classBonus` sums additively from every owned item's block and the passive/ability code reads beside its own numbers -- see the `ClassBonus` doc comment in player.ts. Two of the doc's own numbers do not survive contact with today's classes.json and are re-derived here, not copied: Deep Rooted's \"caps at 45%, not 30%\" already shipped as base in batch 1 (NOTES.md, \"The Hand, restored the way batch 4 would have\"), so this card instead pushes the cap PAST that base, to 55%; and Set Feet's original \"starts at 0.5s\" measured WORSE in that same session (11/24 -> 9/24 brawling) so this card halves the delta instead, to 0.75s, and stays conservative rather than assuming the smaller version helps -- it is safe rather than proven, and the full verification pass is where that gets checked. Anchor Stone is re-derived for a different reason: the doc's \"90px aura\" would be a second per-tick grid query for one epic card, so it rides the touch-collision loop instead, gated on `Player.bracedAtCap` -- the same simplification Straw Hat's own \"enemies within 60px\" already makes (contact damage only ever fires from something already touching him), and for a class whose whole identity is standing still and letting the crowd arrive, on-touch and in-a-small-ring read the same. Every other card's numbers are the doc's own.",
  "_categoryNote": "SS7.1: `category` is DECLARED, never sniffed. The draw quotas its board on it (at most one `stat`, at most one `merge`, one gated slot, one behavioural slot), and a draw that guesses its own quotas changes meaning every time a card gains a field. `tags` is SS4: the draw biases toward tags the build already holds, so a build FORMS instead of accumulating. Both are content; offers.ts reads and never infers.",
  "_gateNote": "`requiresLoad`, `requiresWeapon`, `requiresClass` and `requiresItem` are the gates that make the pool GROW through a run instead of shrinking. A gated card costs the early game nothing because it cannot appear yet, and it is where two runs stop looking alike. `requiresLoad` was batch 1's (the four Load Riders). Batch 2 turns on `requiresWeapon` for real: the 48 weapon-upgrade cards below plus the Smudge Pot's own three, each also carrying `weaponMod` -- the short id `Player.addItem` pushes onto that weapon's `WeaponSlot.mods` and `hasMod(slot, id)` reads back in `behaviours/weapons.ts`. `requiresClass` is still batch 4's.",
  "_weaponModNote": "docs/UPGRADE_ROSTER.md batch 2, SS6 (Weapon Upgrades) plus the Smudge Pot's own three, authored here because the doc predates that weapon. Rarity ladder uncommon/rare/epic at cost 20/30/44, `maxStacks: 1`, `source: \"both\"`, `category: \"weaponMod\"` -- all per SS6's table. Each carries a static `cardSprite` at the owning weapon's T1 art (weaponCardSprite(id, 1), computed once and pasted in rather than resolved live) -- zero new generations, exactly as SS10 plans, and it satisfies tests/content.test.ts's own rule that every cardSprite is a packed atlas key. OfferPool.itemOffer still falls back to weaponCardSprite off requiresWeapon for any future item that omits one. The magnitudes are not repeated here -- they live in weapons.json beside the tier riders they sit next to, at `<modId><Field>`, which is what lets behaviours/weapons.ts read hasMod(slot, 'chokeTube') beside tier >= n without a second source of the same number.",

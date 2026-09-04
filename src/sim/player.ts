@@ -16,6 +16,66 @@ export interface OwnedItem {
   boosted: boolean
 }
 
+/**
+ * H13 (docs/UPGRADE_ROSTER.md batch 4): additive overlays a class card grants
+ * on top of the numbers its OWN class's passive/ability already reads off
+ * `def.passive`/`def.ability` — a cap, a rate, a duration, a radius, a refund.
+ * Never a multiplier: every field here is summed onto the base number at the
+ * point the passive reads it, exactly once, the same rule `resolveStats`
+ * already enforces for the stat block.
+ *
+ * A flat, fully-keyed object rather than a map, so `resolveClassBonus` never
+ * allocates and every read is a property access — the same shape `stats`
+ * already is. Zero for every class but the one that owns a card naming that
+ * field, so a run with no class cards pays flat zeros, not branches.
+ */
+export interface ClassBonus {
+  // The Hand / Braced
+  bracedStillDelayDelta: number
+  bracedDrMaxBonus: number
+  bracedCapSlowPct: number
+  bracedCapSlowSeconds: number
+  // The Kid / Momentum
+  momentumDmgMaxBonus: number
+  momentumRatePctBonus: number
+  momentumDecayPctPerSec: number
+  boltTrailSeconds: number
+  boltTrailDps: number
+  // The Widow / Grit
+  gritImmediatePctDelta: number
+  gritWoundSecondsDelta: number
+  gritKillClosePctBonus: number
+  gritFullCloseHeal: number
+  // The Veteran / Overwatch
+  overwatchFarDistanceDelta: number
+  overwatchFarDamagePctBonus: number
+  overwatchNearDamagePctDelta: number
+  // The Agronomist / Cultivar
+  cultivarDotDurationPctBonus: number
+  cultivarDotDamagePctBonus: number
+  cultivarSpreadCount: number
+  cultivarSpreadRadius: number
+  // The Drifter / Hot Streak
+  hotStreakWindowBonus: number
+  hotStreakMaxStacksBonus: number
+  hotStreakKeepPctOnHit: number
+}
+
+const CLASS_BONUS_KEYS = [
+  'bracedStillDelayDelta', 'bracedDrMaxBonus', 'bracedCapSlowPct', 'bracedCapSlowSeconds',
+  'momentumDmgMaxBonus', 'momentumRatePctBonus', 'momentumDecayPctPerSec', 'boltTrailSeconds', 'boltTrailDps',
+  'gritImmediatePctDelta', 'gritWoundSecondsDelta', 'gritKillClosePctBonus', 'gritFullCloseHeal',
+  'overwatchFarDistanceDelta', 'overwatchFarDamagePctBonus', 'overwatchNearDamagePctDelta',
+  'cultivarDotDurationPctBonus', 'cultivarDotDamagePctBonus', 'cultivarSpreadCount', 'cultivarSpreadRadius',
+  'hotStreakWindowBonus', 'hotStreakMaxStacksBonus', 'hotStreakKeepPctOnHit',
+] as const satisfies readonly (keyof ClassBonus)[]
+
+function emptyClassBonus(): ClassBonus {
+  const o = {} as ClassBonus
+  for (const k of CLASS_BONUS_KEYS) o[k] = 0
+  return o
+}
+
 export interface WeaponSlot {
   id: string
   /** 1-4. Each tier is base damage x1.6 plus its rider from weapons.json. */
@@ -153,6 +213,34 @@ export class Player {
    * which is exactly the stacking CLAUDE.md forbids.
    */
   passiveMoveSpeedPct = 0
+  /**
+   * H13: whether Braced is sitting at its own cap RIGHT NOW. False for every
+   * class but The Hand, and false for him until `stillFor` has carried the
+   * reduction all the way to `drMax` (+ `classBonus.bracedDrMaxBonus`).
+   * Anchor Stone reads this in `World.collideEnemiesWithPlayer` rather than
+   * recomputing the threshold a second time — one boolean, set where the
+   * cap is already being computed.
+   */
+  bracedAtCap = false
+
+  /**
+   * H13: the current class's cards, summed. Recomputed in `resolve()` —
+   * never per tick — from every owned item's `ItemDef.classBonus` block,
+   * exactly the way `stats` is recomputed from `ItemDef.mods`. See the
+   * `ClassBonus` doc comment above.
+   */
+  readonly classBonus: ClassBonus = emptyClassBonus()
+
+  /**
+   * The Kid's Momentum, as actually displayed — distinct from the raw value
+   * `velocityFraction` implies this tick. Equal to it for every run without
+   * Following Wind, which reads straight through and decays instantly to
+   * zero on stop exactly as it always has. With the card, this eases toward
+   * the raw value instead of snapping to it, at `classBonus.momentumDecayPctPerSec`
+   * per second — the raw value is a ceiling it decays DOWN toward, never
+   * a floor it is pulled up to, so accelerating is still instant.
+   */
+  private momentumEcho = 0
 
   // ---------------------------------------------------------- class state
   // Four field groups, one per unlockable class. They are plain numbers on
@@ -275,29 +363,11 @@ export class Player {
     this.wardHealPerKill = 0
     this.mineLife = 0
     this.mineArm = 0
+    this.momentumEcho = 0
 
-    // Unpack the two passives whose parameters are read on a hot path.
-    this.owFar2 = 0
-    this.owNear2 = 0
-    this.owFarPct = 0
-    this.owNearPct = 0
-    this.dotDamageMul = 1
-    this.dotDurationMul = 1
-    this.slowCapPct = 100
-    const pas = this.def.passive
-    if (pas.id === 'overwatch') {
-      const far = (pas.farDistance as number) ?? 220
-      const near = (pas.nearDistance as number) ?? 110
-      this.owFar2 = far * far
-      this.owNear2 = near * near
-      this.owFarPct = (pas.farDamagePct as number) ?? 0
-      this.owNearPct = (pas.nearDamagePct as number) ?? 0
-    } else if (pas.id === 'cultivar') {
-      this.dotDamageMul = 1 + ((pas.dotDamagePct as number) ?? 0) / 100
-      this.dotDurationMul = 1 + ((pas.dotDurationPct as number) ?? 0) / 100
-      this.slowCapPct = (pas.slowCapPct as number) ?? 100
-    }
-
+    // `resolve()` below rebuilds `classBonus` off `this.items` (empty here)
+    // and then unpacks the two hot-path passive caches (Overwatch, Cultivar)
+    // off `def.passive` + `classBonus` together — see `unpackPassiveCache`.
     this.resolve()
     this.hp = this.stats.maxHp
   }
@@ -332,11 +402,16 @@ export class Player {
   takeWound(amount: number): number {
     const p = this.def.passive
     if (p.id !== 'grit') return amount
-    const now = amount * (((p.immediatePct as number) ?? 100) / 100)
+    // H13: Set Jaw lowers `immediatePct` — less lands at once, more is held
+    // back as a wound to fight through. A pure delta on the class's own
+    // number, additive like every overlay here.
+    const immediatePct = ((p.immediatePct as number) ?? 100) + this.classBonus.gritImmediatePctDelta
+    const now = amount * (immediatePct / 100)
     const held = amount - now
     if (held > 0) {
       this.wound += held
-      const secs = (p.woundSeconds as number) ?? 5
+      // H13: Long Mourning lengthens the bleed-off.
+      const secs = ((p.woundSeconds as number) ?? 5) + this.classBonus.gritWoundSecondsDelta
       this.woundRate = secs > 0 ? this.wound / secs : this.wound
     }
     return now
@@ -344,7 +419,18 @@ export class Player {
 
   /** Anything that actually took HP off. The Drifter's streak dies here. */
   onHurt(): void {
-    if (this.def.passive.id === 'hotStreak') {
+    if (this.def.passive.id !== 'hotStreak') return
+    /*
+       H13: Cut and Run. A hit takes only a fraction of the streak rather than
+       all of it — `hotStreakKeepPctOnHit` is what SURVIVES, 0 for every run
+       without the card, which is the original "one hit ends all of it"
+       unchanged. What survives keeps whatever life it had left rather than
+       resetting it, so the card is purely "a hit costs less streak", not "a
+       hit is free".
+    */
+    const keepPct = this.classBonus.hotStreakKeepPctOnHit
+    this.streak = keepPct > 0 ? Math.floor(this.streak * (keepPct / 100)) : 0
+    if (this.streak <= 0) {
       this.streak = 0
       this.streakLife = 0
     }
@@ -358,22 +444,30 @@ export class Player {
    */
   onKill(x: number, y: number): void {
     const p = this.def.passive
+    const cb = this.classBonus
     if (p.id === 'grit') {
       // Closing the wound IS the heal: it is damage that now never lands.
       // Self-limiting by construction — no wound, no reward for the kill —
       // which is what makes Grit pay for fighting through a hit rather than
       // for killing in general.
       if (this.wound > 0) {
-        this.wound -= this.wound * (((p.killClosePct as number) ?? 0) / 100)
+        // H13: Black Dress raises how much of the wound one kill closes, and
+        // adds a real heal on top of the kill that closes it fully.
+        const closePct = ((p.killClosePct as number) ?? 0) + cb.gritKillClosePctBonus
+        this.wound -= this.wound * (closePct / 100)
         if (this.wound < 0.001) {
           this.wound = 0
           this.woundRate = 0
+          if (cb.gritFullCloseHeal > 0) {
+            this.hp = Math.min(this.stats.maxHp, this.hp + cb.gritFullCloseHeal)
+          }
         }
       }
     } else if (p.id === 'hotStreak') {
-      const max = (p.maxStacks as number) ?? 10
+      // H13: Nothing To Lose raises the cap; Long Season lengthens the window.
+      const max = ((p.maxStacks as number) ?? 10) + cb.hotStreakMaxStacksBonus
       if (this.streak < max) this.streak++
-      this.streakLife = (p.windowSeconds as number) ?? 3
+      this.streakLife = ((p.windowSeconds as number) ?? 3) + cb.hotStreakWindowBonus
     }
 
     if (this.wardLife > 0 && this.wardHealPerKill > 0) {
@@ -405,6 +499,74 @@ export class Player {
     const gained = this.stats.maxHp - before
     if (gained > 0) this.hp += gained
     if (this.hp > this.stats.maxHp) this.hp = this.stats.maxHp
+
+    this.resolveClassBonus()
+    this.unpackPassiveCache()
+  }
+
+  /**
+   * H13: rebuild `classBonus` from every owned item's `ItemDef.classBonus`
+   * block. A fixed key list rather than `Object.entries` on each item's
+   * bonus object, so this allocates nothing — only ever runs on a build
+   * change, same as `resolve()` itself, but the discipline is free and it
+   * keeps this the same shape as the hot-path reads that follow it.
+   */
+  private resolveClassBonus(): void {
+    const cb = this.classBonus
+    for (const k of CLASS_BONUS_KEYS) cb[k] = 0
+    for (const owned of this.items) {
+      const def = ITEMS[owned.id] as { classBonus?: Partial<ClassBonus> } | undefined
+      const bonus = def?.classBonus
+      if (!bonus) continue
+      const mult = owned.boosted ? 2 : 1
+      for (const k of CLASS_BONUS_KEYS) {
+        const v = bonus[k]
+        if (typeof v === 'number') cb[k] += v * mult
+      }
+    }
+  }
+
+  /**
+   * Unpack the two passives whose parameters are read on a hot path
+   * (Overwatch per-target, Cultivar per-status-application) into their
+   * cached form — off `def.passive` AND `classBonus` together, so a class
+   * card taken mid-run (Range Card, Cold Bore, Enfilade, Field Trial,
+   * Selective Breeding) is live the instant `resolve()` runs, not only at
+   * `init`. Every other class's cache stays the all-zero/all-one it always
+   * was, since `classBonus`'s fields for a passive that is not this class's
+   * are never set by any card that can be owned.
+   */
+  private unpackPassiveCache(): void {
+    this.owFar2 = 0
+    this.owNear2 = 0
+    this.owFarPct = 0
+    this.owNearPct = 0
+    this.dotDamageMul = 1
+    this.dotDurationMul = 1
+    this.slowCapPct = 100
+    const pas = this.def.passive
+    const cb = this.classBonus
+    if (pas.id === 'overwatch') {
+      // H13: Range Card pulls the far band in; Cold Bore raises its bonus;
+      // Enfilade zeroes the near penalty (its own delta cancels -20 to 0).
+      const far = ((pas.farDistance as number) ?? 220) + cb.overwatchFarDistanceDelta
+      const near = (pas.nearDistance as number) ?? 110
+      this.owFar2 = far * far
+      this.owNear2 = near * near
+      this.owFarPct = ((pas.farDamagePct as number) ?? 0) + cb.overwatchFarDamagePctBonus
+      this.owNearPct = ((pas.nearDamagePct as number) ?? 0) + cb.overwatchNearDamagePctDelta
+    } else if (pas.id === 'cultivar') {
+      // H13: Field Trial and Selective Breeding raise the duration/damage
+      // multipliers Cultivar already applies at the point a status leaves a
+      // projectile (World.applyHit) — additive on the PERCENTAGE, then
+      // folded into the multiplier once, here, exactly as the base numbers
+      // already were.
+      const dmgPct = ((pas.dotDamagePct as number) ?? 0) + cb.cultivarDotDamagePctBonus
+      const durPct = ((pas.dotDurationPct as number) ?? 0) + cb.cultivarDotDurationPctBonus
+      this.dotDamageMul = 1 + dmgPct / 100
+      this.dotDurationMul = 1 + durPct / 100
+      this.slowCapPct = (pas.slowCapPct as number) ?? 100
+    }
   }
 
   /** The stat sources, for the UI's delta preview. */
@@ -633,6 +795,7 @@ export class Player {
     this.passiveDamagePct = 0
     this.passiveDamageReduction = 0
     this.passiveMoveSpeedPct = 0
+    this.bracedAtCap = false
 
     const p = this.def.passive
     if (p.id === 'grit') {
@@ -670,17 +833,52 @@ export class Player {
         this.passiveMoveSpeedPct = this.streak * ((p.moveSpeedPctPerStack as number) ?? 0)
       }
     } else if (p.id === 'braced') {
-      const delay = (p.stillDelay as number) ?? 1
+      // H13: Set Feet pulls the onset in (a negative delta); Deep Rooted
+      // raises the ceiling past today's base 45%.
+      const delay = Math.max(0, ((p.stillDelay as number) ?? 1) + this.classBonus.bracedStillDelayDelta)
       const perSec = (p.drPerSec as number) ?? 6
-      const max = (p.drMax as number) ?? 30
+      const max = ((p.drMax as number) ?? 30) + this.classBonus.bracedDrMaxBonus
       if (this.stillFor >= delay) {
         const dr = Math.min(max, (this.stillFor - delay) * perSec)
         this.passiveDamageReduction = dr / 100
+        this.bracedAtCap = dr >= max
       }
     } else if (p.id === 'momentum') {
-      const per = (p.dmgPerVelocityPct as number) ?? 0.5
-      const max = (p.dmgMax as number) ?? 50
-      this.passiveDamagePct = Math.min(max, this.velocityFraction * 100 * per)
+      /*
+         H13: Long Stride raises the cap AND the rate together.
+
+         `dmgPerVelocityPct` (0.5) and `dmgMax` (50) are authored so full
+         velocity (velocityFraction 1) lands EXACTLY on the cap — 100% * 0.5
+         = 50 — which means a cap-only bonus is arithmetically inert: raw
+         damage can never exceed 100% * rate under ordinary movement, so
+         raising `dmgMax` alone with the rate untouched never moves anything
+         a player can reach. Long Stride's own `momentumRatePctBonus` moves
+         the number that is actually load-bearing (0.5 -> 0.7, so full speed
+         now lands on 70); `momentumDmgMaxBonus` still raises the ceiling
+         alongside it so the two stay in lockstep rather than one silently
+         outrunning the other.
+      */
+      const per = ((p.dmgPerVelocityPct as number) ?? 0.5) + this.classBonus.momentumRatePctBonus
+      const max = ((p.dmgMax as number) ?? 50) + this.classBonus.momentumDmgMaxBonus
+      const raw = Math.min(max, this.velocityFraction * 100 * per)
+      /*
+         Following Wind: Momentum eases toward `raw` instead of snapping to
+         it, at `momentumDecayPctPerSec` per second, whenever `raw` has
+         DROPPED below where the echo already is — i.e. only while slowing
+         or stopped. `momentumDecayPctPerSec` is 0 for every run without the
+         card, so `raw < momentumEcho` is the only branch that could differ
+         and it is never taken: the echo snaps to `raw` every tick exactly as
+         `passiveDamagePct` always did. Accelerating is always instant either
+         way — the echo is a ceiling `raw` decays down toward, never a floor
+         it is pulled up to.
+      */
+      const decay = this.classBonus.momentumDecayPctPerSec
+      if (decay > 0 && raw < this.momentumEcho) {
+        this.momentumEcho = Math.max(raw, this.momentumEcho - decay * dt)
+      } else {
+        this.momentumEcho = raw
+      }
+      this.passiveDamagePct = this.momentumEcho
     }
 
     if (this.abilityActive > 0) {

@@ -32,7 +32,7 @@
  * moved. Everything after it has.
  */
 import {
-  ITEMS, RARITY, TUNING, WEAPON_IDS, WEAPONS, weaponCardSprite,
+  CLASSES, ITEMS, RARITY, TUNING, WEAPON_IDS, WEAPONS, weaponCardSprite,
   type ItemDef, type StatMods, type WeaponDef,
 } from '../content'
 import type { Rng } from '../core/rng'
@@ -657,6 +657,10 @@ ${stats}` : stats
       : requiresWeapon
         ? weaponCardSprite(requiresWeapon, ownedTier) || undefined
         : undefined
+    // §5/H13: a class card names its class in the kind band, off
+    // `requiresClass` — the same `ItemDef.requiresWeapon` already drives for
+    // the 48+3 weapon-upgrade cards above.
+    const requiresClass = typeof def.requiresClass === 'string' ? def.requiresClass : undefined
 
     return {
       kind: 'item',
@@ -668,7 +672,9 @@ ${stats}` : stats
       rarity,
       category: categoryOf(def),
       tags: Array.isArray(def.tags) ? (def.tags as string[]) : EMPTY_TAGS,
-      band: requiresWeapon ? WEAPONS[requiresWeapon]?.name : undefined,
+      band: requiresWeapon
+        ? WEAPONS[requiresWeapon]?.name
+        : requiresClass ? CLASSES[requiresClass]?.name : undefined,
       mods,
       mergesTo: null,
       stacks: max > 0 ? { n, max } : null,
