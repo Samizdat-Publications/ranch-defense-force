@@ -884,8 +884,7 @@
   "mods": {},
   "special": "extraPierce",
   "extraPierce": 1,
-  "cardSprite": "proj.dart.2",
-  "requiresWeaponType": "ranged"
+  "cardSprite": "proj.dart.2"
  },
  "ricochetPlate": {
   "name": "Ricochet Plate",
@@ -906,8 +905,7 @@
   "ricochetCount": 1,
   "ricochetRange": 150,
   "ricochetMul": 0.6,
-  "cardSprite": "node.scrapHeap",
-  "requiresWeaponType": "ranged"
+  "cardSprite": "node.scrapHeap"
  },
  "splitShot": {
   "name": "Split Shot",
@@ -928,8 +926,7 @@
   "special": "splitOnKill",
   "splitCount": 2,
   "splitMul": 0.6,
-  "cardSprite": "proj.shard.1",
-  "requiresWeaponType": "ranged"
+  "cardSprite": "proj.shard.1"
  },
  "burrLoad": {
   "name": "Burr Load",
@@ -948,8 +945,7 @@
   "mods": {},
   "special": "homing",
   "homingRate": 100,
-  "cardSprite": "scene.wheat2",
-  "requiresWeaponType": "ranged"
+  "cardSprite": "scene.wheat2"
  },
  "moonshineJug": {
   "name": "Moonshine Jug",
@@ -989,8 +985,7 @@
   "mods": {},
   "special": "projectileRadius",
   "projectileRadiusPct": 15,
-  "cardSprite": "proj.slug.2",
-  "requiresWeaponType": "ranged"
+  "cardSprite": "proj.slug.2"
  },
  "weakSeam": {
   "name": "Weak Seam",
@@ -1129,5 +1124,5 @@
  "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns.",
  "_standInNote": "The 22 cards batch 1 adds all point at art the atlas ALREADY holds -- a salt rock for Rock Salt, an oil drum for Tar Load, a grave marker for Last Rites, a burning barrel for Hot As It Comes. That is deliberate and it is debt, recorded rather than hidden: SS10 lists 19 icons it wants generating for these, and none of them block the cards from shipping legibly. Nothing here borrows a sprite that means something contradictory on the field.",
  "_retuneNote": "docs/UPGRADE_ROSTER.md SS6 authored these numbers; tools/balance.ts then measured them, and they came in UNDER the stat cards they displace. That matters more than it sounds: the redesign deliberately cuts the stat share of the stream from 65% to 25%, so every behavioural card has to be worth roughly the percentage it is standing in front of, or the roster is a downgrade dressed as variety. Raised here: splitShot 45 -> 60%, moonshineJug 15/55 -> 20/70, broadSide 12 -> 15%, weakSeam 20 -> 28%, broodyHen 9 -> 14 damage, bloodMeal 1.2 -> 1.5, rotUnderfoot 14 -> 20 dps, lastRites 40 -> 55%. SS9 reserves a full retune for batch 5; this is the part of it the harness would not let wait.",
- "_rangedGateNote": "The five On-Hit cards that only touch a bullet are gated on OWNING a gun. This is a real bug the balance harness found rather than a tuning knob: The Hand starts with a pitchfork, five of the seven On-Hit cards are ranged-only, and a melee opening was being handed a board of cards that could not fire. It is also exactly what SS3 says gates are for -- \"a gated card cannot dilute the early game because it cannot appear yet\" -- and the melee half of the roster is as much a gate as owning a particular weapon is."
+ "_rangedGateNote": "A gate was TRIED here and measured worse, which is worth more written down than left out. The five On-Hit cards that only touch a bullet were gated on owning a gun (requiresWeaponType: ranged), because The Hand opens with a pitchfork and five of the seven On-Hit cards cannot fire for him -- a real hole and exactly what SS3 says gates are for. On tools/balance.ts over 24 seeds x 3 pilots The Hand cleared 23/72 with the gate and 28/72 without it: gating cards OUT shrinks the early pool, so slot C falls further down its fallback chain and the board memory bites harder on what is left, and both cost more than the dead cards did. The reading offers.ts needs is still there and batch 2 is where it belongs -- that batch adds 48 weapon-gated cards, so the pool GROWS as it gates rather than shrinking, which is the condition under which the argument actually holds."
 }
