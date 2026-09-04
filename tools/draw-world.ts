@@ -15,7 +15,7 @@ import { encodePng, blankImage, type Image } from './png.ts'
 import { readAtlas, type AtlasFrame } from './atlas-read.ts'
 import { Rng } from '../src/core/rng.ts'
 import {
-  CARRY, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf, carryAnchorOf,
+  CARRY, ITEMS, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf, carryAnchorOf,
   carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf, decalKindsFor, projectileScaleFor,
   sceneryKindsFor, swingStyleOf, thrustPhase,
   type CarrySlot, type MapBoundary,
@@ -117,7 +117,17 @@ export function projectileSprite(
   }
   // The barn dog is a real animal, not an icon.
   if (p.behaviour === 'minionHunt') {
+    const minion = (ITEMS as Record<string, Record<string, unknown>>)[p.weaponId]?.minionSprite
+    if (typeof minion === 'string' && frames[minion]) return { key: minion, frame: frames[minion] }
     return { key: 'feralDog', frame: frames['feralDog.idle.down.0'] }
+  }
+
+  // docs/UPGRADE_ROSTER.md batch 3, H8: a planted turret/trap/coop is an
+  // item, not a weapon, so the WEAPONS lookup below always misses it — see
+  // the matching branch in renderer.ts's own `projectileFrame`.
+  if (p.type === 'placeable') {
+    const sprite = (ITEMS as Record<string, Record<string, unknown>>)[p.weaponId]?.cardSprite
+    if (typeof sprite === 'string' && frames[sprite]) return { key: sprite, frame: frames[sprite] }
   }
 
   const def = (WEAPONS as Record<string, Record<string, unknown>>)[p.weaponId]

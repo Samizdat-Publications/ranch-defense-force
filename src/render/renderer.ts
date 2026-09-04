@@ -1825,6 +1825,19 @@ export class Renderer {
       return atlas.get('feralDog.idle.down.0') ?? atlas.get('feralDog.walk.down.0')
     }
 
+    /*
+       docs/UPGRADE_ROSTER.md batch 3, H8: a planted turret/trap/coop is an
+       ITEM, not a weapon — `WEAPONS[p.weaponId]` below is always undefined
+       for one, and without this it fell through to the coloured-rectangle
+       fallback. `cardSprite` doubles as its field art, the same reuse
+       `itemCardSprite`'s own doc comment already establishes for pickups.
+    */
+    if (p.type === 'placeable') {
+      const sprite = (ITEMS[p.weaponId] as { cardSprite?: string } | undefined)?.cardSprite
+      const f = sprite ? atlas.get(sprite) : undefined
+      if (f) return f
+    }
+
     // An animated clip if the weapon declares one, otherwise its icon. The
     // icon is a decent bullet for thrown produce and a poor one for anything
     // else — a spinning hacksaw was never going to read as a projectile.

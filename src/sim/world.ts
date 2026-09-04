@@ -279,8 +279,9 @@ export class World {
     saltRingRadius: 0,
     saltRingDamage: 0,
     saltRingSlowPct: 0,
-    /** sundayBest: the first hit each wave is refunded, hard. */
-    firstHitShield: 0,
+    /** sundayBest: feeds `shieldHp` below (H9, batch 3) — see that field's
+     *  doc comment for the generalisation from a one-hit counter-attack to a
+     *  numeric shield pool Fence Row also pays into. */
 
     // --- docs/UPGRADE_ROSTER.md batch 1 ----------------------------------
     // Every field below is flattened here for the same reason the block above
@@ -348,23 +349,110 @@ export class World {
     slickDamagePct: 0,
     /** Cross-Contamination: two statuses or more is worse than either. */
     crossMarkPct: 0,
+
+    // --- docs/UPGRADE_ROSTER.md batch 3 -----------------------------------
+    // Allies & Placeables (H8), the shield/revive layer (H9/H10), and the
+    // three Body cards that need no new hook at all.
+
+    /** H8 — Scarecrow Post. One flat per-turret payload; `turretCount` (below)
+     *  is how many turrets `updateTurrets` maintains, not a damage multiplier —
+     *  the same "count grows, magnitude does not" shape `killSpawnMax` uses. */
+    turretDamage: 0,
+    turretCooldown: 0,
+    turretRange: 0,
+    turretLife: 0,
+    turretCount: 0,
+    /** H8 — Bear Trap. `trapMax` is live traps, not copies of the card. */
+    trapDamage: 0,
+    trapStunSeconds: 0,
+    trapSpawnSeconds: 0,
+    trapMax: 0,
+    /** H8 — Hen Coop. `coopCount` is how many coops `updateCoop` maintains. */
+    henDamage: 0,
+    henCooldown: 0,
+    coopCount: 0,
+    /** H8 — Trip Wire. Damage sums per stack; range and stun are set, not
+     *  summed, for the same reason a radius or a duration never is. */
+    wireDamage: 0,
+    wireStunSeconds: 0,
+    wireMaxRange: 0,
+    /** Yard Goose: a second, independent chase-and-bite minion. */
+    gooseDamage: 0,
+    gooseKnockback: 0,
+    gooseCooldown: 0,
+    hasGoose: false,
+    /** Littermate: a second Barn Dog at reduced damage. Read by
+     *  `minionHunt` in `behaviours/weapons.ts` beside its own `hasMod` checks. */
+    hasLittermate: false,
+    littermateDamagePct: 0,
+    /** H9 — the shield. Generalises `firstHitShield` (Sunday Best), which now
+     *  feeds the same pool Fence Row does rather than special-casing a single
+     *  counter-attacked hit. Capacity only; the live amount is `playerShield`,
+     *  a World field below that (like `shieldReady` before it) is deliberately
+     *  NOT reset here — see `refreshSpecialItems`'s closing top-up. */
+    shieldHp: 0,
+    /** H10 — Second Wind. `revives` is the capacity `player.revivesLeft` is
+     *  topped up toward; see the field's own doc comment on `Player`. */
+    revives: 0,
+    reviveHpPct: 0,
+    reviveClearRadius: 0,
+    /** Hobnails: anything that touches the player is slowed. */
+    touchSlowPct: 0,
+    touchSlowSeconds: 0,
+    /** Oilcloth: hazards do less to the player, capped at 80% in the switch
+     *  below so four stacks cannot zero hazard damage out entirely. */
+    hazardReductionPct: 0,
+    /** Windbreak: player-applied knockback is stronger, and a hard-thrown
+     *  enemy that collides with a neighbour hurts both. */
+    knockbackBonusPct: 0,
+    collideDamage: 0,
   }
 
   /** Broody Hen's kill counter. Every Nth kill hatches one. */
   private hatchAcc = 0
 
-  /** Spent when the wave's first hit lands; restored on wave complete. */
-  private shieldReady = false
+  /**
+   * H9 (docs/UPGRADE_ROSTER.md batch 3): the shield's CURRENT amount.
+   *
+   * `specialItems.shieldHp` above is the CAPACITY; this is what is actually
+   * left to absorb. Deliberately not reset in `refreshSpecialItems` — like
+   * `shieldReady` before it, it persists across a build change and is only
+   * topped back up there and on wave complete, never zeroed by owning a new
+   * item. Read by `tests/specials.test.ts` through the getter below.
+   */
+  private playerShield = 0
+  get shield(): number { return this.playerShield }
+  /** Windbreak (batch 3, body): the multiplier every PLAYER-applied knockback
+   *  goes through. 1 for a run that does not own it, so every existing
+   *  `e.kx += (dx/d) * knockback` call site multiplies by exactly the number
+   *  it always did. */
+  private get knockbackMul(): number { return 1 + this.specialItems.knockbackBonusPct / 100 }
   /** Blood Up (Barn Dog epic): kills THIS wave, capped by `bloodUpMaxPct`
    *  divided by `bloodUpPerKillPct`, reset at every wave boundary below. */
   private bloodUpKillsThisWave = 0
   /** Public read of the above — `minionHunt` (a different module) reads it
    *  the same way `orbit` already reads `scytheSecondBlade`. */
   get bloodUpKills(): number { return this.bloodUpKillsThisWave }
+  /** Littermate (docs/UPGRADE_ROSTER.md batch 3): read by `minionHunt` in
+   *  `behaviours/weapons.ts`, the same module and the same reason as
+   *  `bloodUpKills` above — a per-tick weapon behaviour reads world state
+   *  through a getter rather than reaching into `specialItems` directly. */
+  get hasLittermate(): boolean { return this.specialItems.hasLittermate }
+  get littermateDamagePct(): number { return this.specialItems.littermateDamagePct }
   /** Seconds until the gas trail drops its next puddle. */
   private trailAcc = 0
   /** Guard so a chained kill cannot chain again. */
   private chaining = false
+
+  // --- docs/UPGRADE_ROSTER.md batch 3, H8 — per-stack placeable timers ----
+  // One cooldown per STACK SLOT, not per card: `updateTurrets` etc. index
+  // into these by the stack's position (0..maxStacks-1), exactly the way
+  // `updateBull`/`findAttached` already key a persistent minion by weapon id
+  // and `hatchChick` counts live chicks before hatching another. Sized to
+  // each card's own `maxStacks` — Scarecrow Post's 3, Hen Coop's 2.
+  private turretCd = new Float64Array(3)
+  private coopCd = new Float64Array(2)
+  private trapCd = 0
 
   /**
    * @param tier County Fair difficulty tier, 1-based. Scales enemy HP and the
@@ -891,6 +979,13 @@ export class World {
 
     this.updatePlayerSpecials(dt)
     this.updateBull(dt)
+    // docs/UPGRADE_ROSTER.md batch 3, H8 — every early-out on its own count
+    // field, so a run owning none of these pays five cheap compares.
+    if (this.specialItems.turretCount > 0) this.updateTurrets(dt)
+    if (this.specialItems.trapMax > 0) this.updateBearTraps(dt)
+    if (this.specialItems.coopCount > 0) this.updateCoop(dt)
+    if (this.specialItems.wireDamage > 0) this.updateTripWire()
+    if (this.specialItems.hasGoose) this.updateGoose(dt)
 
     // 3. spawner — the wave director, then the map's own. Ambient hazards are
     // spawning, so they belong in this step rather than with the vfx at 11:
@@ -979,8 +1074,10 @@ export class World {
       const income = waveIncome(wasWave)
       this.player.feed += income
       this.wavesCleared = wasWave
-      // One save per wave, not one per run.
-      if (this.specialItems.firstHitShield > 0) this.shieldReady = true
+      // H9: the shield refills to full capacity every wave. "Start each wave
+      // with a shield" is Fence Row's own words, and Sunday Best's capacity
+      // now lives in the same pool.
+      if (this.specialItems.shieldHp > 0) this.playerShield = this.specialItems.shieldHp
       this.bloodUpKillsThisWave = 0
       // Wave boundaries sweep up everything on the ground (§11).
       this.magnetiseAll()
@@ -1033,6 +1130,7 @@ export class World {
       if (e.flash > 0) e.flash -= dt
       if (e.flashLock > 0) e.flashLock -= dt
       if (e.touchCd > 0) e.touchCd -= dt
+      if (e.collideCd > 0) e.collideCd -= dt
       /*
          Advance the attack pose, and end it.
 
@@ -1099,6 +1197,10 @@ export class World {
    * rebuilding here would double the grid cost for no visible gain.
    */
   private separateEnemies(): void {
+    // Windbreak (batch 3, body): "an enemy thrown into another does 12 to
+    // both". Read once, outside the per-enemy loop, so a run that does not
+    // own the card pays a single compare rather than one per enemy.
+    const collideDamage = this.specialItems.collideDamage
     for (let i = this.enemies.live - 1; i >= 0; i--) {
       const e = this.enemies.items[i]
       if (e.dying > 0) continue
@@ -1108,6 +1210,10 @@ export class World {
       const n = this.grid.query(e.x, e.y, e.radius * 2, this.queryOut)
       let pushX = 0
       let pushY = 0
+      // A hard knockback velocity, not merely "overlapping" — an ordinary
+      // crowd standing shoulder to shoulder must not deal this every tick.
+      const thrown = collideDamage > 0 && e.collideCd <= 0
+        && e.kx * e.kx + e.ky * e.ky > C.windbreakThrownSpeed * C.windbreakThrownSpeed
       for (let k = 0; k < n; k++) {
         const j = this.queryOut[k]
         if (j === i || j >= this.enemies.live) continue
@@ -1121,6 +1227,12 @@ export class World {
         const overlap = (want - d) / d
         pushX += dx * overlap * 0.5
         pushY += dy * overlap * 0.5
+        if (thrown && o.dying <= 0 && o.collideCd <= 0) {
+          this.damageEnemy(i, collideDamage, 'melee', false)
+          this.damageEnemy(j, collideDamage, 'melee', false)
+          e.collideCd = C.windbreakCollideCooldown
+          o.collideCd = C.windbreakCollideCooldown
+        }
       }
       e.x += pushX
       e.y += pushY
@@ -1595,6 +1707,12 @@ export class World {
             this.projectiles.free(i)
             break
           }
+        } else if (p.behaviour === 'trapField' && p.hitsLeft <= 0) {
+          // Bear Trap (batch 3, H8): `attached` exempts it from the block
+          // above, so its own one-shot consumption is spelled out here —
+          // triggered and spent in the same tick it bites.
+          this.projectiles.free(i)
+          break
         }
       }
     }
@@ -1706,8 +1824,9 @@ export class World {
       const dx = e.x - p.x
       const dy = e.y - p.y
       const d = Math.hypot(dx, dy) || 1
-      e.kx += (dx / d) * p.knockback
-      e.ky += (dy / d) * p.knockback
+      const kb = p.knockback * this.knockbackMul
+      e.kx += (dx / d) * kb
+      e.ky += (dy / d) * kb
     }
   }
 
@@ -1864,18 +1983,10 @@ export class World {
 
       const sp = this.specialItems
 
-      // Sunday Best: the wave's first hit is refunded, hard, and the damage
-      // never lands. Restored on wave complete, so it is one save per wave
-      // rather than a permanent immunity.
-      if (sp.firstHitShield > 0 && this.shieldReady) {
-        this.shieldReady = false
-        this.damageEnemy(j, sp.firstHitShield, 'melee', false)
-        this.playFx('bigImpact', pl.x, pl.y - 12)
-        this.sound('crit')
-        e.touchCd = P.contactDamageInterval
-        continue
-      }
-
+      // Sunday Best used to be special-cased here — the wave's first hit,
+      // refunded and countered outright. H9 (batch 3) folds it into
+      // `damagePlayer`'s shield absorption instead, so contact damage always
+      // goes through the one call below now.
       this.damagePlayer(e.damage * waveScalar(this.spawner.wave))
       e.touchCd = P.contactDamageInterval
       // The chasers have no attack STATE — they damage by touching. The hit is
@@ -1891,6 +2002,13 @@ export class World {
       if (sp.touchStunSeconds > 0) {
         e.stun = Math.max(e.stun, sp.touchStunSeconds)
         e.touchCd = Math.max(e.touchCd, sp.touchStunCooldown)
+      }
+
+      // Hobnails (batch 3, body): anything that touches the player is slowed.
+      // Rides the same status fields a hazard's slow already uses.
+      if (sp.touchSlowPct > 0) {
+        e.slowPct = Math.max(e.slowPct, sp.touchSlowPct)
+        e.slowLife = Math.max(e.slowLife, sp.touchSlowSeconds)
       }
     }
     void dt
@@ -2552,7 +2670,7 @@ export class World {
       // Shoved off the line rather than along it — the point is that he goes
       // through the crowd, so the crowd has to end up either side of him.
       const d = Math.hypot(dx, dy) || 1
-      const kb = (a.knockback as number) ?? 300
+      const kb = ((a.knockback as number) ?? 300) * this.knockbackMul
       e.kx += (dx / d) * kb
       e.ky += (dy / d) * kb
     }
@@ -2578,7 +2696,7 @@ export class World {
       const a = p.def.ability
       if (a.id === 'digIn') {
         const radius = (a.pulseRadius as number) ?? 140
-        const kb = (a.pulseKnockback as number) ?? 260
+        const kb = ((a.pulseKnockback as number) ?? 260) * this.knockbackMul
         // Scaled to the real pulse radius so what you see is what it hits.
         this.playFx('shockwave', p.x, p.y, 0, radius / 55, 0, 0, true)
         const n = this.grid.query(p.x, p.y, radius, this.queryOut)
@@ -3521,6 +3639,11 @@ export class World {
     if (this.specialItems.auraReduction > 0) {
       dmg *= 1 - this.specialItems.auraReduction / 100
     }
+    // Oilcloth (batch 3, body): hazards specifically do less. Contact damage
+    // is untouched — the card's own words are "hazards", not "everything".
+    if (environmental && this.specialItems.hazardReductionPct > 0) {
+      dmg *= 1 - this.specialItems.hazardReductionPct / 100
+    }
     dmg = dmg * (1 - p.stats.armor / (p.stats.armor + C.armorConstant))
 
     const taken = Math.max(environmental ? 0 : 1, dmg)
@@ -3535,9 +3658,21 @@ export class World {
        eventually lost, and the balance harness reads it to compare classes —
        netting a wound the player then cancelled would make The Widow look like
        she was being hit less rather than paying for it differently.
+
+       H9 (batch 3) joins the same philosophy: `taken` below still measures
+       what the field threw, and the shield absorbs out of a separate `landed`
+       variable — the amount that actually reaches `takeWound` and the health
+       bar. A shielded hit still counts as damage taken for the balance
+       harness; it just never costs HP.
     */
-    p.hp -= p.takeWound(taken)
-    if (taken > 0) p.onHurt()
+    let landed = taken
+    if (this.playerShield > 0 && landed > 0) {
+      const absorbed = Math.min(this.playerShield, landed)
+      this.playerShield -= absorbed
+      landed -= absorbed
+    }
+    p.hp -= p.takeWound(landed)
+    if (landed > 0) p.onHurt()
     if (!environmental) this.sound('playerHurt')
     if (environmental) this.damageTakenFromHazards += taken
     else {
@@ -3545,6 +3680,23 @@ export class World {
       p.invuln = P.invulnSecondsAfterHit
     }
     this.addShake(T.camera.traumaPlayerHit)
+
+    /*
+       H10 — Second Wind. Checked after the hit lands rather than before it is
+       computed, so a revive is spent on the actual killing blow and not on a
+       hit that the shield or armour would have survived anyway.
+    */
+    if (p.hp <= 0 && p.revivesLeft > 0) {
+      p.revivesLeft--
+      p.hp = Math.max(1, p.stats.maxHp * (this.specialItems.reviveHpPct / 100))
+      this.areaDamage(
+        p.x, p.y, this.specialItems.reviveClearRadius, C.reviveClearDamage,
+        'melee', C.reviveClearKnockback, C.reviveClearStunSeconds,
+      )
+      this.playFx('bigImpact', p.x, p.y - 12)
+      this.sound('crit')
+      this.addShake(T.camera.traumaPlayerHit * 2)
+    }
   }
 
   areaDamage(
@@ -3568,8 +3720,12 @@ export class World {
       this.damageEnemy(j, amount, type, isCrit)
       if (e.active && !e.knockbackImmune && knockback > 0) {
         const d = Math.hypot(dx, dy) || 1
-        e.kx += (dx / d) * knockback
-        e.ky += (dy / d) * knockback
+        // Windbreak (batch 3): every AoE the player's own weapons and items
+        // cause routes through here, so the bonus applies once, centrally,
+        // rather than at each of `areaDamage`'s callers.
+        const kb = knockback * this.knockbackMul
+        e.kx += (dx / d) * kb
+        e.ky += (dy / d) * kb
       }
       if (stun > 0 && e.active) e.stun = Math.max(e.stun, stun * this.specialItems.stunMultiplier)
       if (slowPct > 0 && e.active) {
@@ -3819,6 +3975,273 @@ export class World {
     }
   }
 
+  /**
+   * H8 (docs/UPGRADE_ROSTER.md batch 3) — Scarecrow Post.
+   *
+   * One `attached` `'placeable'` projectile per stack, keyed by
+   * `findAttached('scarecrowPost', i)` exactly the way the Bull is keyed by
+   * its own weapon id. `pierce = -1` opts it OUT of `collideProjectiles`
+   * entirely (the same escape hatch `arcLob` uses to detonate on expiry
+   * rather than on contact) — its damage is a deliberate `areaDamage` pulse
+   * on its own cooldown, not a touch hitbox, because 190px is a RANGE, not a
+   * post's physical size. `turretLife` (25s) is not refreshed after spawn, so
+   * a turret times out and the next call replants a fresh one at wherever the
+   * player then is — "one per stack" that follows the fight instead of being
+   * abandoned behind it.
+   */
+  private updateTurrets(dt: number): void {
+    const s = this.specialItems
+    const count = Math.min(s.turretCount, this.turretCd.length)
+    for (let i = 0; i < count; i++) {
+      let p = this.findAttached('scarecrowPost', i)
+      if (!p) {
+        p = this.spawnProjectile()
+        if (!p) continue
+        p.weaponId = 'scarecrowPost'
+        p.type = 'placeable'
+        p.behaviour = 'turret'
+        p.attached = true
+        p.x = this.player.x
+        p.y = this.player.y
+        p.px = p.x
+        p.py = p.y
+        p.t1 = i
+        p.radius = 16
+        p.pierce = -1
+        p.knockback = 0
+        p.life = s.turretLife
+        this.turretCd[i] = 0
+      }
+      this.turretCd[i] -= dt
+      if (this.turretCd[i] <= 0) {
+        this.turretCd[i] = s.turretCooldown
+        this.areaDamage(p.x, p.y, s.turretRange, s.turretDamage, 'ranged', 30)
+        this.playFx('arrowImpact', p.x, p.y, 0, 0.6)
+      }
+    }
+  }
+
+  /**
+   * H8 — Bear Trap.
+   *
+   * Traps are consumed rather than persistent: each is `attached` (so it
+   * never moves and `collideProjectiles`' pierce-based free never applies to
+   * it) but carries a real `hitStamp` and `hitsLeft: 1`, so the FIRST enemy
+   * that overlaps it triggers `applyHit` exactly once — `collideProjectiles`
+   * itself frees it the same tick (see the `trapField` branch added there).
+   * `trapMax` counts live traps, not copies of the card, so a run with two
+   * stacks still only ever has two traps on the ground — one more than a run
+   * with one — waiting to be stepped on.
+   */
+  private updateBearTraps(dt: number): void {
+    const s = this.specialItems
+    this.trapCd -= dt
+    if (this.trapCd > 0) return
+    let live = 0
+    for (let i = 0; i < this.projectiles.live; i++) {
+      if (this.projectiles.items[i].weaponId === 'bearTrap') live++
+    }
+    if (live >= s.trapMax) return
+    this.trapCd = s.trapSpawnSeconds
+    const p = this.spawnProjectile()
+    if (!p) return
+    p.weaponId = 'bearTrap'
+    p.type = 'placeable'
+    p.behaviour = 'trapField'
+    p.attached = true
+    // Dropped a short walk from the player, never underfoot — the hand that
+    // just set it should not be the first thing that finds it.
+    const a = this.rng.range(0, Math.PI * 2)
+    const d = this.rng.range(40, 90)
+    p.x = this.player.x + Math.cos(a) * d
+    p.y = this.player.y + Math.sin(a) * d
+    p.px = p.x
+    p.py = p.y
+    p.radius = 14
+    p.damage = s.trapDamage
+    p.stunOnHit = s.trapStunSeconds
+    p.hitStamp = this.tick
+    p.hitsLeft = 1
+    p.pierce = 0
+    p.knockback = 0
+    p.life = 999 // freed by the trigger (collideProjectiles), not by time
+  }
+
+  /**
+   * H8 — Hen Coop.
+   *
+   * The coop itself is a permanent `attached` `'placeable'` base, one per
+   * stack, that pays no damage of its own (`pierce = -1`, same reasoning as
+   * the Scarecrow Post) and instead spawns a hen on its own cooldown. The hen
+   * is a SEPARATE, unattached projectile — `spawnHen` below — so `henCoop`
+   * names two different live shapes and `findAttached` must never confuse
+   * them; the hen's `t1 = -1` guarantees it can never match a coop-base key
+   * (0 or 1), which `findAttached` searches by weaponId AND t1 together.
+   */
+  private updateCoop(dt: number): void {
+    const s = this.specialItems
+    const count = Math.min(s.coopCount, this.coopCd.length)
+    for (let i = 0; i < count; i++) {
+      let p = this.findAttached('henCoop', i)
+      if (!p) {
+        p = this.spawnProjectile()
+        if (!p) continue
+        p.weaponId = 'henCoop'
+        p.type = 'placeable'
+        p.behaviour = 'coopBase'
+        p.attached = true
+        p.x = this.player.x
+        p.y = this.player.y
+        p.px = p.x
+        p.py = p.y
+        p.t1 = i
+        p.radius = 16
+        p.pierce = -1
+        p.knockback = 0
+        p.life = 1e6 // permanent, like the coop it represents
+        this.coopCd[i] = 0
+      }
+      this.coopCd[i] -= dt
+      if (this.coopCd[i] <= 0) {
+        this.coopCd[i] = s.henCooldown
+        this.spawnHen(p.x, p.y)
+      }
+    }
+  }
+
+  /** The Hen Coop's own payout: a hen that dies on its first contact. Type
+   *  `'placeable'` rather than `'minion'` is what MAKES it die on contact —
+   *  see the doc comment on `Projectile.type` in entities.ts. */
+  private spawnHen(x: number, y: number): void {
+    const s = this.specialItems
+    const p = this.spawnProjectile()
+    if (!p) return
+    p.weaponId = 'henCoop'
+    p.type = 'placeable'
+    p.behaviour = 'minionHunt'
+    p.attached = false
+    p.x = x
+    p.y = y
+    p.px = x
+    p.py = y
+    p.t1 = -1
+    p.radius = 8
+    p.pierce = 0
+    p.hitStamp = -1
+    p.damage = s.henDamage
+    p.knockback = 20
+    p.angularVelocity = 260
+    p.t0 = 900 // leash: generous, so a hen sent out does not snap back mid-flight
+    p.life = 8
+  }
+
+  /**
+   * H8 — Trip Wire.
+   *
+   * Not a projectile at all: a taut line has no natural circular hitbox, so
+   * this is a direct per-tick crossing check between the player and the
+   * nearest harvestable prop — the same shape Salt Circle's ring already
+   * uses (`updatePlayerSpecials`), generalised from a circle's boundary to a
+   * line segment. `wireMark` latches per enemy so standing on the line bites
+   * once per crossing, not once per frame; it is its OWN field on `Enemy`
+   * rather than reusing `saltMark`, because a run can own both hazards at
+   * once and a shared latch would let one silently arm or disarm the other.
+   */
+  private updateTripWire(): void {
+    const s = this.specialItems
+    const pl = this.player
+    let best = -1
+    let bestD2 = s.wireMaxRange * s.wireMaxRange
+    for (let i = 0; i < this.props.live; i++) {
+      const pr = this.props.items[i]
+      if (pr.dying > 0) continue
+      const dx = pr.x - pl.x
+      const dy = pr.y - pl.y
+      const d2 = dx * dx + dy * dy
+      if (d2 < bestD2) { bestD2 = d2; best = i }
+    }
+    if (best < 0) return
+    const pr = this.props.items[best]
+    const x0 = pl.x
+    const y0 = pl.y
+    const sx = pr.x - x0
+    const sy = pr.y - y0
+    const len2 = sx * sx + sy * sy
+    const bandR = 10
+    const n = this.grid.query(
+      x0 + sx / 2, y0 + sy / 2, Math.sqrt(len2) / 2 + bandR, this.queryOut,
+    )
+    for (let k = 0; k < n; k++) {
+      const j = this.queryOut[k]
+      if (j >= this.enemies.live) continue
+      const e = this.enemies.items[j]
+      if (e.dying > 0) continue
+      const t = len2 > 0
+        ? Math.max(0, Math.min(1, ((e.x - x0) * sx + (e.y - y0) * sy) / len2))
+        : 0
+      const cx = x0 + sx * t
+      const cy = y0 + sy * t
+      const dx = e.x - cx
+      const dy = e.y - cy
+      const reach = bandR + e.radius
+      const onLine = dx * dx + dy * dy <= reach * reach
+      if (onLine && e.wireMark <= 0) {
+        e.wireMark = 1
+        this.damageEnemy(j, s.wireDamage, 'melee', false)
+        if (!e.knockbackImmune) e.stun = Math.max(e.stun, s.wireStunSeconds)
+        this.playFx('arrowImpact', e.x, e.y - e.radius * 0.4)
+      } else if (!onLine && e.wireMark > 0) {
+        e.wireMark = 0
+      }
+    }
+  }
+
+  /**
+   * Yard Goose: a second, independent chase-and-bite minion on the Bull's own
+   * pattern — see `updateBull`'s doc comment for why a friendly rides the
+   * minion path rather than an inverted enemy. Its bite cadence is subject to
+   * the same generic `minionHunt` re-arm the Bull already lives with (the
+   * integrate step's own steering block re-arms any unattached `minionHunt`
+   * projectile off `WEAPONS[p.weaponId]?.biteInterval`, which is `undefined`
+   * for an item-granted minion and falls back to 0.5s) — noted, not fixed
+   * here, because fixing it touches the Bull and the Dog too and is out of
+   * this batch's scope.
+   */
+  private updateGoose(dt: number): void {
+    const s = this.specialItems
+    let p = this.findAttached('yardGoose', 0)
+    if (!p) {
+      p = this.spawnProjectile()
+      if (!p) return
+      p.weaponId = 'yardGoose'
+      p.type = 'minion'
+      p.behaviour = 'minionHunt'
+      p.attached = false
+      p.x = this.player.x
+      p.y = this.player.y
+      p.px = p.x
+      p.py = p.y
+      p.t1 = 0
+      p.radius = 10
+      p.pierce = 999
+      p.hitStamp = this.tick
+      p.rearm = 0
+    }
+    p.life = 1.2
+    p.damage = s.gooseDamage
+    p.angularVelocity = 220
+    p.t0 = 420
+    p.knockback = s.gooseKnockback
+    p.rearm = Math.max(p.rearm, 0)
+    if (p.rearm <= 0) {
+      p.rearm = s.gooseCooldown
+      p.hitStamp = this.tick
+      p.hitsLeft = 999
+    } else {
+      p.rearm -= dt
+    }
+  }
+
   refreshSpecialItems(): void {
     const s = this.specialItems
     s.reflect = 0
@@ -3837,7 +4260,6 @@ export class World {
     s.saltRingRadius = 0
     s.saltRingDamage = 0
     s.saltRingSlowPct = 0
-    s.firstHitShield = 0
 
     s.anyOnHitRider = false
     s.chainCount = 0; s.chainRange = 0; s.chainMul = 0
@@ -3858,6 +4280,20 @@ export class World {
     s.critMarkPct = 0; s.critMarkSeconds = 0
     s.loadDamagePct = 0; s.loadBonusSeconds = 0
     s.slickDamagePct = 0; s.crossMarkPct = 0
+
+    // --- batch 3 -----------------------------------------------------------
+    s.turretDamage = 0; s.turretCooldown = 0; s.turretRange = 0
+    s.turretLife = 0; s.turretCount = 0
+    s.trapDamage = 0; s.trapStunSeconds = 0; s.trapSpawnSeconds = 0; s.trapMax = 0
+    s.henDamage = 0; s.henCooldown = 0; s.coopCount = 0
+    s.wireDamage = 0; s.wireStunSeconds = 0; s.wireMaxRange = 0
+    s.gooseDamage = 0; s.gooseKnockback = 0; s.gooseCooldown = 0; s.hasGoose = false
+    s.hasLittermate = false; s.littermateDamagePct = 0
+    s.shieldHp = 0
+    s.revives = 0; s.reviveHpPct = 0; s.reviveClearRadius = 0
+    s.touchSlowPct = 0; s.touchSlowSeconds = 0
+    s.hazardReductionPct = 0
+    s.knockbackBonusPct = 0; s.collideDamage = 0
 
     const num = (d: Record<string, unknown>, k: string, f = 0): number =>
       typeof d[k] === 'number' ? (d[k] as number) : f
@@ -3928,8 +4364,10 @@ export class World {
           s.saltRingSlowPct = num(def, 'slowPct')
           break
         case 'firstHitShield':
-          s.firstHitShield += num(def, 'returnDamage') * mult
-          this.shieldReady = true
+          // Sunday Best. H9's generalisation: it used to block and counter
+          // the wave's first hit outright; now it is 200 points of the same
+          // shield pool Fence Row pays into, refilled every wave complete.
+          s.shieldHp += num(def, 'returnDamage') * mult
           break
 
         // --- batch 1. Radii, ranges and durations are set rather than
@@ -4001,6 +4439,82 @@ export class World {
         case 'crossContamination':
           s.crossMarkPct += num(def, 'crossMarkPct', 30) * mult
           break
+
+        // --- batch 3 (docs/UPGRADE_ROSTER.md), H8: Allies & Placeables -----
+        // Damage/cooldown/range fields are SET, not summed — one turret's own
+        // payload never changes with the number of turrets. `*Count`/`*Max`
+        // sum `mult` exactly like `killSpawnMax` above: a boosted copy is one
+        // more live instance, never a stronger one.
+        case 'turret':
+          s.turretDamage = num(def, 'turretDamage', 9)
+          s.turretCooldown = num(def, 'turretCooldown', 1.2)
+          s.turretRange = num(def, 'turretRange', 190)
+          s.turretLife = num(def, 'turretLife', 25)
+          s.turretCount += mult
+          break
+        case 'trapField':
+          s.trapDamage = num(def, 'trapDamage', 45)
+          s.trapStunSeconds = num(def, 'trapStunSeconds', 1.5)
+          s.trapSpawnSeconds = num(def, 'trapSpawnSeconds', 5)
+          s.trapMax += mult
+          break
+        case 'coop':
+          s.henDamage = num(def, 'henDamage', 7)
+          s.henCooldown = num(def, 'henCooldown', 6)
+          s.coopCount += mult
+          break
+        // Trip Wire's damage is the one payload in this group that DOES sum:
+        // each stack is a redundant strand on the same wire, so more stacks
+        // means a harder crossing rather than a second wire (§6's table gives
+        // it no count to grow).
+        case 'tripWireRider':
+          s.wireDamage += num(def, 'wireDamagePer', 28) * mult
+          s.wireStunSeconds = num(def, 'wireStunSeconds', 0.5)
+          s.wireMaxRange = num(def, 'wireMaxRange', 260)
+          break
+        case 'gooseMinion':
+          s.gooseDamage = num(def, 'gooseDamage', 14)
+          s.gooseKnockback = num(def, 'gooseKnockback', 180)
+          s.gooseCooldown = num(def, 'gooseCooldown', 0.6)
+          s.hasGoose = true
+          break
+        // Littermate is a flag read by `minionHunt` in behaviours/weapons.ts,
+        // beside its own `hasMod` checks — no state lives here to flatten
+        // beyond "is it owned", the same shape `gasImmune` already has.
+        case 'secondDog':
+          s.hasLittermate = true
+          s.littermateDamagePct = num(def, 'littermateDamagePct', 80)
+          break
+
+        // H9 — the shield. Fence Row sums into the same capacity Sunday
+        // Best's `firstHitShield` case (above) now feeds.
+        case 'shieldPerWave':
+          s.shieldHp += num(def, 'shieldAmount', 25) * mult
+          break
+        // H10 — Second Wind. `revives` sums (a boosted copy is two charges);
+        // `player.revivesLeft` is topped up from it once, after this loop,
+        // alongside the shield — see the comment there.
+        case 'revive':
+          s.revives += mult
+          s.reviveHpPct = num(def, 'reviveHpPct', 40)
+          s.reviveClearRadius = num(def, 'reviveClearRadius', 200)
+          break
+
+        // Body cards with no new hook beyond a flattened field — §8's list.
+        case 'touchSlow':
+          s.touchSlowPct += num(def, 'touchSlowPct', 35) * mult
+          s.touchSlowSeconds = num(def, 'touchSlowSeconds', 1)
+          break
+        case 'hazardResist':
+          s.hazardReductionPct = Math.min(
+            80, s.hazardReductionPct + num(def, 'hazardReductionPct', 40) * mult,
+          )
+          break
+        case 'windbreak':
+          s.knockbackBonusPct += num(def, 'knockbackBonusPct', 40) * mult
+          s.collideDamage = num(def, 'collideDamage', 12)
+          break
+
         default: break // bullMinion is spawned, not flattened; see summonFor
       }
     }
@@ -4009,6 +4523,18 @@ export class World {
     // compare per hit rather than eleven.
     s.anyOnHitRider = s.chainCount > 0 || s.ricochetCount > 0 || s.burstChance > 0
       || s.hitHazardKind !== ''
+
+    /*
+       H9/H10: topped UP, never assigned outright, and never reset in the loop
+       above — both persist across a build change exactly the way
+       `shieldReady` did before this batch. A shield or a revive spent earlier
+       this run comes back the moment the run buys anything else, gated only
+       by the run actually owning the card (`shieldHp`/`revives` are 0 for a
+       run that does not, so `Math.max` is a no-op for the other five sixths
+       of the roster and every run that owns neither of these two cards).
+    */
+    if (s.shieldHp > 0) this.playerShield = Math.max(this.playerShield, s.shieldHp)
+    if (s.revives > 0) this.player.revivesLeft = Math.max(this.player.revivesLeft, s.revives)
   }
 
   // ------------------------------------------------------------- queries

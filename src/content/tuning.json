@@ -26,7 +26,14 @@
   "injuredBelowPct": 45,
   "_hitFlashNote": "The flash is 60ms as the spec asks, but 60ms only reads as a blink if it is allowed to end. It was re-armed on every hit INCLUDING damage-over-time ticks, so at late-wave fire rates it never expired: wave 15 with 266 enemies rendered most of the crowd as solid white silhouettes and the wave-12 boss could not be seen at all while being fought. DoT no longer flashes, and the refractory caps the duty cycle at 60/(60+160) = 27%, so a hit reads as a blink against the sprite rather than replacing it. Raise the refractory if a crowd still washes out; lower it if single hits stop registering.",
   "deathSpinSeconds": 0.2,
-  "attackClipSeconds": 0.6
+  "attackClipSeconds": 0.6,
+  "_reviveClearNote": "docs/UPGRADE_ROSTER.md batch 3, H10: Second Wind 'clears everything within 200px'. Reuses `World.areaDamage` rather than a bespoke kill sweep -- a very large `damage` one-or-two-shots anything the revive radius reaches, through the normal damage/death pipeline (flash, particles, the kill counter), rather than silently removing enemies. `reviveClearRadius` itself is per-card, in items.json.",
+  "reviveClearDamage": 9999,
+  "reviveClearKnockback": 260,
+  "reviveClearStunSeconds": 0.6,
+  "_windbreakNote": "docs/UPGRADE_ROSTER.md batch 3, body: 'an enemy thrown into another does 12 to both'. `windbreakThrownSpeed` is the kx/ky magnitude an enemy must be moving at to count as THROWN rather than merely jostled in a crowd -- separateEnemies runs every tick and an ordinary standing pile overlaps constantly, so this is what keeps the card from dealing its 12 to every enemy touching another enemy at all times. `windbreakCollideCooldown` rate-limits a single throw to one payout per enemy, not one per tick it stays overlapping.",
+  "windbreakThrownSpeed": 80,
+  "windbreakCollideCooldown": 0.4
  },
  "camera": {
   "deadZoneRadius": 40,

@@ -125,6 +125,14 @@ export interface Enemy {
   slowPct: number
   /** Salt Circle latch: 1 while standing on the ring, so it bites once per crossing. */
   saltMark: number
+  /** Trip Wire latch (batch 3, H8): the same one-bite-per-crossing shape as
+   *  `saltMark`, kept as its own field because a run can own both at once and
+   *  a shared latch would let one hazard silently arm or disarm the other. */
+  wireMark: number
+  /** Windbreak (batch 3, body): seconds until this enemy may again deal and
+   *  take the enemy-into-enemy collision damage. Rate-limits a knocked-back
+   *  enemy from re-triggering the collision every tick it overlaps another. */
+  collideCd: number
   /** Whether the last damage this enemy took was melee. Drives the Reaper's re-swing. */
   lastHitMelee: boolean
   slowLife: number
@@ -147,7 +155,7 @@ export function makeEnemy(): Enemy {
     burnDps: 0, burnLife: 0, burnAcc: 0, burnGen: 0,
     bleedDps: 0, bleedLife: 0, bleedAcc: 0,
     markPct: 0, markLife: 0, slowPct: 0, slowLife: 0, saltMark: 0, lastHitMelee: false,
-    lastHitWeaponId: '',
+    lastHitWeaponId: '', wireMark: 0, collideCd: 0,
   }
 }
 
@@ -179,7 +187,16 @@ export interface Projectile {
   angularVelocity: number
   orbitRadius: number
   knockback: number
-  type: 'melee' | 'ranged' | 'orbit' | 'aura' | 'utility' | 'minion'
+  /**
+   * `'placeable'` (docs/UPGRADE_ROSTER.md batch 3, H8): a turret, trap or coop
+   * planted at a fixed point. Like `'minion'`, an `attached` one is exempt from
+   * `collideProjectiles`' pierce-based free — its own update loop manages its
+   * life — but UNLIKE `'minion'` it is NOT exempt when it is not attached,
+   * so a coop's hen (moving, not attached) is freed on its first hit the same
+   * way any ordinary shot is. That single distinction is why the type exists
+   * separately from `'minion'` rather than reusing it.
+   */
+  type: 'melee' | 'ranged' | 'orbit' | 'aura' | 'utility' | 'minion' | 'placeable'
   t0: number
   t1: number
 

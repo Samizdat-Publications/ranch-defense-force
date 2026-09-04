@@ -230,6 +230,18 @@ export class Player {
    */
   element = 'none'
 
+  /**
+   * H10 (docs/UPGRADE_ROSTER.md batch 3): Second Wind's remaining charges.
+   *
+   * Set from `World.specialItems.revives` in `refreshSpecialItems`, which
+   * tops it UP (never down) rather than assigning outright — the same
+   * re-arm-on-any-purchase shape `firstHitShield`'s `shieldReady` already had,
+   * kept deliberately rather than fought: a spent revive comes back the next
+   * time the run buys anything, which is generous but consistent with the
+   * precedent this batch's H9 refactor generalises.
+   */
+  revivesLeft = 0
+
   init(classId: string, metaMods: StatMods = {}): void {
     this.classId = classId
     this.def = CLASSES[classId]
@@ -251,6 +263,7 @@ export class Player {
     this.rooted = false
     this.invuln = 0
     this.stillFor = 0
+    this.revivesLeft = 0
 
     this.wound = 0
     this.woundRate = 0
