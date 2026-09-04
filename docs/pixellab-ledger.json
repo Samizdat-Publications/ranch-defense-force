@@ -49,7 +49,7 @@
   {
    "id": "40cca5f9-570d-4b38-ba4e-72b569a1d97c",
    "verdict": "wired",
-   "where": "title screen yard (scene.cow, scene.cowGrazeStrip)"
+   "where": "title screen yard (scene.cow)"
   },
   {
    "id": "ad30bffe-baf1-4074-a893-081a6544de6a",
@@ -108,18 +108,18 @@
   },
   {
    "id": "906717d3-1a15-4a44-989a-c668f5863e1d",
-   "verdict": "open",
-   "where": "OPEN: packed; freed by this audit when slingBands took its own icon"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon — weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "d1a2982b-46b4-4272-8f22-09891bc0a74a",
-   "verdict": "open",
-   "where": "OPEN: packed; freed by this audit when slingBands took its own icon"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon — weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "4be6836f-fe1e-448c-921d-40dafbcc8854",
-   "verdict": "open",
-   "where": "OPEN: packed; freed by this audit when slingBands took its own icon"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon — weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "f4acc609-aa27-428a-b412-84711a0e9c1e",
@@ -234,22 +234,22 @@
   {
    "id": "566f1985-c6c9-4f5a-9f0b-ba63c57b639b",
    "verdict": "wired",
-   "where": "field dressing (wired by this audit) (ranch.fenceBroken, ranch.fenceRailBroken)"
+   "where": "field dressing (wired by this audit) (ranch.fenceBroken)"
   },
   {
    "id": "76afd046-0060-41c9-bfd9-33d6eddb82df",
-   "verdict": "open",
-   "where": "OPEN: LimeZu dog strips packed and unused since the generated dogs landed"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: the dog in the yard is `joy`, a generated CHARACTER with idle and walk clips, and it has been since session 20. These are static profile objects; the LimeZu strip they were bought…"
   },
   {
    "id": "392cd931-84e4-4fa1-8a33-60f2a7a2414b",
-   "verdict": "open",
-   "where": "OPEN: LimeZu dog strips packed and unused since the generated dogs landed"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: the dog in the yard is `joy`, a generated CHARACTER with idle and walk clips, and it has been since session 20. These are static profile objects; the LimeZu strip they were bought…"
   },
   {
    "id": "f3b7bb1b-4868-44df-a263-952c3f282243",
-   "verdict": "open",
-   "where": "OPEN: LimeZu dog strips packed and unused since the generated dogs landed"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: the dog in the yard is `joy`, a generated CHARACTER with idle and walk clips, and it has been since session 20. These are static profile objects; the LimeZu strip they were bought…"
   },
   {
    "id": "0941f2e2-b81c-47a3-925a-ee4477738c1b",
@@ -263,18 +263,18 @@
   },
   {
    "id": "329b8273-c639-4e4d-99e1-26707573d18b",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.chiliShot packed, drawn by nothing"
   },
   {
    "id": "3b279571-1939-4a45-895d-c07768ee2295",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.chiliShot packed, drawn by nothing"
   },
   {
    "id": "713504d2-f9c3-45ed-b21f-251bc3dfe5c5",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.chiliShot packed, drawn by nothing"
   },
   {
    "id": "55fc178f-1056-4e6b-bdbc-cc4597d55696",
@@ -478,8 +478,8 @@
   },
   {
    "id": "1fd0ecea-7f4a-4e6c-8f48-ea51c167c937",
-   "verdict": "open",
-   "where": "OPEN: packed, drawn by nothing; gateOpen took the dressing slot"
+   "verdict": "wired",
+   "where": "field dressing (wired 2026-09-04): a second SKIN of a fixture the list already carries, the same argument that put a galvanised trough beside a wooden one (ranch.gateClosed)"
   },
   {
    "id": "7fbc950f-47bb-4ab9-abe3-5a88939ed52b",
@@ -664,27 +664,27 @@
   {
    "id": "55763793-010d-458c-b2db-58c3ca95d6dc",
    "verdict": "wired",
-   "where": "field dressing (wired by this audit) (ranch.fenceRun, ranch.fenceRail, ranch.fenceCorner)"
+   "where": "field dressing (wired by this audit) (ranch.fenceRun, ranch.fenceCorner)"
   },
   {
    "id": "8e869c04-4058-44cd-9f52-1c060da8f7e7",
-   "verdict": "open",
-   "where": "OPEN: never downloaded; ranch.silo is the one the scenes use"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
   },
   {
    "id": "5639c5f7-e514-4e59-a3be-46180dde4a7a",
-   "verdict": "open",
-   "where": "OPEN: never downloaded; ranch.silo is the one the scenes use"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
   },
   {
    "id": "dcdc6229-aa42-48f1-9f79-d18fb117b606",
-   "verdict": "open",
-   "where": "OPEN: never downloaded; ranch.silo is the one the scenes use"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
   },
   {
    "id": "f33f3add-3063-49d2-9a31-cdee7ed20417",
-   "verdict": "open",
-   "where": "OPEN: never downloaded; ranch.silo is the one the scenes use"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be…"
   },
   {
    "id": "e81388b4-9adb-43cc-87cb-19af545374ac",
@@ -828,18 +828,18 @@
   },
   {
    "id": "b4f0be5e-289f-431f-b629-c94d95519468",
-   "verdict": "wired",
-   "where": "title screen horizon (the corn wall is the default; this is the alternative) (sceneBg.treeline)"
+   "verdict": "packed-unused",
+   "where": "title screen horizon (the corn wall is the default; this is the alternative) — sceneBg.treeline packed, drawn by nothing"
   },
   {
    "id": "a1d48aa4-de4e-4a51-a931-6ce154f7b16a",
-   "verdict": "wired",
-   "where": "title screen horizon (sceneBg.cornWall)"
+   "verdict": "packed-unused",
+   "where": "title screen horizon — sceneBg.cornWall packed, drawn by nothing"
   },
   {
    "id": "835aa5ae-754b-406b-b102-bf75a6c309a8",
    "verdict": "wired",
-   "where": "breakables.json milkCans class (prop.milkCans, scene.milkcan)"
+   "where": "breakables.json milkCans class (prop.milkCans)"
   },
   {
    "id": "032ddbed-bbea-4b35-9665-42ee0ad9521e",
@@ -1008,18 +1008,18 @@
   },
   {
    "id": "719f95ad-39c5-453c-89a2-2e267e1e8ad9",
-   "verdict": "open",
-   "where": "OPEN: packed; freed by this audit when keroseneCan took its own icon"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon — weapon.slopBucket packed, drawn by nothing"
   },
   {
    "id": "597036c2-32aa-42db-a2bd-e1752d65fa3c",
-   "verdict": "open",
-   "where": "OPEN: packed; freed by this audit when keroseneCan took its own icon"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon — weapon.slopBucket packed, drawn by nothing"
   },
   {
    "id": "5a11ffa0-f3b3-4849-968e-cf243c24e869",
-   "verdict": "open",
-   "where": "OPEN: packed; freed by this audit when keroseneCan took its own icon"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon — weapon.slopBucket packed, drawn by nothing"
   },
   {
    "id": "bad6ca10-d4f7-42dd-875f-32f428f46a82",
@@ -1308,33 +1308,33 @@
   },
   {
    "id": "e1955319-5fa2-4e7d-bb1a-8d7c00f6a9a7",
-   "verdict": "open",
-   "where": "OPEN: packed, drawn by nothing since this audit"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "b2d9355b-acc2-4bfe-baab-b31605080000",
-   "verdict": "open",
-   "where": "OPEN: packed, drawn by nothing since this audit"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "98bf779e-a2f6-43fb-bc5a-f3c8e4c72ef5",
-   "verdict": "open",
-   "where": "OPEN: packed, drawn by nothing since this audit"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "eaf1c61c-76f6-41e4-943a-75c6a795270a",
-   "verdict": "open",
-   "where": "OPEN: packed, drawn by nothing since this audit"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "e539f07d-b254-49d2-a5c2-97859c6b8bb3",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "wired",
+   "where": "the barn interior: one lit over the aisle and one dead at the far end (ranch.barnLantern, ranch.barnLanternDark)"
   },
   {
    "id": "3694902e-d9fc-4683-ba86-f7ba546ad88d",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "surplus",
+   "where": "another roll of ranch.barnLantern"
   },
   {
    "id": "7b3832ba-d70f-494f-a484-cca8200afe05",
@@ -1533,8 +1533,8 @@
   },
   {
    "id": "d9604ddb-6a1f-44e6-8d46-a0209558ea21",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "wired",
+   "where": "the barn interior: the posts between the stalls (ranch.stallDivider)"
   },
   {
    "id": "ef0d9da6-efb3-4545-a365-f9613117a4c6",
@@ -1763,8 +1763,8 @@
   },
   {
    "id": "2d863647-f4a6-4596-9331-2391022520e1",
-   "verdict": "surplus",
-   "where": "another roll of sceneBg.treeline"
+   "verdict": "packed-unused",
+   "where": "title screen horizon alternative — sceneBg.treeline packed, drawn by nothing"
   },
   {
    "id": "66625599-1400-4702-a6bd-c79df5607fb1",
@@ -1848,8 +1848,8 @@
   },
   {
    "id": "5b318857-55f1-48bc-8257-f0ec7e8b429b",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "wired",
+   "where": "the barn interior: the trodden patch in the doorway light. NOT the floor tile -- it is a drawn object and tiling it gives a grid of pads; `terrain.hay` is the tile (ranch.barnFloor)"
   },
   {
    "id": "dd44569a-acfc-4a01-b3d6-4852c84ac298",
@@ -1898,18 +1898,18 @@
   },
   {
    "id": "192f8a0c-ef90-43db-b95c-16920d16d167",
-   "verdict": "wired",
-   "where": "title screen yard (scene.nest)"
+   "verdict": "packed-unused",
+   "where": "title screen yard — scene.nest packed, drawn by nothing"
   },
   {
    "id": "202e7c3a-5efe-4c43-8caf-61434bf2380e",
-   "verdict": "surplus",
-   "where": "another roll of scene.nest"
+   "verdict": "packed-unused",
+   "where": "title screen yard — scene.nest packed, drawn by nothing"
   },
   {
    "id": "59d0bde2-4cf6-45e1-8e2d-0833fac26131",
-   "verdict": "surplus",
-   "where": "another roll of scene.nest"
+   "verdict": "packed-unused",
+   "where": "title screen yard — scene.nest packed, drawn by nothing"
   },
   {
    "id": "67070efb-fcac-4d67-ac7c-a662e84a3d4f",
@@ -1958,18 +1958,18 @@
   },
   {
    "id": "624626d1-bd52-46a7-b523-a0dcbb9f61f2",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.melonLob packed, drawn by nothing"
   },
   {
    "id": "8d56e57f-4c64-4c38-a40d-1d9197ac7c0d",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.melonLob packed, drawn by nothing"
   },
   {
    "id": "f2d67865-95b7-4d74-83c8-b0bc1c20d81a",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.melonLob packed, drawn by nothing"
   },
   {
    "id": "a0ecfd76-b81a-43b7-a745-5d40da25ce8b",
@@ -2333,8 +2333,8 @@
   },
   {
    "id": "9e66e60a-dad0-472c-b6af-c4d397b46413",
-   "verdict": "open",
-   "where": "OPEN: generated by ANOTHER SESSION during this audit (2026-09-04T00:19Z); not wired, and not this audit's to wire"
+   "verdict": "unclaimed",
+   "where": "HELD for the upgrade roster: generated by the roster batch, not by the audit or the art pass, and it is that work's to wire. Tagged rdf-hold-batch2 on the account so it is visible from the other side…"
   },
   {
    "id": "1492cb05-a00d-49ec-b438-481c38184054",
@@ -2693,8 +2693,8 @@
   },
   {
    "id": "80bdadfd-b2da-4114-9914-d2f1dc6a944c",
-   "verdict": "open",
-   "where": "OPEN: packed, no barn interior exists to hang it in"
+   "verdict": "wired",
+   "where": "the barn interior, spanning loft to floor (`barn()` in src/ui/scene.ts) (ranch.barnLadder)"
   },
   {
    "id": "b46bc5bd-903f-4097-891c-348ca13bdd17",
@@ -2833,18 +2833,18 @@
   },
   {
    "id": "575c305a-416b-4103-94fc-ddd537c1822a",
-   "verdict": "wired",
-   "where": "field dressing (wired by this audit) and the title screen (ranch.fenceRail, scene.fenceRail)"
+   "verdict": "packed-unused",
+   "where": "field dressing (wired by this audit) and the title screen — ranch.fenceRail, scene.fenceRail packed, drawn by nothing"
   },
   {
    "id": "7a39dc9e-bd81-4e3b-b508-691b92f7c1e3",
-   "verdict": "surplus",
-   "where": "another roll of ranch.fenceRail"
+   "verdict": "packed-unused",
+   "where": "field dressing (wired by this audit) and the title screen — ranch.fenceRail, scene.fenceRail packed, drawn by nothing"
   },
   {
    "id": "07997165-1c0d-4fdd-9720-837f7dfb6a9d",
-   "verdict": "surplus",
-   "where": "another roll of ranch.fenceRail"
+   "verdict": "packed-unused",
+   "where": "field dressing (wired by this audit) and the title screen — ranch.fenceRail, scene.fenceRail packed, drawn by nothing"
   },
   {
    "id": "5c2e9546-591e-46f7-9d31-68e559cf3344",
@@ -2888,18 +2888,18 @@
   },
   {
    "id": "28579c97-7fe4-496a-9ea9-fa9b888ab2b5",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.eggToss packed, drawn by nothing"
   },
   {
    "id": "61c93bed-8227-4497-9f18-5ed8c679f238",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.eggToss packed, drawn by nothing"
   },
   {
    "id": "cdf2f538-2eba-437c-bfff-71d46b2eabd5",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.eggToss packed, drawn by nothing"
   },
   {
    "id": "80de7537-72c6-497e-9ea4-73003ab938a0",
@@ -2953,18 +2953,18 @@
   },
   {
    "id": "38227db3-fe5c-4386-861d-1b470d3cbfcd",
-   "verdict": "open",
-   "where": "OPEN: packed, no scene places the calf"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: no scene ever placed the calf, and the LimeZu calf and its graze strip left art/sprites.json in the same pass. The yard's cattle is `scene.cow` with its own graze loop; a calf sta…"
   },
   {
    "id": "f88cb9d4-ae36-409d-815c-62b46a71c479",
-   "verdict": "open",
-   "where": "OPEN: packed, no scene places the calf"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: no scene ever placed the calf, and the LimeZu calf and its graze strip left art/sprites.json in the same pass. The yard's cattle is `scene.cow` with its own graze loop; a calf sta…"
   },
   {
    "id": "9c7edd2a-848a-44e0-95ff-162df571b70c",
-   "verdict": "open",
-   "where": "OPEN: packed, no scene places the calf"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: no scene ever placed the calf, and the LimeZu calf and its graze strip left art/sprites.json in the same pass. The yard's cattle is `scene.cow` with its own graze loop; a calf sta…"
   },
   {
    "id": "0a4e2bae-6e47-4e11-af44-9e7f1165d4f8",
@@ -3124,7 +3124,7 @@
   {
    "id": "6cea4472-3981-4749-8d2e-1b251beb26f1",
    "verdict": "wired",
-   "where": "title screen (ranch.coop, scene.coop)"
+   "where": "title screen (ranch.coop)"
   },
   {
    "id": "8608c416-7179-42a3-a667-79859383ee35",
@@ -3139,7 +3139,7 @@
   {
    "id": "ab7dc869-5313-420a-a69c-892c70f85569",
    "verdict": "wired",
-   "where": "title screen yard (ranch.doghouse, scene.doghouse)"
+   "where": "title screen yard (ranch.doghouse)"
   },
   {
    "id": "35217181-17e0-4728-b0ff-acd73adb5845",
@@ -3153,38 +3153,38 @@
   },
   {
    "id": "d396d1cc-68f9-4b15-b924-5b74782aea2e",
-   "verdict": "open",
-   "where": "OPEN: LimeZu sign packed and unused; these were never downloaded"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
   },
   {
    "id": "9969127c-2442-4313-a05a-1053a4d6199b",
-   "verdict": "open",
-   "where": "OPEN: LimeZu sign packed and unused; these were never downloaded"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
   },
   {
    "id": "e8a76271-cccf-42ac-8964-43c92b0e0c40",
-   "verdict": "open",
-   "where": "OPEN: LimeZu sign packed and unused; these were never downloaded"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
   },
   {
    "id": "6873fac2-bb6f-43b1-a2f1-715d36eebc65",
-   "verdict": "open",
-   "where": "OPEN: LimeZu sign packed and unused; these were never downloaded"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
   },
   {
    "id": "18d260ce-c8a1-43d5-b0b6-2d1346f3f90d",
-   "verdict": "open",
-   "where": "OPEN: LimeZu sign packed and unused; these were never downloaded"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
   },
   {
    "id": "0df4cc53-736b-4c99-a505-7927f519660a",
-   "verdict": "open",
-   "where": "OPEN: LimeZu sign packed and unused; these were never downloaded"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
   },
   {
    "id": "87516e65-d575-43bb-8511-151194252911",
-   "verdict": "open",
-   "where": "OPEN: LimeZu sign packed and unused; these were never downloaded"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names …"
   },
   {
    "id": "4e4d7cc8-e4ec-426b-97cf-997a021d89ae",
@@ -3204,22 +3204,22 @@
   {
    "id": "337e4b77-6467-451e-8518-439aa4a55375",
    "verdict": "wired",
-   "where": "the Duster boss is animated from its own sheet; ranch.biplane is the still (ranch.biplane, duster)"
+   "where": "the Duster boss is animated from its own sheet; ranch.biplane is the still (duster)"
   },
   {
    "id": "255bbabe-8929-4c92-8cfa-6fbc9ac20f56",
    "verdict": "surplus",
-   "where": "another roll of ranch.biplane"
+   "where": "another roll of duster"
   },
   {
    "id": "9a755a48-9d53-4e7b-ad74-db73657e33fc",
    "verdict": "surplus",
-   "where": "another roll of ranch.biplane"
+   "where": "another roll of duster"
   },
   {
    "id": "7190e9d7-00a7-4259-8702-ddf8e082c94f",
    "verdict": "surplus",
-   "where": "another roll of ranch.biplane"
+   "where": "another roll of duster"
   },
   {
    "id": "f7bcbf24-2675-438d-8517-023d4d6a0a2c",
@@ -3493,23 +3493,23 @@
   },
   {
    "id": "ea38c9a8-0c2c-449f-ba42-83449ce38693",
-   "verdict": "open",
-   "where": "OPEN: never downloaded, and no scene or map asks for a cattle chute"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
   },
   {
    "id": "46db86c5-4c6e-45ad-901d-9d44187a6323",
-   "verdict": "open",
-   "where": "OPEN: never downloaded, and no scene or map asks for a cattle chute"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
   },
   {
    "id": "cf4b50f1-59f8-4471-ab31-263f1cd339de",
-   "verdict": "open",
-   "where": "OPEN: never downloaded, and no scene or map asks for a cattle chute"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
   },
   {
    "id": "b7753e18-32ed-49ed-8449-126dc66d7206",
-   "verdict": "open",
-   "where": "OPEN: never downloaded, and no scene or map asks for a cattle chute"
+   "verdict": "retired",
+   "where": "RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm thi…"
   },
   {
    "id": "551417ef-31b9-4373-8178-7cdab54526da",
@@ -3538,18 +3538,18 @@
   },
   {
    "id": "4a81775b-c0fe-4d24-8abb-3b12e91f32cc",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.framingHammer packed, drawn by nothing"
   },
   {
    "id": "2e4d5320-8a59-4d4f-827f-edf8c215058d",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.framingHammer packed, drawn by nothing"
   },
   {
    "id": "b4989a9a-5335-42b0-91a3-cebfcf699224",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.framingHammer packed, drawn by nothing"
   },
   {
    "id": "1d6d5189-efcb-43a6-853a-c666ab95592b",
@@ -3689,7 +3689,7 @@
   {
    "id": "c7d4fb62-21df-40aa-a99d-1d660bba7440",
    "verdict": "wired",
-   "where": "field dressing (wired by this audit) (ranch.fencePost, ranch.fenceCornerPost)"
+   "where": "field dressing (wired by this audit) (ranch.fenceCornerPost)"
   },
   {
    "id": "9d9f80bb-468c-482e-b48e-45f4c82ad82e",
@@ -3798,83 +3798,83 @@
   },
   {
    "id": "c0c072b6-5e5f-46f4-9563-51790a3eb96d",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "wired",
+   "where": "CLOSED 2026-09-04: composited over the drum and the crate pallet by `npm run webbed`, offline and free, and drawn underground -- theVault and theLift replace the oilDrum skin list and carry the webbe…"
   },
   {
    "id": "28fd9713-3fda-478e-89f9-3504b5f55ecb",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "75411b41-bd50-4a0b-9c3e-202346b28f9f",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "8228dddd-5406-4f45-b3fa-3cdc659e6e94",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "7d21ad7e-fd83-402f-903f-4a27a5e7cdb9",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "d32f67d7-5abb-4364-a4d6-643081ba83a9",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "e0884352-2315-4e0f-a5c6-23e10237d586",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "4842c8eb-c1ba-4b1d-ad44-80dd2028734e",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "d9e2db9d-abf7-4483-830c-f8746a75dbbf",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "7177dc76-8f4c-4448-b86f-dda680a531a9",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "a926c0ef-d365-4783-a927-7bf798e8f515",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "0e09a022-b389-4cf0-bf4b-9ac2505c9632",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "4bfb5568-7877-4afb-b6da-ac15b78f3c2c",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "81e406db-a897-46bc-85a9-a15c1c1a7875",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "cdeaf6e0-9f9d-4c7e-b534-2952cee0d4cf",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "e924540c-7198-45f9-9c01-c82a503e3f0c",
-   "verdict": "open",
-   "where": "OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exist…"
+   "verdict": "surplus",
+   "where": "another roll of cave.web0"
   },
   {
    "id": "4ef06b35-0aa9-47ed-9822-7a206662b640",
@@ -3883,8 +3883,8 @@
   },
   {
    "id": "f6073d65-7173-401e-8c7e-561afac0c60e",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "wired",
+   "where": "the barn interior: the stall run along the back wall, one end of it let go (ranch.stallFront, ranch.stallFrontBroken, ranch.stallDivider)"
   },
   {
    "id": "bb214456-faed-4652-b347-692869fe3b80",
@@ -4194,7 +4194,7 @@
   {
    "id": "2a07b9cf-27cd-4762-b7bf-09509c31825f",
    "verdict": "wired",
-   "where": "title screen yard (ranch.nestBox, scene.nest)"
+   "where": "title screen yard (ranch.nestBox)"
   },
   {
    "id": "5d11a885-e1c1-437b-9c12-03126e967e03",
@@ -4284,7 +4284,7 @@
   {
    "id": "9761b8cc-f372-4fc2-84b4-c43f0bb7d389",
    "verdict": "wired",
-   "where": "title screen yard (scene.sheep, scene.sheepGrazeStrip)"
+   "where": "title screen yard (scene.sheep)"
   },
   {
    "id": "ef6cfe04-7aa6-45d0-9453-801837e2b40e",
@@ -4298,18 +4298,18 @@
   },
   {
    "id": "20a2a303-14ee-41b9-953d-829587bbee63",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.shovel packed, drawn by nothing"
   },
   {
    "id": "d1edb7d4-46ca-431a-b577-a912bcebb63e",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.shovel packed, drawn by nothing"
   },
   {
    "id": "d42317ff-472a-466b-99d1-161633f2a17e",
-   "verdict": "open",
-   "where": "OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons"
+   "verdict": "packed-unused",
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.shovel packed, drawn by nothing"
   },
   {
    "id": "3907c135-3ddc-4331-85b0-180ea7b58b64",
@@ -4328,28 +4328,28 @@
   },
   {
    "id": "82aa7caa-0d48-4fcb-8ce3-6e137c7134dd",
-   "verdict": "open",
-   "where": "OPEN: four complete runs packed, no scene stands anything in one"
+   "verdict": "packed-unused",
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
   },
   {
    "id": "8454c535-eec3-42a5-8134-d689ee9c4592",
    "verdict": "retired",
-   "where": "OPEN: four complete runs packed, no scene stands anything in one"
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md"
   },
   {
    "id": "407abd7f-0188-4555-829a-47974cdbedb4",
-   "verdict": "open",
-   "where": "OPEN: four complete runs packed, no scene stands anything in one"
+   "verdict": "packed-unused",
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
   },
   {
    "id": "8c798908-f85f-4df9-a5a6-cf9823d5ea8f",
-   "verdict": "open",
-   "where": "OPEN: four complete runs packed, no scene stands anything in one"
+   "verdict": "packed-unused",
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
   },
   {
    "id": "0d388dd8-f233-4ccd-898c-130e4c4fb7a5",
-   "verdict": "open",
-   "where": "OPEN: four complete runs packed, no scene stands anything in one"
+   "verdict": "packed-unused",
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
   },
   {
    "id": "f81b86a5-1b15-409b-b5a1-b795167fcfa8",
@@ -4898,18 +4898,18 @@
   },
   {
    "id": "d8b85a78-c1bc-4b56-803e-f987e2f99d7d",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "wired",
+   "where": "the barn interior: the loft lip, overlapped across the width (ranch.loftEdge)"
   },
   {
    "id": "7b9f3ec4-964c-4c71-8e22-bc328978e94c",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "surplus",
+   "where": "another roll of ranch.stallFront"
   },
   {
    "id": "81127f2f-a19e-4b7b-940d-6cef8f81fee3",
-   "verdict": "open",
-   "where": "OPEN: barn interior, and no barn interior exists"
+   "verdict": "surplus",
+   "where": "another roll of ranch.stallFront"
   },
   {
    "id": "4de3927b-5d9c-41d9-9a4a-7aac19dbe57d",
