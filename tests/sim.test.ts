@@ -256,12 +256,26 @@ describe('OfferPool', () => {
      it just swept away.
   */
   it('never deals a board that is four stat bumps', () => {
-    const p = new Player()
-    p.init('hand')
-    for (let seed = 1; seed <= 300; seed++) {
+    /*
+       The player TAKES what it is dealt, which is the half that matters.
+
+       The first version of this test drew against a fresh Player over 300
+       seeds and passed — while a real run photographed a board of four
+       commons at level 6. A build that has taken twenty cards has a different
+       candidate set and a full recency memory, and that is the state the
+       fallback chain was surrendering its caps in.
+    */
+    for (let seed = 1; seed <= 200; seed++) {
+      const p = new Player()
+      p.init(seed % 2 ? 'hand' : 'kid')
       const pool = new OfferPool(new Rng(seed))
-      for (let board = 0; board < 8; board++) {
+      for (let board = 0; board < 14; board++) {
         const offers = pool.draw(p, 4, board * 30, 0, 'levelup')
+        const first = offers[0]
+        if (first) {
+          if (first.kind === 'weapon') p.addWeapon(first.id, first.tierJump)
+          else if (p.canTakeItem(first.id)) p.addItem(first.id, first.boosted)
+        }
         const stats = offers.filter((o) => ITEMS[o.id]?.category === 'stat')
         expect(stats.length, `seed ${seed} board ${board}`).toBeLessThanOrEqual(1)
         // ...and never four of ONE thing, whatever that thing is.

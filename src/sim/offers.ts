@@ -422,8 +422,20 @@ export class OfferPool {
         (o) => o.category === 'stat',
         () => true,
       ]
-      for (let relax = 0; relax <= 2; relax++) {
-        for (const respectCaps of [true, false]) {
+      /*
+         Caps OUTSIDE, memory inside — and that order is the whole rule.
+
+         Written the other way round it surrenders the board caps before it
+         surrenders the recency memory, which means a board whose good cards
+         happen to be suppressed deals four stat commons rather than
+         re-showing one card from three boards ago. A real run photographed
+         exactly that at level 6 (`tools/play/batch1`): four commons, the
+         boosted slot among them, the precise shape this rebuild exists to
+         remove. Re-showing a card slightly too soon is a small cost; a board
+         of four percentages is the whole complaint.
+      */
+      for (const respectCaps of [true, false]) {
+        for (let relax = 0; relax <= 2; relax++) {
           for (const pred of chain) {
             const i = tryPick(pred, relax, respectCaps)
             if (i < 0) continue
@@ -724,7 +736,7 @@ export function describeItem(def: ItemDef, stack = 1): string {
   // no stat mods to describe, and was rendering a completely blank card. The
   // blurb IS the description for those.
   const stackBlurb = def.stackBlurb
-  if (typeof stackBlurb === 'string') parts.push(stackBlurb.replace(/\{n\}/g, String(stack)))
+  if (typeof stackBlurb === 'string') parts.push(fillStack(stackBlurb, def, stack))
   else if (typeof def.blurb === 'string') parts.push(def.blurb)
   const base = describeMods(def.mods ?? {})
   if (base) parts.push(base)
@@ -734,6 +746,25 @@ export function describeItem(def: ItemDef, stack = 1): string {
   }
   if (def.special === 'gasGrace') parts.push(`immune to gas for ${def.graceSeconds}s of contact`)
   return parts.join(' · ')
+}
+
+/**
+ * Substitute a stack blurb's placeholders.
+ *
+ * `{n}` is the copy being offered. `{total}` is what the player will HAVE if
+ * they take it — `n × stackPer` — and it is the one that matters: "15% of
+ * kills drop a feed token" is a different card on your first copy and your
+ * fourth, and §5's contract is that the card says which one you are looking
+ * at. A card with a `{total}` and no `stackPer` prints its stack count rather
+ * than the placeholder, so a missing field is a wrong number and never a
+ * literal `{total}` on the face of a card — which is exactly what a real run
+ * photographed before this existed.
+ */
+function fillStack(template: string, def: ItemDef, stack: number): string {
+  const per = typeof def.stackPer === 'number' ? def.stackPer : 1
+  const total = per * stack
+  const shown = Number.isInteger(total) ? String(total) : total.toFixed(1)
+  return template.replace(/\{n\}/g, String(stack)).replace(/\{total\}/g, shown)
 }
 
 /** The footer's lot slot (§5): `3/5`, `ONE ONLY`, or `4/4 · LAST`. */

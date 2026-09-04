@@ -246,7 +246,7 @@ try {
   /** Card-screen photographs taken so far, and the cap on each kind. */
   let boards = 0
   let shopShots = 0
-  const MAX_BOARD_SHOTS = 4
+  const MAX_BOARD_SHOTS = 6
   let lastFps = ticks * 2
   let lastWave = 0
   const started = Date.now()
@@ -312,6 +312,11 @@ try {
     */
     if (s.levelUp) {
       if (boards < MAX_BOARD_SHOTS) {
+        // Let the deal land. card.ts staggers each card by 110ms, so a shot
+        // fired the instant the screen opens catches two cards mid-fade and
+        // reports a two-card board -- which is exactly what the first run of
+        // this photographed.
+        await page.waitForTimeout(700)
         const f = `${outDir}/board-${String(boards).padStart(2, '0')}-lv${s.level}.png`
         await page.screenshot({ path: f })
         shots.push(f)
@@ -322,6 +327,7 @@ try {
       await page.waitForTimeout(400)
     } else if (s.shop) {
       if (shopShots < MAX_BOARD_SHOTS) {
+        await page.waitForTimeout(700)
         const f = `${outDir}/shop-${String(shopShots).padStart(2, '0')}-w${s.wave - 1}.png`
         await page.screenshot({ path: f })
         shots.push(f)

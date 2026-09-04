@@ -28,7 +28,16 @@ interface TierCfg {
 
 const FEED = (META as unknown as { feedStore: FeedStoreCfg }).feedStore
 const SEED = (META as unknown as {
-  seedCatalog: { startingWeapons: number; totalWeapons: number; startingItems: number; totalItems: number; costRange: [number, number] }
+  seedCatalog: {
+    startingWeapons: number
+    totalWeapons: number
+    startingItems: number
+    /** Named opening pools; each falls back to its slice when absent. */
+    startingItemIds?: string[]
+    startingWeaponIds?: string[]
+    totalItems: number
+    costRange: [number, number]
+  }
 }).seedCatalog
 const BUNK = (META as unknown as { bunkhouse: { costs: number[]; freeClasses: string[] } }).bunkhouse
 const FAIR = (META as unknown as { countyFair: { tiers: TierCfg[] } }).countyFair
@@ -85,12 +94,44 @@ export function metaStats(s: Save): MetaStats {
  * at the Seed Catalog joins permanently.
  */
 export function unlockedWeapons(s: Save): string[] {
-  const base = WEAPON_ORDER.slice(0, SEED.startingWeapons)
+  const base = startingSet(SEED.startingWeaponIds, WEAPON_ORDER, SEED.startingWeapons, WEAPONS)
   return [...new Set([...base, ...s.unlockedPool.filter((id) => id in WEAPONS)])]
 }
 
+/**
+ * The named opening set, or the old slice when none is named.
+ *
+ * An id named here that no longer exists is skipped rather than carried
+ * through as a hole in the pool, so a rename cannot quietly shrink the game.
+ */
+function startingSet(
+  named: string[] | undefined, order: string[], n: number, roster: Record<string, unknown>,
+): string[] {
+  return Array.isArray(named) && named.length > 0
+    ? named.filter((id) => id in roster)
+    : order.slice(0, n)
+}
+
+/**
+ * The opening item pool.
+ *
+ * Named in `meta.json` now, not sliced off the front of `items.json`.
+ *
+ * The slice was `Object.keys(ITEMS).slice(0, 12)`, and the first twelve keys
+ * of that file in authoring order are eleven common stat cards and one
+ * uncommon. So a fresh save's whole item pool WAS the eleven percentages, and
+ * every board a new player saw was four of them — the exact complaint
+ * docs/UPGRADE_ROSTER.md was written to answer, surviving the rebuild
+ * untouched and invisible to both harnesses, because neither `balance.ts` nor
+ * `offer-stream.ts` calls `setUnlocked` and both therefore measure a pool no
+ * new save has. A real run through the browser photographed it at level 6
+ * after the offer metrics had already come back clean.
+ *
+ * An id named here that no longer exists is skipped rather than carried
+ * through as a hole in the pool, so a rename cannot quietly shrink the game.
+ */
 export function unlockedItems(s: Save): string[] {
-  const base = ITEM_ORDER.slice(0, SEED.startingItems)
+  const base = startingSet(SEED.startingItemIds, ITEM_ORDER, SEED.startingItems, ITEMS)
   return [...new Set([...base, ...s.unlockedPool.filter((id) => id in ITEMS)])]
 }
 
@@ -102,11 +143,25 @@ export function catalogOffers(s: Save): { id: string; kind: 'weapon' | 'item'; n
   const price = (index: number, total: number): number =>
     Math.round(lo + ((hi - lo) * index) / Math.max(1, total - 1))
 
-  WEAPON_ORDER.slice(SEED.startingWeapons).forEach((id, i, arr) => {
+  /*
+     What the catalog sells is EVERYTHING NOT IN THE OPENING SET.
+
+     It used to be `slice(startingN)` -- an index into content order -- which
+     only agreed with the opening pool while that pool was also an index into
+     content order. Now the opening sets are named, so the slice would have
+     sold cards the player already had and hidden ones they did not.
+  */
+  const openWeapons = new Set(
+    startingSet(SEED.startingWeaponIds, WEAPON_ORDER, SEED.startingWeapons, WEAPONS),
+  )
+  const openItems = new Set(
+    startingSet(SEED.startingItemIds, ITEM_ORDER, SEED.startingItems, ITEMS),
+  )
+  WEAPON_ORDER.filter((id) => !openWeapons.has(id)).forEach((id, i, arr) => {
     if (s.unlockedPool.includes(id)) return
     locked.push({ id, kind: 'weapon', name: WEAPONS[id]?.name ?? id, cost: price(i, arr.length) })
   })
-  ITEM_ORDER.slice(SEED.startingItems).forEach((id, i, arr) => {
+  ITEM_ORDER.filter((id) => !openItems.has(id)).forEach((id, i, arr) => {
     if (s.unlockedPool.includes(id)) return
     locked.push({ id, kind: 'item', name: ITEMS[id]?.name ?? id, cost: price(i, arr.length) })
   })

@@ -19,8 +19,38 @@
   },
   "seedCatalog": {
     "startingWeapons": 8,
+    "startingWeaponIds": [
+      "scattergun",
+      "varmintRifle",
+      "pitchfork",
+      "scythe",
+      "tarBomb",
+      "chemSprayer",
+      "sledge",
+      "smudgePot"
+    ],
+    "startingWeaponNote": "Named for the same reason the items are. The slice took the first eight keys of weapons.json, which are the six firearms plus the Chem Sprayer and the Bait Drum -- so a fresh save could not be offered a single MELEE weapon, and the two classes whose whole identity is standing and swinging opened into a pool with nothing for them. The named eight are a spread: two guns, two blades, a thrown, a sprayer, a hammer and the Smudge Pot. Everything else is still bought at the catalog.",
     "totalWeapons": 12,
     "startingItems": 12,
+    "startingItemIds": [
+      "whetstone",
+      "workBoots",
+      "feedSack",
+      "saltLick",
+      "roosterAlarm",
+      "balingTwine",
+      "fenceStaples",
+      "chalkLine",
+      "grainScoop",
+      "splitRail",
+      "throughAndThrough",
+      "feedTheBirds",
+      "bloodMeal",
+      "barbedWire",
+      "tracerRounds",
+      "coldRounds"
+    ],
+    "startingItemNote": "The opening pool, named rather than sliced. It USED to be `Object.keys(ITEMS).slice(0, 12)` -- the first twelve keys of items.json in authoring order -- and eleven of those twelve are the common stat cards. So a fresh save's entire item pool was the eleven percentages, and every board the player saw for the first several hours was four of them: exactly the complaint docs/UPGRADE_ROSTER.md exists to answer, invisible to both harnesses because neither calls setUnlocked. A real run photographed it (tools/play/batch1) after the rebuild had already measured clean. Ten commons stay -- they are the teaching set and they should be -- and six cards that DO something join them: a pierce, two on-kill cards, a reflect, and two Loads, so the first shop is a real decision and the first level-up board is not four percentages. Everything else is still bought at the catalog. A card named here that does not exist is skipped, so this list cannot break a rename silently.",
     "totalItems": 20,
     "costRange": [
       15,
