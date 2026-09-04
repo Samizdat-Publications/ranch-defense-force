@@ -178,10 +178,9 @@ atlas built and the other session's vite server on port 5180 was serving it.
   The first request after a cold start still pays ~17s of vite warm-up.
 - **The player mark was drawn in a hole.** Character origins are the cell floor,
   twelve pixels below the boots; footOffsetY is -10 now. The owner saw it first.
-- **The weapon ring is replaced** (see "The weapon ring is gone" below). Next
-  passes, in order: class-specific carrying plus purpose-drawn carried weapon
-  art; then the inventory audit the owner asked for — every PixelLab object
-  claimed and wired, or retired with a reason.
+- **The weapon ring is replaced, twice over** (the two loadout sections below).
+  Queue now: the inventory audit (every PixelLab object claimed and wired, or
+  retired with a reason), then the upgrade roster in batches.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -318,6 +317,98 @@ PixelLab for exactly this, with one condition that is now a standing rule:
 `p.facing` at 16px, not from the weapon. The pickaxe and axe
 (`collectHarvestTools`) still draw at boot level and now read as tools lying
 at his feet. `HANDOFF.md` still describes the ring as live.
+
+### Second pass: the guns are drawn for him, and each class wears them its own way
+
+`art/sprites.json` had said it all along — the 132 firearms on the bundled sheet
+are 14-25px wide and "drawn to be HELD by a 32px character". Ours is 52. A rifle
+across his back read as a carbine and `gun.pistol.0`, the Harpoon Gun at T1, is
+three pixels by two: invisible on the body and a blank rectangle on its card.
+
+Six firearms now have purpose-drawn carried art, side-on and pointing right at
+28-31px. They draw at NATIVE size: every `carryHeight` on the six equals its own
+art's longest side, so nothing is resampled. **Nine generations, six kept, three
+retired with reasons tagged on the account, six cents** — the owner's wiring
+rule applied for the first time: nothing is in review, every keeper is packed
+under `carry.<id>` and drawn. Not conformed: quantising through
+`art/palette.json` cost the rifle its walnut stock (the nearest house entry to
+warm gun-metal brown is a cold blue-grey). `docs/progress/carry-scale.png` is
+the contact sheet, old frame beside new beside the man.
+
+**`carrySprite` is a different question from `sprite`.** One is what he wears,
+the other is what a card shows. The carried art has no tiers on purpose — a gun
+does not change shape when it merges, and 24 more generations would buy a
+difference nobody reads at 30px in a fight. The tier stays on the card.
+
+**`carryPivot` moves the turning point to the trigger**, so a gun tracking its
+target no longer sweeps its stock through his chest. It is also the number the
+muzzle flash needs: the muzzle is `1 - carryPivot` of the drawn length forward.
+
+**Each class carries its kit its own way**, and it is the cheapest
+characterisation in the game — no art, no stat, one block of numbers.
+`byClass` beside a slot's four facings overrides any field for one class;
+`classSlot` overrides which resting slot a weapon asks for; both merge into
+complete anchors ONCE at load. The Kid shoots from the hip, the Widow braces
+in on the centreline, the Hand wears the pitchfork across his back, the Veteran
+shoulders the drum gun, the Agronomist's tank sits between her shoulder blades,
+the Drifter carries the harpoon like a man walking a shovel home.
+
+**A class's posture is not a preference pickup order gets to outrank.** The
+first version made the feature invisible: the drum gun and the Varmint Rifle
+both declare `back`, so whichever was picked up first won it. `classSlot`
+entries claim in a pass of their own now.
+
+**The flash leaves the barrel.** It used to spawn sixteen pixels along
+`p.facing`, which is the way he is WALKING; every weapon auto-targets, so the
+flash frequently left his back. `carryMuzzleOffset` lives in content so the
+sim never asks the renderer where something was drawn. Provably decoration:
+A/B on three fixed seeds at 3000 ticks, every reported quantity identical
+including live effect count, two of three shots byte-identical, the third
+differing only where a flash is on screen.
+
+**The pickaxe and axe came off the floor** — they drew at the origin, twelve
+pixels under his boots (the player-mark lesson again). They hang from
+`beltR`/`beltL`, a rung below the hips, and cannot eat a weapon slot.
+
+**`npm run facings -- <class>` is the new instrument** and earned itself in a
+minute: a class with the full kit at T3, four facings side by side through
+`draw-world.ts`. Every loadout bug this project has had lives in the spatial
+relationship between a sprite and a body, and none is visible in one frame of
+play. `npm run carrysheet` is its companion, read out of the PACKED atlas.
+
+**Left standing, deliberately.** The other five firearms still card off the
+tiny `gun.*` sheet (five `cardSprite` lines; the inventory-audit pass takes
+it). A pitchfork on a hip sticks out sideways because the atlas holds two art
+families pointing two ways; the fix is a per-weapon `carryAngle` on the tool
+icons and `tuning.json` explains why it is not free.
+
+Measured: 232-242fps through four 150s runs and one 290s run to wave 8; draw
+0.20ms at wave 1 and 0.50ms at wave 8. 207/207.
+
+### The upgrade roster is designed, and the draw was the problem first
+
+The owner: the level-up screen shows "mostly the same seven things", the shop
+shows "three of the same", and nobody can tell what buying the same weapon
+three times does. `tools/offer-stream.ts` measured it over 144 runs and
+25,922 cards before anything was designed: **64.9% of cards are pure stat
+bumps, 40% of boards are four of one category, every shop visit reshows the
+previous one, merges are 2.9% of level-up cards and structurally confined to
+one slot, and the top seven ids are a third of everything shown.** The pool
+was never thin — 27-44 takeable candidates all run. Three causes in source:
+`drawLevelUp` fills every non-boosted slot from commons alone; the 90s
+suppression memory is dead against a 200s shop interval; and 22 of 40 items
+are pure `mods` with no card in the game about a weapon you own.
+
+`docs/UPGRADE_ROSTER.md` is the design: 56 → 160 cards — 48 weapon upgrades
+gated on ownership, 18 class cards into the passives, six new loads (salt,
+quicklime, kerosene, tar, fence charge, font water), on-hit, on-kill, allies
+and placeables, defence, ledger — with numbers, rarities, the sim hook each
+rides (12 new hooks at six call sites carry 85 of 104 cards), synergy tags,
+the card-text contract (a merge states its delta, a stackable shows 2/4), a
+draw-rule redesign, five shippable batches, and 31 icons batched so nothing is
+generated unwired. Seven items already point at stand-in art while their own
+generated icons sit packed. Batch 1 (draw rules, card text, 22 behavioural
+cards) is the one the owner feels; it starts on the owner's word.
 
 ## The four locked classes now answer the game differently
 

@@ -52,7 +52,7 @@
   "mods": {
    "hpRegen": 1
   },
-  "cardSprite": "node.rockSmall"
+  "cardSprite": "item.saltLick"
  },
  "roosterAlarm": {
   "name": "Rooster Alarm",
@@ -169,7 +169,7 @@
   "mods": {
    "rangedPct": 18
   },
-  "cardSprite": "weapon.seedSpitter"
+  "cardSprite": "item.slingBands"
  },
  "weatherVane": {
   "name": "Weather Vane",
@@ -182,7 +182,7 @@
   "mods": {
    "attackSpeedPct": 12
   },
-  "cardSprite": "weapon.rake"
+  "cardSprite": "item.weatherVane"
  },
  "tractorPlate": {
   "name": "Tractor Plate",
@@ -196,7 +196,7 @@
    "armor": 4,
    "moveSpeedPct": -5
   },
-  "cardSprite": "node.rockBig"
+  "cardSprite": "item.tractorPlate"
  },
  "coffeeThermos": {
   "name": "Coffee Thermos",
@@ -288,7 +288,7 @@
   "mods": {},
   "special": "reflect",
   "reflectDamage": 5,
-  "cardSprite": "node.oreSilver"
+  "cardSprite": "item.barbedWire"
  },
  "keroseneCan": {
   "name": "Kerosene Can",
@@ -302,7 +302,7 @@
    "damagePct": 25,
    "maxHp": -15
   },
-  "cardSprite": "weapon.slopBucket"
+  "cardSprite": "item.keroseneCan"
  },
  "strawHat": {
   "name": "Straw Hat",
@@ -503,7 +503,7 @@
   "radius": 160,
   "damage": 40,
   "slowPct": 50,
-  "cardSprite": "node.rockSmall"
+  "cardSprite": "item.saltCircle"
  },
  "whitacreBull": {
   "name": "The Whitacre Bull",

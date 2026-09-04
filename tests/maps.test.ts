@@ -458,11 +458,21 @@ describe('the atmosphere layers', () => {
     }
   })
 
-  it('the dressing defaults leave every surface map exactly as it was', () => {
-    // Scenery and decals were two hardcoded farm lists in the renderer until a
-    // bunker floor rendered with a plough on it. Making them data is only safe
-    // if the maps that said nothing keep the list they always had -- otherwise
-    // "no visual change" is a claim rather than a fact.
+  it('the dressing defaults never LOSE anything a surface map used to have', () => {
+    /*
+       Scenery and decals were two hardcoded farm lists in the renderer until a
+       bunker floor rendered with a plough on it. Making them data is only safe
+       if the maps that said nothing keep the list they always had -- otherwise
+       "no visual change" is a claim rather than a fact.
+
+       This asserted EQUALITY until 2026-09-03, which made it a freeze rather
+       than a guarantee: the inventory audit found seven `ranch.*` fixtures
+       packed in the atlas and drawn by nothing, and the only thing standing
+       between them and the field was a test that said the list may never grow.
+       A PREFIX check keeps every word of the original promise -- nothing the
+       renderer used to scatter may be dropped or reordered -- and lets the
+       farm gain art that was already paid for.
+    */
     const FARM_SCENERY = [
       'prop.carcass', 'prop.plough', 'prop.graveMarker', 'prop.treeStump',
       'prop.barbedWire', 'prop.scarecrow', 'prop.scarecrowRotted',
@@ -471,8 +481,14 @@ describe('the atmosphere layers', () => {
     const FARM_DECALS = ['decal.tireRuts', 'decal.scorch', 'decal.mud', 'decal.ash']
     for (const [id, m] of Object.entries(MAPS)) {
       if (m.dressing) continue
-      expect(sceneryKindsFor(m), `${id} scenery`).toEqual(FARM_SCENERY)
-      expect(decalKindsFor(m), `${id} decals`).toEqual(FARM_DECALS)
+      const scenery = sceneryKindsFor(m)
+      const decals = decalKindsFor(m)
+      expect(scenery.slice(0, FARM_SCENERY.length), `${id} scenery`).toEqual(FARM_SCENERY)
+      expect(decals.slice(0, FARM_DECALS.length), `${id} decals`).toEqual(FARM_DECALS)
+      // A bunker must still be able to say "none of the farm". The default is
+      // what grows; a map that declares its own dressing is skipped above.
+      expect(new Set(scenery).size, `${id} scenery has a duplicate`).toBe(scenery.length)
+      expect(new Set(decals).size, `${id} decals has a duplicate`).toBe(decals.length)
     }
   })
 

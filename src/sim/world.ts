@@ -73,6 +73,15 @@ export interface WorldEvents {
 
 export class World {
   readonly rng: Rng
+  /**
+   * The stream that decides which SKIN a breakable wears, and nothing else.
+   *
+   * Separate from `rng` for the same reason the renderer's fog, overhead,
+   * scenery and decal streams are separate from it: nothing decorative may
+   * move a spawn. Seeded off the run's own seed so it still replays, XORed
+   * with a constant of its own so it is not a copy of the main stream.
+   */
+  readonly skinRng: Rng
   readonly seed: number
   readonly player = new Player()
   readonly spawner: Spawner
@@ -292,6 +301,7 @@ export class World {
   ) {
     this.seed = seed
     this.rng = new Rng(seed)
+    this.skinRng = new Rng(seed ^ 0x5b1_5a17)
 
     // THE FIRST DRAW OFF THE RUN'S RNG. Exactly one `next()`, before anything
     // else touches the stream — see the `_rngNote` in maps.json. Moving this
@@ -586,7 +596,7 @@ export class World {
       }
 
       /*
-         Which skin this one wears.
+         Which skin this one wears, OFF A STREAM OF ITS OWN.
 
          A second draw, deliberately, rather than deriving the variant from the
          position the way the prop animation phase does. Position-derived would
@@ -595,12 +605,24 @@ export class World {
          is that a field of forty should not show the same barrel twice in a
          row.
 
+         `skinRng`, not `this.rng`, and that is the correction the 2026-09-03
+         audit forced. Which PNG a barrel wears is decorative, and the rule this
+         repo states everywhere else -- the fog, the overhead layer, the scenery
+         band and the decals all run their own seeded streams -- is that nothing
+         decorative may move a spawn. This draw was in the sim stream, and it
+         was invisible only because every class happened to carry exactly ONE
+         skin, so the branch never fired. Giving `trough` and `hayBaleRot` a
+         second skin fired it, shifted every downstream draw in the game, and
+         turned the 24-seed clear-rate acceptance test red at 10 of 24 -- from
+         a change that cannot make anything harder. Off its own stream the sim
+         is bit-identical to before, and adding a skin stays free forever.
+
          The map's list wins over the class's, so a map can run the scorched
          drums while another runs the painted ones off one class.
       */
       const skins = over?.sprites?.[clsId] ?? cls.sprites
       const sprite = skins.length > 1
-        ? skins[this.rng.int(0, skins.length - 1)]
+        ? skins[this.skinRng.int(0, skins.length - 1)]
         : skins[0]
 
       const b = this.breakables.acquire()

@@ -1838,6 +1838,9 @@
       "scarecrow": [
         "sway"
       ],
+      "scarecrowBlight": [
+        "idle"
+      ],
       "labConsole": [
         "flicker"
       ],
@@ -1858,6 +1861,7 @@
         "swirl"
       ]
     },
+    "_blightNote": "`scarecrowBlight` is a STILL, one frame under an `idle` clip, and it is in this group rather than in a `files` map because that is what makes it reachable: `blightStrip` resolves a blighted counterpart by SHEET and CLIP, so the counterpart has to be a packed clip, not a flat sprite key. One frame is deliberate and not a shortfall -- `blightStrip` falls back clip, then walk, then idle for exactly this reason, and its own note says a blighted farm being STILLER than the farm was is the right failure. Animating it would cost eight generations to make a dead thing wave.\nThe art is object 1cb96ac6 of the four `rdf-scene-scarecrow-wrong` candidates the account has held since session 15, generated, paid for and never downloaded. Picked over the other three on silhouette: it is the only one on a VERTICAL post with the head centred over it, which is the healthy `scene.scarecrow`'s shape, and the scene places props by the top-left of the full 96 box -- so a candidate whose subject sits off to one side lands in the wrong place, silently. Of the rejected three, 5c61efe1 also wears blue denim, which is the player's own colour and the thing session 22 spent a whole recolour pass taking OFF the enemies.",
     "_labNote": "SIX WORKING FLUID LOOPS plus the console. All measured frame by frame, not judged by eye: every one holds its opaque body to within 1% across all 9 frames while the green fluid varies gently, which is what a working loop looks like.\nTHE RULE THIS CORRECTS. An earlier note here said 'v3 cannot animate a glass tank' and that was WRONG and cost a working asset: `vatSpecimen` -- the tall glass tube with the human silhouette in it -- was unwired without ever being measured, on the assumption that it failed because the ALIEN vat from the same batch did. It measures 9/9 and always did.\nWhat actually fails is the SUBJECT INSIDE, not the vessel. Measured side by side, same shape of object, same prompt style:\n  vatAlien    (an articulated creature: limbs, tail, head)  green 4123, 21, 22, 18, 41, 25, 40, 25, 1013  -> 1/9, the glass dissolves\n  vatSpecimen (a flat human silhouette)                      green 1504..1590 across all 9   -> 9/9, rock solid\nv3 redraws every frame, so it holds a simple shape and loses a complex articulated one. A silhouette survives; a creature with limbs does not. `vatAlien` stays a still.\nMEASURE EVERY CLIP BEFORE UNWIRING IT. `tools/` has no checker for this yet; the one used here counts opaque and green pixels per frame and flags any frame that drops below 75% of the body or 45% of the peak fluid."
   },
   "pens": {

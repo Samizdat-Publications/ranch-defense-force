@@ -643,6 +643,7 @@
   "_fogNote": "Ground fog is per-map and OFF by default -- a map that says nothing gets none. It is drawn above the ground and decals and below every sprite, so it lies on the floor rather than over the fight: two hundred enemies and their bullets are read against this ground, and ART_STYLE is explicit that the floor should be boring for exactly that reason. Fog is how a floor gets atmosphere WITHOUT getting contrast -- it lowers the ground's local contrast while adding depth, where a busier tile would raise it and start competing with the things the player has to read. `alpha` is the ceiling on the whole layer and is the number to turn down first if anything ever gets hard to see. Two banks drift at different speeds so the parallax reads as depth instead of as a moving texture.",
   "_overheadNote": "The overhead layer: art that hangs from a ceiling and draws OVER everything, including the player. Absent means a map has none, which every surface map is. It is the thing that makes a space read as enclosed rather than as a dark field -- a top-down game has no other way to say 'there is something above you', because every other sprite y-sorts against the ground. IT FADES WHEN THE PLAYER IS UNDER IT, to `minAlpha` within `fadeRadius`. Without that, a stalactite that covers the player is not atmosphere, it is an occluder in a game where you must see what is about to hit you -- and in a bullet-heaven the answer is never 'the player should move'. `minAlpha` is the number to raise if anything is ever lost under it. Placement is RENDER-SIDE and seeded off its own stream, the same rule as the scenery band and the decals: nothing decorative may move a tile, a decal or a spawn.",
   "_dressingNote": "Scenery and decals used to be TWO HARDCODED FARM LISTS inside the renderer, which is how the first bunker preview came out with pumpkins, a tree and farm rocks lying on a concrete floor. Fog, overhead art, breakable skins and the ground were already per-map; the dressing was the one layer that was not, so every new biome inherited a barnyard. It is data now. `defaultDressing` is what a map gets when it says nothing -- the farm set, so the five surface maps are unchanged to the pixel -- and a map's own `dressing` block REPLACES it wholesale rather than merging, because a bunker wants none of the farm and a merge would have meant listing ten exclusions to drop ten props. An empty array is a legal answer and means bare ground.",
+  "_generatedDressingNote": "The seven `ranch.*` entries were packed in the atlas and drawn by NOTHING until the 2026-09-03 inventory audit -- generated for the title screen, and nobody ever asked whether they also belonged on the field. They do. Measured rather than judged: hayWagon is 87x81 of content and tractorRed 85x87, against prop.scarecrow 69x88 and prop.plough 60x47, in the same three-quarter view, and the farm they were drawn for is the farm this is. Every one is a FIXTURE, which is the rule this list obeys and the reason two of their sheet-mates are not here: `ranch.waterTrough` and `ranch.roundBaleRotted` are container-shaped and went into breakables.json as variants instead. An unbreakable trough standing beside a breakable one is the one thing no amount of feedback recovers from.",
   "defaultDressing": {
     "scenery": [
       "prop.carcass",
@@ -654,13 +655,20 @@
       "prop.scarecrowRotted",
       "prop.fencePost",
       "prop.fenceRail",
-      "prop.gate"
+      "prop.gate",
+      "ranch.hayWagon",
+      "ranch.tractorRed",
+      "ranch.gateOpen",
+      "ranch.fenceRun",
+      "ranch.fenceBroken",
+      "ranch.fenceCornerPost"
     ],
     "decals": [
       "decal.tireRuts",
       "decal.scorch",
       "decal.mud",
-      "decal.ash"
+      "decal.ash",
+      "ranch.muckTracks"
     ]
   }
 }
