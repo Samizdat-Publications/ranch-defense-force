@@ -183,8 +183,7 @@ atlas built and the other session's vite server on port 5180 was serving it.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
   merged. All five roster batches are merged; the roster is 56 → 164 cards. Queue: the
   57 packed-unused sprites the ledger surfaced; human play of the roster and
-  the six classes; PIXELLAB_API_KEY in the shell so npm run inventory and
-  npm run tag --write can refresh the account-side tags.
+  the six classes; the key fallback landed and the account tags are refreshed.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -878,6 +877,20 @@ than assumed. 241/241 tests.
 pilot that cannot dodge, aim or read a card. The owner's verdicts so far
 (session 21 "too easy", the density pass) came from a human; the roster
 wants the same, and the ladder above is the baseline to compare against.
+
+### The PixelLab tools find the key the MCP server already has
+
+Every pass this session that needed `npm run inventory` or `npm run tag --write`
+reported "no PIXELLAB_API_KEY in the shell" and worked around it through the
+MCP, leaving the account-side tags stale. The key was on the machine the whole
+time, in the gitignored `.mcp.json` the MCP server reads. `tools/pixellab-key.ts`
+resolves it now — env var first, then that file — and eight tools use it. The
+unblocked refresh retagged 94 assets and closed the ledger's last open row.
+Two gaps remain by construction: the icons from roster batches 1 and 3 were
+made with `create_image_pro`, which never registers an object, so the ledger
+cannot have rows for them; they are verified wired through `art/sprites.json`
+and `items.json` instead. **Never print the key**: the tools mask it, and the
+check after every commit is a grep for its first characters returning zero.
 
 ## The four locked classes now answer the game differently
 
