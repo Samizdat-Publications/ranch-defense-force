@@ -688,7 +688,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires rock salt.",
-  "stackBlurb": "Every gun you own fires rock salt. No damage of its own — every hit MARKS for +22% damage taken, 4s.",
+  "stackBlurb": "Every gun you own fires rock salt. No damage of its own — every hit MARKS for +30% damage taken, 4s.",
   "mods": {},
   "element": "salt",
   "cardSprite": "node.saltRock"
@@ -707,7 +707,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires quicklime.",
-  "stackBlurb": "Every gun you own fires quicklime. Marks for +12% for 5s, and slows 25% for 3s.",
+  "stackBlurb": "Every gun you own fires quicklime. Marks for +20% for 5s, and slows 25% for 3s.",
   "mods": {},
   "element": "lime",
   "cardSprite": "decal.ash"
@@ -725,7 +725,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires live.",
-  "stackBlurb": "Every gun you own fires live. Every hit arcs to 1 more enemy within 120px for 45%.",
+  "stackBlurb": "Every gun you own fires live. Every hit arcs to 1 more enemy within 120px for 60%.",
   "mods": {},
   "element": "spark",
   "cardSprite": "prop.fencePost"
@@ -744,7 +744,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires kerosene.",
-  "stackBlurb": "Every gun you own fires kerosene. Every hit leaves a 34px burning slick — 3s, 10 dps.",
+  "stackBlurb": "Every gun you own fires kerosene. Every hit leaves a 34px burning slick — 3s, 16 dps.",
   "mods": {},
   "element": "kerosene",
   "cardSprite": "item.keroseneCan"
@@ -781,7 +781,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires font water.",
-  "stackBlurb": "Every gun you own fires font water. No burn, no bleed: every hit knocks back 70, every kill heals 3.",
+  "stackBlurb": "Every gun you own fires font water. No burn, no bleed: every hit knocks back 70, every kill heals 4.",
   "mods": {},
   "element": "font",
   "cardSprite": "prop.trough"
@@ -884,7 +884,8 @@
   "mods": {},
   "special": "extraPierce",
   "extraPierce": 1,
-  "cardSprite": "proj.dart.2"
+  "cardSprite": "proj.dart.2",
+  "requiresWeaponType": "ranged"
  },
  "ricochetPlate": {
   "name": "Ricochet Plate",
@@ -905,7 +906,8 @@
   "ricochetCount": 1,
   "ricochetRange": 150,
   "ricochetMul": 0.6,
-  "cardSprite": "node.scrapHeap"
+  "cardSprite": "node.scrapHeap",
+  "requiresWeaponType": "ranged"
  },
  "splitShot": {
   "name": "Split Shot",
@@ -920,13 +922,14 @@
    "kill"
   ],
   "blurb": "What it kills, it comes out of.",
-  "stackBlurb": "A shot that kills splits into {total} more, at 45%.",
+  "stackBlurb": "A shot that kills splits into {total} more, at 60%.",
   "stackPer": 2,
   "mods": {},
   "special": "splitOnKill",
   "splitCount": 2,
-  "splitMul": 0.45,
-  "cardSprite": "proj.shard.1"
+  "splitMul": 0.6,
+  "cardSprite": "proj.shard.1",
+  "requiresWeaponType": "ranged"
  },
  "burrLoad": {
   "name": "Burr Load",
@@ -945,7 +948,8 @@
   "mods": {},
   "special": "homing",
   "homingRate": 100,
-  "cardSprite": "scene.wheat2"
+  "cardSprite": "scene.wheat2",
+  "requiresWeaponType": "ranged"
  },
  "moonshineJug": {
   "name": "Moonshine Jug",
@@ -959,13 +963,13 @@
    "fire"
   ],
   "blurb": "Some of it goes up.",
-  "stackBlurb": "{total}% of hits burst for 55% in 52px.",
-  "stackPer": 15,
+  "stackBlurb": "{total}% of hits burst for 70% in 52px.",
+  "stackPer": 20,
   "mods": {},
   "special": "burstOnHit",
-  "burstChance": 15,
+  "burstChance": 20,
   "burstRadius": 52,
-  "burstMul": 0.55,
+  "burstMul": 0.7,
   "cardSprite": "prop.milkCans"
  },
  "broadSide": {
@@ -981,11 +985,12 @@
   ],
   "blurb": "Harder to miss with.",
   "stackBlurb": "Your shots are {total}% fatter.",
-  "stackPer": 12,
+  "stackPer": 15,
   "mods": {},
   "special": "projectileRadius",
-  "projectileRadiusPct": 12,
-  "cardSprite": "proj.slug.2"
+  "projectileRadiusPct": 15,
+  "cardSprite": "proj.slug.2",
+  "requiresWeaponType": "ranged"
  },
  "weakSeam": {
   "name": "Weak Seam",
@@ -1001,10 +1006,10 @@
   ],
   "blurb": "You find the seam, and it stays found.",
   "stackBlurb": "A crit MARKS for +{total}% damage taken, 3s.",
-  "stackPer": 20,
+  "stackPer": 28,
   "mods": {},
   "special": "critMark",
-  "critMarkPct": 20,
+  "critMarkPct": 28,
   "critMarkSeconds": 3,
   "cardSprite": "node.oreRed"
  },
@@ -1043,11 +1048,11 @@
    "ally"
   ],
   "blurb": "She has been sitting on something.",
-  "stackBlurb": "Every 12th kill hatches a chick — 9 damage, 8 seconds. {n} live at a time.",
+  "stackBlurb": "Every 12th kill hatches a chick — 14 damage, 8 seconds. {n} live at a time.",
   "mods": {},
   "special": "killHatch",
   "killSpawnEvery": 12,
-  "chickDamage": 9,
+  "chickDamage": 14,
   "chickSeconds": 8,
   "minionSprite": "scene.chick",
   "cardSprite": "scene.chick"
@@ -1065,10 +1070,10 @@
   ],
   "blurb": "It all goes back on the field eventually.",
   "stackBlurb": "Every kill heals {total}.",
-  "stackPer": 1.2,
+  "stackPer": 1.5,
   "mods": {},
   "special": "killHeal",
-  "killHeal": 1.2,
+  "killHeal": 1.5,
   "cardSprite": "prop.feedBin"
  },
  "rotUnderfoot": {
@@ -1085,7 +1090,7 @@
    "acid"
   ],
   "blurb": "They go down and the ground goes with them.",
-  "stackBlurb": "{total}% of kills leave a 42px acid pool — 3s, 14 dps.",
+  "stackBlurb": "{total}% of kills leave a 42px acid pool — 3s, 20 dps.",
   "stackPer": 25,
   "mods": {},
   "special": "killPool",
@@ -1093,7 +1098,7 @@
   "killPoolKind": "acid",
   "killPoolRadius": 42,
   "killPoolSeconds": 3,
-  "killPoolDps": 14,
+  "killPoolDps": 20,
   "cardSprite": "decal.mud"
  },
  "lastRites": {
@@ -1110,10 +1115,10 @@
   ],
   "blurb": "Marked, and then read over.",
   "stackBlurb": "A MARKED enemy that dies bursts for {total}% of its max HP in 70px.",
-  "stackPer": 40,
+  "stackPer": 55,
   "mods": {},
   "special": "markedBurst",
-  "burstPct": 40,
+  "burstPct": 55,
   "burstRadius": 70,
   "cardSprite": "prop.graveMarker"
  },
@@ -1122,5 +1127,7 @@
  "_stackNote": "SS5, the card-text contract. `stackBlurb` is the behavioural card's answer to \"what does taking this AGAIN do\": `{n}` is the copy being offered and `{total}` is `n x stackPer`, so a card whose whole effect is prose still prints its number at the stack the player is looking at. A card with no `stackBlurb` falls back to `blurb`, which is what every stat card wants -- its numbers are in the delta line already.",
  "_atlasNote": "_atlas marks the cardSprite values art/sprites.json cannot resolve today. NEW ATLAS KEY (18): needs an itemIcons entry and, for most, new art — see SPRITE_REQUESTS.md. FRAME PICK (7): the clip is already packed and only needs a named frame exported as an icon. Everything unmarked resolves against sprites.json as it stands.",
  "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns.",
- "_standInNote": "The 22 cards batch 1 adds all point at art the atlas ALREADY holds -- a salt rock for Rock Salt, an oil drum for Tar Load, a grave marker for Last Rites, a burning barrel for Hot As It Comes. That is deliberate and it is debt, recorded rather than hidden: SS10 lists 19 icons it wants generating for these, and none of them block the cards from shipping legibly. Nothing here borrows a sprite that means something contradictory on the field."
+ "_standInNote": "The 22 cards batch 1 adds all point at art the atlas ALREADY holds -- a salt rock for Rock Salt, an oil drum for Tar Load, a grave marker for Last Rites, a burning barrel for Hot As It Comes. That is deliberate and it is debt, recorded rather than hidden: SS10 lists 19 icons it wants generating for these, and none of them block the cards from shipping legibly. Nothing here borrows a sprite that means something contradictory on the field.",
+ "_retuneNote": "docs/UPGRADE_ROSTER.md SS6 authored these numbers; tools/balance.ts then measured them, and they came in UNDER the stat cards they displace. That matters more than it sounds: the redesign deliberately cuts the stat share of the stream from 65% to 25%, so every behavioural card has to be worth roughly the percentage it is standing in front of, or the roster is a downgrade dressed as variety. Raised here: splitShot 45 -> 60%, moonshineJug 15/55 -> 20/70, broadSide 12 -> 15%, weakSeam 20 -> 28%, broodyHen 9 -> 14 damage, bloodMeal 1.2 -> 1.5, rotUnderfoot 14 -> 20 dps, lastRites 40 -> 55%. SS9 reserves a full retune for batch 5; this is the part of it the harness would not let wait.",
+ "_rangedGateNote": "The five On-Hit cards that only touch a bullet are gated on OWNING a gun. This is a real bug the balance harness found rather than a tuning knob: The Hand starts with a pitchfork, five of the seven On-Hit cards are ranged-only, and a melee opening was being handed a board of cards that could not fire. It is also exactly what SS3 says gates are for -- \"a gated card cannot dilute the early game because it cannot appear yet\" -- and the melee half of the roster is as much a gate as owning a particular weapon is."
 }

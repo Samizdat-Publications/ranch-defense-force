@@ -4,6 +4,7 @@
   "_payloadNote": "The lasting damage rides on the projectile payload fields the weapon riders already use (burnDps, bleedDps, slowOnHit, markPct, knockback) and is applied by World.applyHit, so an element needed no new damage plumbing at all.",
   "_riderNote": "docs/UPGRADE_ROSTER.md batch 1 took the Loads from three to nine, and the six new ones are not all damage-over-time. `chain*`, `hitHazard*`, `killHazard*` and `killHeal` are the LOAD'S OWN riders and they live here rather than on the item in items.json for one reason: a Load is exclusive -- taking one replaces the last -- but the ITEM stays in player.items forever. A rider read off the item would keep firing after its Load had been swapped away. World.refreshSpecialItems reads these off the ACTIVE element, so exactly one Load's riders are ever live. hitHazard rides H6's spawnHazard at the on-hit call site; killHazard rides it in killEnemy; chain is H1; killHeal is H11.",
   "_artNote": "The six new Loads ship with NO projectile colourway. renderer.ts falls back to the weapon's base clip when `proj.<clip>.<element>` was never packed, so a new Load is legible on day one and the recolour pass (npm run recolour over the 7 signature clips) is a follow-up rather than a blocker.",
+  "_retuneNote": "Batch 1's Loads were authored in docs/UPGRADE_ROSTER.md SS6 and then MEASURED, and the six new ones came in under the three they compete with. A Load converts every ranged weapon you own, so it is the largest single multiplier in the game and a new one that is a downgrade is worse than no new one at all: the shop would be diluting its own best slot three to one. salt 22 -> 30, lime 12 -> 20, spark 0.45 -> 0.6, kerosene 10 -> 16 dps, font 3 -> 4 heal. The retune pass SS9 reserves for batch 5 starts here rather than there, because the harness would not have let it wait.",
   "elements": {
     "none": {
       "name": "None",
@@ -36,14 +37,14 @@
       "name": "Rock Salt",
       "_note": "No damage of its own at all. It opens the target up and lets everything ELSE you own do more — which is why it is the Load a heavy weapon build wants and the one a solo pistol build should not take.",
       "impact": "arrowImpact",
-      "markPct": 22,
+      "markPct": 30,
       "markSeconds": 4
     },
     "lime": {
       "name": "Quicklime",
       "_note": "Half of salt's mark and a slow with it. The compromise Load: a little of both, best of neither, and the one that makes Cross-Contamination trivial to satisfy on its own.",
       "impact": "arrowImpact",
-      "markPct": 12,
+      "markPct": 20,
       "markSeconds": 5,
       "slowOnHit": 25,
       "slowSeconds": 3
@@ -54,7 +55,7 @@
       "impact": "bigImpact",
       "chainCount": 1,
       "chainRange": 120,
-      "chainMul": 0.45
+      "chainMul": 0.6
     },
     "kerosene": {
       "name": "Kerosene Load",
@@ -63,7 +64,7 @@
       "hitHazardKind": "damage",
       "hitHazardRadius": 34,
       "hitHazardSeconds": 3,
-      "hitHazardDps": 10
+      "hitHazardDps": 16
     },
     "tar": {
       "name": "Tar Load",
@@ -81,7 +82,7 @@
       "_note": "The one Load with no damage-over-time and no mark. It buys SPACE on hit and HEALTH on kill, which makes it the defensive pick the way Frost is, without being Frost. Epic because a sustain source that scales with kill rate is the strongest thing the Load slot can hold.",
       "impact": "bigImpact",
       "knockback": 70,
-      "killHeal": 3
+      "killHeal": 4
     }
   }
 }

@@ -282,6 +282,18 @@ export class OfferPool {
     if (typeof needsItem === 'string' && player.itemCount(needsItem) === 0) return false
     // "any load" — the four riders, which care that you have one, not which.
     if (def.requiresLoad === true && player.element === 'none') return false
+    /*
+       "any weapon of this type". A card that only ever touches a bullet is
+       dead weight to a build that owns no gun, and the balance harness found
+       it the hard way: The Hand opens with a pitchfork, five of the seven
+       On-Hit cards are ranged-only, and his board was being filled with cards
+       that could not fire. A weapon TYPE is as much a gate as a particular
+       weapon is, and it is the same trick §3 describes -- a card that cannot
+       appear yet cannot dilute the board.
+    */
+    const needsType = def.requiresWeaponType
+    if (typeof needsType === 'string'
+      && !player.weapons.some((w) => WEAPONS[w.id]?.type === needsType)) return false
     return true
   }
 
@@ -394,14 +406,16 @@ export class OfferPool {
     }
 
     /**
-     * Fill one slot. The quota first, then §7.2's fallback chain — behavioural,
-     * gated, merge, stat, anything — then the caps and finally the memory are
-     * given up, in that order. A slot is never left empty and an id is never
-     * repeated within a board.
+     * Fill one slot. The quota first, then any slot-specific second choice,
+     * then §7.2's fallback chain — behavioural, gated, merge, stat, anything.
+     * Only after all of those does it give up the caps, and only after those
+     * the memory. A slot is never left empty and an id is never repeated
+     * within a board.
      */
-    const fill = (quota: (o: Offer) => boolean): void => {
+    const fill = (quota: (o: Offer) => boolean, second?: (o: Offer) => boolean): void => {
       const chain: ((o: Offer) => boolean)[] = [
         quota,
+        ...(second ? [second] : []),
         (o) => BEHAVIOURAL.has(o.category),
         (o) => GATED.has(o.category),
         (o) => o.category === 'merge',
@@ -434,18 +448,57 @@ export class OfferPool {
       fill((o) => o.rarity !== 'common')
       if (boost && picked.length > before) picked[before] = boosted(picked[before])
     }
-    if (want > 1) fill((o) => GATED.has(o.category))
+    /*
+       Slot B — gated, and until batch 2 lands there are almost none.
+
+       §7.2's fallback chain starts at `behavioural`, which is right for the
+       full roster and wrong here: slot C's quota is ALSO behavioural, so with
+       no gated cards to draw, B and C both fill with the same kind of card and
+       three of the four slots end up behavioural. That is the measured
+       40%-of-boards-are-four-of-a-kind shape reproduced in a different colour,
+       and the balance harness said so in as many words — a bot that had been
+       clearing 79% of hand/brawler runs fell to 13%, dying on wave 6 with a
+       tier-1 loadout, because the board had stopped offering it weapons.
+
+       So slot B takes a WEAPON card as its second choice: a merge, or one it
+       does not own. A gated card is a card about a weapon you already carry,
+       and until those exist the closest thing to one is the weapon itself.
+       This is the slot the roster means to be "the card that exists because of
+       what you are already holding", and it keeps that meaning either way.
+    */
+    if (want > 1) {
+      fill(
+        (o) => GATED.has(o.category),
+        (o) => o.category === 'merge' || o.category === 'newWeapon',
+      )
+    }
     if (want > 2) fill((o) => BEHAVIOURAL.has(o.category))
     /*
-       Slot D and any high-luck fifth: free, but biased toward a group the
-       board does not already have. "Free" in §7.2 means "no quota", and the
-       cheapest thing a free slot can do for the §2 targets is not repeat what
-       is already on the table.
+       Slot D — free, and it deals the board's ONE stat card.
+
+       §11's sentence about the stat cards is the whole rule: "they are still
+       the reliable filler a player wants when nothing else on the board fits
+       the build; there are just no longer four of them at once." At most one
+       and at least one, so the player always has somewhere to put a level-up
+       that the rest of the board does not answer.
+
+       This is not bookkeeping. Dropped, the balance harness fell off a cliff:
+       hand/brawler went 79% -> 13% cleared, dying on wave 6 having taken less
+       total damage than the old build shrugged off, because a bot whose whole
+       survival is max HP and armour was being handed one stat card every
+       third board. A HUMAN would spend a behavioural card instead — but the
+       harness is the instrument and the instrument said the board had stopped
+       being playable in the most ordinary way there is.
+
+       Any further slot (the high-luck fifth) goes to a group the board does
+       not have yet, because the cheapest thing a spare slot can do is not
+       repeat what is already on the table.
     */
     while (picked.length < want) {
       const before = picked.length
       const thin = (o: Offer): boolean => (groups.get(groupOf(o.category)) ?? 0) === 0
-      fill(thin)
+      if (stats === 0) fill((o) => o.category === 'stat', thin)
+      else fill(thin)
       if (picked.length === before) break // pool exhausted; nothing left to deal
     }
 

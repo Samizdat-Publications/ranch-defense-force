@@ -243,6 +243,10 @@ try {
   const ORBIT = ['d', 's', 'a', 'w']
   let held = ''
   let lastShot = -1e9
+  /** Card-screen photographs taken so far, and the cap on each kind. */
+  let boards = 0
+  let shopShots = 0
+  const MAX_BOARD_SHOTS = 4
   let lastFps = ticks * 2
   let lastWave = 0
   const started = Date.now()
@@ -297,11 +301,32 @@ try {
        `levelUp.handleDigit` inside the frame loop, which keeps running while
        the world is paused, so this exercises the path a player uses.
     */
+    /*
+       Photograph the card screens BEFORE dismissing them.
+
+       This tool could report that a level-up happened and never show one. The
+       cards are most of what an upgrade change is — the delta line, the stack
+       counter, what four cards look like side by side — and a run that closes
+       every board before the shutter opens can only ever prove the run
+       advanced. Capped so a long run does not write forty of them.
+    */
     if (s.levelUp) {
+      if (boards < MAX_BOARD_SHOTS) {
+        const f = `${outDir}/board-${String(boards).padStart(2, '0')}-lv${s.level}.png`
+        await page.screenshot({ path: f })
+        shots.push(f)
+        boards++
+      }
       await page.keyboard.press('1')
       events.push(`t=${Math.round((Date.now() - started) / 1000)}s  level ${s.level} -- took offer 1`)
       await page.waitForTimeout(400)
     } else if (s.shop) {
+      if (shopShots < MAX_BOARD_SHOTS) {
+        const f = `${outDir}/shop-${String(shopShots).padStart(2, '0')}-w${s.wave - 1}.png`
+        await page.screenshot({ path: f })
+        shots.push(f)
+        shopShots++
+      }
       const back = page.getByText('BACK TO THE FIELD').first()
       if (await back.count()) await back.click()
       events.push(`t=${Math.round((Date.now() - started) / 1000)}s  shop after wave ${s.wave - 1} -- left with ${s.feed} feed`)
