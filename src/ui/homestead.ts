@@ -5,11 +5,25 @@
  * it, each fronted by a staked sign** — so it is a place, like the title
  * screen, rather than a menu with a picture behind it.
  *
- * The backdrop is `scene.ts`'s yard, the same one the home screen mounts. The
- * mockup composes its own cut-down version on a 1760x940 stage: the same silo,
- * barn, house, coop, scarecrow, well, fence and fireflies, moved to fit a
- * different rectangle. Building that separately would leave two yards to keep
- * in step, and they would drift the first time either moved.
+ * The backdrop is `scene.ts`'s BARN INTERIOR, and it used to be the yard.
+ *
+ * The yard was the mockup's composition and it was wrong for one reason that
+ * nobody had said out loud: this screen is entered through the barn DOOR, from
+ * either surface scene, and it then composed the yard again behind itself. The
+ * player walked into a building and came out standing in front of it. `scene.ts`
+ * builds the room on the other side of that door now -- one more `SceneKind`,
+ * the same stage, the same `sceneSprite`/`groundActor` mechanics -- so the two
+ * screens meet at a threshold instead of contradicting each other across it.
+ *
+ * It is also where eight generated assets finally land. Two stall fronts, a
+ * divider, a loft edge, two hanging lanterns, a floor tile and a bolted ladder
+ * were bought, claimed and packed sessions ago and drawn by nothing, waiting on
+ * exactly this scene: nine rows of the ledger's open queue, closed by building
+ * the one thing they were all for.
+ *
+ * Whichever backdrop it is, it is `scene.ts`'s and not a second copy. Building
+ * one here would leave two rooms to keep in step and they would drift the first
+ * time either moved.
  *
  * The one rule that carries the screen, and which Design lists as having
  * earned its place: **anything affordable gets a warm outline.** That lets it
@@ -73,7 +87,7 @@ export class HomesteadScreen {
     this.root = el('div', { class: 'screen phome' })
     this.root.style.display = 'none'
 
-    this.sceneEl = el('div', { class: 'phome-scene' }, [buildScene('yard')])
+    this.sceneEl = el('div', { class: 'phome-scene' }, [buildScene('barn')])
 
     this.titleEl = el('h1', { class: 'phome-title', text: 'The Homestead' })
     this.acresEl = el('div', { class: 'phome-acres' })
@@ -131,7 +145,7 @@ export class HomesteadScreen {
    * every time it was forgotten.
    */
   refreshScene(): void {
-    this.sceneEl.replaceChildren(buildScene('yard'))
+    this.sceneEl.replaceChildren(buildScene('barn'))
   }
 
   get isOpen(): boolean {
