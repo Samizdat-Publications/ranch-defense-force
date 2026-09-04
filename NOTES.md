@@ -181,9 +181,8 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. Batches 2 and 3 are merged. Queue: batch 4 (18 class cards), batch 5 (ledger
-  and shop UI, full retune — the ladder has drifted easier), the 57
-  packed-unused sprites.
+  merged. Batches 2, 3 and 4 are merged. Queue: batch 5 (ledger and shop UI, full
+  retune — the ladder has drifted easier), the 57 packed-unused sprites.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -795,6 +794,38 @@ kid 14/12/21 (kite/brawl/spacer) — **which is drifting EASIER with every
 batch**. Three batches have each re-tuned the Hand to hold a test bar while the
 roster grew; batch 5 is the full retune and is where that settles. Until then,
 do not read the ladder as balance. 231/231 tests; candidates at L30-34 now 65.
+
+## Batch 4 of the upgrade roster: six classes stop being a stat spread with one button
+
+18 class cards, H13: `player.classBonus`, rebuilt in `resolve()` from every
+owned item's `classBonus` block the way `stats` already is, read by
+`updatePassive`/`onKill`/`takeWound`/`onHurt` in player.ts and by two new hooks
+in world.ts — Volunteer Strain's status spread in `killEnemy`, Dust Devil's
+dash-trail hazard on Bolt. `requiresClass` gating already existed (batch 2
+anticipated it); this adds the class name to the kind band.
+
+Two of the doc's own numbers did not survive contact with today's
+classes.json: Deep Rooted's "caps at 45%" already shipped as The Hand's base in
+batch 1, so the card pushes to 55% instead; Long Stride's cap-only design was
+arithmetically inert against Momentum's formula (velocityFraction tops out
+exactly at the base cap), so it raises the rate too. Anchor Stone trades the
+doc's 90px aura for the touch-collision loop — the same simplification Straw
+Hat's "within 60px" already makes. Set Feet uses a quarter-second nudge, not
+the half-second that measured worse in batch 1.
+
+Every card carries a small flat stat mod alongside its overlay, Iron Lung's own
+precedent, added after measurement: without it, reseeding the offer stream
+dropped hand/kite below its acceptance bar and moved Vet and Agronomist more
+than three clears off the pre-batch ladder. With it, home pilots on the test
+ladder: hand 16→17, kid 13→14, widow 21→18, vet 12→14, agronomist 15→17,
+drifter 14→16 — all within ±3, mean 15.2→16.0. The base stats were NOT
+touched this time. Art: zero generations, `portrait.<classId>` for all 18.
+238/238 tests.
+
+One incident, disclosed by the agent: cleaning up a temporary worktree, a
+`Remove-Item` on a directory junction recursed into the real `node_modules` and
+deleted most of it; caught on the next `vite-node` failure, restored with
+`npm ci`, no source touched. Junctions and `-Recurse` do not mix.
 
 ## The four locked classes now answer the game differently
 
