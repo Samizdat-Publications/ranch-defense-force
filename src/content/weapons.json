@@ -368,8 +368,13 @@
     "cooldown": 0.7,
     "behaviour": "arcSwing",
     "carry": "hand",
-    "carryHeight": 26,
-    "carryAim": false,
+    "carrySprite": "carry.pitchfork",
+    "carryHeight": 31,
+    "carryPivot": 0.18,
+    "carryAim": true,
+    "carryThrustPixels": 9,
+    "swingStyle": "thrust",
+    "hitFx": "hitSpark",
     "arcDegrees": 110,
     "range": 78,
     "knockback": 190,
@@ -383,7 +388,7 @@
       "weapon.pitchfork.t4"
     ],
     "sound": "swing",
-    "blurb": "Swings where you face. Shoves them off you.",
+    "blurb": "Drives it where you face. Shoves them off you.",
     "tiers": {
       "2": {
         "name": "+30% arc",
@@ -398,7 +403,7 @@
         "delta": "the shove stuns 0 → 0.4s · 46.1 → 73.7 damage"
       }
     },
-    "swingClip": "proj.claw",
+    "_presentationNote": "Everything above the blurb is UNCHANGED and deliberately so -- 18 damage, 0.7s cooldown, a 110-degree arc at 78px, the same three riders. What changed is only what you see. It used to fire `fx.slash`, a white crescent, over `swingClip: proj.claw`, which is the FX pack's demon-bite loop stretched to the full 78px of the hitbox: a sword's swing and a monster's mouth on a tool that stabs. `swingStyle: thrust` turns both off and turns on the lunge (`carryThrustPixels`), the tine streak and the spark. `carrySprite` is the side-on fork drawn for the body, which is what makes `carryAim` legal on it -- the 3/4 icon it used to wear could not point anywhere. See tuning.json `_jabNote` and art/sprites.json `carry._seventhNote`.",
     "rarity": "common",
     "source": "levelup"
   },

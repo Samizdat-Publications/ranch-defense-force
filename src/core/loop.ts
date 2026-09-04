@@ -3,7 +3,8 @@
  * whole 1/60s steps; the renderer gets an alpha in [0,1) to interpolate with.
  * Simulation is never tied to frame time (CLAUDE.md, non-negotiable).
  */
-export const STEP = 1 / 60
+export { STEP } from './step'
+import { STEP } from './step'
 /** Never simulate more than this many steps in one frame — after a tab switch
  *  or a long stall, drop the backlog rather than spiralling. */
 const MAX_STEPS_PER_FRAME = 5

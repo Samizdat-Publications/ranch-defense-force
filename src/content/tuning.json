@@ -111,6 +111,17 @@
    "life": 0.34,
    "scale": 0.8
   },
+  "_jabNote": "The pitchfork's attack, and the only melee presentation in the game that is not a sweep. It used to draw a white crescent (`fx.slash`) over `proj.claw` — which is `pj3_demon_bite_loop_large_orange`, a DEMON BITE, stretched to the swing's 78px diameter. The owner called it a giant sand mouth eating things, and it was: a sword's swing and a monster's bite on a tool that stabs. What replaces it is three things and no atlas art at all. The held fork lunges (`carryThrustPixels` on the weapon, `thrustSeconds` below), three short strokes fly out at the tine tips, and a spark lands where a tine does. Stroked lines rather than a generated clip because a clip at this size is a smudge and a line is a line — tried at 1x in a real run, which is the only scale that settles it. Nothing here is in the sim: the hitbox, its radius, its arc and its cooldown are exactly what they were, and a fixed seed reports the same numbers either side.",
+  "jab": {
+   "tines": 3,
+   "tineSpacing": 4.5,
+   "lengthFraction": 0.6,
+   "forwardBias": 0.26,
+   "lineWidth": 1.5,
+   "colour": "242, 234, 210",
+   "alpha": 0.8,
+   "sparkScale": 0.45
+  },
   "_harvestToolNote": "The pickaxe and axe hanging at the player's feet are not weapons and are not part of the carried loadout — see `Renderer.collectHarvestTools`. This is the flat multiplier they draw at; it used to be `weaponRingScale * 0.85` and is now written out, because the ring it borrowed from no longer exists.",
   "harvestToolScale": 0.38
  },
@@ -138,6 +149,8 @@
   "_behindNote": "`behind` says whether this slot draws BEHIND the character for that facing, and it is the whole of the depth handling: carried items are pushed at the player's own y, and the sprite pass is a counting sort that preserves insertion order inside a bucket, so `behind` items are simply pushed before the player sprite and the rest after. A rifle slung on his back is behind him when he faces the camera and in front of him when he walks away, which is what stops the loadout reading as decals stuck on top of him. Use it sparingly: an item drawn behind a 30px-wide body is mostly an item you cannot see, which is why the back slots sit off-centre.",
   "_flipNote": "`flip` mirrors the art horizontally for that facing. All the source art points right, so the left-facing views need it. `angle` is the resting rotation in radians, clockwise, and a weapon's own `carryAngle` in weapons.json is ADDED to it.",
   "bootOffsetY": -8,
+  "_thrustNote": "How long the held-weapon LUNGE lasts, for weapons that declare `carryThrustPixels`. Read off `slot.firedAt`, the world-tick stamp the sim already writes to decide which weapon is in his hands — so the thrust is derived from state that exists, adds none, and cannot move an outcome. The curve is a half sine: out and back, peak at the halfway mark. Kept slightly longer than `weaponRecoilSeconds` (0.12) on purpose — a gun's kick should be over before you see it and a thrust should not.",
+  "thrustSeconds": 0.16,
   "_muzzleNote": "The muzzle flash leaves the END OF THE HELD WEAPON now, not a fixed sixteen pixels along the way the man happens to be walking -- which put the flash behind him whenever he fired at something he was not facing, which for an auto-targeting weapon is most of the time. It is derived, not authored: the `hand` anchor for his class and facing gives the grip, and the muzzle is `1 - carryPivot` of the weapon's `carryHeight` forward along its AIM. `muzzleReachFallback` is the old sixteen, kept for anything that fires without carried art so nothing regressed on the way in. Decoration only: `playFx` draws no random numbers, so this cannot move the sim's RNG stream and a seed still replays.",
   "muzzleReachFallback": 16,
   "_orderNote": "The slot a weapon asks for is its RESTING slot; `hand` is dynamic and belongs to whichever weapon fired most recently (`slot.firedAt`, a sim tick stamp). Everything else claims its declared slot in pickup order, and a weapon that finds its slot taken walks forward through this cycle, wrapping, until it finds a free one. `hand` is struck out of the free set first, so a resting weapon never lands in it. Six inventory slots against `hand` plus five anchors means the loadout always fits exactly, with no overflow case to invent.",
@@ -284,6 +297,7 @@
      "angle": -1.152
     },
     "byClass": {
+     "_handNote": "The Hand's back slot is NOT the pitchfork's private anchor and must not be tuned as if it were. `classSlot` claims it for the fork only on the frames the fork is not the one he just used; six auto-firing weapons hand that slot back and forth all run, so a slung rifle rests here too. It was briefly set to -2.721 -- a quarter turn, to keep the fork standing over his shoulder the way its old 3/4 icon did -- and that stands a RIFLE up like a post, which is the exact pose `_slingNote` records the owner rejecting. Left at -1.15. The carried fork is side-on and points right like the six guns now, so it slings on a back and hangs down a thigh the way they do, at every slot, with no per-weapon `carryAngle` at all: the correction `_twoFamiliesNote` wanted, arrived at by fixing the ART rather than the angles.",
      "hand": {
       "down": {
        "dy": -29,

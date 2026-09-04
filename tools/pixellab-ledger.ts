@@ -113,8 +113,25 @@ function walk(dir: string): void {
     if (e === 'node_modules' || e === '.git' || e === '.claude' || e === 'dist') continue
     const p = join(dir, e)
     if (statSync(p).isDirectory()) walk(p)
+    /*
+       THIS FILE IS NOT EVIDENCE THAT ANYTHING IS DRAWN.
+
+       `drawn()` is a substring search over src/, tools/ and tests/, and the
+       family table below names every atlas key this document reasons about --
+       so with this file in the corpus, EVERY mapped key was "drawn" by the
+       document that was asking the question. The object half of the
+       wired/packed-unused split had been self-satisfied since the ledger was
+       written: 148 objects reported wired and not one could ever report
+       packed-unused, whatever src/ actually did. It went unseen because the
+       fifteen open questions short-circuit the key check, so the rows where it
+       would have shown were the rows that never reached it.
+
+       The sidecar and the inventory are excluded for the same reason and always
+       were; this is the third file in that set and the one that mattered.
+    */
     else if (/[.](ts|tsx|json|css|html)$/.test(e) && !p.includes('atlas.json')
-      && !p.includes('pixellab-inventory.json')) sources.push(readFileSync(p, 'utf8'))
+      && !p.includes('pixellab-inventory.json') && !p.includes('pixellab-ledger.'))
+      sources.push(readFileSync(p, 'utf8'))
   }
 }
 for (const d of ['src', 'tools', 'tests']) walk(d)
@@ -132,7 +149,26 @@ const code = sources.join('\n')
  * wrong in for a document whose job is to find UNUSED art: it under-reports
  * work to do rather than inventing it.
  */
-const drawn = (name: string): boolean => code.includes(name)
+const drawn = (name: string): boolean => {
+  if (code.includes(name)) return true
+  /*
+     A key may be ASSEMBLED, and then its bare name is the only thing written.
+
+     `playFx('explosion')` draws `fx.explosion` and never spells it;
+     `pickup.${kind}` draws `pickup.heal` off a `case 'heal'`. So a packed key
+     also counts as drawn when its bare name appears QUOTED -- the exact test
+     the tileset branch below has always used for grounds, which content names
+     bare (`"groundSet": "grass_to_rot"`).
+
+     Quoted, not bare: `code.includes('cow')` is true of the word "cow" in a
+     comment, and this half of the check has to be tighter than the first
+     because it is looking at a shorter string. `scene.cow` and
+     `sceneBg.cornWall` stay dead under it, correctly -- nothing in src/ names
+     either, which is exactly what this file exists to find.
+  */
+  const bare = name.slice(name.indexOf('.') + 1)
+  return bare !== name && (code.includes(`'${bare}'`) || code.includes(`"${bare}"`))
+}
 
 /* ------------------------------------------------------------- the family map */
 
@@ -183,7 +219,7 @@ const BY_TAG: Record<string, Fam> = {
 
   'rdf-overhead-branches': { keys: ['cave.branches0', 'cave.branches1', 'cave.branches2', 'cave.branches3', 'cave.branches4', 'cave.branches5', 'cave.branches6'], note: 'boneOrchard overhead layer, and the roots in the descent' },
   'rdf-cave-stalactite': { keys: ['cave.stalactite0', 'cave.stalactite1', 'cave.stalactite2', 'cave.stalactite3', 'cave.stalactite4', 'cave.stalactite5'], note: 'strata hanging in the descent column (wired by this audit)' },
-  'rdf-cave-web': { keys: ['cave.web0', 'cave.web1', 'cave.web3', 'cave.web4', 'cave.web5'], note: 'OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exists. Recommend compositing one web over prop.crate and prop.oilDrum offline (free) rather than generating', verdict: 'open' },
+  'rdf-cave-web': { keys: ['cave.web0', 'cave.web1', 'cave.web3', 'cave.web4', 'cave.web5', 'prop.oilDrumWebbed', 'base.cratePalletWebbed'], note: 'CLOSED 2026-09-04: composited over the drum and the crate pallet by `npm run webbed`, offline and free, and drawn underground -- theVault and theLift replace the oilDrum skin list and carry the webbed pallet in their dressing. Nothing was generated and nothing was resampled: a rectangle of a web is cut at 1:1 and laid in a corner' },
 
   'rdf-scene-barn': { keys: ['ranch.barn'], note: 'title screen, both surface scenes' },
   'rdf-scene-farmhouse': { keys: ['ranch.farmhouse'], note: 'title screen' },
@@ -197,8 +233,8 @@ const BY_TAG: Record<string, Fam> = {
   'rdf-scene-cropduster': { keys: ['ranch.biplane', 'duster'], note: 'the Duster boss is animated from its own sheet; ranch.biplane is the still' },
   'rdf-scene-scarecrow': { keys: ['scarecrow'], note: 'title screen, animated sway' },
   'rdf-scene-scarecrow-wrong': { keys: ['scarecrowBlight'], note: 'the blighted scarecrow (wired by this audit; three rolls retired)' },
-  'rdf-scene-cattlechute': { keys: [], note: 'OPEN: never downloaded, and no scene or map asks for a cattle chute', verdict: 'open' },
-  'rdf-silo-ruined': { keys: [], note: 'OPEN: never downloaded; ranch.silo is the one the scenes use', verdict: 'open' },
+  'rdf-scene-cattlechute': { keys: [], note: 'RETIRED 2026-09-04: never downloaded, and after twenty-three sessions no scene, map or brief has ever asked for a cattle chute. A chute is a place cattle are HELD to be worked on, which is a farm this game is not about -- the animals here are already turned', verdict: 'retired' },
+  'rdf-silo-ruined': { keys: [], note: 'RETIRED 2026-09-04: never downloaded. `ranch.silo` is the silo both surface scenes stand, and the blight pass grades it by filter rather than swapping it -- so a separately drawn ruined silo would be a second answer to a question already answered, and the two would disagree the first time either was touched', verdict: 'retired' },
   'rdf-tree-orchard': { keys: ['nodeTree', 'node.tree'], note: 'orchard trees' },
   'rdf-tree-charred': { keys: ['node.treeCharred', 'node.treeDead'], note: 'burnt-map trees' },
   'rdf-magnet': { keys: ['pickup'], note: 'the magnet pickup' },
@@ -211,7 +247,7 @@ const BY_TAG: Record<string, Fam> = {
      row exists so the count is honest and the next refresh does not read them
      as an unexplained gap; whoever generated them owns wiring them.
   */
-  'rdf-weapon-smudgepot': { keys: ['weapon.smudgePot'], note: 'OPEN: generated by ANOTHER SESSION during this audit (2026-09-04T00:19Z); not wired, and not this audit\'s to wire', verdict: 'open' },
+  'rdf-weapon-smudgepot': { keys: ['weapon.smudgePot'], note: 'HELD for the upgrade roster: generated by the roster batch, not by the audit or the art pass, and it is that work\'s to wire. Tagged rdf-hold-batch2 on the account so it is visible from the other side. It reports packed-unused, which is honest -- a job, with an owner' },
 }
 
 /**
@@ -235,7 +271,7 @@ const BY_PROMPT: [string, Fam][] = [
   ['rank of eight rusted steel drums', { keys: ['vault.drumRank'], note: 'lab scene' }],
   ['split rusted steel drum', { keys: ['vault.drumWeeping'], note: 'lab scene (wired by this audit)' }],
   ['steel floor grate', { keys: ['vault.floorGrate'], note: 'lab scene' }],
-  ['steel ladder bolted', { keys: ['ranch.barnLadder'], note: 'OPEN: packed, no barn interior exists to hang it in', verdict: 'open' }],
+  ['steel ladder bolted', { keys: ['ranch.barnLadder'], note: 'the barn interior, spanning loft to floor (`barn()` in src/ui/scene.ts)' }],
   ['concrete bunker wall', { keys: ['base.wallPipes', 'base.wallHazard', 'base.wallVent', 'base.wallStencil', 'base.wallLamp', 'base.wallPlain'], note: 'bunker boundary panels and the lab wall' }],
   ['poured concrete wall seen from', { keys: ['terrain.concrete'], note: 'bunker ground' }],
   ['air duct', { keys: ['base.ceilingDuct'], note: 'bunker overhead layer' }],
@@ -280,16 +316,16 @@ const BY_PROMPT: [string, Fam][] = [
   ['timber fence corner post', { keys: ['ranch.fenceCornerPost'], note: 'field dressing (wired by this audit)' }],
   ['collapsed section of timber post', { keys: ['ranch.fenceBroken', 'ranch.fenceRailBroken'], note: 'field dressing (wired by this audit)' }],
   ['timber farm gate standing open', { keys: ['ranch.gateOpen'], note: 'field dressing (wired by this audit)' }],
-  ['closed timber farm gate', { keys: ['ranch.gateClosed'], note: 'OPEN: packed, drawn by nothing; gateOpen took the dressing slot', verdict: 'open' }],
+  ['closed timber farm gate', { keys: ['ranch.gateClosed'], note: 'field dressing (wired 2026-09-04): a second SKIN of a fixture the list already carries, the same argument that put a galvanised trough beside a wooden one' }],
   ['livestock pen gate', { keys: [], note: 'a PIECE of a pen; superseded by the pen.* whole enclosures', verdict: 'retired' }],
   ['livestock pen fence', { keys: [], note: 'a PIECE of a pen; superseded by the pen.* whole enclosures', verdict: 'retired' }],
-  ['paddock enclosed by', { keys: ['pen.paddockDirt', 'pen.paddockGrass', 'pen.paddockFlat', 'pen.paddockV3'], note: 'OPEN: four complete paddocks packed, no scene stands anything in one', verdict: 'open' }],
-  ['chicken run enclosed by', { keys: ['pen.chickenRunDirt', 'pen.chickenRunGreen', 'pen.chickenRunFlat', 'pen.chickenRunV3'], note: 'OPEN: four complete runs packed, no scene stands anything in one', verdict: 'open' }],
-  ['horse stall', { keys: ['ranch.stallFront', 'ranch.stallFrontBroken', 'ranch.stallDivider'], note: 'OPEN: barn interior, and no barn interior exists', verdict: 'open' }],
-  ['stall divider', { keys: ['ranch.stallDivider'], note: 'OPEN: barn interior, and no barn interior exists', verdict: 'open' }],
-  ['barn hay loft', { keys: ['ranch.loftEdge'], note: 'OPEN: barn interior, and no barn interior exists', verdict: 'open' }],
-  ['barn lantern', { keys: ['ranch.barnLantern', 'ranch.barnLanternDark'], note: 'OPEN: barn interior, and no barn interior exists', verdict: 'open' }],
-  ['patch of barn floor', { keys: ['ranch.barnFloor'], note: 'OPEN: barn interior, and no barn interior exists', verdict: 'open' }],
+  ['paddock enclosed by', { keys: ['pen.paddockDirt', 'pen.paddockGrass', 'pen.paddockFlat', 'pen.paddockV3'], note: 'DESIGN\'S CALL, 2026-09-04, and reports packed-unused until it is made. These are 300-400px whole enclosures with their own ground quad, so standing one is not dressing -- it re-composes the yard or the field, and NOTES is explicit that the surface compositions are Design\'s and approved. Too big for maps.json dressing, where nothing exceeds 96px. The question for Design is in docs/SCENE_ASSETS.md' }],
+  ['chicken run enclosed by', { keys: ['pen.chickenRunDirt', 'pen.chickenRunGreen', 'pen.chickenRunFlat', 'pen.chickenRunV3'], note: 'DESIGN\'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md' }],
+  ['horse stall', { keys: ['ranch.stallFront', 'ranch.stallFrontBroken', 'ranch.stallDivider'], note: 'the barn interior: the stall run along the back wall, one end of it let go' }],
+  ['stall divider', { keys: ['ranch.stallDivider'], note: 'the barn interior: the posts between the stalls' }],
+  ['barn hay loft', { keys: ['ranch.loftEdge'], note: 'the barn interior: the loft lip, overlapped across the width' }],
+  ['barn lantern', { keys: ['ranch.barnLantern', 'ranch.barnLanternDark'], note: 'the barn interior: one lit over the aisle and one dead at the far end' }],
+  ['patch of barn floor', { keys: ['ranch.barnFloor'], note: 'the barn interior: the trodden patch in the doorway light. NOT the floor tile -- it is a drawn object and tiling it gives a grid of pads; `terrain.hay` is the tile' }],
   ['horse manure', { keys: ['ranch.muckTracks'], note: 'field decal (wired by this audit)' }],
   ['hay ring feeder', { keys: ['ranch.roundBale', 'ranch.roundBaleRotted'], note: 'title screen, and a breakable skin (wired by this audit)' }],
   ['galvanised steel water trough', { keys: ['ranch.waterTrough'], note: 'breakable skin on the trough class (wired by this audit)' }],
@@ -298,7 +334,7 @@ const BY_PROMPT: [string, Fam][] = [
   ['dented steel milk churn', { keys: ['prop.milkCans', 'scene.milkcan'], note: 'breakables.json milkCans class' }],
   ['irrigation pipe', { keys: [], note: 'OPEN: still in review, never claimed; nothing asks for one', verdict: 'open' }],
   ['tool shed', { keys: [], note: 'OPEN: still in review, never claimed; nothing asks for one', verdict: 'open' }],
-  ['wooden signpost', { keys: ['scene.signCow'], note: 'OPEN: LimeZu sign packed and unused; these were never downloaded', verdict: 'open' }],
+  ['wooden signpost', { keys: [], note: 'RETIRED 2026-09-04: never downloaded, and the LimeZu sign it would have replaced left art/sprites.json in the same pass -- packed and placed by no scene in twenty-three sessions. The Homestead names its four buildings on drawn signs made of CSS over a generated plate, which is the answer this was a second one to', verdict: 'retired' }],
 
   // -- the farm's animals, all of them enemies or title-screen residents
   ['crop duster', { keys: ['duster'], note: 'the Duster boss, its own animated sheet' }],
@@ -323,7 +359,7 @@ const BY_PROMPT: [string, Fam][] = [
   ['arabian horse', { keys: ['arabian', 'arabianBlight', 'arabianCursed'], note: 'the yard, its blighted twin, and the cursed enemy' }],
   ['fjord pony', { keys: ['fjordPony', 'fjordPonyBlight', 'fjordPonyCursed'], note: 'the yard, its blighted twin, and the cursed enemy' }],
   ['scruffy brown farm dog', { keys: ['barnDog', 'feralDog'], note: 'the Barn Dog summon and the feral dog enemy' }],
-  ['brown farm dog sitting', { keys: ['scene.dogIdleStrip', 'joy'], note: 'OPEN: LimeZu dog strips packed and unused since the generated dogs landed', verdict: 'open' }],
+  ['brown farm dog sitting', { keys: [], note: 'RETIRED 2026-09-04: the dog in the yard is `joy`, a generated CHARACTER with idle and walk clips, and it has been since session 20. These are static profile objects; the LimeZu strip they were bought to replace left art/sprites.json in the same pass. A still dog beside an animated one is a downgrade with a cost', verdict: 'retired' }],
   ['diseased rooster', { keys: ['rooster'], note: 'enemy sheet' }],
   ['diseased hen', { keys: ['infectedHen'], note: 'enemy sheet' }],
   ['diseased sheep', { keys: ['blownSheep'], note: 'enemy sheet' }],
@@ -331,7 +367,7 @@ const BY_PROMPT: [string, Fam][] = [
   ['angry black bull', { keys: ['prizeBull', 'whitacreBull'], note: 'the Prize Bull boss and the Whitacre Bull item' }],
   ['woolly white sheep', { keys: ['scene.sheep', 'scene.sheepGrazeStrip'], note: 'title screen yard' }],
   ['dairy cow', { keys: ['scene.cow', 'scene.cowGrazeStrip'], note: 'title screen yard' }],
-  ['brown calf', { keys: ['scene.calf', 'scene.calfGrazeStrip'], note: 'OPEN: packed, no scene places the calf', verdict: 'open' }],
+  ['brown calf', { keys: [], note: 'RETIRED 2026-09-04: no scene ever placed the calf, and the LimeZu calf and its graze strip left art/sprites.json in the same pass. The yard\'s cattle is `scene.cow` with its own graze loop; a calf standing beside it needs a second animal-scale decision the composition has never asked for', verdict: 'retired' }],
   ['yellow chick', { keys: ['chick', 'scene.chick'], note: 'title screen yard' }],
   ['baby chick', { keys: ['chick'], note: 'title screen yard' }],
   ['duck in flight', { keys: ['duckFlight'], note: 'the flying duck' }],
@@ -342,14 +378,14 @@ const BY_PROMPT: [string, Fam][] = [
   ['gas mask', { keys: ['item.gasMask', 'gasMaskIcon'], note: 'the Iron Lung item card' }],
   ['jar of red medicine', { keys: ['item.healthJar', 'pickup.heal'], note: 'the health pickup' }],
   ['sack of loose grain', { keys: ['item.feedSack', 'pickup.xp'], note: 'the Feed Sack item and the feed pickup' }],
-  ['framing hammer', { keys: ['weapon.framingHammer'], note: 'OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons', verdict: 'open' }],
-  ['bucket slopping', { keys: ['weapon.slopBucket'], note: 'OPEN: packed; freed by this audit when keroseneCan took its own icon', verdict: 'open' }],
-  ['chicken egg', { keys: ['weapon.eggToss'], note: 'OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons', verdict: 'open' }],
-  ['dried red chilies', { keys: ['weapon.chiliShot'], note: 'OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons', verdict: 'open' }],
-  ['watermelon held as a throwing', { keys: ['weapon.melonLob'], note: 'OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons', verdict: 'open' }],
-  ['digging shovel', { keys: ['weapon.shovel'], note: 'OPEN: packed weapon icon, no weapon owns it -- HOLD for docs/UPGRADE_ROSTER.md, which designs six new Loads and says to grep the account before generating icons', verdict: 'open' }],
-  ['seed blower tube', { keys: ['weapon.seedSpitter'], note: 'OPEN: packed; freed by this audit when slingBands took its own icon', verdict: 'open' }],
-  ['brass blowpipe', { keys: ['weapon.seedSpitter'], note: 'OPEN: packed, drawn by nothing since this audit', verdict: 'open' }],
+  ['framing hammer', { keys: ['weapon.framingHammer'], note: 'HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account' }],
+  ['bucket slopping', { keys: ['weapon.slopBucket'], note: 'HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon' }],
+  ['chicken egg', { keys: ['weapon.eggToss'], note: 'HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account' }],
+  ['dried red chilies', { keys: ['weapon.chiliShot'], note: 'HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account' }],
+  ['watermelon held as a throwing', { keys: ['weapon.melonLob'], note: 'HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account' }],
+  ['digging shovel', { keys: ['weapon.shovel'], note: 'HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account' }],
+  ['seed blower tube', { keys: ['weapon.seedSpitter'], note: 'HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon' }],
+  ['brass blowpipe', { keys: ['weapon.seedSpitter'], note: 'HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower' }],
   ['horseshoe magnet', { keys: ['pickup.magnet', 'item.magnet'], note: 'the magnet pickup' }],
   ['fireball projectile', { keys: ['proj.fireball'], note: 'projectile art' }],
   ['fireball explosion', { keys: ['fx.explosion'], note: 'the explosion FX clip' }],
@@ -741,6 +777,20 @@ Every \`open\` row rolled up by its reason. This is the queue: each line is one
 decision the owner owns, and closing it turns N rows green at once. On the
 account the same rows carry \`rdf-open\`, so
 \`list_objects(tags="rdf-open")\` is this list from the other side.
+
+**An empty table here means the queue is empty and nothing else.** The next
+thing to read is \`packed-unused\`: packed, drawn by nothing, and a job rather
+than a resting state. That count was 19 and every one of them a tileset until
+2026-09-04, and the reason was a defect in this tool: \`drawn()\` searches
+\`src/\`, \`tools/\` and \`tests/\`, and the family table in
+\`tools/pixellab-ledger.ts\` NAMES every key it reasons about -- so each object
+key was "drawn" by the document asking the question. The object half of the
+wired/packed-unused split had been self-satisfied since the ledger was written.
+It went unseen because a forced \`open\` verdict short-circuits the key check,
+so the rows where it would have shown were the rows that never reached it.
+This file is out of its own corpus now, and a bare quoted name counts as a
+reference so that assembled keys (\`playFx('explosion')\` drawing
+\`fx.explosion\`) are not reported dead.
 
 | n | the question |
 |---|---|

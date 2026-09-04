@@ -55,6 +55,9 @@
     "carrysheet": "vite-node tools/carry-contact.ts --",
     "facings": "vite-node tools/carry-facings.ts --",
     "cards": "vite-node tools/card-contact.ts --",
+    "crop": "vite-node tools/crop.ts --",
+    "webbed": "vite-node tools/webbed.ts --",
+    "catch": "vite-node tools/catch.ts --",
     "ledger": "vite-node tools/pixellab-ledger.ts --",
     "tag": "vite-node tools/pixellab-tag.ts --"
   },

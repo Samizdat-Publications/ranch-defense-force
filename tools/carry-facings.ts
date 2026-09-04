@@ -31,6 +31,17 @@ const out = process.argv.slice(2).filter((a) => a !== '--')[1]
 const seed = Number(process.argv.slice(2).filter((a) => a !== '--')[2] ?? 20260903)
 
 /**
+ * `RDF_HELD=<weaponId>` puts that weapon in his hands instead of the first.
+ *
+ * Ties on `firedAt` go to the lowest index, which is pickup order, so without
+ * this the sheet can only ever show KIT[0] held -- and for The Hand that is the
+ * pitchfork, whose resting pose on his back is then the one thing this
+ * instrument cannot photograph. It stamps the sim's own `firedAt`; the rule
+ * that reads it is untouched.
+ */
+const held = process.env.RDF_HELD ?? ''
+
+/**
  * One of everything that is carried, so no slot is left to guesswork.
  *
  * `RDF_KIT=harpoon,pitchfork` narrows it, and narrowing it is how an anchor is
@@ -110,9 +121,10 @@ for (let i = 0; i < FACINGS.length; i++) {
   // Every weapon aims where he faces, so the held one is read against the
   // body rather than against wherever the last enemy happened to be.
   for (const w of p.weapons) w.aimAngle = angle
-  // `hand` belongs to whatever fired most recently; give it to the first of
-  // the kit so the same weapon is held in all four cells.
-  p.weapons[0].firedAt = 1
+  // `hand` belongs to whatever fired most recently; give it to `RDF_HELD`, or
+  // to the first of the kit, so the same weapon is held in all four cells.
+  const h = held ? p.weapons.findIndex((w) => w.id === held) : 0
+  p.weapons[h < 0 ? 0 : h].firedAt = 1
 
   const painter = new WorldPainter(VIEW_W, VIEW_H)
   painter.paint(world)

@@ -125,6 +125,7 @@ interface Manifest {
   }
   /** Cave art: overhead stalactites and the corner webs. See art/sprites.json. */
   cave?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  webbed?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** The generated ranch: buildings, vehicles, fencing, feed. See art/sprites.json. */
   ranch?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** Complete enclosures, one sprite per pen. See art/sprites.json. */
@@ -706,6 +707,10 @@ const singleGroups = [
   // read as the thing above the player, and shrinking it to 32 would make a
   // stalactite the size of a chicken.
   manifest.cave ? { ...manifest.cave, cardArt: true } : undefined,
+  // Composited breakable skins (`npm run webbed`). NOT `cardArt`: they are the
+  // same objects as their unwebbed originals, at the same size, and they want
+  // the same 32x32 field assertion those originals pass.
+  manifest.webbed,
   // `cardArt` and `noTrim`: these are scene-scale buildings, up to 400px, and
   // the scene places them by the top-left of their FULL box. Trimming would
   // move that anchor to the first opaque pixel and every placement coordinate

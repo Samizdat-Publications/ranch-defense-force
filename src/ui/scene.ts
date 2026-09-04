@@ -47,7 +47,7 @@ import { spriteEl, spriteTileUrl, frameOf, stripUrl, groundWrap, sceneSprite as 
 // STILL counterpart of `groundActor` below: exact height, feet on the ground.
 export { sceneSprite } from './sprite'
 
-export type SceneKind = 'yard' | 'field' | 'lab'
+export type SceneKind = 'yard' | 'field' | 'lab' | 'barn'
 
 /** The two scenes that are above ground. The lab is the third and it is below. */
 export const SURFACE_SCENES: readonly SceneKind[] = ['yard', 'field']
@@ -68,6 +68,8 @@ export const BLEED: Record<SceneKind, { top: string; bottom: string }> = {
   field: { top: '#1d2140', bottom: '#201e13' },
   // The lab has no sky. Both edges are the room it is in.
   lab: { top: '#0d1014', bottom: '#0a0c0f' },
+  // Nor has the barn. Dark boards above, straw-strewn floor below.
+  barn: { top: '#191410', bottom: '#20180f' },
 }
 
 /**
@@ -85,10 +87,18 @@ const BARN_DOOR = { x: 196, y: 148, w: 92, h: 76 }
    (820, 244) in a 256 box -- so the door is its centre, at its foot. */
 const LAB_LIFT = { x: 820, y: 244, size: 256 }
 
+/* The barn's own doorway, seen from INSIDE: the spill of dusk on the floor at
+   the near end of the aisle. The yard's barn door is at stage y 558 and this is
+   its other side, so the two screens meet at the same threshold. */
+const BARN_MOUTH = { x: 960, y: 1004 }
+
 export const DOOR: Record<SceneKind, { x: number; y: number }> = {
   yard: { x: YARD_BARN.x + BARN_DOOR.x, y: YARD_BARN.y + BARN_DOOR.y + BARN_DOOR.h + 10 },
   field: { x: FIELD_BARN.x + BARN_DOOR.x, y: FIELD_BARN.y + BARN_DOOR.y + BARN_DOOR.h + 10 },
   lab: { x: LAB_LIFT.x + LAB_LIFT.size / 2, y: LAB_LIFT.y + LAB_LIFT.size },
+  /* You are already inside the barn. The way out is the doorway you came in
+     by, which this scene draws as the light on the floor at BARN_MOUTH. */
+  barn: { x: BARN_MOUTH.x, y: BARN_MOUTH.y },
 }
 
 /**
@@ -1421,12 +1431,212 @@ function lab(): (HTMLElement | null)[] {
   ]
 }
 
+/**
+ * The barn, from the inside. The Homestead's room.
+ *
+ * ## Why this exists at all
+ *
+ * Eight assets -- two stall fronts, a stall divider, a loft edge, a lit and an
+ * unlit hanging lantern, a floor tile and a bolted ladder -- were generated,
+ * claimed and packed sessions ago and drawn by NOTHING, because the one thing
+ * they all needed was a barn interior and no barn interior existed. That is
+ * nine rows of `docs/PIXELLAB_LEDGER.md`'s open queue and the second largest
+ * group in it. The Homestead was already ENTERED THROUGH THE BARN DOOR from
+ * both surface scenes and then composed the yard again behind itself, so the
+ * player walked into a building and came out standing in front of it.
+ *
+ * ## The geometry, and it is the lab's argument in wood
+ *
+ * `npm run placements` extracts SPRITES; a room is mostly not sprites. The
+ * wall, the floor and the join between them are drawn here, and the numbers
+ * follow the rule the lab already obeys: a back wall down to the junction, a
+ * skirting band AT the junction, a floor receding from it. Wall 0-430,
+ * junction 430-458, floor 458 down.
+ *
+ * The two grids are the perspective, and getting their ratio wrong is what
+ * makes an interior read as wallpaper. The wall is vertical planking, 42px
+ * wide, straight on. The floor is `ranch.barnFloor` tiled at 128 by 84 --
+ * WIDER THAN IT IS DEEP, because a floor plate seen at a shallow angle is
+ * short. The lab uses 192 by 68 for the same reason at the same room depth.
+ *
+ * ## What it is lit by
+ *
+ * One hanging lantern, and the doorway. The lab is lit by fixtures because a
+ * bunker is; a barn at dusk is lit by the hole it has for a door, which is why
+ * `BARN_MOUTH` is a warm pool on the floor at the near end of the aisle rather
+ * than a decoration -- it is the way out, and `DOOR.barn` points at it.
+ *
+ * The second lantern is the DARK one, hung at the far end. Two lit lanterns
+ * would say the barn is in use; one lit and one dead says somebody stopped
+ * coming out here, which is the game this is the menu for.
+ *
+ * ## The UI rail
+ *
+ * `UI_RAIL` covers x 332-1588, y 735-1028, and the Homestead's building cards
+ * sit in it. Everything below y 700 here is floor, straw and light: no object
+ * is placed where a card will cover it, which is a decision rather than a
+ * transcription -- see the note on `UI_RAIL`.
+ */
+function barn(): (HTMLElement | null)[] {
+  const dim = (b: number): string => `filter:brightness(${b});`
+  const L: (HTMLElement | null)[] = []
+  const push = (e: HTMLElement | null): void => { if (e) L.push(e) }
+
+  // The back wall: dark barn boards, warmer where the doorway light reaches.
+  push(box(
+    'left:0;right:0;top:0;height:430px;'
+    + 'background:linear-gradient(180deg,#191410 0%,#241c14 22%,#33261a 54%,#3d2d1e 82%,#2b2016 100%)',
+  ))
+  // Vertical planking, 42px, with a lighter line down one edge of each board so
+  // the wall reads as grain rather than as a stripe.
+  push(box(
+    'left:0;right:0;top:0;height:430px;background-image:'
+    + 'repeating-linear-gradient(90deg,rgba(0,0,0,0.34) 0 2px,'
+    + 'rgba(255,232,190,0.045) 2px 4px,transparent 4px 42px)',
+  ))
+  /*
+     The floor, and it is NOT `ranch.barnFloor`.
+
+     `ranch.barnFloor` is a 64px OBJECT -- one drawn patch of packed dirt and
+     straw with its own soft edge -- and tiling an object gives a grid of
+     separate pads, which is exactly what the first build of this came out as.
+     A floor wants a TILE, and the atlas already had one nobody had ever named:
+     `terrain.hay`, cut from the terrain sheet, cell-sized and packed untrimmed
+     precisely so it tiles. It was on the ledger's packed-and-dead list.
+
+     `background-repeat:repeat` overrides tileBand's repeat-x: a floor tiles
+     both ways, a band does not. The 44px cell against a 32px source is the
+     perspective -- the aisle is seen at a shallow angle, so the straw runs
+     coarser near the camera than the boards behind it.
+  */
+  push(tileBand(
+    'terrain.hay',
+    'left:0;right:0;top:458px;bottom:0;background-repeat:repeat;filter:brightness(0.44) saturate(0.8)',
+    44, 44,
+  ))
+  // One drawn patch of trodden floor where the doorway light lands, because a
+  // tiled floor with nothing on it is a texture and not a place.
+  push(plate('ranch.barnFloor', 866, 856, 190, dim(0.78) + 'opacity:0.85;'))
+  // The join. 28px of skirting is the whole difference between a room and two
+  // stacked rectangles -- the lab's lesson, in wood.
+  push(box(
+    'left:0;right:0;top:430px;height:28px;'
+    + 'background:linear-gradient(180deg,#4a3722 0%,#33261a 52%,#1d1610 100%)',
+  ))
+  // Weight above and below: the loft presses down, the near floor falls into
+  // shadow at the bottom of the frame.
+  push(box(
+    'left:0;right:0;top:0;height:250px;'
+    + 'background:linear-gradient(180deg,rgba(6,5,4,0.82) 0%,rgba(6,5,4,0.36) 60%,transparent 100%)',
+  ))
+  push(box(
+    'left:0;right:0;top:900px;bottom:0;'
+    + 'background:linear-gradient(180deg,rgba(8,6,4,0) 0%,rgba(8,6,4,0.5) 40%,rgba(6,4,3,0.92) 100%)',
+  ))
+  // The two long walls, off frame, as darkness down each side. Without them the
+  // floor runs to the edge of the stage and the barn reads as open ground with
+  // a wall at the back.
+  push(box(
+    'left:0;top:430px;width:300px;bottom:0;'
+    + 'background:linear-gradient(90deg,rgba(8,6,4,0.8) 0%,rgba(8,6,4,0.28) 52%,transparent 100%)',
+  ))
+  push(box(
+    'right:0;top:430px;width:300px;bottom:0;'
+    + 'background:linear-gradient(270deg,rgba(8,6,4,0.8) 0%,rgba(8,6,4,0.28) 52%,transparent 100%)',
+  ))
+
+  // The hay loft, running the width of the barn above the stalls. Nine plates
+  // rather than a tiled band: `ranch.loftEdge` is drawn boards with straw
+  // hanging off the lip, and repeating it as a texture tiles the straw into a
+  // pattern. Drawn at its catalogued 220 by 60.
+  push(box(
+    'left:0;right:0;top:112px;height:52px;'
+    + 'background:linear-gradient(180deg,#160f0a 0%,#241a10 62%,#120c08 100%);'
+    + 'box-shadow:0 10px 22px rgba(0,0,0,0.6)',
+  ))
+  // Overlapped, not abutted. `ranch.loftEdge` draws straw hanging in a curve off
+  // the lip, so laying the plates end to end gives a row of scallops rather than
+  // a loft; at 160 the curves run into each other and the fringe is continuous.
+  for (let i = 0; i < 13; i++) push(plate('ranch.loftEdge', i * 160 - 40, 122, 58, dim(0.58)))
+
+  // The stalls. Front, divider, broken front -- so the row reads as a barn that
+  // has been let go at one end rather than as three of the same object.
+  const JUNCTION = 458
+  const stall = (name: string, x: number, h: number, b: number): void => {
+    // Placed by the FOOT, not by the top. Every one of these stands on the
+    // junction line, and a row typed by its tops stands on nothing -- the first
+    // build had them floating in the middle of the wall like hung gates.
+    push(plate(name, x, JUNCTION - h, h, dim(b)))
+  }
+  stall('ranch.stallDivider', 24, 210, 0.74)
+  stall('ranch.stallFront', 108, 196, 0.86)
+  stall('ranch.stallDivider', 268, 210, 0.78)
+  stall('ranch.stallFront', 352, 196, 0.9)
+  stall('ranch.stallDivider', 512, 210, 0.78)
+  stall('ranch.stallFrontBroken', 596, 140, 0.86)
+  stall('ranch.stallDivider', 1180, 210, 0.78)
+  stall('ranch.stallFront', 1264, 196, 0.86)
+  stall('ranch.stallDivider', 1424, 210, 0.76)
+  stall('ranch.stallFrontBroken', 1508, 140, 0.82)
+  stall('ranch.stallDivider', 1772, 210, 0.7)
+
+  // The ladder to the loft, bolted to the wall in the gap between the two stall
+  // runs. It has to SPAN loft to floor -- a ladder that stops in mid-air is the
+  // floating-stall mistake in one object -- so it is drawn at 268 against a
+  // 128px source, which the scene layer is allowed to do (it scales buildings
+  // the same way; the 32x32 rule is the field's, not the stage's).
+  push(plate('ranch.barnLadder', 902, JUNCTION - 268, 268, dim(0.8)))
+
+  // Two lanterns hung off the loft beam, one lit and one not.
+  push(plate('ranch.barnLantern', 704, 150, 112, 'animation:l-hum 6.1s ease-in-out infinite;'))
+  push(plate('ranch.barnLanternDark', 1128, 150, 124, dim(0.55)))
+  push(glow(540, 150, 400, 480, 'rgba(255,196,110,0.22)', 'l-hum 6.1s ease-in-out infinite'))
+
+  // The doorway you came in by: a warm spill on the floor, and the only thing
+  // in the room that is not the room. `DOOR.barn` points at its centre.
+  push(box(
+    `left:${BARN_MOUTH.x - 300}px;top:${BARN_MOUTH.y - 320}px;width:600px;height:420px;`
+    + 'pointer-events:none;background:radial-gradient(50% 50% at 50% 88%,'
+    + 'rgba(255,214,140,0.52),rgba(255,196,110,0.20) 44%,transparent 76%);filter:blur(12px)',
+  ))
+
+  // Floor dressing, all of it clear of the UI rail: bales and feed against the
+  // walls, nothing in the aisle the cards sit over.
+  push(plate('ranch.squareBales', 40, 470, 150, dim(0.82)))
+  push(plate('ranch.roundBale', 1700, 448, 176, dim(0.78)))
+  push(plate('ranch.hayWagon', 236, 494, 210, dim(0.7)))
+  push(plate('ranch.feedBucket', 128, 646, 64, dim(0.84)))
+  push(plate('ranch.nestBox', 1580, 620, 116, dim(0.78)))
+  push(plate('ranch.eggClutch', 1516, 726, 48, dim(0.8)))
+  push(plate('ranch.feedPan', 90, 760, 58, dim(0.8)))
+  push(plate('ranch.squareBales', 1768, 700, 150, dim(0.72)))
+
+  // Dust in the lantern light: the barn's answer to the yard's fireflies, and
+  // the only motion in the room besides the flicker.
+  for (let i = 0; i < 7; i++) {
+    push(box(
+      `left:${640 + i * 44}px;top:${300 + (i % 3) * 90}px;width:3px;height:3px;`
+      + 'border-radius:50%;background:rgba(255,224,168,0.5);'
+      + `animation:l-hum ${5 + i * 0.7}s ease-in-out infinite ${i * 0.5}s`,
+    ))
+  }
+
+  L.push(...vignette(
+    'radial-gradient(ellipse 64% 58% at 50% 52%,rgba(0,0,0,0) 38%,rgba(10,7,4,0.7) 100%)',
+    'linear-gradient(180deg,rgba(10,7,4,0.52) 0%,rgba(0,0,0,0) 24%,'
+    + 'rgba(0,0,0,0) 70%,rgba(8,5,3,0.7) 100%)',
+  ))
+  return L
+}
+
 export function buildScene(kind: SceneKind, blight = false): HTMLElement {
   // The lab never blights. It is what the blight came out of.
   BLIGHT = blight && kind !== 'lab'
   try {
     const root = el('div', { class: `home-yard is-${kind}${BLIGHT ? ' is-blight' : ''}` })
-    const layers = kind === 'lab' ? lab() : kind === 'field' ? field() : yard()
+    const layers = kind === 'lab' ? lab()
+      : kind === 'barn' ? barn()
+        : kind === 'field' ? field() : yard()
     for (const layer of layers) {
       if (layer) root.append(layer)
     }

@@ -17,8 +17,8 @@ import type { World } from '../sim/world'
 import { Camera } from './camera'
 import {
   CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
-  carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, decalKindsFor, itemCardSprite,
-  projectileScaleFor,
+  carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf, decalKindsFor,
+  itemCardSprite, projectileScaleFor, swingStyleOf, thrustPhase,
   sceneryKindsFor, type CarrySlot, type MapBoundary, type MapTerrain,
 } from '../content'
 import { Atlas, type AtlasFrame } from '../core/atlas'
@@ -69,6 +69,17 @@ const HARVEST_TOOLS = ['pickaxe', 'axe'] as const
 const PROJECTILE_SCALE = 0.55
 /** unTied's projectile clips are authored at 15fps. */
 const PROJECTILE_FPS = 15
+
+/**
+ * The pitchfork's jab. Out of `tuning.json` and read once at module load, like
+ * every other content constant here, because the jab pass runs per frame and
+ * must not index into JSON in the hot loop. The DURATION is not here: the
+ * streak and the lunge share `thrustPhase`, in content, so they cannot drift.
+ */
+const JAB = TUNING.fx.jab as {
+  tines: number; tineSpacing: number; lengthFraction: number
+  lineWidth: number; colour: string; alpha: number; forwardBias: number
+}
 /**
  * Ambient prop loops run slower than combat art on purpose. A crop swaying at
  * 15fps reads as a flicker; at 8 it reads as wind, and the whole point of the
@@ -204,6 +215,16 @@ export class Renderer {
   /** Melee sweeps and auras, collected during the sprite pass and stroked as
    *  arcs afterwards. Fixed length, reused; never reallocated per frame. */
   private readonly arcs: { x: number; y: number; radius: number; angle: number; aura: boolean }[] = []
+
+  /**
+   * Thrust jabs -- the pitchfork's tine streaks, collected in the same pass as
+   * the arcs and stroked in the same place. A separate list rather than a flag
+   * on `arcs` because the two draw nothing alike: an arc is a filled wedge and
+   * a jab is three straight lines, and one shape pretending to be the other is
+   * how the pitchfork ended up wearing a sword's crescent in the first place.
+   * Fixed length, reused; never reallocated per frame.
+   */
+  private readonly jabs: { x: number; y: number; radius: number; angle: number; t: number }[] = []
 
   /**
    * Which body anchor each owned weapon is riding this frame, or null.
@@ -1000,8 +1021,10 @@ export class Renderer {
 
     this.itemCount = 0
     this.arcs.length = 0
+    this.jabs.length = 0
     this.collectSprites(alpha)
     this.drawArcs(ctx)
+    this.drawJabs(ctx)
     this.sortAndDraw(ctx)
 
     this.drawEffects(ctx, false)
@@ -1392,6 +1415,21 @@ export class Renderer {
       // while every ranged weapon looked identical. They get a swept arc now,
       // and only the things that are really objects get a sprite.
       const isArea = p.behaviour === 'arcSwing' || p.type === 'aura'
+      // A weapon that STABS is drawn stabbing: no wedge, no swept clip, no
+      // crescent. The hitbox behind it is identical -- same disc, same radius,
+      // same arc -- so this is presentation and only presentation.
+      if (isArea && p.type !== 'aura' && swingStyleOf(p.weaponId) === 'thrust') {
+        // Phased off `hitStamp`, which for a swing IS the tick it was spawned
+        // -- and which the T3 re-arm resets exactly when the second jab lands,
+        // so the streak restarts with it for free. The same half sine the held
+        // fork lunges on, so the streak is brightest at the top of the lunge
+        // instead of a fifth of the way down it.
+        this.jabs.push({
+          x, y, radius: p.radius, angle: p.angle,
+          t: thrustPhase(p.hitStamp, w.tick),
+        })
+        continue
+      }
       // A swept melee arc draws its weapon's own art, stretched to the swing.
       // Without a clip it falls back to the tinted wedge, which is a large pale
       // shape a player reasonably read as an exposed hitbox.
@@ -1652,6 +1690,68 @@ export class Renderer {
   }
 
   /**
+   * Thrust jabs: three short strokes along the aim, at the tine tips.
+   *
+   * A stroked line and not a generated clip, and that was tried the other way
+   * round first. At the zoom this game runs at, the whole jab is about thirty
+   * screen pixels long and four wide; an animated 32px sprite scaled into that
+   * is a smudge, and the pack's nearest candidate was another orange bite. Three
+   * lines read as three tines at 1x, which is the only scale worth judging it
+   * at -- at 4x almost anything reads.
+   *
+   * The strokes point along `p.angle`, which for a melee swing is the player's
+   * facing, and are centred on the hitbox's own centre, so the streak lands
+   * exactly where the damage does rather than near it.
+   */
+  private drawJabs(ctx: CanvasRenderingContext2D): void {
+    if (this.jabs.length === 0) return
+    const j = JAB
+    /*
+       Lifted to HAND HEIGHT, and derived rather than authored.
+
+       A melee hitbox sits at the player's origin, which is the character
+       cell's floor -- twelve pixels under his boots, the player-mark lesson
+       again. Drawn there, the streak came out thirty-five pixels below the
+       fork that was supposed to have made it, and the two read as unrelated
+       events. The lift is the same one the carried loadout uses, off the same
+       `hand` anchor for the same class and facing, so the streak stays on the
+       tines if those anchors are ever retuned.
+
+       Only the DRAWING moves. The hitbox is where the sim put it.
+    */
+    const pl = this.world.player
+    const dir = this.atlas?.directionFor(pl.classId, pl.facing) ?? 'down'
+    const hand = carryAnchorOf('hand', dir, pl.classId)
+    const lift = -(CARRY.bootOffsetY + (hand?.dy ?? 0))
+    ctx.save()
+    ctx.lineCap = 'round'
+    ctx.lineWidth = j.lineWidth
+    for (const a of this.jabs) {
+      ctx.save()
+      ctx.translate(a.x, a.y - lift)
+      ctx.rotate(a.angle)
+      ctx.strokeStyle = `rgba(${j.colour}, ${(j.alpha * a.t).toFixed(3)})`
+      const half = (a.radius * j.lengthFraction) / 2
+      const mid = (j.tines - 1) / 2
+      // Biased forward off the hitbox's centre so the near end of the streak
+      // sits at the TINE TIPS of the lunging fork rather than in the gap
+      // between his hands and the hitbox, which read as a streak floating
+      // clear of the man.
+      const c = a.radius * j.forwardBias
+      ctx.beginPath()
+      for (let t = 0; t < j.tines; t++) {
+        const off = (t - mid) * j.tineSpacing
+        ctx.moveTo(c - half, off)
+        ctx.lineTo(c + half, off)
+      }
+      ctx.stroke()
+      ctx.restore()
+      this.drawCalls++
+    }
+    ctx.restore()
+  }
+
+  /**
    * The sprite a projectile is drawn as.
    *
    * Falls back through the weapon's own icon, so a new weapon is visibly a new
@@ -1837,11 +1937,21 @@ export class Renderer {
         ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
         : 0
 
-      it.x = p.x + a.dx - Math.cos(slot.aimAngle) * kick
+      // A thrust weapon goes the OTHER WAY, and that is the animation. The
+      // recoil pulls a gun back along its aim; the pitchfork drives forward
+      // along its aim and comes back, out and back over `thrustSeconds` on a
+      // half sine. Read off `slot.firedAt`, a tick stamp the sim already keeps
+      // -- no new sim state, and nothing here can change an outcome.
+      const lunge = held
+        ? carryThrustOf(slot.id) * thrustPhase(slot.firedAt, w.tick)
+        : 0
+      const along = lunge - kick
+
+      it.x = p.x + a.dx + Math.cos(slot.aimAngle) * along
       // Depth is the player's own y: carried gear is at his feet as far as the
       // sort is concerned, and `behind` does the rest.
       it.y = p.y
-      it.liftY = -(bootY + a.dy) + lift + Math.sin(slot.aimAngle) * kick
+      it.liftY = -(bootY + a.dy) + lift - Math.sin(slot.aimAngle) * along
 
       it.frame = frame
       it.colour = PALETTE.melee

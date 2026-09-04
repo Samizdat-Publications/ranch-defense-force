@@ -145,7 +145,15 @@ try {
      sequence on a named state so a flash or a mid-descent frame can be
      photographed at all.
   */
-  const KINDS = ['yard', 'field', 'lab']
+  /*
+     `homestead` is not one of the home screen's scenes and never appears in its
+     picker: it is the BARN INTERIOR, and the only way to it is through the barn
+     door. So it is asked for by name here and opened through `rdf.openHomestead`
+     below rather than through `localStorage['rdf.homeScene']`. Before this the
+     Homestead could not be photographed at all, which is how it went several
+     sessions composing the yard it is entered FROM.
+  */
+  const KINDS = ['yard', 'field', 'lab', 'homestead']
   if (!KINDS.includes(kind)) {
     throw new Error(`unknown scene '${kind}' — expected one of ${KINDS.join(', ')}`)
   }
@@ -187,7 +195,11 @@ try {
      was a whole-page screenshot presented as a scene shot. Report what was
      actually framed instead of falling back in silence.
   */
-  const SCENE = '.home-scene, .phome-scene, .home-yard'
+  const SCENE = kind === 'homestead' ? '.phome-scene' : '.home-scene, .phome-scene, .home-yard'
+  if (kind === 'homestead') {
+    await page.waitForFunction('window.rdf && window.rdf.openHomestead', null, { timeout: 120_000 })
+    await page.evaluate('window.rdf.openHomestead()')
+  }
   await page.waitForSelector(SCENE, { timeout: 120_000 })
   // Now let the loops run so a walk is caught mid-stride rather than frame 0.
   await page.waitForTimeout(settle)
@@ -209,7 +221,16 @@ try {
   const surfaceClass = await page.locator('.home-slot.is-surface .home-yard').first()
     .getAttribute('class')
   const down = ((await page.locator('.home-column.is-down').count()) > 0)
-  const shot = down ? 'lab' : (surfaceClass ?? '')
+  // `homestead` names the SCREEN and `is-barn` names the scene it composes, so
+  // the two never spell the same and comparing them raises a warning about a
+  // shot that is correct. Report the scene's own class as `homestead` when it
+  // is the barn, which is the only thing that screen may be.
+  const homeClass = kind === 'homestead'
+    ? (await page.locator('.phome-scene .home-yard').first().getAttribute('class')) ?? ''
+    : ''
+  const shot = kind === 'homestead'
+    ? (homeClass.includes('is-barn') ? 'homestead' : homeClass)
+    : down ? 'lab' : (surfaceClass ?? '')
   await target.screenshot({ path: out })
 
   // Counted through locators rather than `page.evaluate`: the callback would run
@@ -246,7 +267,8 @@ try {
   }
   console.log(`framed: ${frame === 'page' ? 'body (whole window)' : (framed ? SCENE : 'body (FALLBACK -- scene root not found)')}`)
   console.log(`surface slot: ${surfaceClass ?? '(none)'}   column: ${down ? 'descended (lab)' : 'up (surface)'}`)
-  if (!shot.includes(kind === 'lab' ? 'lab' : `is-${kind}`)) {
+  const want = kind === 'lab' ? 'lab' : kind === 'homestead' ? 'homestead' : `is-${kind}`
+  if (!shot.includes(want)) {
     console.log(`WARNING: asked for '${kind}' and got '${shot}'`)
   }
   if (problems.length) {
