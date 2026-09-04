@@ -181,8 +181,9 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. Batch 2 is merged. Queue: roster batch 3 (allies, placeables, shield,
-  revive) on Sonnet; the 57 packed-unused sprites; batches 4-5.
+  merged. Batches 2 and 3 are merged. Queue: batch 4 (18 class cards), batch 5 (ledger
+  and shop UI, full retune — the ladder has drifted easier), the 57
+  packed-unused sprites.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -755,6 +756,45 @@ case, 8-15 were flat or worse. Re-measure if the item or upgrade count changes.
 Art: the 26 icons tagged `rdf-hold-batch2` were checked against the 51 cards —
 none fit (seven are concept weapons that never made the sixteen), so they stay
 held. 220/220 tests. `docs/progress/cards-batch2.png`: 130 cards, all render.
+
+## Batch 3 of the upgrade roster: things that stand on the field for you
+
+Eleven cards. Six allies and placeables ride H8 — `Projectile.type: 'placeable'`
+on the existing pool, no new pool: the Scarecrow Post (an attached turret that
+pulses `areaDamage` every 1.2s at 190px for 25s and replants beside you when it
+expires), the Bear Trap (one-shot, a real `hitStamp`/`hitsLeft: 1`, freed by a
+new `trapField` branch in `collideProjectiles`), the Hen Coop (a permanent base
+that spawns a hen which dies on first contact — the reason `'placeable'` is not
+just `'minion'`), the Trip Wire (not a projectile at all: a per-tick
+line-crossing check between the player and the nearest harvestable prop,
+mirroring Salt Circle's ring), the Yard Goose (a chase-and-bite minion on the
+Whitacre Bull's pattern) and Littermate (opens the Barn Dog's second-dog slot
+early at 80%; T3 still grants it free; never three). Fence Row feeds
+`World.playerShield`, a numeric pool that Sunday Best's old one-hit counter now
+feeds too; Second Wind is `player.revivesLeft`, checked at the bottom of
+`damagePlayer`; Hobnails, Oilcloth and Windbreak are touch-slow, hazard
+reduction capped at 80%, and a knockback multiplier applied at every
+player-knockback site plus enemy-into-enemy collision damage.
+
+Eight icons, one `create_image_pro` call each, style-anchored the way batch 1's
+were, ~$0.76; Scarecrow Post reuses `prop.scarecrow`, Littermate reuses
+`weapon.barnDog`. The doc's "four unclaimed coop candidates" were stale — the
+ledger shows them wired or surplus — so the coop reuses `ranch.coop`. Found
+in passing: `projectileFrame` in BOTH painters had no path for an item-sourced
+placeable, and draw-world's minion lookup lacked the `minionSprite` read the
+renderer already had.
+
+**The regression, again, and it is the same shape as batches 1 and 2.** Adding
+the content alone — no sim code — took the hand/kite acceptance ladder from
+12/24 to 3/24: eleven new uncommon+ items reseeding the offer stream.
+`weaponOfferWeight` was re-measured first and ruled out. The lever was The
+Hand's flat stats, because Braced pays nothing while kiting: maxHp 160→180,
+hpRegen 0.9→2.5, and a new dodgePct 15; reasoning in `classes.json`'s
+`_dodgeNote`. It passes, and the six-class ladder now reads hand 15/19/21 and
+kid 14/12/21 (kite/brawl/spacer) — **which is drifting EASIER with every
+batch**. Three batches have each re-tuned the Hand to hold a test bar while the
+roster grew; batch 5 is the full retune and is where that settles. Until then,
+do not read the ladder as balance. 231/231 tests; candidates at L30-34 now 65.
 
 ## The four locked classes now answer the game differently
 
