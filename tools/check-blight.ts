@@ -64,6 +64,7 @@ const SHEET: Record<string, string> = {
   wiz: 'wizBlight',
   ouiji: 'ouijiBlight',
   siameseCat: 'siameseCatBlight',
+  scarecrow: 'scarecrowBlight',
 }
 
 /** Mirrors BLIGHT_SPARE. */
@@ -81,6 +82,7 @@ const STRIP: Record<string, { sheet: string; clip: string; dir: string }> = {
   'scene.farmerWalkStrip': { sheet: 'farmhandBlight', clip: 'walk', dir: 'left' },
   'scene.chickenPeckStrip': { sheet: 'infectedHen', clip: 'idle', dir: 'down' },
   'scene.chickenWalkLeftStrip': { sheet: 'infectedHen', clip: 'walk', dir: 'left' },
+  'scene.scarecrowSwayStrip': { sheet: 'scarecrowBlight', clip: 'idle', dir: 'down' },
 }
 
 /**
@@ -101,14 +103,18 @@ const ASKED: readonly (readonly [string, string, string])[] = [
   ['tabbyCat', 'walk', 'left'],
   ['fjordPony', 'graze', 'downRight'], ['fjordPony', 'walk', 'left'],
   ['joy', 'sit', 'downRight'], ['joy', 'walk', 'right'], ['joy', 'walk', 'left'],
+  // The yard's scarecrow. Not an animal, and the only scenery in this list --
+  // it earned its place by acquiring a counterpart in the 2026-09-03 audit,
+  // and a mapping nobody asserts is a mapping that rots.
+  ['scarecrow', 'sway', 'down'],
 ]
 
 /** The scenery with no counterpart at all. These are expected to filter. */
 const FILTERED = [
-  'windmill', 'scarecrow', 'wheat',
+  'windmill', 'wheat',
   'ranch.*', 'scene.oak', 'scene.treeOak', 'scene.tractorLeft',
   'scene.wheat', 'scene.wheat2', 'scene.fencePicket', 'scene.hay',
-  'scene.silo', 'scene.barn', 'scene.house', 'scene.scarecrowSwayStrip',
+  'scene.silo', 'scene.barn', 'scene.house',
 ]
 
 /** The soil column between the farm and the lab. Every key must resolve. */

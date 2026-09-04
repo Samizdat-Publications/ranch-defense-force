@@ -136,14 +136,15 @@ export const UI_RAIL = { x: 332, y: 735, w: 1256, h: 293 } as const
  *    darken, tint green. Stated as a class rather than applied to the whole
  *    scene root, so a swapped sprite is never double-treated.
  *
- * ## What is NOT here, and why
+ * ## The scarecrow, which used to be what was NOT here
  *
- * The scarecrow. `docs/PIXELLAB_INVENTORY.md` lists `rdf-scene-scarecrow-wrong`
- * -- four candidates of "a scarecrow gone wrong", generated and paid for -- and
- * NONE of them is claimed, so none is in `art/sprites.json` and none is in the
- * atlas (checked: no key matches /wrong/i). Claiming is free; packing it is a
- * separate job with an API key in it. It filters for now and it is written down
- * in NOTES so the next session claims it rather than generating a fifth one.
+ * It filtered, and the note in this place said why: `rdf-scene-scarecrow-wrong`
+ * held four candidates of "a scarecrow gone wrong", generated and paid for in
+ * session 15 and never downloaded. The 2026-09-03 inventory audit did the
+ * downloading. `1cb96ac6` is packed as `scarecrowBlight.idle.down.0` and is in
+ * `BLIGHT_SHEET` and `BLIGHT_STRIP` below, so the yard's animated scarecrow and
+ * the field's baked strip both turn. It is a still where the healthy one sways,
+ * which is the fallback ladder working as designed rather than a shortfall.
  *
  * Every key below is asserted against `public/atlas.json` by
  * `npm run blight` -- see tools/check-blight.ts. Do not trust this table
@@ -174,6 +175,11 @@ const BLIGHT_SHEET: Readonly<Record<string, string>> = {
   wiz: 'wizBlight',
   ouiji: 'ouijiBlight',
   siameseCat: 'siameseCatBlight',
+  // Not an animal, and the only entry here that is not: the yard's scarecrow is
+  // drawn by `clipActorAt('scarecrow', 'sway', ...)`, so its counterpart has to
+  // be a SHEET like the rest of them. `scarecrowBlight` carries `idle` only and
+  // `blightStrip`'s clip ladder lands on it.
+  scarecrow: 'scarecrowBlight',
 }
 
 /** Second choice when the first sheet has no walk: the fully rigged infected. */
@@ -198,6 +204,11 @@ const BLIGHT_STRIP: Readonly<Record<string, { sheet: string; clip: string; dir: 
   'scene.farmerWalkStrip': { sheet: 'farmhandBlight', clip: 'walk', dir: 'left' },
   'scene.chickenPeckStrip': { sheet: 'infectedHen', clip: 'idle', dir: 'down' },
   'scene.chickenWalkLeftStrip': { sheet: 'infectedHen', clip: 'walk', dir: 'left' },
+  // The one entry here that is not a figure. The field's scarecrow is a seven
+  // frame baked sway on a 96 cell; its counterpart is a single still on a 96
+  // cell, so `blightBox`'s scale comes out at exactly 1 and it lands in the
+  // reference's box without any arithmetic at all.
+  'scene.scarecrowSwayStrip': { sheet: 'scarecrowBlight', clip: 'idle', dir: 'down' },
 }
 
 /** True while `buildScene` is building a blighted scene. See BLIGHT_SHEET. */
