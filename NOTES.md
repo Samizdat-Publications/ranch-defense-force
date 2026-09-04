@@ -180,8 +180,9 @@ atlas built and the other session's vite server on port 5180 was serving it.
   twelve pixels below the boots; footOffsetY is -10 now. The owner saw it first.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
-  Queue: the art pass (pitchfork thrust + fifteen ledger decisions) in flight;
-  then batch 1's 19 card icons; then roster batches 2-5.
+  The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
+  merged. Queue: batch 1's 19 card icons on Sonnet; the 57 packed-unused
+  sprites; roster batches 2-5.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -611,6 +612,106 @@ the crowd; regen 2.5 sent kiting to 14 and standing down to 9. And **batch 4's
 other Hand card, "Set Feet — Braced starts at 0.5s", measured WORSE** (11→9);
 recorded in classes.json, re-measure before shipping it. The six-class ladder
 came back to 82/144 against 84 before batch 1, with the spread narrower. 216/216.
+
+## The pitchfork stabs now, and the ledger stopped marking its own homework
+
+The owner, on the Hand's default melee: "something about it doesn't look
+right", and the tan cloud "looks like a giant sand mouth eating things". Both
+were literally true. The attack drew `fx.slash` — a white crescent — over
+`swingClip: proj.claw`, which is `pj3_demon_bite_loop_large_orange` from the
+FX pack, a DEMON BITE, stretched across the full 78px of the hitbox. A sword's
+swing and a monster's mouth, on a tool that stabs.
+
+### What replaced it
+
+`swingStyle: "thrust"` in weapons.json turns off the crescent and the swept
+clip, and turns on three things: **the held fork lunges** — the recoil kick
+with its sign reversed, phased off `slot.firedAt`, no new sim state; **three
+straight strokes at the tine tips**, phased off the swing projectile's
+`hitStamp`, which the T3 re-arm resets exactly when the second jab lands;
+**a spark on the enemy's near edge**. Stroked lines, not a generated clip: the
+whole jab is about thirty screen pixels and an animated sprite scaled into
+that is a smudge. Judged at 1x, the only scale that settles it.
+
+The streak is lifted to hand height off the same `hand` anchor the loadout
+uses. A melee hitbox sits at the player's ORIGIN — twelve pixels under his
+boots — so drawn there it came out thirty-five pixels below the fork that made
+it. The player-mark lesson for the third time.
+
+`carry.pitchfork` is the seventh member of a family that was six firearms. The
+guns joined because they were too SMALL; the fork because it was the wrong
+VIEW — a 3/4 icon standing up cannot be aimed. One generation, 64 candidates,
+one kept, 63 dismissed, nine cents; the account held no fork of any kind,
+grepped first. **Provably decoration:** three seeds at 3000 and 9000 ticks,
+wave, level, enemies alive, crops and kills identical in all six runs.
+
+**One reversal.** `carry.slots.back.byClass.hand` was briefly turned a quarter
+further to keep the fork over his shoulder the way its old icon sat, and put
+back: that slot is not the fork's private anchor — a slung rifle rests there
+too, and a quarter turn stands the rifle up like the post the owner rejected.
+Fixing the art meant no angle was needed at all.
+
+### Two instruments, because a 0.16s animation cannot be photographed by waiting
+
+`npm run catch` polls `window.rdf.world` in the real browser and shoots the
+first frame a PREDICATE holds — it asks the sim whether the moment has
+arrived rather than guessing from pixels. It shuffles left and right rather
+than holding one key; holding D for fifteen seconds pins the player against an
+arena wall. `npm run crop` magnifies a region of a real frame, because every
+anchor bug is a two-pixel relationship invisible at 1x. `RDF_HELD=<weaponId>`
+on `npm run facings` chooses the held weapon, so the sheet can show a class's
+STARTING weapon at rest — the one pose the tool could not photograph before.
+
+## The ledger's queue is empty, and the tool was counting its own homework
+
+All fifteen decisions taken; `npm run ledger` reports open = 0. Wired by
+building the thing they were for: the **barn interior** (eight assets plus the
+ladder), the **webs** composited offline over the drum and the crate pallet
+(`npm run webbed`), `ranch.gateClosed` and `ranch.coopBroken` into the
+field dressing. Retired with a reason on the account: four ruined silos, four
+cattle chutes, seven LimeZu signposts, three dog profiles, three calves. Held:
+26 orphan weapon icons carry `rdf-hold-batch2`. Design's call, recorded: the
+four chicken runs and four paddocks.
+
+**`drawn()` was searching a corpus that contained the tool.** It greps `src/`,
+`tools/` and `tests/` for a key, and the family table in
+`tools/pixellab-ledger.ts` NAMES every key it reasons about — so every object
+was "drawn" by the document asking whether anything drew it. The object half of
+wired/packed-unused had been self-satisfied since the ledger was written; it hid
+behind the queue because a forced `open` verdict short-circuits the key check.
+Fixed: the file is out of its own corpus, and a bare quoted name counts as a
+reference so assembled keys are not reported dead. packed-unused went 19 to 57.
+**`scene.cow`, `scene.sheep`, `scene.nest`, `sceneBg.cornWall`,
+`sceneBg.treeline` are title-screen art no scene has ever placed.**
+
+**A floor wants a TILE, not an object.** `ranch.barnFloor` is a 64px drawn
+patch with a soft edge; tiled, it is a grid of pads, which is how the first
+barn came out. `terrain.hay` is cell-sized and packed untrimmed precisely so
+it tiles, and it was on the packed-and-dead list the whole time.
+
+**`decard` was matching only the CORNER colour.** `ranch.coopBroken` came
+back on a white card with a black rule down two sides; decard cut the white,
+left the rule. It floods every colour the border ring is at least a quarter
+made of now. A tool limitation had been recorded as a property of the art.
+
+### The Homestead is inside the barn
+
+It was entered through the barn DOOR from both surface scenes and then composed
+the yard again behind itself: the player walked into a building and came out
+standing in front of it. `barn` is a fourth `SceneKind` on the same stage.
+Everything stands on the junction line. One lantern lit and the second DARK at
+the far end: two lit would say the barn is in use; one lit and one dead says
+somebody stopped coming out here. `npm run scene -- homestead` is new and is
+how any of it was seen.
+
+### Still owed
+
+`npm run tag --write` and `npm run inventory` need `PIXELLAB_API_KEY` in the
+shell; the verdicts were written through the MCP and verified from the account
+side, but the ~1,050 untouched rows still carry the previous run's tags and
+`carry.pitchfork` has no inventory row until the next refresh. The 57
+packed-unused sprites want the same treatment the audit gave the first 29.
+Batch 1's 19 stand-in card icons are the next art task.
 
 ## The four locked classes now answer the game differently
 
