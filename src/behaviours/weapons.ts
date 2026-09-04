@@ -787,7 +787,16 @@ const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier })
       world.bloodUpKills * num(def, 'bloodUpPerKillPct', 15),
     ) / 100
     : 1
-  const wanted = tier >= 3 ? 2 : 1
+  /*
+     docs/UPGRADE_ROSTER.md batch 3, Allies & Placeables: Littermate — "a
+     second dog at 80% damage", `requiresWeapon: 'barnDog'`. T3 already grants
+     a second dog at FULL damage (below); Littermate's own job is only to open
+     that second slot EARLY, at a discount, for a run that has not reached T3
+     yet. The two never stack into three, and a T3 dog is never discounted —
+     `i === 1 && tier < 3` is exactly "the slot Littermate opened that T3 did
+     not", so a run with both simply keeps T3's full-damage second dog.
+  */
+  const wanted = (tier >= 3 || world.hasLittermate) ? 2 : 1
   for (let i = 0; i < wanted; i++) {
     let p = world.findAttached(slot.id, i)
     if (!p) {
@@ -811,6 +820,9 @@ const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier })
     }
     p.life = 1.2 // refreshed each fire; the dog persists while the weapon does
     p.damage = cattleBred ? damage * (1 + num(def, 'cattleBredBitePct', 40) / 100) : damage
+    if (i === 1 && tier < 3 && world.hasLittermate) {
+      p.damage *= world.littermateDamagePct / 100
+    }
     // Speed is a target the world steers toward, not a multiplier applied to
     // the current velocity. The previous form multiplied `vx` by 1.5 every
     // tick this ran, which compounds — a T2 dog accelerated without limit.

@@ -57,6 +57,11 @@ describe('every declared special is dispatched', () => {
       'extraPierce', 'ricochet', 'splitOnKill', 'homing', 'burstOnHit',
       'projectileRadius', 'critMark',
       'killDrop', 'killHatch', 'killHeal', 'killPool', 'markedBurst',
+      // docs/UPGRADE_ROSTER.md batch 3: Allies & Placeables (H8), the
+      // shield/revive layer (H9/H10), and the three Body cards.
+      'turret', 'trapField', 'coop', 'tripWireRider', 'gooseMinion',
+      'secondDog', 'shieldPerWave', 'revive', 'touchSlow', 'hazardResist',
+      'windbreak',
     ])
     expect([...declared].filter((s) => !handled.has(s))).toEqual([])
   })
@@ -75,15 +80,20 @@ describe('the legendaries are not dead cards', () => {
   })
 
   it('Sunday Best eats the first hit of a wave instead of the player', () => {
+    // H9 (docs/UPGRADE_ROSTER.md batch 3) generalised this from a one-hit
+    // counter-attack into a numeric shield pool Fence Row also pays into —
+    // see World.damagePlayer. The counter-attack is gone, so the assertion
+    // that used to read `damageDealt` now reads the shield itself.
+    const suited = arena('sundayBest')
+    expect(suited.shield).toBeGreaterThan(0)
+
     const plain = arena()
     ringOfEnemies(plain, 8, 30)
     run(plain, 30)
-    const suited = arena('sundayBest')
     ringOfEnemies(suited, 8, 30)
     run(suited, 30)
     // Same crowd, same ticks: the shield holder took less.
     expect(suited.player.hp).toBeGreaterThanOrEqual(plain.player.hp)
-    expect(suited.damageDealt).toBeGreaterThan(plain.damageDealt)
   })
 
   it('The Whitacre Bull puts a minion on the field', () => {
@@ -208,5 +218,144 @@ describe('the rare specials', () => {
       return s
     }
     expect(total(w)).toBeGreaterThanOrEqual(total(plain))
+  })
+})
+
+describe('batch 3: allies, placeables, shield and revive', () => {
+  it('Scarecrow Post plants a turret that fires on its own (H8)', () => {
+    const w = arena('scarecrowPost')
+    ringOfEnemies(w, 4, 100)
+    run(w, 150) // > one 1.2s cooldown
+    let turrets = 0
+    for (let i = 0; i < w.projectiles.live; i++) {
+      if (w.projectiles.items[i].weaponId === 'scarecrowPost') turrets++
+    }
+    expect(turrets).toBeGreaterThan(0)
+    expect(w.damageDealt).toBeGreaterThan(0)
+  })
+
+  it('Bear Trap plants a live trap on the ground (H8)', () => {
+    const w = arena('bearTrap')
+    run(w, 320) // > one 5s spawn interval
+    let trapsSeen = false
+    for (let i = 0; i < w.projectiles.live; i++) {
+      if (w.projectiles.items[i].weaponId === 'bearTrap') trapsSeen = true
+    }
+    expect(trapsSeen).toBe(true)
+  })
+
+  it('Hen Coop keeps a coop planted and sends hens out (H8)', () => {
+    const w = arena('henCoop')
+    ringOfEnemies(w, 6, 120)
+    run(w, 420) // > one 6s send interval
+    let coopSeen = false
+    for (let i = 0; i < w.projectiles.live; i++) {
+      const p = w.projectiles.items[i]
+      if (p.weaponId === 'henCoop' && p.attached) coopSeen = true
+    }
+    expect(coopSeen).toBe(true)
+  })
+
+  it('Trip Wire damages what crosses the line to the nearest prop (H8)', () => {
+    const plain = arena()
+    ringOfEnemies(plain, 10, 150)
+    run(plain, 90)
+    const wired = arena('tripWire')
+    ringOfEnemies(wired, 10, 150)
+    run(wired, 90)
+    expect(wired.damageDealt).toBeGreaterThan(plain.damageDealt)
+  })
+
+  it('Yard Goose puts a second minion on the field', () => {
+    const w = arena('yardGoose')
+    run(w, 30)
+    let geese = 0
+    for (let i = 0; i < w.projectiles.live; i++) {
+      if (w.projectiles.items[i].weaponId === 'yardGoose') geese++
+    }
+    expect(geese).toBeGreaterThan(0)
+  })
+
+  it('Littermate opens a second Barn Dog slot before tier 3', () => {
+    const w = arena('littermate')
+    w.player.addWeapon('barnDog', 1)
+    w.refreshSpecialItems()
+    run(w, 90)
+    let dogs = 0
+    for (let i = 0; i < w.projectiles.live; i++) {
+      if (w.projectiles.items[i].weaponId === 'barnDog') dogs++
+    }
+    expect(dogs).toBeGreaterThanOrEqual(2)
+  })
+
+  it('Fence Row shields the player at the start of a wave (H9)', () => {
+    const shielded = arena('fenceRow')
+    expect(shielded.shield).toBeGreaterThan(0)
+    ringOfEnemies(shielded, 8, 30)
+    run(shielded, 30)
+    const plain = arena()
+    ringOfEnemies(plain, 8, 30)
+    run(plain, 30)
+    expect(shielded.player.hp).toBeGreaterThanOrEqual(plain.player.hp)
+  })
+
+  it('Second Wind revives the player once instead of ending the run (H10)', () => {
+    const w = arena('secondWind')
+    expect(w.player.revivesLeft).toBe(1)
+    ringOfEnemies(w, 10, 20)
+    w.player.hp = 1
+    // Not `run()`: that helper resets hp to max every tick, which would erase
+    // the near-death state this test needs to trigger the revive.
+    for (let t = 0; t < 30 && w.player.hp > 0; t++) w.step(1 / 60, 0, 0, false)
+    expect(w.over).toBe(false)
+    expect(w.player.hp).toBeGreaterThan(0)
+    expect(w.player.revivesLeft).toBe(0)
+  })
+
+  it('Hobnails slows whatever touches the player', () => {
+    const w = arena('hobnails')
+    ringOfEnemies(w, 6, 20)
+    let everSlowed = false
+    for (let t = 0; t < 60; t++) {
+      w.player.hp = w.player.stats.maxHp
+      w.step(1 / 60, 0, 0, false)
+      for (let i = 0; i < w.enemies.live; i++) {
+        if (w.enemies.items[i].slowPct > 0) everSlowed = true
+      }
+    }
+    expect(everSlowed).toBe(true)
+  })
+
+  it('Oilcloth reduces hazard damage to the player', () => {
+    const bare = arena()
+    bare.dropGasStrip(bare.player.x, bare.player.y, 120, 6, 40)
+    bare.player.hp = 200
+    for (let i = 0; i < 60; i++) bare.step(1 / 60, 0, 0, false)
+
+    const cloaked = arena('oilcloth')
+    cloaked.dropGasStrip(cloaked.player.x, cloaked.player.y, 120, 6, 40)
+    cloaked.player.hp = 200
+    for (let i = 0; i < 60; i++) cloaked.step(1 / 60, 0, 0, false)
+
+    expect(cloaked.player.hp).toBeGreaterThan(bare.player.hp)
+  })
+
+  it('Windbreak makes the player\'s knockback stronger', () => {
+    const plain = arena()
+    plain.player.addWeapon('sledge', 1)
+    const wb = arena('windbreak')
+    wb.player.addWeapon('sledge', 1)
+    ringOfEnemies(plain, 6, 40)
+    ringOfEnemies(wb, 6, 40)
+    run(plain, 60)
+    run(wb, 60)
+    const totalKb = (x: World): number => {
+      let s = 0
+      for (let i = 0; i < x.enemies.live; i++) {
+        s += Math.hypot(x.enemies.items[i].kx, x.enemies.items[i].ky)
+      }
+      return s
+    }
+    expect(totalKb(wb)).toBeGreaterThanOrEqual(totalKb(plain))
   })
 })
