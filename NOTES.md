@@ -181,8 +181,9 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. All five roster batches are merged; the roster is 56 → 164 cards. Queue: human play of the roster and
-  the six classes — nothing else is outstanding; the key fallback landed and the account tags are refreshed.
+  merged. All five roster batches are merged; the roster is 56 → 164 cards. The owner played; his verdicts are the section "The first human
+  playtest" and the passes under it. In flight: bullet art and one active load;
+  difficulty against a human with an idle pilot; then the shop; the key fallback landed and the account tags are refreshed.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -919,6 +920,44 @@ Found in passing: `MenuScreen.open()` restarted the sequence from calm on every
 boot, silently dropping a persisted lab hold back onto the surface — the
 documented "come back underground" behaviour had never worked across a reload.
 It skips the restart when a beat is already scheduled.
+
+## The first human playtest of the roster, and what it said
+
+The owner played The Widow to wave 25 on the live build. Verdict, in
+substance: waves 1-5 "painfully slow, need double the enemies"; overpowered by
+wave 5; from there he **stood still, chose every card at random, and reached
+level 22 without moving**; six weapons at T4 and 4,614 feed unspent at wave
+24; the Smudge Pot "does not fire"; every bullet looked the same regardless of
+gun or element; fire and ice unclear (stack? replace? what does buying fire
+five times do?); the late shop offered one card, a Trade-In whose T1 weapon
+could never tier up again; the ledger panel grew until Continue was off the
+bottom of the screen; the yard fixtures too small and a shaded square behind
+the pens. **The bots are a floor, not a ceiling, and five batches tuned the
+game to the floor.** Each item became a pass; the two below landed first.
+
+### The road to the barn, and three fixtures
+
+The "weird square" was `Yard Grounding Fix.dc.html`'s track to the barn doors —
+a trapezoid road narrowing for perspective, `clip-path: polygon(...)` in the
+artboard — ported with its box and gradient and without its clip, so it painted
+as a rectangle of a different shade behind the coop. Restored verbatim. The
+well, coop and doghouse matched the catalog's person-scale column exactly and
+still read small, because the animals beside them are deliberately above life
+scale (session 19); the well is a person and a half now (96px), the coop 100
+(capped clear of the barn's content box), the doghouse 58, feet on the same
+line. `tools/bbox-check.ts` measures a packed sprite's content-to-canvas ratio
+off the atlas alpha, which is how the coop's cap was computed rather than eyed.
+
+### The Smudge Pot dealt half its own advertised dps
+
+`sustainAura` computed `p.damage = damage * burn * interval`, applying
+`hitInterval` twice — once to space the rearms (correct), once to scale the
+bite (not). Every tier delivered exactly 50% of the number on its card
+(5/8/20.48/32.77 against 10/16/41/65.5), invisible at low tiers, and at T4
+after three merges weak enough against wave-25 pools to read as a dead slot.
+Batch 1's four aura tests asserted `kills > 0`, which half a weapon still
+passes. Fixed to `damage * burn`; a new test pins a stationary dummy and
+asserts the exact dps at all four tiers. 242 tests.
 
 ## The four locked classes now answer the game differently
 
