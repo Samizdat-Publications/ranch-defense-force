@@ -272,7 +272,77 @@ export class World {
     saltRingSlowPct: 0,
     /** sundayBest: the first hit each wave is refunded, hard. */
     firstHitShield: 0,
+
+    // --- docs/UPGRADE_ROSTER.md batch 1 ----------------------------------
+    // Every field below is flattened here for the same reason the block above
+    // exists: a hot loop must branch on a number, not walk `player.items`.
+    // `anyOnHitRider` is §8's "early-out on a single cached boolean", so a run
+    // that owns none of these pays exactly one compare per hit.
+
+    /** True when any of the on-hit riders below is live. */
+    anyOnHitRider: false,
+    /** H1 — chain. Fence Charge; Live Wire joins it in batch 2. */
+    chainCount: 0,
+    chainRange: 0,
+    chainMul: 0,
+    /** H2 — ricochet. Ricochet Plate. */
+    ricochetCount: 0,
+    ricochetRange: 0,
+    ricochetMul: 0,
+    /** H3 — split on kill. Split Shot. */
+    splitCount: 0,
+    splitMul: 0,
+    /** H4 — homing. Burr Load; Match Barrel joins it in batch 2. */
+    homingRate: 0,
+    /** H5 — burst. Moonshine Jug on a hit, Last Rites on a marked kill. */
+    burstChance: 0,
+    burstRadius: 0,
+    burstMul: 0,
+    markedBurstPct: 0,
+    markedBurstRadius: 0,
+    /** H6 — hazards. The Kerosene Load leaves one where a hit lands... */
+    hitHazardKind: '' as HazardKind | '',
+    hitHazardRadius: 0,
+    hitHazardSeconds: 0,
+    hitHazardDps: 0,
+    /** ...the Tar Load where a kill lands... */
+    loadKillHazardKind: '' as HazardKind | '',
+    loadKillHazardRadius: 0,
+    loadKillHazardSeconds: 0,
+    loadKillHazardSlowPct: 0,
+    /** ...and Rot Underfoot on a fraction of kills. */
+    killPoolChance: 0,
+    killPoolKind: '' as HazardKind | '',
+    killPoolRadius: 0,
+    killPoolSeconds: 0,
+    killPoolDps: 0,
+    /** H11 — what a kill pays out. Feed the Birds, Blood Meal, Font Water,
+     *  Broody Hen. */
+    killDropChance: 0,
+    killDropValue: 0,
+    killHeal: 0,
+    killSpawnEvery: 0,
+    killSpawnDamage: 0,
+    killSpawnSeconds: 0,
+    killSpawnMax: 0,
+    killSpawnSprite: '',
+    /** No hook at all — fields the sim already read (§8's list of 19). */
+    extraPierce: 0,
+    projectileRadiusPct: 0,
+    critMarkPct: 0,
+    critMarkSeconds: 0,
+    /** Second Pass / Deep Soak, summed into the same additive term the
+     *  Agronomist's Cultivar already uses. Nothing multiplies. */
+    loadDamagePct: 0,
+    loadBonusSeconds: 0,
+    /** Hot As It Comes: every slick on the field, whoever laid it. */
+    slickDamagePct: 0,
+    /** Cross-Contamination: two statuses or more is worse than either. */
+    crossMarkPct: 0,
   }
+
+  /** Broody Hen's kill counter. Every Nth kill hatches one. */
+  private hatchAcc = 0
 
   /** Spent when the wave's first hit lands; restored on wave complete. */
   private shieldReady = false
@@ -1063,8 +1133,11 @@ export class World {
     for (const slot of p.weapons) {
       const def = WEAPONS[slot.id]
       if (!def) continue
-      // §7: each tier is base damage x1.6.
-      const tierScale = Math.pow(1.6, slot.tier - 1)
+      // §7: each tier is base damage x1.6. The multiplier is `tuning.merge`
+      // now rather than a literal, because the merge CARD has to print the
+      // before → after it produces and two copies of a balance constant are
+      // two copies of a balance constant even when they agree today.
+      const tierScale = Math.pow(T.merge.tierDamageMultiplier, slot.tier - 1)
       ctx.slot = slot
       ctx.def = def
       ctx.tier = slot.tier
@@ -1187,6 +1260,33 @@ export class World {
           p.rearm = typeof dogDef?.biteInterval === 'number' ? dogDef.biteInterval : 0.5
           p.hitStamp = this.tick
           p.hitsLeft = 999
+        }
+      }
+
+      /*
+         H4 — Burr Load steers the round onto the nearest enemy.
+
+         In the integrate step, per §8, and rate-limited by an ANGLE rather
+         than by a lerp toward the target: a lerp makes a fast round turn
+         faster than a slow one, so the same card would be worth twice as much
+         on the Scattergun as on the Grenade Launcher for no stated reason.
+         Turning `homingRate` degrees a second is the same promise whatever it
+         is bolted to, and it is the promise the card prints.
+      */
+      if (this.specialItems.homingRate > 0 && p.type === 'ranged' && !p.attached) {
+        const target = this.findNearestEnemy(p.x, p.y, 420)
+        if (target >= 0) {
+          const e = this.enemies.items[target]
+          const want = Math.atan2(e.y - p.y, e.x - p.x)
+          const have = Math.atan2(p.vy, p.vx)
+          let d = want - have
+          while (d > Math.PI) d -= Math.PI * 2
+          while (d < -Math.PI) d += Math.PI * 2
+          const step = (this.specialItems.homingRate * Math.PI) / 180 * dt
+          const a = have + Math.max(-step, Math.min(step, d))
+          const speed = Math.hypot(p.vx, p.vy)
+          p.vx = Math.cos(a) * speed
+          p.vy = Math.sin(a) * speed
         }
       }
 
@@ -1389,20 +1489,37 @@ export class World {
        `slowOnHit` in content is under 100, so this is arithmetically identical
        for the other five and their seeds still replay.
     */
-    const dotDmg = this.player.dotDamageMul
+    /*
+       Second Pass and Deep Soak join HERE, in the same two terms Cultivar
+       already uses, and they join them ADDITIVELY: `loadDamagePct` is summed
+       into the multiplier rather than multiplied by it, and `loadBonusSeconds`
+       is a flat term added after. Both are zero for a run that owns neither,
+       so this is arithmetically the line it replaces.
+    */
+    const sp = this.specialItems
+    const dotDmg = this.player.dotDamageMul + sp.loadDamagePct / 100
     const dotLife = this.player.dotDurationMul
-    if (p.burnDps > 0) this.applyBurn(e, p.burnDps * dotDmg, p.burnSeconds * dotLife)
-    if (p.bleedDps > 0) this.applyBleed(e, p.bleedDps * dotDmg, p.bleedSeconds * dotLife)
-    if (p.markPct > 0) this.applyMark(e, p.markPct, p.markSeconds)
+    const dotAdd = sp.loadBonusSeconds
+    if (p.burnDps > 0) this.applyBurn(e, p.burnDps * dotDmg, p.burnSeconds * dotLife + dotAdd)
+    if (p.bleedDps > 0) this.applyBleed(e, p.bleedDps * dotDmg, p.bleedSeconds * dotLife + dotAdd)
+    if (p.markPct > 0) this.applyMark(e, p.markPct, p.markSeconds + dotAdd)
+    // Weak Seam: a crit marks. §8's list of nineteen — `markPct` is a field the
+    // Harpoon's T4 rider already writes, so a crit build and a status build
+    // become the same build with no new debuff invented.
+    if (isCrit && sp.critMarkPct > 0) {
+      this.applyMark(e, sp.critMarkPct, sp.critMarkSeconds + dotAdd)
+    }
     if (p.slowOnHit > 0) {
       const slow = Math.min(this.player.slowCapPct, p.slowOnHit * dotDmg)
-      const slowLife = p.slowSeconds * dotLife
+      const slowLife = p.slowSeconds * dotLife + dotAdd
       if (slow > e.slowPct) e.slowPct = slow
       if (slowLife > e.slowLife) e.slowLife = slowLife
     }
 
     this.damageEnemy(enemyIndex, p.damage, type, isCrit)
     if (p.burnDps > 0) this.igniteSlicksNear(p.x, p.y)
+    // H1/H2/H5/H6 — one call, one cached boolean, nothing allocated (§8).
+    if (sp.anyOnHitRider) this.applyOnHitRiders(enemyIndex, p)
 
     if (!e.active || e.dying > 0) return
     if (p.knockback > 0 && !e.knockbackImmune) {
@@ -1742,7 +1859,21 @@ export class World {
       }
 
       if (h.dps > 0) {
-        h.tickAcc += h.dps * dt
+        /*
+           Hot As It Comes: "every slick on the field burns twice as hot."
+
+           Applied HERE, at the tick, rather than at each spawn site — which is
+           what makes one card worth six sources (tar puddles, kerosene
+           splashes, the Chem Sprayer's gas, the Grenade Launcher's rind, the
+           Crop Duster's trail, Rot Underfoot's pools) with no new hook. It
+           scales `dps` and never `playerDps`, so the enemy's own acid pools
+           and gas clouds — which carry no `dps` at all — are untouched.
+
+           A payload scalar at the point of application, exactly where
+           `dotDamageMul` lives. It is not a stat and does not go near
+           `resolveStats`.
+        */
+        h.tickAcc += h.dps * (1 + this.specialItems.slickDamagePct / 100) * dt
         if (h.tickAcc >= 1) {
           const dmg = Math.floor(h.tickAcc)
           h.tickAcc -= dmg
@@ -2519,6 +2650,7 @@ export class World {
     p.markSeconds = 0
     p.slowOnHit = 0
     p.slowSeconds = 0
+    p.ricochets = 0
     p.t0 = 0
     p.t1 = 0
     return p
@@ -2534,13 +2666,231 @@ export class World {
    */
   private applyElementTo(fromIndex: number): void {
     const el = ELEMENTS[this.player.element]
-    if (!el || this.player.element === 'none') return
-    for (let i = fromIndex; i < this.projectiles.live; i++) {
-      const p = this.projectiles.items[i]
-      if (el.burnDps) { p.burnDps = Math.max(p.burnDps, el.burnDps); p.burnSeconds = Math.max(p.burnSeconds, el.burnSeconds ?? 0) }
-      if (el.bleedDps) { p.bleedDps = Math.max(p.bleedDps, el.bleedDps); p.bleedSeconds = Math.max(p.bleedSeconds, el.bleedSeconds ?? 0) }
-      if (el.slowOnHit) { p.slowOnHit = Math.max(p.slowOnHit, el.slowOnHit); p.slowSeconds = Math.max(p.slowSeconds, el.slowSeconds ?? 0) }
+    const s = this.specialItems
+    if (el && this.player.element !== 'none') {
+      for (let i = fromIndex; i < this.projectiles.live; i++) {
+        const p = this.projectiles.items[i]
+        if (el.burnDps) { p.burnDps = Math.max(p.burnDps, el.burnDps); p.burnSeconds = Math.max(p.burnSeconds, el.burnSeconds ?? 0) }
+        if (el.bleedDps) { p.bleedDps = Math.max(p.bleedDps, el.bleedDps); p.bleedSeconds = Math.max(p.bleedSeconds, el.bleedSeconds ?? 0) }
+        if (el.slowOnHit) { p.slowOnHit = Math.max(p.slowOnHit, el.slowOnHit); p.slowSeconds = Math.max(p.slowSeconds, el.slowSeconds ?? 0) }
+        // Rock Salt and Quicklime carry no damage of their own: they open the
+        // target up. Same payload field the Harpoon's T4 rider already uses.
+        const mark = el.markPct as number | undefined
+        if (mark) { p.markPct = Math.max(p.markPct, mark); p.markSeconds = Math.max(p.markSeconds, (el.markSeconds as number) ?? 0) }
+        // Font Water buys space instead of doing damage over time.
+        const kb = el.knockback as number | undefined
+        if (kb) p.knockback = Math.max(p.knockback, kb)
+      }
     }
+    // Through and Through and Broad Side are on the §8 list of nineteen cards
+    // that needed no hook at all: they are numbers the projectile already has.
+    // Applied HERE, in the same walk the element uses, rather than in each of
+    // the eight ranged behaviours.
+    if (s.extraPierce > 0 || s.projectileRadiusPct > 0) {
+      for (let i = fromIndex; i < this.projectiles.live; i++) {
+        const p = this.projectiles.items[i]
+        // A melee sweep and an orbit use `pierce: 999` as "never spent" and an
+        // attached hitbox uses -1; adding to either would mean nothing or
+        // break it. Only a real bullet has a pierce budget to raise.
+        if (!p.attached && p.pierce >= 0 && p.pierce < 900) p.pierce += s.extraPierce
+        if (s.projectileRadiusPct > 0) p.radius *= 1 + s.projectileRadiusPct / 100
+      }
+    }
+  }
+
+  /**
+   * H1, H2, H5, H6 — everything a hit does BEYOND its own damage.
+   *
+   * One call at the end of `applyHit`, guarded by a single cached boolean so a
+   * run that owns none of these pays one compare (§8). Nothing here allocates:
+   * the chain and the ricochet reuse `this.queryOut`, the burst is one
+   * `areaDamage`, and the kerosene slick is one `spawnHazard` off the pool that
+   * already exists.
+   *
+   * `chaining` is the same re-entry guard the Threshing Floor and the Reaper's
+   * re-swing share, and for the same reason: a chained hit that could chain
+   * again turns one dense wave into a screen clear.
+   */
+  private applyOnHitRiders(enemyIndex: number, p: Projectile): void {
+    const s = this.specialItems
+    if (this.chaining) return
+    const e = this.enemies.items[enemyIndex]
+    const ox = e.x
+    const oy = e.y
+
+    // H1 — Fence Charge arcs to its neighbours.
+    if (s.chainCount > 0 && p.type !== 'melee' && p.type !== 'orbit') {
+      this.chaining = true
+      let left = s.chainCount
+      const n = this.grid.query(ox, oy, s.chainRange, this.queryOut)
+      for (let k = 0; k < n && left > 0; k++) {
+        const j = this.queryOut[k]
+        if (j >= this.enemies.live || j === enemyIndex) continue
+        const other = this.enemies.items[j]
+        if (other.dying > 0) continue
+        if (Math.hypot(other.x - ox, other.y - oy) > s.chainRange) continue
+        left--
+        this.damageEnemy(j, p.damage * s.chainMul, 'ranged', false)
+      }
+      this.playFx('shock', ox, oy)
+      this.chaining = false
+    }
+
+    // H5 — the Moonshine Jug goes up on a fraction of hits.
+    if (s.burstChance > 0 && this.rng.chance(s.burstChance / 100)) {
+      this.chaining = true
+      this.areaDamage(ox, oy, s.burstRadius, p.damage * s.burstMul, 'ranged', 40)
+      this.playFx('explosion', ox, oy, 0, s.burstRadius / 60)
+      this.chaining = false
+    }
+
+    // H6 — the Kerosene Load leaves burning ground where the shot landed.
+    if (s.hitHazardKind !== '' && p.type !== 'melee' && p.type !== 'orbit') {
+      this.dropRiderHazard(
+        s.hitHazardKind, ox, oy, s.hitHazardRadius, s.hitHazardSeconds, s.hitHazardDps, 0,
+      )
+    }
+
+    // H2 — the Ricochet Plate sends the round on rather than freeing it. The
+    // projectile is RETARGETED, not respawned: it keeps its own payload, its
+    // element and its pierce budget, and the pool never sees a new slot.
+    if (s.ricochetCount > 0 && !p.attached && p.type === 'ranged' && p.ricochets < s.ricochetCount) {
+      const j = this.findNearestEnemyExcept(ox, oy, s.ricochetRange, enemyIndex)
+      if (j >= 0) {
+        const other = this.enemies.items[j]
+        const dx = other.x - p.x
+        const dy = other.y - p.y
+        const d = Math.hypot(dx, dy) || 1
+        const speed = Math.hypot(p.vx, p.vy) || 320
+        p.vx = (dx / d) * speed
+        p.vy = (dy / d) * speed
+        p.ricochets++
+        p.damage *= s.ricochetMul
+        p.pierce++ // spent again by the collision pass on the way out
+        p.life = Math.max(p.life, 0.5)
+      }
+    }
+  }
+
+  /**
+   * H3 — Split Shot. What it kills, it comes out of.
+   *
+   * Rounds go out on a fixed fan rather than at random angles: the split is
+   * not a draw, so it costs the seeded stream nothing and two runs from one
+   * seed still agree about where every bullet went.
+   */
+  private splitFromCorpse(x: number, y: number, count: number, damage: number): void {
+    for (let i = 0; i < count; i++) {
+      const s = this.spawnProjectile()
+      if (!s) return
+      const a = (i / count) * Math.PI * 2
+      s.weaponId = ''
+      s.type = 'ranged'
+      s.behaviour = 'stream'
+      s.attached = false
+      s.x = x
+      s.y = y
+      s.px = x
+      s.py = y
+      s.vx = Math.cos(a) * 300
+      s.vy = Math.sin(a) * 300
+      s.radius = 5
+      s.damage = damage
+      s.life = 0.7
+      s.pierce = 0
+      s.knockback = 20
+      s.hitStamp = -1
+    }
+  }
+
+  /**
+   * H11 — Broody Hen. Every twelfth kill hatches a chick.
+   *
+   * A chick is a MINION, on the path the Barn Dog and the Whitacre Bull
+   * already fly: pooled as a projectile, steered by `minionHunt` in the
+   * integrate step, rate-limited by the same bite stamp. It is not a placeable
+   * (H8, batch 3) and it needed no new pool and no new steering. It dies on a
+   * timer rather than on contact, and `killSpawnMax` — one per copy of the
+   * card — is enforced by counting the live ones before hatching another.
+   */
+  private hatchChick(x: number, y: number): void {
+    const s = this.specialItems
+    let live = 0
+    for (let i = 0; i < this.projectiles.live; i++) {
+      if (this.projectiles.items[i].weaponId === 'broodyHen') live++
+    }
+    if (live >= s.killSpawnMax) return
+    const p = this.spawnProjectile()
+    if (!p) return
+    p.weaponId = 'broodyHen'
+    p.type = 'minion'
+    p.behaviour = 'minionHunt'
+    p.attached = false
+    p.x = x
+    p.y = y
+    p.px = x
+    p.py = y
+    p.t1 = live
+    p.radius = 9
+    p.pierce = 999
+    p.damage = s.killSpawnDamage
+    p.life = s.killSpawnSeconds
+    p.angularVelocity = 210
+    p.t0 = 400
+    p.knockback = 10
+    p.hitStamp = this.tick
+    p.rearm = 0
+  }
+
+  /** One pooled hazard, for the riders that lay ground. Never allocates. */
+  private dropRiderHazard(
+    kind: HazardKind, x: number, y: number,
+    radius: number, seconds: number, dps: number, slowPct: number,
+  ): void {
+    const h = this.spawnHazard()
+    if (!h) return
+    h.kind = kind
+    h.x = x
+    h.y = y
+    h.radius = radius
+    h.growth = 0
+    h.maxLife = seconds
+    h.life = seconds
+    h.dps = dps
+    h.playerDps = 0
+    h.slowPct = slowPct
+    h.playerSlowPct = 0
+    h.pullForce = 0
+  }
+
+  /** How many statuses this enemy is carrying. Cross-Contamination's gate. */
+  private statusCount(e: Enemy): number {
+    let n = 0
+    if (e.burnLife > 0) n++
+    if (e.bleedLife > 0) n++
+    if (e.slowLife > 0) n++
+    if (e.markLife > 0) n++
+    if (e.stun > 0) n++
+    return n
+  }
+
+  /** Nearest live enemy that is not `skip`, or -1. For the ricochet. */
+  private findNearestEnemyExcept(x: number, y: number, maxRange: number, skip: number): number {
+    let best = -1
+    let bestD2 = maxRange * maxRange
+    for (let i = 0; i < this.enemies.live; i++) {
+      if (i === skip) continue
+      const e = this.enemies.items[i]
+      if (e.dying > 0) continue
+      const dx = e.x - x
+      const dy = e.y - y
+      const d2 = dx * dx + dy * dy
+      if (d2 < bestD2) {
+        bestD2 = d2
+        best = i
+      }
+    }
+    return best
   }
 
   /** Pooled like projectiles, so the rider fields are cleared on the way out. */
@@ -2599,7 +2949,20 @@ export class World {
       s.critDamagePct,
       0,
       1,
-      e.markLife > 0 ? e.markPct : 0,
+      /*
+         Cross-Contamination joins the mark's own term ADDITIVELY, which is the
+         only place a per-target percentage can go without breaking the
+         single-pass rule — the same argument Overwatch is written up with
+         eight lines above. Zero for every run that does not own it.
+
+         "Two or more statuses" is counted here rather than latched on the
+         enemy, because a status can expire between the tick that applied it
+         and the tick that reads it, and a latched flag would then be a lie
+         about the enemy's current state.
+      */
+      (e.markLife > 0 ? e.markPct : 0)
+        + (this.specialItems.crossMarkPct > 0 && this.statusCount(e) >= 2
+          ? this.specialItems.crossMarkPct : 0),
     )
 
     e.hp -= dmg
@@ -2692,6 +3055,79 @@ export class World {
       )
       this.playFx('explosion', e.x, e.y)
       this.chaining = false
+    }
+
+    /*
+       docs/UPGRADE_ROSTER.md batch 1, on the kill.
+
+       Everything here is inside the SAME `chaining` re-entry guard the Reaper
+       and the Threshing Floor share above, and for the same reason: a kill
+       effect that can cause a kill that causes it again is a screen clear
+       wearing a rider's clothes. The guard is one boolean and it is shared on
+       purpose — these are all the same shape.
+    */
+    const b1 = this.specialItems
+    if (!this.chaining) {
+      this.chaining = true
+
+      // H5 — Last Rites. A MARKED enemy that dies comes apart. The gate is the
+      // mark, which is what ties it to Rock Salt, Quicklime and Weak Seam: three
+      // different routes to the same condition, which is what a tag is for.
+      if (b1.markedBurstPct > 0 && e.markLife > 0) {
+        this.areaDamage(e.x, e.y, b1.markedBurstRadius, e.maxHp * (b1.markedBurstPct / 100), 'ranged', 0)
+        this.playFx('explosion', e.x, e.y, 0, b1.markedBurstRadius / 70)
+      }
+
+      // H3 — Split Shot. Reuses the shard path the Drum Gun already flies, so
+      // the split is pooled projectiles and not a new concept.
+      if (b1.splitCount > 0 && !e.lastHitMelee) {
+        this.splitFromCorpse(e.x, e.y, b1.splitCount, e.maxHp * b1.splitMul)
+      }
+
+      // H6 — the Tar Load leaves a slick where it kills, Rot Underfoot leaves
+      // an acid pool on a fraction of kills. One `spawnHazard` each, off the
+      // pool that already exists.
+      if (b1.loadKillHazardKind !== '') {
+        this.dropRiderHazard(
+          b1.loadKillHazardKind, e.x, e.y, b1.loadKillHazardRadius,
+          b1.loadKillHazardSeconds, 0, b1.loadKillHazardSlowPct,
+        )
+      }
+      if (b1.killPoolChance > 0 && this.rng.chance(Math.min(1, b1.killPoolChance / 100))) {
+        this.dropRiderHazard(
+          b1.killPoolKind === '' ? 'acid' : b1.killPoolKind, e.x, e.y,
+          b1.killPoolRadius, b1.killPoolSeconds, b1.killPoolDps, 0,
+        )
+      }
+
+      this.chaining = false
+    }
+
+    // H11 — what a kill pays out. Outside the guard: none of these can kill,
+    // so none of them can recurse.
+    if (b1.killHeal > 0 && this.player.alive) {
+      this.player.hp = Math.min(this.player.stats.maxHp, this.player.hp + b1.killHeal)
+    }
+    if (b1.killDropChance > 0 && this.rng.chance(Math.min(1, b1.killDropChance / 100))) {
+      const tok = this.pickups.acquire()
+      if (tok) {
+        tok.kind = 'feed'
+        tok.x = e.x
+        tok.y = e.y
+        tok.px = tok.x
+        tok.py = tok.y
+        tok.value = b1.killDropValue
+        tok.magnetised = false
+        tok.speed = 0
+        tok.bob = 0
+      }
+    }
+    if (b1.killSpawnEvery > 0) {
+      this.hatchAcc++
+      if (this.hatchAcc >= b1.killSpawnEvery) {
+        this.hatchAcc = 0
+        this.hatchChick(e.x, e.y)
+      }
     }
 
     // Chili Shot T3 "burn spreads on death": a burning corpse lights its
@@ -3173,8 +3609,54 @@ export class World {
     s.saltRingSlowPct = 0
     s.firstHitShield = 0
 
+    s.anyOnHitRider = false
+    s.chainCount = 0; s.chainRange = 0; s.chainMul = 0
+    s.ricochetCount = 0; s.ricochetRange = 0; s.ricochetMul = 0
+    s.splitCount = 0; s.splitMul = 0
+    s.homingRate = 0
+    s.burstChance = 0; s.burstRadius = 0; s.burstMul = 0
+    s.markedBurstPct = 0; s.markedBurstRadius = 0
+    s.hitHazardKind = ''; s.hitHazardRadius = 0; s.hitHazardSeconds = 0; s.hitHazardDps = 0
+    s.loadKillHazardKind = ''; s.loadKillHazardRadius = 0
+    s.loadKillHazardSeconds = 0; s.loadKillHazardSlowPct = 0
+    s.killPoolChance = 0; s.killPoolKind = ''; s.killPoolRadius = 0
+    s.killPoolSeconds = 0; s.killPoolDps = 0
+    s.killDropChance = 0; s.killDropValue = 0; s.killHeal = 0
+    s.killSpawnEvery = 0; s.killSpawnDamage = 0; s.killSpawnSeconds = 0
+    s.killSpawnMax = 0; s.killSpawnSprite = ''
+    s.extraPierce = 0; s.projectileRadiusPct = 0
+    s.critMarkPct = 0; s.critMarkSeconds = 0
+    s.loadDamagePct = 0; s.loadBonusSeconds = 0
+    s.slickDamagePct = 0; s.crossMarkPct = 0
+
     const num = (d: Record<string, unknown>, k: string, f = 0): number =>
       typeof d[k] === 'number' ? (d[k] as number) : f
+
+    /*
+       The ACTIVE Load's own riders, read off `elements.json` and not off the
+       item that granted it.
+
+       A Load is exclusive — taking one replaces the last — but the ITEM stays
+       in `player.items` forever. Reading a chain or a corpse-slick off the
+       item would keep it firing long after its Load had been swapped away, so
+       the six new Loads carry their riders on the element and exactly one
+       Load's worth is ever live. See `elements.json` `_riderNote`.
+    */
+    const load = ELEMENTS[this.player.element] as Record<string, unknown> | undefined
+    if (load) {
+      s.chainCount = num(load, 'chainCount')
+      s.chainRange = num(load, 'chainRange', 120)
+      s.chainMul = num(load, 'chainMul', 0.45)
+      s.hitHazardKind = (load.hitHazardKind as HazardKind | undefined) ?? ''
+      s.hitHazardRadius = num(load, 'hitHazardRadius', 34)
+      s.hitHazardSeconds = num(load, 'hitHazardSeconds', 3)
+      s.hitHazardDps = num(load, 'hitHazardDps', 10)
+      s.loadKillHazardKind = (load.killHazardKind as HazardKind | undefined) ?? ''
+      s.loadKillHazardRadius = num(load, 'killHazardRadius', 46)
+      s.loadKillHazardSeconds = num(load, 'killHazardSeconds', 4)
+      s.loadKillHazardSlowPct = num(load, 'killHazardSlowPct', 40)
+      s.killHeal += num(load, 'killHeal')
+    }
 
     for (const owned of this.player.items) {
       const def = ITEMS[owned.id] as unknown as Record<string, unknown> | undefined
@@ -3219,9 +3701,84 @@ export class World {
           s.firstHitShield += num(def, 'returnDamage') * mult
           this.shieldReady = true
           break
+
+        // --- batch 1. Radii, ranges and durations are set rather than
+        // summed, exactly as the block above does it: a boosted copy doubles
+        // a payload and never a distance or a time, which stack into nonsense.
+        case 'ricochet':
+          s.ricochetCount += num(def, 'ricochetCount', 1) * mult
+          s.ricochetRange = num(def, 'ricochetRange', 150)
+          s.ricochetMul = num(def, 'ricochetMul', 0.6)
+          break
+        case 'splitOnKill':
+          s.splitCount += num(def, 'splitCount', 2) * mult
+          s.splitMul = num(def, 'splitMul', 0.45)
+          break
+        case 'homing':
+          s.homingRate += num(def, 'homingRate', 100) * mult
+          break
+        case 'burstOnHit':
+          s.burstChance += num(def, 'burstChance', 15) * mult
+          s.burstRadius = num(def, 'burstRadius', 52)
+          s.burstMul = num(def, 'burstMul', 0.55)
+          break
+        case 'markedBurst':
+          s.markedBurstPct += num(def, 'burstPct', 40) * mult
+          s.markedBurstRadius = num(def, 'burstRadius', 70)
+          break
+        case 'killPool':
+          s.killPoolChance += num(def, 'killPoolChance', 25) * mult
+          s.killPoolKind = (def.killPoolKind as HazardKind | undefined) ?? 'acid'
+          s.killPoolRadius = num(def, 'killPoolRadius', 42)
+          s.killPoolSeconds = num(def, 'killPoolSeconds', 3)
+          s.killPoolDps = num(def, 'killPoolDps', 14)
+          break
+        case 'killDrop':
+          s.killDropChance += num(def, 'killDropChance', 15) * mult
+          s.killDropValue = num(def, 'killDropValue', 1)
+          break
+        case 'killHeal':
+          s.killHeal += num(def, 'killHeal', 1.2) * mult
+          break
+        case 'killHatch':
+          // Every stack is one more live chick, not a faster hatch: two hens
+          // that each halved the interval would be four times the chicks.
+          s.killSpawnEvery = num(def, 'killSpawnEvery', 12)
+          s.killSpawnDamage = num(def, 'chickDamage', 9)
+          s.killSpawnSeconds = num(def, 'chickSeconds', 8)
+          s.killSpawnMax += mult
+          s.killSpawnSprite = typeof def.minionSprite === 'string' ? def.minionSprite : ''
+          break
+        case 'extraPierce':
+          s.extraPierce += num(def, 'extraPierce', 1) * mult
+          break
+        case 'projectileRadius':
+          s.projectileRadiusPct += num(def, 'projectileRadiusPct', 12) * mult
+          break
+        case 'critMark':
+          s.critMarkPct += num(def, 'critMarkPct', 20) * mult
+          s.critMarkSeconds = num(def, 'critMarkSeconds', 3)
+          break
+        case 'loadPotency':
+          s.loadDamagePct += num(def, 'dotDamagePct', 25) * mult
+          break
+        case 'loadDuration':
+          s.loadBonusSeconds += num(def, 'loadBonusSeconds', 1.5) * mult
+          break
+        case 'slickPotency':
+          s.slickDamagePct += num(def, 'slickDamagePct', 100) * mult
+          break
+        case 'crossContamination':
+          s.crossMarkPct += num(def, 'crossMarkPct', 30) * mult
+          break
         default: break // bullMinion is spawned, not flattened; see summonFor
       }
     }
+
+    // §8: one cached boolean, so a run owning none of these pays a single
+    // compare per hit rather than eleven.
+    s.anyOnHitRider = s.chainCount > 0 || s.ricochetCount > 0 || s.burstChance > 0
+      || s.hitHazardKind !== ''
   }
 
   // ------------------------------------------------------------- queries
