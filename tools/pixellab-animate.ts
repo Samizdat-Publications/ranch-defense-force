@@ -1,7 +1,10 @@
 /**
  * Turn stills that are already in this repo into animation loops.
  *
- *   PIXELLAB_API_KEY=... npm run animate -- <jobs.json> [outDir] [concurrency]
+ *   npm run animate -- <jobs.json> [outDir] [concurrency]
+ *
+ * The key comes from `PIXELLAB_API_KEY` if set, else from `.mcp.json` (see
+ * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run animate -- ...`.
  *
  * `jobs.json` is `[{ "key": "node.oreGold", "file": "assets/.../x.png",
  * "action": "the crystal veins pulsing" , "frames": 8 }]`.
@@ -25,6 +28,7 @@
  * twice.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { pixellabKey } from './pixellab-key.ts'
 
 const args = process.argv.slice(2).filter((a) => a !== '--')
 const [jobsPath, outDir = 'assets/pixellab/anim', concArg] = args
@@ -33,8 +37,7 @@ if (!jobsPath) {
   process.exit(1)
 }
 
-const key = process.env.PIXELLAB_API_KEY
-if (!key) throw new Error('PIXELLAB_API_KEY is not set')
+const key = pixellabKey()
 const H = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
 const BASE = 'https://api.pixellab.ai/v2'
 

@@ -476,6 +476,11 @@ const BY_PROMPT: [string, Fam][] = [
   ['spare shotgun choke tube', { keys: ['item.spareChoke'], note: 'Spare Choke card icon' }],
   ['folded paper handbill notice', { keys: ['item.handbill'], note: 'Handbill card icon' }],
 
+  // -- tagged `rdf-wired-card-<name>` by a session that wired card art directly
+  // rather than through this table's family scheme. One row per such tag,
+  // matched on the prompt since the tag itself isn't in BY_TAG.
+  ['rusted steel barrel burning', { keys: ['item.hotAsItComes'], note: 'Hot As It Comes card icon (rdf-wired-card-hotAsItComes)' }],
+
   // -- strays from before this project had a naming convention
   ['rowboat', { keys: [], note: 'not this game -- a stray from the first session, before the farm was decided', verdict: 'retired' }],
   ['iron lamp post', { keys: [], note: 'not this game -- a stray from the first session; the yard lights are CSS glows', verdict: 'retired' }],

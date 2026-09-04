@@ -2,7 +2,10 @@
  * Pull a Wang tileset down from PixelLab and write it in the shape the atlas
  * packer already reads.
  *
- *     PIXELLAB_API_KEY=... npm run tileset -- <tileset-id> <name>
+ *     npm run tileset -- <tileset-id> <name>
+ *
+ * The key comes from `PIXELLAB_API_KEY` if set, else from `.mcp.json` (see
+ * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run tileset -- ...`.
  *
  * Why this exists: the tilesets staged in `assets/tilesets/` were saved from
  * the CREATE response, which carries a composed spritesheet and a
@@ -29,6 +32,7 @@
  */
 import { writeFileSync } from 'node:fs'
 import { decodePng, encodePng, blankImage, blit, type Image } from './png.ts'
+import { pixellabKey } from './pixellab-key.ts'
 
 const [id, name] = process.argv.slice(2).filter((a) => a !== '--')
 if (!id || !name) {
@@ -36,9 +40,11 @@ if (!id || !name) {
   process.exit(1)
 }
 
-const key = process.env.PIXELLAB_API_KEY
-if (!key) {
-  console.error('\nPIXELLAB_API_KEY is not set.\n')
+let key: string
+try {
+  key = pixellabKey()
+} catch (e) {
+  console.error(`\n${(e as Error).message}\n`)
   process.exit(1)
 }
 

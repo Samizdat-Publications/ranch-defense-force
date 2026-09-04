@@ -1,7 +1,10 @@
 /**
  * Batch driver for PixelLab's `/v2/map-objects` endpoint.
  *
- *   PIXELLAB_API_KEY=... npm run mapobject -- <jobs.json> <outDir> [concurrency]
+ *   npm run mapobject -- <jobs.json> <outDir> [concurrency]
+ *
+ * The key comes from `PIXELLAB_API_KEY` if set, else from `.mcp.json` (see
+ * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run mapobject -- ...`.
  *
  * **Needs a live key.** The subscription this project used was cancelled after
  * session 15, so this script cannot run again without a new one. It is kept
@@ -18,10 +21,10 @@
  * returns a single image rather than a grid of candidates.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { pixellabKey } from './pixellab-key.ts'
 
 const BASE = 'https://api.pixellab.ai/v2'
-const key = process.env.PIXELLAB_API_KEY
-if (!key) throw new Error('PIXELLAB_API_KEY is not set')
+const key = pixellabKey()
 const H = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
 
 const jobsPath = process.argv[2]

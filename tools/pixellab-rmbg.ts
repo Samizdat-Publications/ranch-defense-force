@@ -1,7 +1,10 @@
 /**
  * Strip the opaque "card" background PixelLab sometimes returns.
  *
- *   PIXELLAB_API_KEY=... npm run rmbg -- <file.png> [more.png ...]
+ *   npm run rmbg -- <file.png> [more.png ...]
+ *
+ * The key comes from `PIXELLAB_API_KEY` if set, else from `.mcp.json` (see
+ * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run rmbg -- ...`.
  *
  * **Needs a live key**, and costs **1 generation per image** — the API docs
  * claim `remove-background` is free; it is not, it was measured. See
@@ -20,9 +23,9 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { basename } from 'node:path'
 import { decodePng, contentBounds } from './png.ts'
+import { pixellabKey } from './pixellab-key.ts'
 
-const key = process.env.PIXELLAB_API_KEY
-if (!key) throw new Error('PIXELLAB_API_KEY is not set')
+const key = pixellabKey()
 const H = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
 const BASE = 'https://api.pixellab.ai/v2'
 

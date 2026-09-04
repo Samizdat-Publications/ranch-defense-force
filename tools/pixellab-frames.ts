@@ -1,7 +1,10 @@
 /**
  * Pull every candidate frame of a 1-direction object, plus a contact sheet.
  *
- *     PIXELLAB_API_KEY=... npm run frames -- <object-id> <name>
+ *     npm run frames -- <object-id> <name>
+ *
+ * The key comes from `PIXELLAB_API_KEY` if set, else from `.mcp.json` (see
+ * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run frames -- ...`.
  *
  * A 1-direction object does not finish. It lands in status `review` holding
  * sixteen candidates in `frame_urls`, and stays there until something selects a
@@ -23,14 +26,20 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { decodePng, encodePng, blankImage, blit, type Image } from './png.ts'
+import { pixellabKey } from './pixellab-key.ts'
 
 const [objectId, name] = process.argv.slice(2).filter((a) => a !== '--')
 if (!objectId || !name) {
   console.error('usage: npm run frames -- <object-id> <name>')
   process.exit(1)
 }
-const key = process.env.PIXELLAB_API_KEY
-if (!key) { console.error('PIXELLAB_API_KEY is not set.'); process.exit(1) }
+let key: string
+try {
+  key = pixellabKey()
+} catch (e) {
+  console.error((e as Error).message)
+  process.exit(1)
+}
 
 const res = await fetch(`https://api.pixellab.ai/v2/objects/${objectId}`, {
   headers: { Authorization: `Bearer ${key}` },
