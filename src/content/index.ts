@@ -284,11 +284,17 @@ export interface ElementDef {
   clip?: string
   impact: string
   burnDps?: number
+  burnDpsPerStack?: number
   burnSeconds?: number
+  burnSecondsPerStack?: number
   bleedDps?: number
+  bleedDpsPerStack?: number
   bleedSeconds?: number
+  bleedSecondsPerStack?: number
   slowOnHit?: number
+  slowOnHitPerStack?: number
   slowSeconds?: number
+  slowSecondsPerStack?: number
   ignitesSlicks?: boolean
   slickDps?: number
 
@@ -657,6 +663,25 @@ export const WEAPON_IDS = Object.keys(WEAPONS)
 export function projectileScaleFor(weaponId: string): number {
   const s = WEAPONS[weaponId]?.projectileScale
   return typeof s === 'number' ? s : 1
+}
+
+/**
+ * A Load's numeric field at a given stack count: `base + perStack * (n - 1)`,
+ * additive per `elements.json` `_stackNote`.
+ *
+ * Shared by `World.applyElementTo` (what the sim actually does) and
+ * `offers.ts`' `loadStatDelta` (what the card says it does), so the two
+ * cannot drift the way a hand-copied formula could. A field with no matching
+ * `<key>PerStack` — every field on the six Loads that are `maxStacks: 1` —
+ * returns exactly `base` regardless of `stacks`, which is what makes this one
+ * rule rather than a fire/acid/frost special case.
+ */
+export function elementStat(el: ElementDef | undefined, key: string, stacks: number): number {
+  if (!el) return 0
+  const base = (el[key] as number | undefined) ?? 0
+  const per = (el[`${key}PerStack`] as number | undefined) ?? 0
+  const n = Math.max(1, stacks)
+  return base + per * (n - 1)
 }
 export const ITEM_IDS = Object.keys(ITEMS)
 /**

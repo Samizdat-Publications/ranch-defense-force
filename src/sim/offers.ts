@@ -32,7 +32,7 @@
  * moved. Everything after it has.
  */
 import {
-  CLASSES, ITEMS, RARITY, TUNING, WEAPON_IDS, WEAPONS, weaponCardSprite,
+  CLASSES, ELEMENTS, ITEMS, RARITY, TUNING, WEAPON_IDS, WEAPONS, elementStat, weaponCardSprite,
   type ItemDef, type StatMods, type WeaponDef,
 } from '../content'
 import type { Rng } from '../core/rng'
@@ -701,7 +701,7 @@ ${stats}` : stats
       kind: 'item',
       id,
       name: def.name,
-      detail: describeItem(def, n),
+      detail: describeItem(def, n, player.element),
       sprite,
       cost: def.cost,
       rarity,
@@ -886,6 +886,36 @@ export function describeMods(mods: StatMods): string {
 }
 
 /**
+ * A Load's primary number, worded, at consecutive stacks — "burn 7 → 10 dps".
+ *
+ * Only fire/acid/frost have anything to show: they are the only elements with
+ * a `<field>PerStack` in `elements.json` (`_stackNote`), because they are the
+ * only Loads `maxStacks` lets past 1 copy. Reads the same `elementStat` the
+ * sim applies in `World.applyElementTo`, so the card can never quote a number
+ * the sim does not also produce. Returns `null` below stack 2 — there is
+ * nothing to compare the first copy against, and the footer's `1/3` already
+ * says a second will do something.
+ */
+const LOAD_HEADLINE_STAT: Record<string, { label: string; key: string; suffix: string }> = {
+  fire: { label: 'burn', key: 'burnDps', suffix: ' dps' },
+  acid: { label: 'bleed', key: 'bleedDps', suffix: ' dps' },
+  frost: { label: 'slow', key: 'slowOnHit', suffix: '%' },
+}
+function fmtStat(v: number): string {
+  return Number.isInteger(v) ? String(v) : v.toFixed(1)
+}
+export function loadStatDelta(elementId: string, stack: number): string | null {
+  if (stack < 2) return null
+  const cfg = LOAD_HEADLINE_STAT[elementId]
+  if (!cfg) return null
+  const el = ELEMENTS[elementId]
+  const prev = elementStat(el, cfg.key, stack - 1)
+  const next = elementStat(el, cfg.key, stack)
+  if (prev === next) return null
+  return `${cfg.label} ${fmtStat(prev)} → ${fmtStat(next)}${cfg.suffix}`
+}
+
+/**
  * The card's body text.
  *
  * `stackBlurb` (§5) is the behavioural card's answer to "what does taking this
@@ -893,9 +923,23 @@ export function describeMods(mods: StatMods): string {
  * be, so a card whose whole effect is a blurb still states its numbers at the
  * stack the player is actually looking at. `stack` is 1-based and is the copy
  * being offered, not the copy already held.
+ *
+ * `currentElement` is `player.element` at offer time, only ever passed for a
+ * card that carries its own `element` (the nine Loads, now one family — see
+ * items.json `_familyNote`). Two things follow from it, both part of Part 2's
+ * "say so": a card offering a DIFFERENT element than the one already active
+ * states that taking it replaces the current Load, and a card offering the
+ * SAME one prints the concrete before → after off `loadStatDelta` so "2/3"
+ * on the footer and "burn 7 → 10 dps" in the body answer the owner's "what
+ * does buying fire 5 times do" together.
  */
-export function describeItem(def: ItemDef, stack = 1): string {
+export function describeItem(def: ItemDef, stack = 1, currentElement: string | null = null): string {
   const parts: string[] = []
+  const element = typeof def.element === 'string' ? def.element : null
+  if (element && currentElement && currentElement !== 'none' && currentElement !== element) {
+    const curName = (ELEMENTS[currentElement] as { name?: string } | undefined)?.name ?? currentElement
+    parts.push(`Replaces your current load (${curName}).`)
+  }
   // An item whose whole effect is behavioural — an element, a tool tier — has
   // no stat mods to describe, and was rendering a completely blank card. The
   // blurb IS the description for those.
@@ -909,6 +953,16 @@ export function describeItem(def: ItemDef, stack = 1): string {
     parts.push(`enemies within ${def.radius}px deal ${def.reductionPct}% less`)
   }
   if (def.special === 'gasGrace') parts.push(`immune to gas for ${def.graceSeconds}s of contact`)
+  if (element) {
+    const max = typeof def.maxStacks === 'number' ? def.maxStacks : 1
+    // `stack` is `itemCount(id) + 1` — the count THIS specific item id will
+    // reach if taken — which is exactly what `Player.addItem` sets
+    // `loadStacks` to afterwards, switch or no: each element maps to exactly
+    // one item id, so a run that switches away and back resumes at the depth
+    // already bought rather than restarting at 1. See `Player.loadStacks`.
+    const delta = loadStatDelta(element, stack)
+    if (delta) parts.push(`${stack}/${max} — ${delta}`)
+  }
   return parts.join(' · ')
 }
 

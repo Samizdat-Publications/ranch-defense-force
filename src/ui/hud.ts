@@ -6,7 +6,7 @@
  * Updated from the world every frame, but only writes to the DOM when a value
  * actually changes — layout thrash in a 60fps loop is not free.
  */
-import { ENEMIES, WEAPONS, weaponCardSprite } from '../content'
+import { ELEMENTS, ENEMIES, ITEMS, WEAPONS, itemCardSprite, weaponCardSprite } from '../content'
 import type { World } from '../sim/world'
 import { clear, el } from './dom'
 import { frameOf, spriteEl } from './sprite'
@@ -33,6 +33,25 @@ function weaponArtKey(id: string, tier: number): string | null {
   return key && frameOf(key) ? key : null
 }
 
+/**
+ * The one item id whose `element` matches, or `null` for `'none'`.
+ *
+ * Nine items, one family (items.json `_familyNote`) and each names a
+ * DIFFERENT element, so this is always exactly one match — not a lookup
+ * table because a tenth Load should not need a second place to register.
+ *
+ * Exported so `tests/` can check the HUD's Load label against content
+ * without a DOM: this repo has no jsdom/happy-dom dependency (the
+ * dependency cap in CLAUDE.md), so the HUD's actual markup is checked by
+ * screenshot tools (`npm run scene`, `npm run cards`), and this is the pure
+ * piece of that markup's logic a plain test CAN reach.
+ */
+export function loadItemFor(element: string): string | null {
+  if (element === 'none') return null
+  for (const id in ITEMS) if ((ITEMS[id] as { element?: string }).element === element) return id
+  return null
+}
+
 export class Hud {
   private readonly root: HTMLElement
   private readonly hpFill: HTMLElement
@@ -47,6 +66,8 @@ export class Hud {
   private readonly xpFill: HTMLElement
   private readonly levelText: HTMLElement
   private readonly weapons: HTMLElement
+  /** The active Load, beside the weapon ring — see `Player.element`. */
+  private readonly load: HTMLElement
   private readonly ability: HTMLElement
   private readonly bossBar: HTMLElement
   private readonly bossFill: HTMLElement
@@ -58,6 +79,8 @@ export class Hud {
   private lastLevel = -1
   private lastSlotSig = ''
   private lastBossName = ''
+  /** `<element>:<stacks>` — rebuilds the Load slot only when either changes. */
+  private lastLoadSig = ''
 
   constructor(parent: HTMLElement) {
     this.hpChase = el('div', { class: 'hud-hp-chase' })
@@ -70,6 +93,8 @@ export class Hud {
     this.xpFill = el('div', { class: 'hud-xp-fill' })
     this.levelText = el('div', { class: 'hud-level' })
     this.weapons = el('div', { class: 'hud-weapons' })
+    this.load = el('div', { class: 'hud-slot hud-load' })
+    this.load.style.display = 'none'
     this.ability = el('div', { class: 'hud-ability' })
     // §9: pinned to the top of the screen, not floating over the sprite. A bar
     // over a boss that crosses the whole arena would spend the fight behind
@@ -84,7 +109,7 @@ export class Hud {
       this.armour,
       el('div', { class: 'hud-wave' }, [this.waveN, this.waveTimer]),
       this.feed,
-      this.weapons,
+      el('div', { class: 'hud-weapon-row' }, [this.weapons, this.load]),
       this.ability,
       this.levelText,
       el('div', { class: 'hud-xp' }, [this.xpFill]),
@@ -182,6 +207,42 @@ export class Hud {
         )
       }
       this.lastSlotSig = sig
+    }
+
+    /*
+       The active Load, beside the weapon ring rather than folded into it: a
+       Load is not a weapon slot, it converts every one of them, and the
+       owner's own words after a run were that it "was not apparent" a Load
+       was doing anything at all. Icon + name, in the same panel language as
+       a weapon slot (`.hud-slot`), so it reads as the SAME kind of thing a
+       weapon slot is rather than a new HUD element to learn. The stack chip
+       reuses `.hud-slot-tier` for the same reason `describeItem`'s "n/max"
+       reuses the footer counter instead of inventing a second one.
+    */
+    const loadSig = `${p.element}:${p.loadStacks}`
+    if (loadSig !== this.lastLoadSig) {
+      this.lastLoadSig = loadSig
+      clear(this.load)
+      if (p.element === 'none') {
+        this.load.style.display = 'none'
+      } else {
+        this.load.style.display = ''
+        const itemId = loadItemFor(p.element)
+        const key = itemId ? itemCardSprite(itemId) : null
+        const art = key && frameOf(key) ? spriteEl(key, 60) : null
+        const name = ELEMENTS[p.element]?.name ?? p.element
+        const window_ = el('div', { class: 'hud-slot-art' })
+        if (art) window_.appendChild(art)
+        else window_.appendChild(el('span', { class: 'hud-slot-art-fallback', text: name }))
+        const maxStacks = itemId ? (ITEMS[itemId] as { maxStacks?: number }).maxStacks : undefined
+        this.load.append(
+          window_,
+          el('span', { class: 'hud-slot-name', text: name }),
+          ...(typeof maxStacks === 'number' && maxStacks > 1
+            ? [el('span', { class: 'hud-slot-tier', text: `${p.loadStacks}/${maxStacks}` })]
+            : []),
+        )
+      }
     }
 
     // Cooldown wipes, cheap enough to touch every frame.
