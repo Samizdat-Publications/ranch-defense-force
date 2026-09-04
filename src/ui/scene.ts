@@ -678,8 +678,18 @@ function yard(): (HTMLElement | null)[] {
     'background:linear-gradient(180deg,rgba(124,114,88,0) 0%,rgba(102,96,74,0.3) 46%,' +
     'rgba(74,70,56,0.04) 100%)',
   ))
+  /*
+     The track to the barn doors. `docs/mockups/Yard Grounding Fix.dc.html`
+     draws this same box with a trapezoid `clip-path` narrowing it to a strip
+     as it recedes toward the barn -- a perspective road, not a ground patch.
+     The port dropped the clip-path, so the box painted as a hard-edged
+     rectangle of a different shade sitting behind the coop, the hens and the
+     ponies: "a weird square that's a different shade," reported off the live
+     site. Restoring the clip-path is the whole fix.
+  */
   push(box(
     'left:900px;top:700px;width:760px;height:380px;opacity:0.7;' +
+    'clip-path:polygon(46% 0,55% 0,100% 100%,0 100%);' +
     'background:linear-gradient(180deg,#6a5a3c 0%,#7b6945 36%,#6b5a3a 100%)',
   ))
 
@@ -688,9 +698,24 @@ function yard(): (HTMLElement | null)[] {
   // -- the yard furniture
   push(plate('ranch.roundBale', 605, 657, 107, 'filter:brightness(0.9) saturate(0.94);'))
   push(plate('ranch.squareBales', 729, 743, 21, 'filter:brightness(0.9);'))
-  push(plate('ranch.doghouse', 825, 693, 54, 'filter:brightness(0.92);'))
-  push(plate('ranch.wellStone', 688, 734, 69, 'filter:brightness(0.92) saturate(0.92);'))
-  push(plate('ranch.coop', 958, 626, 171, 'filter:brightness(0.88) saturate(0.88);'))
+  /*
+     The doghouse, the well and the coop were all sized off `ranch.*`'s literal
+     canvas-and-content maths -- correct against the "a grown person is 64px"
+     reference in ASSET_CATALOG.md, and undersized against the animals
+     standing next to them, which are DELIBERATELY drawn above life scale (see
+     session 19). A hen nearly as tall as the coop door and a cat the height of
+     the well are the result. Heights only, feet kept on the same ground line
+     (the y below is recomputed from each sprite's own content-to-canvas
+     ratio, measured with `tools/bbox-check.ts`, so the content's bottom edge
+     -- not the padded canvas edge -- stays put): doghouse 44->58px content,
+     well 44->96px ("a person and a half"), coop 90->100px, its box height
+     held to 190 rather than pushed further so its content stays clear of the
+     barn's own content box instead of lapping into its wall
+     (`tools/bbox-check.ts` again).
+  */
+  push(plate('ranch.doghouse', 825, 676, 73, 'filter:brightness(0.92);'))
+  push(plate('ranch.wellStone', 688, 701, 104, 'filter:brightness(0.92) saturate(0.92);'))
+  push(plate('ranch.coop', 958, 613, 190, 'filter:brightness(0.88) saturate(0.88);'))
   push(plate('ranch.nestBox', 1085, 722, 32, 'filter:brightness(0.9);'))
   push(plate('ranch.feedPan', 889, 749, 53, 'filter:brightness(0.94);'))
   push(plate('ranch.eggClutch', 1105, 730, 28))
