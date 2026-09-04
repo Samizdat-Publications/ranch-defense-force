@@ -134,6 +134,21 @@ export function waveScalar(wave: number): number {
  * since almost every death in the baseline fell before wave 12 -- and a late one
  * is much tougher, while roughly 2.2x as many of them arrive. Early pressure
  * comes from numbers, late pressure from durability.
+ *
+ * docs/UPGRADE_ROSTER.md batch 5's retune tried steepening this coefficient
+ * (0.010 -> 0.014, +28% at wave 25 and +2% at wave 5) as its lever (b) before
+ * reaching for anything class-specific, and measured it against the six-class
+ * ladder rather than assuming it would land evenly. It did not: widow and
+ * agronomist, the two real outliers at 19-21/24 on `npm run balance`'s own
+ * ladder, barely moved (21->19 and an equivalent 19), because their deaths
+ * were never a durability problem -- widow's contact damage over a full clear
+ * sat under 200 total against 4000+ kills, so doubling what survives a hit
+ * does not change a fight that was already ending before it started. Classes
+ * that WERE in range paid for a change that helped nobody: vet/spacer fell
+ * to 10/24 (under the 11-15 target) and hand/kite dropped tests/run.test.ts's
+ * own seed ladder to 9/24, under its fixed >=12/24 acceptance bar. Reverted;
+ * the retune's actual widow/agronomist/drifter fixes are each class's own
+ * numbers, in classes.json.
  */
 export function waveHpScalar(wave: number): number {
   const n = wave - 1

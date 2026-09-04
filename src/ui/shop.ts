@@ -10,15 +10,25 @@
  * The right-hand character sheet highlights anything that changed since the
  * last wave, and hovering a card previews its effect in a second colour.
  */
-import { ITEMS, STAT_KEYS, STAT_LABELS, WEAPONS } from '../content'
-import { stackLabel, type Offer, type OfferPool } from '../sim/offers'
+import { STAT_KEYS, STAT_LABELS } from '../content'
+import { categoryLabel, stackLabel, type Offer, type OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta, type DerivedStats } from '../sim/stats'
 import { card, deal, lotOf } from './card'
-import { interestOn, shopRerollCost } from '../sim/formulas'
+import { shopRerollCost } from '../sim/formulas'
 import { clear, el, fmtStat } from './dom'
+import { buildLedger } from './ledger'
 
 const SLOTS = 4
+
+/**
+ * Handbill (batch 5, epic, shop-only): the shop shows five cards instead of
+ * four, and the first reroll each visit is free. Both are read off the item
+ * count directly rather than flattened into `specialItems` — this is the one
+ * card whose effect is the SHOP SCREEN's own shape, not the sim's, so it has
+ * no business in the tick loop.
+ */
+const HANDBILL_SLOTS = 5
 
 export class ShopScreen {
   private readonly root: HTMLElement
@@ -27,6 +37,8 @@ export class ShopScreen {
   private readonly rerollBtn: HTMLButtonElement
   private readonly feedEl: HTMLElement
   private readonly subtitle: HTMLElement
+  /** §7.7: what this visit uniquely sells. */
+  private readonly exclusiveNote: HTMLElement
 
   private offers: (Offer | null)[] = []
   /** Locked cards survive the reroll and the next shop visit. */
@@ -51,6 +63,7 @@ export class ShopScreen {
     this.sheetEl = el('div', { class: 'pshop-counter' })
     this.feedEl = el('div', { class: 'pshop-feed' })
     this.subtitle = el('div', { class: 'pshop-sub' })
+    this.exclusiveNote = el('div', { class: 'pshop-exclusive' })
     this.rerollBtn = el('button', {
       class: 'pshop-btn is-gold',
       text: 'REROLL',
@@ -63,6 +76,7 @@ export class ShopScreen {
           el('div', { class: 'pshop-eyebrow', text: 'BETWEEN WAVES' }),
           el('h1', { class: 'pshop-title', text: 'Same packet, priced' }),
           this.subtitle,
+          this.exclusiveNote,
         ]),
         this.cardsEl,
       ]),
@@ -95,8 +109,10 @@ export class ShopScreen {
     */
     pool.beginShopVisit()
 
-    // Interest on unspent feed, paid on arrival (§3).
-    const interest = interestOn(world.player.feed)
+    // Interest on unspent feed, paid on arrival (§3). Ledger Book (batch 5)
+    // raises the cap and the rate, so this reads it off the world rather than
+    // the pure formula.
+    const interest = world.interestFor(world.player.feed)
     world.player.feed += interest
     this.subtitle.textContent = interest > 0
       ? `After wave ${world.spawner.wave - 1} · +${interest} feed interest`
@@ -105,11 +121,35 @@ export class ShopScreen {
     // Snapshot the stat block so the sheet can mark what changed.
     Object.assign(this.opening, world.player.stats)
 
+    // Handbill: a fifth slot. Grown, never shrunk — `locked` only ever
+    // carries what a PREVIOUS visit held, and a run does not lose an item —
+    // so a slot that has already existed keeps whatever was pinned in it.
+    while (this.locked.length < this.slotCount()) this.locked.push(null)
+
     this.offers = []
-    for (let i = 0; i < SLOTS; i++) this.offers.push(this.locked[i])
+    for (let i = 0; i < this.slotCount(); i++) this.offers.push(this.locked[i] ?? null)
     this.fillEmptySlots()
+    this.updateExclusiveNote()
     this.render()
     this.root.style.display = ''
+  }
+
+  /**
+   * §7.7: "the shop shows what it uniquely sells and why a visit is worth
+   * stopping for." Counted rather than asserted — a run that has bought out
+   * the exclusive pool for this visit should not keep reading a line that is
+   * no longer true.
+   */
+  private updateExclusiveNote(): void {
+    const n = this.offers.filter((o) => o?.exclusive).length
+    this.exclusiveNote.textContent = n > 0
+      ? `${n} of ${this.offers.length} cards here you will never see at a level-up.`
+      : 'The swap, the Loads, and every epic and legendary live only here.'
+  }
+
+  /** 5 with Handbill, 4 without. */
+  private slotCount(): number {
+    return this.world && this.world.player.itemCount('handbill') > 0 ? HANDBILL_SLOTS : SLOTS
   }
 
   private fillEmptySlots(): void {
@@ -120,7 +160,7 @@ export class ShopScreen {
     if (needed === 0) return
     const fresh = pool.draw(world.player, needed, world.elapsed, world.player.stats.luck)
     let f = 0
-    for (let i = 0; i < SLOTS; i++) {
+    for (let i = 0; i < this.offers.length; i++) {
       if (this.offers[i] === null) this.offers[i] = fresh[f++] ?? null
     }
   }
@@ -128,14 +168,17 @@ export class ShopScreen {
   private reroll(): void {
     const world = this.world
     if (!world) return
-    const cost = shopRerollCost(this.rerollsThisShop)
-    if (world.player.feed < cost) return
+    // Handbill: the first reroll of the visit costs nothing.
+    const free = this.rerollsThisShop === 0 && world.player.itemCount('handbill') > 0
+    const cost = free ? 0 : shopRerollCost(this.rerollsThisShop)
+    if (!free && world.player.feed < cost) return
     world.player.feed -= cost
     this.rerollsThisShop++
-    for (let i = 0; i < SLOTS; i++) {
+    for (let i = 0; i < this.offers.length; i++) {
       if (this.locked[i] === null) this.offers[i] = null
     }
     this.fillEmptySlots()
+    this.updateExclusiveNote()
     this.render()
   }
 
@@ -153,6 +196,7 @@ export class ShopScreen {
     this.offers[index] = null
     this.locked[index] = null
     this.fillEmptySlots()
+    this.updateExclusiveNote()
     this.render()
   }
 
@@ -185,6 +229,10 @@ export class ShopScreen {
       const c = card({
         // §5: a weapon-upgrade card names its weapon; `swap` shows plainly.
         kind: offer.band ?? offer.kind,
+        category: categoryLabel(offer.category),
+        // §7.7: the shop's own pitch — a card here that a level-up could
+        // never have dealt you.
+        exclusive: offer.exclusive,
         name: offer.name,
         blurb: offer.detail,
         sprite: offer.sprite,
@@ -230,9 +278,10 @@ export class ShopScreen {
     this.cardsEl.appendChild(this.sheetEl)
     deal(built)
 
+    const freeReroll = this.rerollsThisShop === 0 && world.player.itemCount('handbill') > 0
     const cost = shopRerollCost(this.rerollsThisShop)
-    this.rerollBtn.textContent = `REROLL · ${cost}`
-    this.rerollBtn.disabled = world.player.feed < cost
+    this.rerollBtn.textContent = freeReroll ? 'REROLL · FREE' : `REROLL · ${cost}`
+    this.rerollBtn.disabled = !freeReroll && world.player.feed < cost
     this.renderSheet()
   }
 
@@ -282,22 +331,29 @@ export class ShopScreen {
       class: `pshop-row-line${tone ? ` is-${tone}` : ''}`,
     }, [el('span', { text: label }), el('b', { text: value })])
 
+    /*
+     * The ledger (docs/UPGRADE_ROSTER.md batch 5, part 1): the same builder
+     * the pause screen reads, so "readable from the pause screen and the
+     * shop" is one fact rather than two screens each keeping their own copy.
+     * Weapon rows print H12's mods by name; class cards get their own
+     * section; everything else prints its stack footer, n/N.
+     */
+    const ledger = buildLedger(p)
     this.sheetEl.appendChild(el('div', {
       class: 'pshop-section',
-      text: `WEAPONS ${p.weapons.length}/6`,
+      text: `WEAPONS ${ledger.weapons.length}/6`,
     }))
-    this.sheetEl.appendChild(rows(p.weapons.map((slot) =>
-      line(WEAPONS[slot.id]?.name ?? slot.id, `T${slot.tier}`))))
+    this.sheetEl.appendChild(rows(ledger.weapons.map((w) =>
+      line(w.name, w.mods.length > 0 ? `T${w.tier} · ${w.mods.join(', ')}` : `T${w.tier}`))))
 
-    if (p.items.length > 0) {
-      const counts = new Map<string, number>()
-      // A boosted copy counts as two, which is exactly how it resolves.
-      for (const owned of p.items) {
-        counts.set(owned.id, (counts.get(owned.id) ?? 0) + (owned.boosted ? 2 : 1))
-      }
+    if (ledger.classCards.length > 0) {
+      this.sheetEl.appendChild(el('div', { class: 'pshop-section', text: 'CLASS CARDS' }))
+      this.sheetEl.appendChild(rows(ledger.classCards.map((name) => line(name, '✓'))))
+    }
+
+    if (ledger.items.length > 0) {
       this.sheetEl.appendChild(el('div', { class: 'pshop-section', text: 'CARRYING' }))
-      this.sheetEl.appendChild(rows([...counts].map(([id, n]) =>
-        line(ITEMS[id]?.name ?? id, n > 1 ? `x${n}` : '·'))))
+      this.sheetEl.appendChild(rows(ledger.items.map((it) => line(it.name, it.stack || '·'))))
     }
 
     // Hover preview resolves the hovered card against the live build.

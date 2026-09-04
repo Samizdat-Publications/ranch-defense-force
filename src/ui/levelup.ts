@@ -7,7 +7,7 @@
  * "from → to" against the live build, not as the raw modifier.
  */
 import { STAT_LABELS, WAVES } from '../content'
-import { stackLabel, type Offer } from '../sim/offers'
+import { categoryLabel, stackLabel, type Offer } from '../sim/offers'
 import type { OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta } from '../sim/stats'
@@ -24,6 +24,16 @@ export class LevelUpScreen {
   private onPick: ((o: Offer) => void) | null = null
   private world: World | null = null
   private pool: OfferPool | null = null
+
+  /**
+   * Spare Choke (batch 5): one free reroll per stack, per LEVEL — not per
+   * board, so rerolling twice on the same level does not refund a third
+   * free spin from a card that grants only two. `lastLevel` is how "per
+   * level" is detected without the sim carrying a counter of its own; reset
+   * happens in `open()`, which fires exactly once per level-up.
+   */
+  private freeRerollsUsedThisLevel = 0
+  private lastLevel = -1
 
   private readonly scratchA = emptyDerived()
   private readonly scratchB = emptyDerived()
@@ -57,6 +67,10 @@ export class LevelUpScreen {
     this.world = world
     this.pool = pool
     this.onPick = onPick
+    if (world.player.level !== this.lastLevel) {
+      this.lastLevel = world.player.level
+      this.freeRerollsUsedThisLevel = 0
+    }
     this.subtitle.textContent = `Level ${world.player.level} · pick one`
     this.drawOffers()
     this.root.style.display = ''
@@ -80,8 +94,15 @@ export class LevelUpScreen {
 
   private reroll(): void {
     const world = this.world
-    if (!world || world.player.feed < LEVEL_REROLL_COST) return
-    world.player.feed -= LEVEL_REROLL_COST
+    if (!world) return
+    // Spare Choke: one free reroll per stack, per level.
+    const freeLeft = world.player.itemCount('spareChoke') - this.freeRerollsUsedThisLevel
+    if (freeLeft > 0) {
+      this.freeRerollsUsedThisLevel++
+    } else {
+      if (world.player.feed < LEVEL_REROLL_COST) return
+      world.player.feed -= LEVEL_REROLL_COST
+    }
     this.drawOffers()
   }
 
@@ -96,6 +117,8 @@ export class LevelUpScreen {
         // what it belongs to instead of the generic kind — `offer.band`,
         // driven off `ItemDef.requiresWeapon`/`requiresClass` in content.
         kind: `[${i + 1}]  ${offer.band ?? offer.kind}${offer.boosted ? ' · 2x' : ''}`,
+        category: categoryLabel(offer.category),
+        exclusive: offer.exclusive,
         name: offer.name,
         blurb: offer.detail,
         sprite: offer.sprite,
@@ -122,8 +145,14 @@ export class LevelUpScreen {
     })
     deal(built)
 
-    this.rerollBtn.disabled = world.player.feed < LEVEL_REROLL_COST
-    this.rerollBtn.textContent = `Reroll (${LEVEL_REROLL_COST} feed · have ${world.player.feed})`
+    const freeLeft = world.player.itemCount('spareChoke') - this.freeRerollsUsedThisLevel
+    if (freeLeft > 0) {
+      this.rerollBtn.disabled = false
+      this.rerollBtn.textContent = `Reroll (free · ${freeLeft} left this level)`
+    } else {
+      this.rerollBtn.disabled = world.player.feed < LEVEL_REROLL_COST
+      this.rerollBtn.textContent = `Reroll (${LEVEL_REROLL_COST} feed · have ${world.player.feed})`
+    }
   }
 
   /** "Attack speed 12% → 24%" for everything the card moves. */

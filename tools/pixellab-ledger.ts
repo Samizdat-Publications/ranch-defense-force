@@ -467,6 +467,15 @@ const BY_PROMPT: [string, Fam][] = [
   ['fence post strung with barbed wire', { keys: ['prop.fencePost'], note: 'OPEN: review pack; prop.fencePost is already packed and drawn', verdict: 'open' }],
   ['chicken coop with a ramp', { keys: ['ranch.coop'], note: 'OPEN: review pack; ranch.coop is already packed and drawn', verdict: 'open' }],
 
+  // -- docs/UPGRADE_ROSTER.md batch 5: the four Field & Ledger card icons,
+  // generated as raw create_image_pro images (not PixelLab "objects"), so
+  // this row is what keeps them off the open count the way batch 1's 17 and
+  // batch 3's 8 needed the same treatment.
+  ['closed leather ledger book', { keys: ['item.ledgerBook'], note: 'Ledger Book card icon' }],
+  ['single ear of dried seed corn', { keys: ['item.seedCorn'], note: 'Seed Corn card icon' }],
+  ['spare shotgun choke tube', { keys: ['item.spareChoke'], note: 'Spare Choke card icon' }],
+  ['folded paper handbill notice', { keys: ['item.handbill'], note: 'Handbill card icon' }],
+
   // -- strays from before this project had a naming convention
   ['rowboat', { keys: [], note: 'not this game -- a stray from the first session, before the farm was decided', verdict: 'retired' }],
   ['iron lamp post', { keys: [], note: 'not this game -- a stray from the first session; the yard lights are CSS glows', verdict: 'retired' }],

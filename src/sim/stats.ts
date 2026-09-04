@@ -20,6 +20,7 @@ export function emptyStats(): StatBlock {
     moveSpeedPct: 0, pickupRadiusPct: 0, luck: 0, harvestPct: 0,
     damagePct: 0, meleePct: 0, rangedPct: 0, attackSpeedPct: 0,
     critChancePct: 0, critDamagePct: 0, rangePct: 0, projectileCount: 0,
+    xpPct: 0,
   }
 }
 

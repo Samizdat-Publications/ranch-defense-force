@@ -339,6 +339,92 @@
   "category": "ledger",
   "tags": []
  },
+ "seedCorn": {
+  "name": "Seed Corn",
+  "icon": "seedCorn",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "ledger",
+  "cost": 18,
+  "maxStacks": 4,
+  "tags": [
+   "xp"
+  ],
+  "blurb": "Held back from the crib, not the crop. Everything you learn out here counts for more.",
+  "mods": {
+   "xpPct": 10
+  },
+  "cardSprite": "item.seedCorn"
+ },
+ "ledgerBook": {
+  "name": "Ledger Book",
+  "icon": "ledgerBook",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "ledger",
+  "cost": 26,
+  "maxStacks": 2,
+  "tags": [
+   "feed"
+  ],
+  "blurb": "Somebody finally started writing the numbers down.",
+  "stackBlurb": "Interest cap +{total}, rate +{n} × 1.5% per stack.",
+  "stackPer": 6,
+  "mods": {},
+  "special": "ledgerInterest",
+  "interestCapBonus": 6,
+  "interestPctBonus": 1.5,
+  "cardSprite": "item.ledgerBook"
+ },
+ "spareChoke": {
+  "name": "Spare Choke",
+  "icon": "spareChoke",
+  "rarity": "rare",
+  "source": "both",
+  "category": "ledger",
+  "cost": 27,
+  "maxStacks": 3,
+  "tags": [
+   "luck"
+  ],
+  "blurb": "One more in the bag than you needed.",
+  "stackBlurb": "{n} free level-up reroll(s) every level.",
+  "mods": {},
+  "cardSprite": "item.spareChoke"
+ },
+ "handbill": {
+  "name": "Handbill",
+  "icon": "handbill",
+  "rarity": "epic",
+  "source": "shop",
+  "category": "ledger",
+  "cost": 42,
+  "maxStacks": 1,
+  "tags": [
+   "luck"
+  ],
+  "blurb": "Word travels. The stand out front carries five cards now, and the first reshuffle is on the house.",
+  "mods": {},
+  "cardSprite": "item.handbill"
+ },
+ "earlyBird": {
+  "name": "Early Bird",
+  "icon": "earlyBird",
+  "rarity": "common",
+  "source": "levelup",
+  "category": "ledger",
+  "cost": 13,
+  "maxStacks": 5,
+  "tags": [
+   "feed"
+  ],
+  "blurb": "First one to the yard gets the best of it.",
+  "stackBlurb": "Feed pickups worth +{n}.",
+  "mods": {},
+  "special": "feedBonus",
+  "feedBonusPerStack": 1,
+  "cardSprite": "pickup.feed"
+ },
  "barbedWire": {
   "name": "Barbed Wire",
   "icon": "barbedWire",

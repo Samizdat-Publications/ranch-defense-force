@@ -38,13 +38,17 @@ export interface StatBlock {
   critDamagePct: number
   rangePct: number
   projectileCount: number
+  /** H15 (docs/UPGRADE_ROSTER.md §8): additive XP percentage, summed the same
+   *  way every other `Pct` key is. Read once, in `World.collect`'s `'xp'`
+   *  case, beside the `harvestPct` bonus that already scaled XP pickups. */
+  xpPct: number
 }
 
 export const STAT_KEYS: readonly (keyof StatBlock)[] = [
   'maxHp', 'hpRegen', 'armor', 'dodgePct', 'lifestealPct', 'moveSpeedPct',
   'pickupRadiusPct', 'luck', 'harvestPct', 'damagePct', 'meleePct',
   'rangedPct', 'attackSpeedPct', 'critChancePct', 'critDamagePct',
-  'rangePct', 'projectileCount',
+  'rangePct', 'projectileCount', 'xpPct',
 ]
 
 /** Human labels for the level-up and shop delta lines. */
@@ -66,6 +70,7 @@ export const STAT_LABELS: Record<keyof StatBlock, string> = {
   critDamagePct: 'Crit damage',
   rangePct: 'Range',
   projectileCount: 'Projectiles',
+  xpPct: 'XP',
 }
 
 export type StatMods = Partial<StatBlock>

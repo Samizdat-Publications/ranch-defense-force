@@ -96,6 +96,10 @@
 
 /* --- kind band --- */
 .pcard-kind {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
   font-family: var(--label);
   font-size: 8.5px;
   letter-spacing: 0.14em;
@@ -103,6 +107,28 @@
   color: var(--ink-band);
   border-bottom: 2px solid var(--paper-edge);
   padding: 7px 10px;
+}
+
+.pcard-kind-main { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/*
+   docs/UPGRADE_ROSTER.md §7.1/§7.7: the category quota a card was drawn under,
+   and — gold, because it is the one thing on this row worth stopping for — a
+   flag for a card no level-up can ever deal. Both sit right-aligned so the
+   kind band reads NAME, then WHY IT'S HERE, left to right.
+*/
+.pcard-kind-tags {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: none;
+}
+
+.pcard-kind-cat { color: var(--ink-label); opacity: 0.7; }
+
+.pcard-kind-shop {
+  color: var(--gold-brand, #c99a3d);
+  font-weight: 700;
 }
 
 /* --- art window --- */
