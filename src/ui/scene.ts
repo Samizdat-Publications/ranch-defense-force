@@ -1393,6 +1393,20 @@ function lab(): (HTMLElement | null)[] {
     patrol('baseTech', 861, 696, 174, 'tech', '26s'),
     patrol('baseGuard', 420, 770, 190, 'guard', '59s', dim(0.86)),
 
+    /*
+       The split drum, and it is the thing the room is about.
+
+       `vault.drumWeeping` -- a containment drum burst open and what came out of
+       it -- was packed in the atlas and drawn by nothing until the 2026-09-03
+       inventory audit. `art/sprites.json` calls it "the story of the game in
+       one asset" in the same file that never placed it, which is this project's
+       whole failure mode in two lines of the same JSON.
+
+       Far left, downstage of everything, below the y-726 print reservation and
+       clear of drumScatter's box at x 264. Not dimmed as far as its neighbours:
+       the leak is the one thing in the frame that should catch the eye.
+    */
+    plate('vault.drumWeeping', 40, 812, 178, dim(0.86)),
     plate('vault.drumScatter', 264, 782, 239, dim(0.62)),
     plate('vault.examTable', 539, 779, 296, dim(1.02)),
     clipActorAt('tankVat', 'swirl', 'down', 1147, 848, 179, '5.4s', undefined, dim(0.86)),
@@ -1499,6 +1513,32 @@ export function buildSoil(): HTMLElement {
   for (const [name, x, y, h, op] of stones) {
     const s = plate(name, x, y, h, `opacity:${op};filter:brightness(0.72) saturate(0.5);`)
     if (s) root.append(s)
+  }
+  /*
+     Stone hanging off the strata, in the bottom half only.
+
+     `cave.stalactite*` was generated for the OVERHEAD layer -- `art/sprites.json`
+     says so, and says why they are packed untrimmed: they hang from the top of
+     their own sprite, so the placement point is the attachment and the art
+     falls away from it. Then no map with a rock ceiling was ever built, and six
+     paid-for sprites sat in the atlas drawing nothing until the 2026-09-03
+     audit. This column is the one place in the game that already asks for art
+     that hangs: it is a CROSS-SECTION, the fixed plate table above is the same
+     idea, and the anchor semantics are exactly right without any new code.
+
+     Bottom half only, and dark. Near the top they would read as icicles in
+     topsoil; from y 250 down, where the light has already fallen away, they
+     read as the underside of stone -- which is the last thing you go past
+     before the ceiling of a room that people built.
+  */
+  const strata: readonly (readonly [string, number, number, number, number])[] = [
+    ['cave.stalactite0', 96, 268, 74, 0.62], ['cave.stalactite3', 1224, 250, 82, 0.6],
+    ['cave.stalactite1', 700, 330, 64, 0.5], ['cave.stalactite4', 1830, 312, 70, 0.48],
+    ['cave.stalactite2', 396, 404, 58, 0.4], ['cave.stalactite5', 1520, 386, 62, 0.38],
+  ]
+  for (const [name, x, y, h, op] of strata) {
+    const t = plate(name, x, y, h, `opacity:${op};filter:brightness(0.6) saturate(0.4);`)
+    if (t) root.append(t)
   }
   // The one thing in the column that says the lab was BUILT: a conduit coming
   // off the farm and going all the way down to it.

@@ -3,6 +3,7 @@
  "_spriteNote": "Every sprite here is one the renderer already scattered as inert peripheral scenery. The list was split by whether the thing LOOKS LIKE IT HOLDS SOMETHING -- drum, barrel, bale, bin, cans, crate, barrow, trough, log and bone pile are breakable; the scarecrow, plough, grave marker, fence and barbed wire stay wallpaper. That split is the whole tutorial: a player never has to be told which scenery pays out, because containers do and fixtures do not.",
  "_pierceNote": "Breaking one costs the player NOTHING. A projectile that hits a breakable damages it and keeps its pierce, so a drum standing between the gun and the crowd is never a DPS tax. Consuming pierce here was the obvious implementation and would have made scenery a punishment -- the wave does not pause while you shoot furniture, so any bullet a crate ate would be damage the crowd did not take.",
  "_aimNote": "Breakables are a FALLBACK aim target, never a competing one. `findNearestEnemy` is asked first and only when it comes back empty does the aim fall to a breakable. Letting them into the normal target set would have weapons turn away from the wave to shoot a barrel, which is the same bug as the old weapons-damage-nodes one wearing a different hat.",
+ "_variantNote": "`sprites` has always been an array and until 2026-09-03 every class held exactly one, so the field showed the same eleven objects in the same eleven skins for a whole run. `ranch.waterTrough` and `ranch.roundBaleRotted` were generated for the title screen, packed in the atlas, and drawn by nothing -- and both are CONTAINER-SHAPED, which is what decided they came here and not into maps.json dressing beside their sheet-mates. A galvanised trough beside a wooden one and a round bale beside a square one is variety that costs a line each. Keep the pairs inside one class rather than splitting them into new classes: hp, radius and drop table are what a class IS, and two skins of the same object must never pay differently.",
  "_dropNote": "The owner's brief: 'usually nothing, sometimes XP or food, rarely gear'. Held to literally -- `nothing` is the single heaviest row in every table. A breakable that always paid would be a node, and the game already has nodes.",
  "field": {
   "initial": 12,
@@ -59,7 +60,8 @@
   },
   "hayBaleRot": {
    "sprites": [
-    "prop.hayBaleRotted"
+    "prop.hayBaleRotted",
+    "ranch.roundBaleRotted"
    ],
    "weight": 3,
    "hp": 10,
@@ -86,7 +88,8 @@
   },
   "trough": {
    "sprites": [
-    "prop.trough"
+    "prop.trough",
+    "ranch.waterTrough"
    ],
    "weight": 3,
    "hp": 14,
