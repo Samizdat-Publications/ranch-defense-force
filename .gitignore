@@ -41,6 +41,11 @@ desktop.ini
 
 # Claude Code local machine settings
 .claude/settings.local.json
+# Scratch state written by MCP servers into the project. It is machine-local and
+# has nothing to do with the game -- a healthcare plugin's sqlite files landed in
+# a commit here on 2026-09-03 because a `git add -A` swept the whole tree.
+.claude/data/
+.claude/worktrees/
 
 # API keys. PixelLab, ElevenLabs and Gemini keys are read from the environment
 # and must never land in the repo — this is a public repository.
