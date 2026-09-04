@@ -182,8 +182,8 @@ atlas built and the other session's vite server on port 5180 was serving it.
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
   merged. All five roster batches are merged; the roster is 56 → 164 cards. The owner played; his verdicts are the section "The first human
-  playtest" and the passes under it. In flight: bullet art and one active load;
-  difficulty against a human with an idle pilot; then the shop; the key fallback landed and the account tags are refreshed.
+  playtest" and the passes under it. Landed: bullet art and one active load. In flight: difficulty
+  against a human with an idle pilot; the shop sinks, trade-in and ledger; the key fallback landed and the account tags are refreshed.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -958,6 +958,34 @@ after three merges weak enough against wave-25 pools to read as a dead slot.
 Batch 1's four aura tests asserted `kills > 0`, which half a weapon still
 passes. Fixed to `damage * burn`; a new test pins a stationary dummy and
 asserts the exact dps at all four tiers. 242 tests.
+
+### Every bullet looked the same, and the palette was why
+
+The renderer and draw-world were already right: both look up
+`proj.<clip>.<element>` and fall back to the base clip. The bug was upstream in
+`tools/build-atlas.ts`: every projectile clip, element-tinted or not, was
+quantised through the 32-colour LimeZu farm palette, and that palette has no
+warm/hot or cold/corrosive swatch — so `proj.pellet.fire` snapped to the same
+entry as `proj.pellet`, measured 0 of 1,600 pixels different. Element clips
+skip the conform pass now and keep the source pack's saturated colour; the base
+clip still conforms, so house style is unchanged with no Load active. The
+impact clips (`bigImpact`/`arrowImpact` variants) still conform and want the
+same audit if impacts read muddy.
+
+### One load at a time, and the card says so
+
+The three original element items and the six batch-1 Loads were two
+generations of the same idea, and the owner ended a run owning Tracer Rounds
+3/3 and Cold Rounds 3/3 at once. They are one family now: taking a Load sets
+`player.element`; switching SUPERSEDES (the old copies stay in `player.items`
+and stop contributing — no refund plumbing) and resumes at the depth already
+invested if you switch back, because `loadStacks` is derived from ownership
+rather than tracked. Stacks deepen: `elements.json` carries `<field>PerStack`
+and one `elementStat()` in content is read by both `World.applyElementTo` and
+the card text, so the sim and the card cannot disagree. A card reads "Replaces
+your current load (Fire)" on a switch and "2/3 — burn 7 → 10 dps" on a
+deepen; the HUD shows the active Load beside the weapon slots. 249 tests. The
+roster doc's Loads table still lists flat numbers and wants reconciling.
 
 ## The four locked classes now answer the game differently
 
