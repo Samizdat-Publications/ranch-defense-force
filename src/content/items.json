@@ -13,7 +13,9 @@
   "mods": {
    "damagePct": 10
   },
-  "cardSprite": "item.whetstone"
+  "cardSprite": "item.whetstone",
+  "category": "stat",
+  "tags": []
  },
  "workBoots": {
   "name": "Work Boots",
@@ -26,7 +28,9 @@
   "mods": {
    "moveSpeedPct": 8
   },
-  "cardSprite": "item.workBoots"
+  "cardSprite": "item.workBoots",
+  "category": "stat",
+  "tags": []
  },
  "feedSack": {
   "name": "Feed Sack",
@@ -39,7 +43,9 @@
   "mods": {
    "maxHp": 20
   },
-  "cardSprite": "item.feedSack"
+  "cardSprite": "item.feedSack",
+  "category": "stat",
+  "tags": []
  },
  "saltLick": {
   "name": "Salt Lick",
@@ -52,7 +58,9 @@
   "mods": {
    "hpRegen": 1
   },
-  "cardSprite": "node.rockSmall"
+  "cardSprite": "node.rockSmall",
+  "category": "stat",
+  "tags": []
  },
  "roosterAlarm": {
   "name": "Rooster Alarm",
@@ -65,7 +73,9 @@
   "mods": {
    "pickupRadiusPct": 25
   },
-  "cardSprite": "rooster.idle.down.0"
+  "cardSprite": "rooster.idle.down.0",
+  "category": "stat",
+  "tags": []
  },
  "balingTwine": {
   "name": "Baling Twine",
@@ -78,7 +88,9 @@
   "mods": {
    "attackSpeedPct": 6
   },
-  "cardSprite": "item.balingTwine"
+  "cardSprite": "item.balingTwine",
+  "category": "stat",
+  "tags": []
  },
  "fenceStaples": {
   "name": "Fence Staples",
@@ -91,7 +103,11 @@
   "mods": {
    "armor": 2
   },
-  "cardSprite": "item.fenceStaples"
+  "cardSprite": "item.fenceStaples",
+  "category": "stat",
+  "tags": [
+   "armour"
+  ]
  },
  "chalkLine": {
   "name": "Chalk Line",
@@ -104,7 +120,11 @@
   "mods": {
    "critChancePct": 5
   },
-  "cardSprite": "item.chalkLine"
+  "cardSprite": "item.chalkLine",
+  "category": "stat",
+  "tags": [
+   "crit"
+  ]
  },
  "grainScoop": {
   "name": "Grain Scoop",
@@ -117,7 +137,9 @@
   "mods": {
    "harvestPct": 15
   },
-  "cardSprite": "item.grainScoop"
+  "cardSprite": "item.grainScoop",
+  "category": "stat",
+  "tags": []
  },
  "lampOil": {
   "name": "Lamp Oil",
@@ -130,7 +152,11 @@
   "mods": {
    "luck": 5
   },
-  "cardSprite": "item.lampOil"
+  "cardSprite": "item.lampOil",
+  "category": "stat",
+  "tags": [
+   "luck"
+  ]
  },
  "splitRail": {
   "name": "Split Rail",
@@ -143,7 +169,11 @@
   "mods": {
    "meleePct": 12
   },
-  "cardSprite": "item.splitRail"
+  "cardSprite": "item.splitRail",
+  "category": "stat",
+  "tags": [
+   "melee"
+  ]
  },
  "hayHook": {
   "name": "Hay Hook",
@@ -156,7 +186,11 @@
   "mods": {
    "meleePct": 18
   },
-  "cardSprite": "weapon.pitchfork.t2"
+  "cardSprite": "weapon.pitchfork.t2",
+  "category": "stat",
+  "tags": [
+   "melee"
+  ]
  },
  "slingBands": {
   "name": "Sling Bands",
@@ -169,7 +203,11 @@
   "mods": {
    "rangedPct": 18
   },
-  "cardSprite": "weapon.seedSpitter"
+  "cardSprite": "weapon.seedSpitter",
+  "category": "stat",
+  "tags": [
+   "ranged"
+  ]
  },
  "weatherVane": {
   "name": "Weather Vane",
@@ -182,7 +220,9 @@
   "mods": {
    "attackSpeedPct": 12
   },
-  "cardSprite": "weapon.rake"
+  "cardSprite": "weapon.rake",
+  "category": "stat",
+  "tags": []
  },
  "tractorPlate": {
   "name": "Tractor Plate",
@@ -196,7 +236,11 @@
    "armor": 4,
    "moveSpeedPct": -5
   },
-  "cardSprite": "node.rockBig"
+  "cardSprite": "node.rockBig",
+  "category": "stat",
+  "tags": [
+   "armour"
+  ]
  },
  "coffeeThermos": {
   "name": "Coffee Thermos",
@@ -211,7 +255,9 @@
    "attackSpeedPct": 6,
    "maxHp": -10
   },
-  "cardSprite": "item.coffeeThermos"
+  "cardSprite": "item.coffeeThermos",
+  "category": "stat",
+  "tags": []
  },
  "fourLeaf": {
   "name": "Four-Leaf",
@@ -224,7 +270,11 @@
   "mods": {
    "luck": 10
   },
-  "cardSprite": "item.fourLeaf"
+  "cardSprite": "item.fourLeaf",
+  "category": "stat",
+  "tags": [
+   "luck"
+  ]
  },
  "bootKnife": {
   "name": "Boot Knife",
@@ -233,12 +283,16 @@
   "source": "levelup",
   "cost": 19,
   "maxStacks": 4,
-  "blurb": "You know where to put it.",
+  "blurb": "You know where to put it, and how hard.",
   "mods": {
-   "critChancePct": 8,
-   "critDamagePct": 12
+   "critChancePct": 4,
+   "critDamagePct": 25
   },
-  "cardSprite": "item.bootKnife"
+  "cardSprite": "item.bootKnife",
+  "category": "stat",
+  "tags": [
+   "crit"
+  ]
  },
  "dogWhistle": {
   "name": "Dog Whistle",
@@ -251,7 +305,11 @@
   "mods": {
    "minionPct": 25
   },
-  "cardSprite": "item.dogWhistle"
+  "cardSprite": "item.dogWhistle",
+  "category": "stat",
+  "tags": [
+   "ally"
+  ]
  },
  "pickaxeHead": {
   "name": "Better Pickaxe Head",
@@ -263,7 +321,9 @@
   "blurb": "Next pickaxe tier. Mine rock noticeably faster.",
   "mods": {},
   "toolUpgrade": "pickaxe",
-  "cardSprite": "tool.pickaxe.iron"
+  "cardSprite": "tool.pickaxe.iron",
+  "category": "ledger",
+  "tags": []
  },
  "axeHead": {
   "name": "Better Axe Head",
@@ -275,7 +335,9 @@
   "blurb": "Next axe tier. Fell trees and clear crops faster.",
   "mods": {},
   "toolUpgrade": "axe",
-  "cardSprite": "tool.axe.iron"
+  "cardSprite": "tool.axe.iron",
+  "category": "ledger",
+  "tags": []
  },
  "barbedWire": {
   "name": "Barbed Wire",
@@ -288,7 +350,11 @@
   "mods": {},
   "special": "reflect",
   "reflectDamage": 5,
-  "cardSprite": "node.oreSilver"
+  "cardSprite": "node.oreSilver",
+  "category": "body",
+  "tags": [
+   "armour"
+  ]
  },
  "keroseneCan": {
   "name": "Kerosene Can",
@@ -302,7 +368,9 @@
    "damagePct": 25,
    "maxHp": -15
   },
-  "cardSprite": "weapon.slopBucket"
+  "cardSprite": "weapon.slopBucket",
+  "category": "stat",
+  "tags": []
  },
  "strawHat": {
   "name": "Straw Hat",
@@ -316,7 +384,11 @@
   "special": "auraDamageReduction",
   "radius": 60,
   "reductionPct": 15,
-  "cardSprite": "item.strawHat"
+  "cardSprite": "item.strawHat",
+  "category": "body",
+  "tags": [
+   "armour"
+  ]
  },
  "wetRag": {
   "name": "Wet Rag",
@@ -329,7 +401,11 @@
   "mods": {},
   "special": "gasGrace",
   "graceSeconds": 2,
-  "cardSprite": "item.wetRag"
+  "cardSprite": "item.wetRag",
+  "category": "body",
+  "tags": [
+   "armour"
+  ]
  },
  "tracerRounds": {
   "name": "Tracer Rounds",
@@ -341,7 +417,13 @@
   "blurb": "Every gun you own fires fire. Burns on hit, and lights tar.",
   "mods": {},
   "element": "fire",
-  "cardSprite": "proj.pellet.fire.2"
+  "cardSprite": "proj.pellet.fire.2",
+  "category": "load",
+  "tags": [
+   "fire",
+   "slick",
+   "load"
+  ]
  },
  "etchedRounds": {
   "name": "Etched Rounds",
@@ -353,7 +435,13 @@
   "blurb": "Every gun you own fires acid. Corrodes for longer than fire burns.",
   "mods": {},
   "element": "acid",
-  "cardSprite": "proj.glob.acid.2"
+  "cardSprite": "proj.glob.acid.2",
+  "category": "load",
+  "tags": [
+   "acid",
+   "bleed",
+   "load"
+  ]
  },
  "coldRounds": {
   "name": "Cold Rounds",
@@ -365,7 +453,12 @@
   "blurb": "Every gun you own fires ice. Slows hard instead of damaging.",
   "mods": {},
   "element": "frost",
-  "cardSprite": "proj.spear.frost.2"
+  "cardSprite": "proj.spear.frost.2",
+  "category": "load",
+  "tags": [
+   "frost",
+   "load"
+  ]
  },
  "postDriver": {
   "name": "Post Driver",
@@ -379,7 +472,11 @@
   "special": "stunMultiplier",
   "stunMultiplier": 2,
   "swingSpeedPct": -12,
-  "cardSprite": "item.postDriver"
+  "cardSprite": "item.postDriver",
+  "category": "onHit",
+  "tags": [
+   "stun"
+  ]
  },
  "culvertPipe": {
   "name": "Culvert Pipe",
@@ -392,7 +489,9 @@
   "mods": {
    "dodgePct": 12
   },
-  "cardSprite": "item.culvertPipe"
+  "cardSprite": "item.culvertPipe",
+  "category": "stat",
+  "tags": []
  },
  "ditchLight": {
   "name": "Ditch Light",
@@ -406,7 +505,11 @@
    "luck": 12,
    "pickupRadiusPct": 40
   },
-  "cardSprite": "item.ditchLight"
+  "cardSprite": "item.ditchLight",
+  "category": "stat",
+  "tags": [
+   "luck"
+  ]
  },
  "secondCutting": {
   "name": "Second Cutting",
@@ -419,7 +522,11 @@
   "mods": {},
   "special": "scytheSecondBlade",
   "bladeDamageMultiplier": 0.7,
-  "cardSprite": "weapon.scythe.t3"
+  "cardSprite": "weapon.scythe.t3",
+  "category": "onHit",
+  "tags": [
+   "melee"
+  ]
  },
  "threshingFloor": {
   "name": "Threshing Floor",
@@ -433,7 +540,11 @@
   "special": "chainOnKill",
   "chainRadius": 90,
   "chainDamageMultiplier": 0.4,
-  "cardSprite": "item.threshingFloor"
+  "cardSprite": "item.threshingFloor",
+  "category": "onKill",
+  "tags": [
+   "kill"
+  ]
  },
  "cropDuster": {
   "name": "Crop Duster",
@@ -447,7 +558,12 @@
   "special": "trailGas",
   "dps": 12,
   "radius": 70,
-  "cardSprite": "item.cropDuster"
+  "cardSprite": "item.cropDuster",
+  "category": "ally",
+  "tags": [
+   "slick",
+   "placeable"
+  ]
  },
  "cattleProd": {
   "name": "Cattle Prod",
@@ -461,7 +577,11 @@
   "special": "touchStun",
   "stunSeconds": 0.3,
   "perEnemyCooldown": 8,
-  "cardSprite": "item.cattleProd"
+  "cardSprite": "item.cattleProd",
+  "category": "onHit",
+  "tags": [
+   "stun"
+  ]
  },
  "ironLung": {
   "name": "Iron Lung",
@@ -475,7 +595,11 @@
    "maxHp": 20
   },
   "special": "gasImmune",
-  "cardSprite": "item.gasMask"
+  "cardSprite": "item.gasMask",
+  "category": "body",
+  "tags": [
+   "armour"
+  ]
  },
  "reapersOwn": {
   "name": "The Reaper's Own",
@@ -488,7 +612,12 @@
   "mods": {},
   "special": "pierceAllAndReswing",
   "reswingDamageMultiplier": 0.8,
-  "cardSprite": "weapon.scythe.t4"
+  "cardSprite": "weapon.scythe.t4",
+  "category": "onHit",
+  "tags": [
+   "melee",
+   "kill"
+  ]
  },
  "saltCircle": {
   "name": "Salt Circle",
@@ -503,7 +632,12 @@
   "radius": 160,
   "damage": 40,
   "slowPct": 50,
-  "cardSprite": "node.rockSmall"
+  "cardSprite": "node.rockSmall",
+  "category": "ally",
+  "tags": [
+   "salt",
+   "placeable"
+  ]
  },
  "whitacreBull": {
   "name": "The Whitacre Bull",
@@ -517,7 +651,11 @@
   "special": "bullMinion",
   "chargeDamage": 90,
   "chargeCooldown": 9,
-  "cardSprite": "item.whitacreBull"
+  "cardSprite": "item.whitacreBull",
+  "category": "ally",
+  "tags": [
+   "ally"
+  ]
  },
  "sundayBest": {
   "name": "Sunday Best",
@@ -530,8 +668,459 @@
   "mods": {},
   "special": "firstHitShield",
   "returnDamage": 200,
-  "cardSprite": "item.sundayBest"
+  "cardSprite": "item.sundayBest",
+  "category": "body",
+  "tags": [
+   "armour"
+  ]
  },
+ "saltRounds": {
+  "name": "Rock Salt",
+  "icon": "saltRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "load",
+  "cost": 34,
+  "maxStacks": 1,
+  "tags": [
+   "salt",
+   "mark",
+   "load"
+  ],
+  "blurb": "Every gun you own fires rock salt.",
+  "stackBlurb": "Every gun you own fires rock salt. No damage of its own — every hit MARKS for +22% damage taken, 4s.",
+  "mods": {},
+  "element": "salt",
+  "cardSprite": "node.saltRock"
+ },
+ "limeRounds": {
+  "name": "Quicklime",
+  "icon": "limeRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "load",
+  "cost": 34,
+  "maxStacks": 1,
+  "tags": [
+   "lime",
+   "mark",
+   "load"
+  ],
+  "blurb": "Every gun you own fires quicklime.",
+  "stackBlurb": "Every gun you own fires quicklime. Marks for +12% for 5s, and slows 25% for 3s.",
+  "mods": {},
+  "element": "lime",
+  "cardSprite": "decal.ash"
+ },
+ "fenceRounds": {
+  "name": "Fence Charge",
+  "icon": "fenceRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "load",
+  "cost": 36,
+  "maxStacks": 1,
+  "tags": [
+   "spark",
+   "load"
+  ],
+  "blurb": "Every gun you own fires live.",
+  "stackBlurb": "Every gun you own fires live. Every hit arcs to 1 more enemy within 120px for 45%.",
+  "mods": {},
+  "element": "spark",
+  "cardSprite": "prop.fencePost"
+ },
+ "keroseneRounds": {
+  "name": "Kerosene Load",
+  "icon": "keroseneRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "load",
+  "cost": 36,
+  "maxStacks": 1,
+  "tags": [
+   "fire",
+   "slick",
+   "load"
+  ],
+  "blurb": "Every gun you own fires kerosene.",
+  "stackBlurb": "Every gun you own fires kerosene. Every hit leaves a 34px burning slick — 3s, 10 dps.",
+  "mods": {},
+  "element": "kerosene",
+  "cardSprite": "item.keroseneCan"
+ },
+ "tarRounds": {
+  "name": "Tar Load",
+  "icon": "tarRounds",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "load",
+  "cost": 34,
+  "maxStacks": 1,
+  "tags": [
+   "tar",
+   "slick",
+   "load"
+  ],
+  "blurb": "Every gun you own fires tar.",
+  "stackBlurb": "Every gun you own fires tar. Slows 35% for 2.5s, and a kill leaves a 46px slick — 4s, 40% slow.",
+  "mods": {},
+  "element": "tar",
+  "cardSprite": "prop.oilDrum"
+ },
+ "fontRounds": {
+  "name": "Font Water",
+  "icon": "fontRounds",
+  "rarity": "epic",
+  "source": "shop",
+  "category": "load",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "blessed",
+   "load"
+  ],
+  "blurb": "Every gun you own fires font water.",
+  "stackBlurb": "Every gun you own fires font water. No burn, no bleed: every hit knocks back 70, every kill heals 3.",
+  "mods": {},
+  "element": "font",
+  "cardSprite": "prop.trough"
+ },
+ "secondPass": {
+  "name": "Second Pass",
+  "icon": "secondPass",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "rider",
+  "cost": 18,
+  "maxStacks": 3,
+  "tags": [
+   "load"
+  ],
+  "requiresLoad": true,
+  "blurb": "Your Load's damage-over-time ticks harder.",
+  "stackBlurb": "Your Load's burn, bleed and slow all tick +{total}% harder.",
+  "stackPer": 25,
+  "mods": {},
+  "special": "loadPotency",
+  "dotDamagePct": 25,
+  "cardSprite": "item.cropDuster"
+ },
+ "deepSoak": {
+  "name": "Deep Soak",
+  "icon": "deepSoak",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "rider",
+  "cost": 18,
+  "maxStacks": 3,
+  "tags": [
+   "load"
+  ],
+  "requiresLoad": true,
+  "blurb": "Your Load stays on longer.",
+  "stackBlurb": "Your Load's burn, bleed, slow and mark all last +{total}s longer.",
+  "stackPer": 1.5,
+  "mods": {},
+  "special": "loadDuration",
+  "loadBonusSeconds": 1.5,
+  "cardSprite": "item.wetRag"
+ },
+ "hotAsItComes": {
+  "name": "Hot As It Comes",
+  "icon": "hotAsItComes",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "rider",
+  "cost": 30,
+  "maxStacks": 2,
+  "tags": [
+   "slick",
+   "fire"
+  ],
+  "requiresLoad": true,
+  "blurb": "Every slick on the field burns twice as hot.",
+  "stackBlurb": "Every slick on the field — tar, kerosene, gas, rind, Crop Duster — does +{total}% damage.",
+  "stackPer": 100,
+  "mods": {},
+  "special": "slickPotency",
+  "slickDamagePct": 100,
+  "cardSprite": "prop.burnBarrel"
+ },
+ "crossContam": {
+  "name": "Cross-Contamination",
+  "icon": "crossContam",
+  "rarity": "epic",
+  "source": "shop",
+  "category": "rider",
+  "cost": 46,
+  "maxStacks": 1,
+  "tags": [
+   "mark"
+  ],
+  "requiresLoad": true,
+  "blurb": "Two things at once is worse than either.",
+  "stackBlurb": "Anything carrying two or more statuses takes +30% from everything.",
+  "mods": {},
+  "special": "crossContamination",
+  "crossMarkPct": 30,
+  "cardSprite": "prop.troughFouled"
+ },
+ "throughAndThrough": {
+  "name": "Through and Through",
+  "icon": "throughAndThrough",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "onHit",
+  "cost": 19,
+  "maxStacks": 3,
+  "tags": [
+   "ranged",
+   "pierce"
+  ],
+  "blurb": "Your shots keep going.",
+  "stackBlurb": "Every ranged shot pierces {total} more.",
+  "stackPer": 1,
+  "mods": {},
+  "special": "extraPierce",
+  "extraPierce": 1,
+  "cardSprite": "proj.dart.2"
+ },
+ "ricochetPlate": {
+  "name": "Ricochet Plate",
+  "icon": "ricochetPlate",
+  "rarity": "rare",
+  "source": "both",
+  "category": "onHit",
+  "cost": 28,
+  "maxStacks": 3,
+  "tags": [
+   "ranged"
+  ],
+  "blurb": "A shot that hits does not stop there.",
+  "stackBlurb": "A shot that hits bounces to {total} more enemies within 150px, at 60%.",
+  "stackPer": 1,
+  "mods": {},
+  "special": "ricochet",
+  "ricochetCount": 1,
+  "ricochetRange": 150,
+  "ricochetMul": 0.6,
+  "cardSprite": "node.scrapHeap"
+ },
+ "splitShot": {
+  "name": "Split Shot",
+  "icon": "splitShot",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "onHit",
+  "cost": 32,
+  "maxStacks": 2,
+  "tags": [
+   "ranged",
+   "kill"
+  ],
+  "blurb": "What it kills, it comes out of.",
+  "stackBlurb": "A shot that kills splits into {total} more, at 45%.",
+  "stackPer": 2,
+  "mods": {},
+  "special": "splitOnKill",
+  "splitCount": 2,
+  "splitMul": 0.45,
+  "cardSprite": "proj.shard.1"
+ },
+ "burrLoad": {
+  "name": "Burr Load",
+  "icon": "burrLoad",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "onHit",
+  "cost": 20,
+  "maxStacks": 3,
+  "tags": [
+   "ranged"
+  ],
+  "blurb": "They catch on whatever is nearest.",
+  "stackBlurb": "Your shots steer {total}°/s onto the nearest enemy.",
+  "stackPer": 100,
+  "mods": {},
+  "special": "homing",
+  "homingRate": 100,
+  "cardSprite": "scene.wheat2"
+ },
+ "moonshineJug": {
+  "name": "Moonshine Jug",
+  "icon": "moonshineJug",
+  "rarity": "rare",
+  "source": "both",
+  "category": "onHit",
+  "cost": 30,
+  "maxStacks": 3,
+  "tags": [
+   "fire"
+  ],
+  "blurb": "Some of it goes up.",
+  "stackBlurb": "{total}% of hits burst for 55% in 52px.",
+  "stackPer": 15,
+  "mods": {},
+  "special": "burstOnHit",
+  "burstChance": 15,
+  "burstRadius": 52,
+  "burstMul": 0.55,
+  "cardSprite": "prop.milkCans"
+ },
+ "broadSide": {
+  "name": "Broad Side",
+  "icon": "broadSide",
+  "rarity": "common",
+  "source": "levelup",
+  "category": "onHit",
+  "cost": 14,
+  "maxStacks": 5,
+  "tags": [
+   "ranged"
+  ],
+  "blurb": "Harder to miss with.",
+  "stackBlurb": "Your shots are {total}% fatter.",
+  "stackPer": 12,
+  "mods": {},
+  "special": "projectileRadius",
+  "projectileRadiusPct": 12,
+  "cardSprite": "proj.slug.2"
+ },
+ "weakSeam": {
+  "name": "Weak Seam",
+  "icon": "weakSeam",
+  "rarity": "rare",
+  "source": "both",
+  "category": "onHit",
+  "cost": 27,
+  "maxStacks": 3,
+  "tags": [
+   "crit",
+   "mark"
+  ],
+  "blurb": "You find the seam, and it stays found.",
+  "stackBlurb": "A crit MARKS for +{total}% damage taken, 3s.",
+  "stackPer": 20,
+  "mods": {},
+  "special": "critMark",
+  "critMarkPct": 20,
+  "critMarkSeconds": 3,
+  "cardSprite": "node.oreRed"
+ },
+ "feedTheBirds": {
+  "name": "Feed the Birds",
+  "icon": "feedTheBirds",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "onKill",
+  "cost": 17,
+  "maxStacks": 4,
+  "tags": [
+   "kill",
+   "feed"
+  ],
+  "blurb": "Something always gets fed.",
+  "stackBlurb": "{total}% of kills drop a feed token.",
+  "stackPer": 15,
+  "mods": {},
+  "special": "killDrop",
+  "killDropChance": 15,
+  "killDropKind": "feed",
+  "killDropValue": 1,
+  "cardSprite": "pickup.feed"
+ },
+ "broodyHen": {
+  "name": "Broody Hen",
+  "icon": "broodyHen",
+  "rarity": "rare",
+  "source": "shop",
+  "category": "onKill",
+  "cost": 30,
+  "maxStacks": 3,
+  "tags": [
+   "kill",
+   "ally"
+  ],
+  "blurb": "She has been sitting on something.",
+  "stackBlurb": "Every 12th kill hatches a chick — 9 damage, 8 seconds. {n} live at a time.",
+  "mods": {},
+  "special": "killHatch",
+  "killSpawnEvery": 12,
+  "chickDamage": 9,
+  "chickSeconds": 8,
+  "minionSprite": "scene.chick",
+  "cardSprite": "scene.chick"
+ },
+ "bloodMeal": {
+  "name": "Blood Meal",
+  "icon": "bloodMeal",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "onKill",
+  "cost": 20,
+  "maxStacks": 4,
+  "tags": [
+   "kill"
+  ],
+  "blurb": "It all goes back on the field eventually.",
+  "stackBlurb": "Every kill heals {total}.",
+  "stackPer": 1.2,
+  "mods": {},
+  "special": "killHeal",
+  "killHeal": 1.2,
+  "cardSprite": "prop.feedBin"
+ },
+ "rotUnderfoot": {
+  "name": "Rot Underfoot",
+  "icon": "rotUnderfoot",
+  "rarity": "rare",
+  "source": "both",
+  "category": "onKill",
+  "cost": 28,
+  "maxStacks": 3,
+  "tags": [
+   "kill",
+   "slick",
+   "acid"
+  ],
+  "blurb": "They go down and the ground goes with them.",
+  "stackBlurb": "{total}% of kills leave a 42px acid pool — 3s, 14 dps.",
+  "stackPer": 25,
+  "mods": {},
+  "special": "killPool",
+  "killPoolChance": 25,
+  "killPoolKind": "acid",
+  "killPoolRadius": 42,
+  "killPoolSeconds": 3,
+  "killPoolDps": 14,
+  "cardSprite": "decal.mud"
+ },
+ "lastRites": {
+  "name": "Last Rites",
+  "icon": "lastRites",
+  "rarity": "epic",
+  "source": "shop",
+  "category": "onKill",
+  "cost": 44,
+  "maxStacks": 2,
+  "tags": [
+   "kill",
+   "mark"
+  ],
+  "blurb": "Marked, and then read over.",
+  "stackBlurb": "A MARKED enemy that dies bursts for {total}% of its max HP in 70px.",
+  "stackPer": 40,
+  "mods": {},
+  "special": "markedBurst",
+  "burstPct": 40,
+  "burstRadius": 70,
+  "cardSprite": "prop.graveMarker"
+ },
+ "_categoryNote": "SS7.1: `category` is DECLARED, never sniffed. The draw quotas its board on it (at most one `stat`, at most one `merge`, one gated slot, one behavioural slot), and a draw that guesses its own quotas changes meaning every time a card gains a field. `tags` is SS4: the draw biases toward tags the build already holds, so a build FORMS instead of accumulating. Both are content; offers.ts reads and never infers.",
+ "_gateNote": "`requiresLoad`, `requiresWeapon`, `requiresClass` and `requiresItem` are the gates that make the pool GROW through a run instead of shrinking. A gated card costs the early game nothing because it cannot appear yet, and it is where two runs stop looking alike. Only `requiresLoad` is used in batch 1 (the four Load Riders, which are meaningless without a Load on); the other three are read by offers.ts so batches 2 and 4 are a content edit.",
+ "_stackNote": "SS5, the card-text contract. `stackBlurb` is the behavioural card's answer to \"what does taking this AGAIN do\": `{n}` is the copy being offered and `{total}` is `n x stackPer`, so a card whose whole effect is prose still prints its number at the stack the player is looking at. A card with no `stackBlurb` falls back to `blurb`, which is what every stat card wants -- its numbers are in the delta line already.",
  "_atlasNote": "_atlas marks the cardSprite values art/sprites.json cannot resolve today. NEW ATLAS KEY (18): needs an itemIcons entry and, for most, new art — see SPRITE_REQUESTS.md. FRAME PICK (7): the clip is already packed and only needs a named frame exported as an icon. Everything unmarked resolves against sprites.json as it stands.",
- "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns."
+ "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns.",
+ "_standInNote": "The 22 cards batch 1 adds all point at art the atlas ALREADY holds -- a salt rock for Rock Salt, an oil drum for Tar Load, a grave marker for Last Rites, a burning barrel for Hot As It Comes. That is deliberate and it is debt, recorded rather than hidden: SS10 lists 19 icons it wants generating for these, and none of them block the cards from shipping legibly. Nothing here borrows a sprite that means something contradictory on the field."
 }

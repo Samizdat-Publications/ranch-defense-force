@@ -11,7 +11,7 @@
  * last wave, and hovering a card previews its effect in a second colour.
  */
 import { ITEMS, STAT_KEYS, STAT_LABELS, WEAPONS } from '../content'
-import type { Offer, OfferPool } from '../sim/offers'
+import { stackLabel, type Offer, type OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta, type DerivedStats } from '../sim/stats'
 import { card, deal, lotOf } from './card'
@@ -86,6 +86,14 @@ export class ShopScreen {
     this.onBuy = onBuy
     this.onClose = onClose
     this.rerollsThisShop = 0
+    /*
+       §7.4. The shop could not remember its own visit: 100.0% of visits
+       reshowed an id from the previous one and a reroll was free to hand back
+       the board it had just swept away. This is the call that rolls the last
+       visit into the ban list and opens a fresh seen-set. HELD cards are
+       exempt for free — a held slot is never redrawn, so it is never a draw.
+    */
+    pool.beginShopVisit()
 
     // Interest on unspent feed, paid on arrival (§3).
     const interest = interestOn(world.player.feed)
@@ -182,6 +190,7 @@ export class ShopScreen {
         rarity: offer.rarity,
         stats: this.statRows(offer),
         lot: lotOf(offer.id),
+        stack: stackLabel(offer.stacks),
         price: offer.cost,
         affordable,
         // Unaffordable is UNPRINTED STOCK, not disabled chrome — pulpboard

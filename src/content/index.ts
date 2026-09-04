@@ -276,6 +276,35 @@ export interface ElementDef {
   slowSeconds?: number
   ignitesSlicks?: boolean
   slickDps?: number
+
+  /**
+   * The six Loads added by docs/UPGRADE_ROSTER.md batch 1 are not all
+   * damage-over-time, so a Load's payload now includes a vulnerability mark
+   * and a knockback — both fields `World.applyHit` already carried for the
+   * weapon riders — and a set of riders the world reads off the ACTIVE
+   * element rather than off the item that granted it. See `elements.json`
+   * `_riderNote` for why that distinction is load-bearing.
+   */
+  markPct?: number
+  markSeconds?: number
+  knockback?: number
+  /** H1: Fence Charge arcs to a neighbour. */
+  chainCount?: number
+  chainRange?: number
+  chainMul?: number
+  /** H6: the Kerosene Load lays burning ground where a hit lands. */
+  hitHazardKind?: string
+  hitHazardRadius?: number
+  hitHazardSeconds?: number
+  hitHazardDps?: number
+  /** H6: the Tar Load lays a slick where a kill lands. */
+  killHazardKind?: string
+  killHazardRadius?: number
+  killHazardSeconds?: number
+  killHazardSlowPct?: number
+  /** H11: Font Water heals on a kill. */
+  killHeal?: number
+  [k: string]: unknown
 }
 export const ELEMENTS = (elementsRaw as unknown as { elements: Record<string, ElementDef> }).elements
 

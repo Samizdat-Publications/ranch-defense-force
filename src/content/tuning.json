@@ -263,10 +263,28 @@
   "dwellMultiplier": 3,
   "dwellDecayRate": 2.5
  },
+ "merge": {
+  "_note": "One number, in one place. `world.ts` scales a weapon's damage by this per tier and `offers.ts` prints the resulting before -> after on the merge card, so the card and the sim cannot disagree about what a merge is worth. It used to be a literal 1.6 in world.ts and a hardcoded '+60% damage' in the card text -- two copies of the same balance constant, neither in content, and the card's copy could not even see which weapon it was describing.",
+  "tierDamageMultiplier": 1.6
+ },
  "offers": {
-  "_note": "How the draw is composed, as opposed to what is in it.",
+  "_note": "How the draw is COMPOSED, as opposed to what is in it. docs/UPGRADE_ROSTER.md SS7 is the design; SS8 argues these are draw structure rather than balance and should still live here, which is right -- the rule this project runs on has no exception for numbers that feel structural.",
   "weaponOfferWeight": 1.6,
-  "_weaponWeightNote": "Weapons are weighted up against items so merge pressure survives a big item roster. Once weapon slots are full only OWNED weapons can be offered, so a draw is six weapons against forty items; at 22 items that was six against twenty-two. The roster growing from 22 to 40 therefore cut merge opportunities by about a third without anything being rebalanced, and cleared runs stopped reaching tier 4 at all. 1.6 restores the old weapon share. This is the knob to turn when the item count changes again."
+  "_weaponWeightNote": "Weapons are weighted up against items so merge pressure survives a big item roster. Once weapon slots are full only OWNED weapons can be offered, so a draw is six weapons against forty items; at 22 items that was six against twenty-two. The roster growing from 22 to 40 therefore cut merge opportunities by about a third without anything being rebalanced, and cleared runs stopped reaching tier 4 at all. 1.6 restores the old weapon share. This is the knob to turn when the item count changes again. SS7.5 expects it to come DOWN toward 1.0 once batch 2's weapon upgrades give an owned weapon three cards of its own; measured at 1.6 with the merge cap in place, merges land inside the 8-14% band, so it stays until batch 2 re-measures it.",
+  "suppressBoards": 6,
+  "softSuppressBoards": 6,
+  "softSuppressWeight": 0.3,
+  "_memoryNote": "SS7.3. The memory was 90 SECONDS and the shops are 200 seconds apart, so shop suppression was dead by construction -- 100.0% of shop visits reshowed an id from the previous visit. Seconds are the wrong unit anyway: level-ups arrive every ~30s early and every ~90s late, so 90 seconds meant 'the last three boards' at level 5 and 'the last board' at level 30. Boards mean the same thing everywhere. Six is a hard ban, six more at softSuppressWeight.",
+  "relaxWeight": 0.15,
+  "_relaxNote": "What a banned card is worth once the filtered pool cannot fill a board. Suppressed rather than banned, for the reason the original code gave and got right: with a thin pool late in a run a hard ban leaves the screen with nothing to show. The escalation order is priority order -- the board memory is surrendered first, the shop's own no-repeat rule last, because that one has a 0% target.",
+  "maxStatPerBoard": 1,
+  "maxMergePerBoard": 1,
+  "maxPerGroup": 2,
+  "_capNote": "The three board caps. The first two are SS7.2. maxPerGroup is not: it is what stops 'slot B has no gated card to draw yet, so B, C and D are all behavioural' reproducing the measured 40%-of-boards-are-four-of-a-kind shape in a different colour before batch 2 lands. It is stated in the four buckets tools/offer-stream.ts reports (stat / merge / newWeapon / special) because the SS2 targets are.",
+  "tagBiasPerMatch": 0.12,
+  "tagBiasLuckDivisor": 500,
+  "tagBiasCap": 2,
+  "_tagNote": "SS4 and SS7.6. weight *= min(cap, 1 + (per + luck/divisor) * matchingTags). A weight, never a draw: it consumes no RNG and cannot move a seed. At luck 60 the bias is x1.24 per matching tag instead of x1.12, which is a far better luck fantasy than 'slightly more epics' -- a lucky run's cards agree with each other."
  },
  "_terrainNote": "The ground used to be chosen here, one Wang pair for every run. It moved to src/content/maps.json, where each map picks its own ground set, soil set and blight chain. It MOVED rather than being copied: two content files naming the same ground is the same trap as two art groups writing one frame key — the later one silently wins and nothing tells you which is live. The renderer and tools/draw-world.ts both read the world's map now. The reasoning that picked the Home Field's pair is carried over with it: dirt_to_grass_plain over dirt_to_grass and _flat, because the first carried a repeating motif at 32px that read as wallpaper and _flat replaced it with a regular grid weave, subtler but still a repeat. _plain has none, and the argument is not only that — the ground is what two hundred enemies and their bullets are read AGAINST, so a busy floor costs legibility exactly when the screen is fullest. Interest belongs in the props and decals on top of it."
 }

@@ -27,9 +27,18 @@
     "sound": "shootLight",
     "blurb": "Wide spray at the nearest thing. Close range, constant.",
     "tiers": {
-      "2": "tighter choke",
-      "3": "+2 pellets",
-      "4": "pellets punch through"
+      "2": {
+        "name": "tighter choke",
+        "delta": "spread 14° → 11.2° · 6 → 9.6 damage"
+      },
+      "3": {
+        "name": "+2 pellets",
+        "delta": "1 → 3 pellets · 9.6 → 15.4 damage"
+      },
+      "4": {
+        "name": "pellets punch through",
+        "delta": "pierce 0 → 1 · 15.4 → 24.6 damage"
+      }
     },
     "projectileScale": 1.09,
     "rarity": "common",
@@ -64,9 +73,18 @@
     "sound": "shootHeavy",
     "blurb": "Punches through a line of them and leaves a burn.",
     "tiers": {
-      "2": "+2s burn",
-      "3": "burn jumps on death",
-      "4": "pierces four"
+      "2": {
+        "name": "+2s burn",
+        "delta": "burn 3s → 5s at 4 dps · 8 → 12.8 damage"
+      },
+      "3": {
+        "name": "burn jumps on death",
+        "delta": "the burn jumps 90px on death at 60% · 12.8 → 20.5 damage"
+      },
+      "4": {
+        "name": "pierces four",
+        "delta": "pierce 2 → 4 · 20.5 → 32.8 damage"
+      }
     },
     "projectileScale": 1.24,
     "rarity": "common",
@@ -101,9 +119,18 @@
     "sound": "shootLauncher",
     "blurb": "Arcs onto the crowd and blows a hole in it.",
     "tiers": {
-      "2": "+30% blast",
-      "3": "leaves burning ground",
-      "4": "fires a three-round salvo"
+      "2": {
+        "name": "+30% blast",
+        "delta": "blast 50 → 65px · 15 → 24 damage"
+      },
+      "3": {
+        "name": "leaves burning ground",
+        "delta": "a 70px rind, 4s, 40% slow · 24 → 38.4 damage"
+      },
+      "4": {
+        "name": "fires a three-round salvo",
+        "delta": "1 → 3 shells at 70% · 38.4 → 61.4 damage"
+      }
     },
     "projectileScale": 0.69,
     "rarity": "rare",
@@ -137,9 +164,18 @@
     "sound": "shootBurst",
     "blurb": "Ricochets off the fences, then bursts into shards.",
     "tiers": {
-      "2": "+1 ricochet",
-      "3": "bursts into four",
-      "4": "fragments ricochet too"
+      "2": {
+        "name": "+1 ricochet",
+        "delta": "2 → 3 wall bounces · 11 → 17.6 damage"
+      },
+      "3": {
+        "name": "bursts into four",
+        "delta": "0 → 4 shards at 55% · 17.6 → 28.2 damage"
+      },
+      "4": {
+        "name": "fragments ricochet too",
+        "delta": "shards bounce 0 → 1 · 28.2 → 45.1 damage"
+      }
     },
     "projectileScale": 0.85,
     "rarity": "uncommon",
@@ -173,9 +209,18 @@
     "sound": "shootNail",
     "blurb": "Throws a slick that halves their speed. Fire lights it.",
     "tiers": {
-      "2": "+2s slick",
-      "3": "the tar burns",
-      "4": "+60% spread"
+      "2": {
+        "name": "+2s slick",
+        "delta": "slick 5s → 7s · 20 → 32 damage"
+      },
+      "3": {
+        "name": "the tar burns",
+        "delta": "the puddle ticks at 25% · 32 → 51.2 damage"
+      },
+      "4": {
+        "name": "+60% spread",
+        "delta": "puddle 90 → 144px · 51.2 → 81.9 damage"
+      }
     },
     "projectileScale": 0.82,
     "rarity": "rare",
@@ -209,9 +254,18 @@
     "sound": "shootHarpoon",
     "blurb": "Hauls the furthest one to you. Opens up the back line.",
     "tiers": {
-      "2": "+damage on landing",
-      "3": "three lines",
-      "4": "hauled targets take +25%"
+      "2": {
+        "name": "+damage on landing",
+        "delta": "lands again for 80% · 26 → 41.6 damage"
+      },
+      "3": {
+        "name": "three lines",
+        "delta": "1 → 3 lines · 41.6 → 66.6 damage"
+      },
+      "4": {
+        "name": "hauled targets take +25%",
+        "delta": "hauled targets marked +25%, 4s · 66.6 → 106.5 damage"
+      }
     },
     "projectileScale": 1.93,
     "rarity": "epic",
@@ -243,9 +297,18 @@
     "sound": "spray",
     "blurb": "A sweeping cone that chokes whatever it touches.",
     "tiers": {
-      "2": "+50% choke",
-      "3": "strips gas from the air",
-      "4": "+40% reach"
+      "2": {
+        "name": "+50% choke",
+        "delta": "choke 30% → 45% · 4 → 6.4 damage"
+      },
+      "3": {
+        "name": "strips gas from the air",
+        "delta": "washes 70px/s of gas out of the air · 6.4 → 10.2 damage"
+      },
+      "4": {
+        "name": "+40% reach",
+        "delta": "reach 130 → 182px · 10.2 → 16.4 damage"
+      }
     },
     "rarity": "uncommon",
     "source": "both"
@@ -276,9 +339,18 @@
     "sound": "baitDrop",
     "blurb": "No damage. Drags the whole crowd into one pile so everything else lands.",
     "tiers": {
-      "2": "+2s",
-      "3": "detonates for 60",
-      "4": "+80% pull"
+      "2": {
+        "name": "+2s",
+        "delta": "lure 4s → 6s"
+      },
+      "3": {
+        "name": "detonates for 60",
+        "delta": "detonates for 0 → 60 on expiry"
+      },
+      "4": {
+        "name": "+80% pull",
+        "delta": "pull 260 → 468px"
+      }
     },
     "rarity": "rare",
     "source": "shop"
@@ -308,9 +380,18 @@
     "sound": "swing",
     "blurb": "Swings where you face. Shoves them off you.",
     "tiers": {
-      "2": "+30% arc",
-      "3": "hits twice",
-      "4": "the shove stuns"
+      "2": {
+        "name": "+30% arc",
+        "delta": "arc 110° → 143° · 18 → 28.8 damage"
+      },
+      "3": {
+        "name": "hits twice",
+        "delta": "a second pass 0.13s later · 28.8 → 46.1 damage"
+      },
+      "4": {
+        "name": "the shove stuns",
+        "delta": "the shove stuns 0 → 0.4s · 46.1 → 73.7 damage"
+      }
     },
     "swingClip": "proj.claw",
     "rarity": "common",
@@ -340,9 +421,18 @@
     "sound": "scytheSpin",
     "blurb": "Circles you. Tightens when you stand still, widens when you run.",
     "tiers": {
-      "2": "+25% sweep",
-      "3": "second blade",
-      "4": "blades cut through"
+      "2": {
+        "name": "+25% sweep",
+        "delta": "sweep 74 → 92px · 13 → 20.8 damage"
+      },
+      "3": {
+        "name": "second blade",
+        "delta": "1 → 2 blades · 20.8 → 33.3 damage"
+      },
+      "4": {
+        "name": "blades cut through",
+        "delta": "hit interval 0.35s → 0.18s · 33.3 → 53.2 damage"
+      }
     },
     "projectileClip": "proj.crescent",
     "projectileScale": 1,
@@ -374,9 +464,18 @@
     "sound": "sledgeHit",
     "blurb": "Slams the ground. Stuns everything close.",
     "tiers": {
-      "2": "+stun",
-      "3": "shockwave ring",
-      "4": "the ring throws them"
+      "2": {
+        "name": "+stun",
+        "delta": "stun 0.6s → 0.9s · 34 → 54.4 damage"
+      },
+      "3": {
+        "name": "shockwave ring",
+        "delta": "a 136px ring at 40% · 54.4 → 87.0 damage"
+      },
+      "4": {
+        "name": "the ring throws them",
+        "delta": "the ring throws for 220 · 87.0 → 139.3 damage"
+      }
     },
     "swingClip": "fx.shockwave",
     "rarity": "rare",
@@ -406,9 +505,18 @@
     "sound": "dogBark",
     "blurb": "Hunts on its own. Never stops.",
     "tiers": {
-      "2": "+50% speed",
-      "3": "two dogs",
-      "4": "bites bleed"
+      "2": {
+        "name": "+50% speed",
+        "delta": "dog speed 240 → 360 · 10 → 16 damage"
+      },
+      "3": {
+        "name": "two dogs",
+        "delta": "1 → 2 dogs · 16 → 25.6 damage"
+      },
+      "4": {
+        "name": "bites bleed",
+        "delta": "bites bleed 6 dps for 3s · 25.6 → 41.0 damage"
+      }
     },
     "rarity": "epic",
     "source": "shop"
@@ -443,9 +551,18 @@
     "sound": "swing",
     "blurb": "Chews a hole in whatever is directly in front of you. Very fast, very short.",
     "tiers": {
-      "2": "+40% bite",
-      "3": "double bite",
-      "4": "the bite holds them"
+      "2": {
+        "name": "+40% bite",
+        "delta": "bite 40° → 56° · 7 → 11.2 damage"
+      },
+      "3": {
+        "name": "double bite",
+        "delta": "a second bite 0.06s later · 11.2 → 17.9 damage"
+      },
+      "4": {
+        "name": "the bite holds them",
+        "delta": "the bite holds 0 → 0.2s · 17.9 → 28.7 damage"
+      }
     }
   },
   "crowBell": {
@@ -476,9 +593,18 @@
     "sound": "bell",
     "blurb": "Rings out and everything in earshot feels it. No stun, all reach.",
     "tiers": {
-      "2": "carries further",
-      "3": "a second ring",
-      "4": "the ring shoves"
+      "2": {
+        "name": "carries further",
+        "delta": "the ring carries 150px · 16 → 25.6 damage"
+      },
+      "3": {
+        "name": "a second ring",
+        "delta": "a 225px second ring at 50% · 25.6 → 41.0 damage"
+      },
+      "4": {
+        "name": "the ring shoves",
+        "delta": "the ring shoves for 180 · 41.0 → 65.5 damage"
+      }
     }
   },
   "seedDrill": {
@@ -509,9 +635,18 @@
     "sound": "shootNail",
     "blurb": "Sows a patch that comes up wrong and takes it out on whatever stands in it.",
     "tiers": {
-      "2": "+3s in the ground",
-      "3": "the patch bites",
-      "4": "+50% spread"
+      "2": {
+        "name": "+3s in the ground",
+        "delta": "patch 6s → 9s · 12 → 19.2 damage"
+      },
+      "3": {
+        "name": "the patch bites",
+        "delta": "the patch ticks at 90% · 19.2 → 30.7 damage"
+      },
+      "4": {
+        "name": "+50% spread",
+        "delta": "patch 84 → 126px · 30.7 → 49.2 damage"
+      }
     },
     "projectileScale": 0.98
   },
@@ -543,11 +678,63 @@
     "sound": "scytheSpin",
     "blurb": "Takes the whole front of the field at once. Slow, and it does not need to be quick.",
     "tiers": {
-      "2": "wider still",
-      "3": "two passes",
-      "4": "the pass stuns"
+      "2": {
+        "name": "wider still",
+        "delta": "arc 190° → 209° · 46 → 73.6 damage"
+      },
+      "3": {
+        "name": "two passes",
+        "delta": "a second pass 0.2s later · 73.6 → 117.8 damage"
+      },
+      "4": {
+        "name": "the pass stuns",
+        "delta": "the pass stuns 0 → 0.5s · 117.8 → 188.4 damage"
+      }
     }
   },
+  "smudgePot": {
+    "name": "Smudge Pot",
+    "type": "aura",
+    "rarity": "uncommon",
+    "source": "both",
+    "sprite": "weapon.smudgePot",
+    "base": 5,
+    "cooldown": 0,
+    "behaviour": "sustainAura",
+    "carry": "none",
+    "radius": 96,
+    "hitInterval": 0.5,
+    "t2RadiusMultiplier": 1.3,
+    "t3DamageMultiplier": 1.6,
+    "t3Knockback": 110,
+    "t4RadiusMultiplier": 1.25,
+    "t4SlowPct": 35,
+    "t4SlowSeconds": 1.2,
+    "tierSprites": [
+      "weapon.smudgePot",
+      "weapon.smudgePot",
+      "weapon.smudgePot",
+      "weapon.smudgePot"
+    ],
+    "sound": "spray",
+    "blurb": "An orchard heater you never put out. It smokes, and everything that walks into the smoke comes apart slowly.",
+    "tiers": {
+      "2": {
+        "name": "the smoke spreads",
+        "delta": "ring 96 → 125px · 10 → 16 dps"
+      },
+      "3": {
+        "name": "it burns and it shoves",
+        "delta": "+60% damage and a 110 shove every pass · 16 → 41 dps"
+      },
+      "4": {
+        "name": "the dust settles on them",
+        "delta": "ring 125 → 156px, and it slows 35% for 1.2s · 41 → 65.5 dps"
+      }
+    },
+    "_auraNote": "The genre staple the roster was missing, asked for by the owner: a damaging ring you carry. cooldown 0 puts it on the SUSTAIN table beside the Scythe, so it is ONE attached projectile repositioned every tick rather than a stream of pulses. `base` is damage PER PASS and `hitInterval` is how often a pass lands, so the card quotes a dps of base/hitInterval; the interval is also what stops a ring grinding one enemy sixty times a second. carry: \"none\" because it is already on the field in its own right, exactly like the Scythe and the Barn Dog -- assignCarrySlots skips it and the loadout never tries to hang a smoking pot off his belt."
+  },
   "_carrySpriteNote": "`carrySprite` is the art the BODY draws, and it is a different question from `sprite`/`tierSprites`, which are what a CARD draws. The six firearms borrow the bundled 132-gun sheet for their cards, and that sheet is drawn to be held by a 32px character: at our 52px a rifle across the back read as a carbine and `gun.pistol.0` -- the Harpoon Gun at T1 -- is three pixels by two. The `carry.*` family is purpose-drawn at 28-31px for exactly this and draws at NATIVE size, which is why every `carryHeight` here now equals its art's own longest side: fit is exactly 1, nothing is resampled, and the number is a statement of intent rather than a shrink. The tier still lives on the card; a carried gun does not change shape when it merges, and six guns that each changed shape four times is 24 more generations for a difference nobody would read at 30px in a fight.",
-  "_carryPivotNote": "`carryPivot` is where the HAND is along the art's own length -- 0 at the left edge, 1 at the right, 0.5 (the default) at the centre. It exists because a gun that turns about its centre swings its stock through the farmhand's chest as it tracks a target, which is the tell that the sprite is being spun rather than held. Set it at the trigger. It is also the one number the muzzle flash needs: the muzzle is the far end, `(1 - carryPivot)` of the drawn length forward along the aim."
+  "_carryPivotNote": "`carryPivot` is where the HAND is along the art's own length -- 0 at the left edge, 1 at the right, 0.5 (the default) at the centre. It exists because a gun that turns about its centre swings its stock through the farmhand's chest as it tracks a target, which is the tell that the sprite is being spun rather than held. Set it at the trigger. It is also the one number the muzzle flash needs: the muzzle is the far end, `(1 - carryPivot)` of the drawn length forward along the aim.",
+  "_tierNote": "Each tier entry is `{name, delta}`: `name` is the short rider the card headline uses, `delta` is the CONCRETE before -> after the card body prints. The delta is authored, not derived, because half of it is a rider no formula can see (a second blade, a ring, a bleed) -- but the damage half is exactly base x 1.6^(tier-1), which is the merge formula in world.ts, so the two cannot drift without this file being wrong on its face. Before this the card said \"Tier 3: +2 pellets (+60% damage)\" with the 60% hardcoded in offers.ts, no before and no after, which is the \"it is not clear what buying the same weapon three times does\" complaint written out."
 }
