@@ -1,12 +1,14 @@
 /**
  * Generates sprites with PixelLab and writes them into `assets/pixellab/`.
  *
- *   PIXELLAB_API_KEY=... npm run pixellab            # only what is missing
- *   PIXELLAB_API_KEY=... npm run pixellab -- --force # regenerate everything
- *   PIXELLAB_API_KEY=... npm run pixellab -- --only cow_bell,lantern
- *   npm run pixellab -- --list                       # what would be generated
+ *   npm run pixellab            # only what is missing
+ *   npm run pixellab -- --force # regenerate everything
+ *   npm run pixellab -- --only cow_bell,lantern
+ *   npm run pixellab -- --list  # what would be generated, free, no key needed
  *
- * PowerShell:  $env:PIXELLAB_API_KEY="..."; npm run pixellab
+ * The key comes from `PIXELLAB_API_KEY` if set, else from `.mcp.json` (see
+ * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run pixellab`,
+ * or on PowerShell: `$env:PIXELLAB_API_KEY="..."; npm run pixellab`.
  *
  * Every request goes through **one style anchor** — `limezu_style_256.png`, a
  * 4x4 sheet of real LimeZu icons. That single control is most of the quality:
@@ -27,6 +29,7 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import subjects from '../art/pixellab-queue.json' with { type: 'json' }
+import { pixellabKey } from './pixellab-key.ts'
 
 const BASE = 'https://api.pixellab.ai/v2'
 const ANCHOR = 'assets/pixellab/limezu_style_256.png'
@@ -52,7 +55,14 @@ const only = onlyArg >= 0 && args[onlyArg + 1]
   ? new Set(args[onlyArg + 1].split(','))
   : null
 
-const key = process.env.PIXELLAB_API_KEY
+// Resolved lazily and allowed to be absent here: `--list` needs no key at
+// all, so the failure (if any) is reported in `main`, after that check.
+let key: string | undefined
+try {
+  key = pixellabKey()
+} catch {
+  key = undefined
+}
 
 const queue = (subjects as unknown as { subjects: Subject[] }).subjects
   // `_`-prefixed entries are planning notes in the queue, not subjects. Same
@@ -150,7 +160,8 @@ async function main(): Promise<void> {
 
   if (!key) {
     console.error(
-      '\nPIXELLAB_API_KEY is not set.\n\n'
+      '\nno PixelLab API key found (checked PIXELLAB_API_KEY and .mcp.json — '
+      + 'see tools/pixellab-key.ts).\n\n'
       + '  PowerShell:  $env:PIXELLAB_API_KEY="your-key"; npm run pixellab\n'
       + '  bash/zsh:    PIXELLAB_API_KEY=your-key npm run pixellab\n\n'
       + 'NOTE: the bash form is a PARSE ERROR in PowerShell. That is what\n'

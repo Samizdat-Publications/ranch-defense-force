@@ -1,7 +1,11 @@
 /**
  * What the PixelLab account already holds, written to a file in the repo.
  *
- *     PIXELLAB_API_KEY=... npm run inventory
+ *     npm run inventory
+ *
+ * The key comes from `PIXELLAB_API_KEY` if set, else from the same `.mcp.json`
+ * the PixelLab MCP server already reads — see `tools/pixellab-key.ts`. Override
+ * with `PIXELLAB_API_KEY=... npm run inventory` when either is missing.
  *
  * WHY THIS EXISTS, and it is not a nicety.
  *
@@ -33,9 +37,9 @@
  * long as it is obvious. A file that silently rots is worse than none.
  */
 import { writeFileSync } from 'node:fs'
+import { pixellabKey } from './pixellab-key.ts'
 
-const key = process.env.PIXELLAB_API_KEY
-if (!key) throw new Error('PIXELLAB_API_KEY is not set')
+const key = pixellabKey()
 const H = { Authorization: `Bearer ${key}` }
 const BASE = 'https://api.pixellab.ai/v2'
 

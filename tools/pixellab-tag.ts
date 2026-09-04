@@ -2,8 +2,11 @@
  * Write the ledger's verdicts back onto the PixelLab account as tags.
  *
  *     npm run tag                       # dry run — prints, changes nothing
- *     PIXELLAB_API_KEY=... npm run tag -- --write
- *     PIXELLAB_API_KEY=... npm run tag -- --write --only=retired
+ *     npm run tag -- --write
+ *     npm run tag -- --write --only=retired
+ *
+ * `--write` needs a key: `PIXELLAB_API_KEY` if set, else `.mcp.json` (see
+ * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run tag -- --write`.
  *
  * ## Why the account needs to carry this and not just the repo
  *
@@ -36,6 +39,7 @@
  * set, so every run rebuilds `kept + verdict` and nothing else is disturbed.
  */
 import { readFileSync } from 'node:fs'
+import { pixellabKey } from './pixellab-key.ts'
 
 const args = process.argv.slice(2).filter((a) => a !== '--')
 const write = args.includes('--write')
@@ -78,10 +82,14 @@ function slug(s: string): string {
     .slice(0, 50).replace(/-+$/, '')
 }
 
-const key = process.env.PIXELLAB_API_KEY
-if (write && !key) {
-  console.error('PIXELLAB_API_KEY is not set — a dry run needs no key, a write does')
-  process.exit(1)
+let key: string | undefined
+if (write) {
+  try {
+    key = pixellabKey()
+  } catch (e) {
+    console.error(`${(e as Error).message}\n\na dry run needs no key, a write does`)
+    process.exit(1)
+  }
 }
 
 async function patch(kind: 'objects' | 'characters', id: string, tags: string[]): Promise<boolean> {
