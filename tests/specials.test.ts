@@ -49,6 +49,14 @@ describe('every declared special is dispatched', () => {
       'reflect', 'auraDamageReduction', 'gasGrace', 'stunMultiplier',
       'scytheSecondBlade', 'chainOnKill', 'trailGas', 'touchStun', 'gasImmune',
       'pierceAllAndReswing', 'saltRing', 'firstHitShield', 'bullMinion',
+      // docs/UPGRADE_ROSTER.md batch 1. Every one of these has a case in
+      // `refreshSpecialItems` and a call site that spends it; the six Loads
+      // carry no `special` at all because their riders hang off the ACTIVE
+      // element rather than off the item that granted it.
+      'loadPotency', 'loadDuration', 'slickPotency', 'crossContamination',
+      'extraPierce', 'ricochet', 'splitOnKill', 'homing', 'burstOnHit',
+      'projectileRadius', 'critMark',
+      'killDrop', 'killHatch', 'killHeal', 'killPool', 'markedBurst',
     ])
     expect([...declared].filter((s) => !handled.has(s))).toEqual([])
   })

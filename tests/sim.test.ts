@@ -229,7 +229,96 @@ describe('OfferPool', () => {
       expect(boosted.length).toBe(1)
       // The boosted card is always the rare one, and never a common.
       expect(boosted[0].rarity).not.toBe('common')
-      expect(offers.filter((o) => o.rarity !== 'common').length).toBe(1)
+      /*
+         What this assertion USED to say, and why it does not any more.
+
+         It read `filter(rarity !== 'common').length === 1` — one non-common
+         card on the whole board — and it passed for the same reason the game
+         was boring: `drawLevelUp` filled its boosted slot from the
+         uncommon-or-better cards and every other slot from `commonIdx` ALONE.
+         A merge's rarity is its next tier, so a merge, an element, a special
+         and every uncommon item were all competing for one slot in four, and
+         the eleven common stat items inherited the other three. The test was
+         not guarding the design; it was pinning the bug in place.
+         docs/UPGRADE_ROSTER.md §7.2 deletes that pool. See the two tests
+         below, which assert what the board is supposed to be instead.
+      */
+      expect(offers.filter((o) => o.rarity !== 'common').length).toBeGreaterThanOrEqual(1)
+    }
+  })
+
+  /*
+     docs/UPGRADE_ROSTER.md §7.2 — the board's quotas and caps.
+
+     These three are the regression guard for the measured complaint. The
+     numbers they assert are the §2 targets restated as a pass/fail: never four
+     stat bumps, never four of anything, and a shop that cannot reshow the set
+     it just swept away.
+  */
+  it('never deals a board that is four stat bumps', () => {
+    const p = new Player()
+    p.init('hand')
+    for (let seed = 1; seed <= 300; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      for (let board = 0; board < 8; board++) {
+        const offers = pool.draw(p, 4, board * 30, 0, 'levelup')
+        const stats = offers.filter((o) => ITEMS[o.id]?.category === 'stat')
+        expect(stats.length, `seed ${seed} board ${board}`).toBeLessThanOrEqual(1)
+        // ...and never four of ONE thing, whatever that thing is.
+        const groups = new Map<string, number>()
+        for (const o of offers) {
+          const g = o.kind === 'weapon'
+            ? (o.mergesTo === null ? 'newWeapon' : 'merge')
+            : ITEMS[o.id]?.category === 'stat' ? 'stat' : 'special'
+          groups.set(g, (groups.get(g) ?? 0) + 1)
+        }
+        expect(Math.max(...groups.values()), `seed ${seed} board ${board}`).toBeLessThan(4)
+      }
+    }
+  })
+
+  it('shows a behavioural card on a board whenever one is available', () => {
+    // Slot C's quota. With 31 behavioural cards in the roster and four slots,
+    // a board with none of them means the quota is not being applied.
+    const p = new Player()
+    p.init('kid')
+    let boards = 0
+    let withBehavioural = 0
+    for (let seed = 1; seed <= 120; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      for (let board = 0; board < 4; board++) {
+        const offers = pool.draw(p, 4, board * 30, 0, 'levelup')
+        boards++
+        if (offers.some((o) => {
+          const c = ITEMS[o.id]?.category
+          return c !== undefined && c !== 'stat'
+        })) withBehavioural++
+      }
+    }
+    expect(withBehavioural).toBe(boards)
+  })
+
+  it('never reshows the previous shop visit, and a reroll never hands it back', () => {
+    const p = new Player()
+    p.init('hand')
+    for (let seed = 1; seed <= 120; seed++) {
+      const pool = new OfferPool(new Rng(seed))
+      let previous: string[] = []
+      for (let visit = 0; visit < 4; visit++) {
+        pool.beginShopVisit()
+        const board = pool.draw(p, 4, visit * 200, 0, 'shop')
+        for (const o of board) {
+          expect(previous, `seed ${seed} visit ${visit}`).not.toContain(o.id)
+        }
+        // A reroll is a reroll: what the visit has already shown is gone for
+        // the rest of it, which is what made the old reroll a coin flip.
+        const seenThisVisit = board.map((o) => o.id)
+        const reroll = pool.draw(p, 4, visit * 200 + 5, 0, 'shop')
+        for (const o of reroll) {
+          expect(seenThisVisit, `seed ${seed} visit ${visit} reroll`).not.toContain(o.id)
+        }
+        previous = [...seenThisVisit, ...reroll.map((o) => o.id)]
+      }
     }
   })
 

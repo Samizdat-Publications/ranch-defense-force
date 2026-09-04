@@ -61,7 +61,22 @@ type Category = 'stat' | 'merge' | 'newWeapon' | 'special'
  */
 function categorise(o: Offer): Category {
   if (o.kind === 'weapon') return o.mergesTo === null ? 'newWeapon' : 'merge'
+  /*
+     §7.1 made the category a DECLARED field, so the instrument reads it rather
+     than sniffing for `special` / `element` / `toolUpgrade`.
+
+     The sniff is kept underneath as the fallback, and it is not decoration: it
+     is what makes the before and after columns comparable. Every card that
+     existed before batch 1 buckets identically either way — the elements and
+     the tool upgrades were `special` by the sniff and are `load` / `ledger` by
+     declaration, and both of those fold into `special` here — so a change in
+     these numbers is a change in the DRAW and never in the ruler.
+  */
   const def = ITEMS[o.id] as Record<string, unknown> | undefined
+  const declared = def?.category
+  if (typeof declared === 'string') {
+    return declared === 'stat' ? 'stat' : 'special'
+  }
   if (def && (def.special !== undefined || def.element !== undefined
     || def.toolUpgrade !== undefined)) return 'special'
   return 'stat'
@@ -89,6 +104,12 @@ function candidateIds(player: Player, mode: 'levelup' | 'shop'): string[] {
     const source = (def.source as string) ?? 'both'
     if (source !== 'both' && source !== mode) continue
     if (!player.canTakeItem(id)) continue
+    // The gates from the roster’s §3. A card the run cannot be offered yet
+    // is not a candidate, and counting it would report a pool deeper than the
+    // one the draw is actually dealing from.
+    if (def.requiresLoad === true && player.element === 'none') continue
+    if (typeof def.requiresWeapon === 'string' && !player.hasWeapon(def.requiresWeapon)) continue
+    if (typeof def.requiresClass === 'string' && player.classId !== def.requiresClass) continue
     out.push(id)
   }
   return out
@@ -264,6 +285,10 @@ function simulate(seed: number, classId: string): RunRecord {
 
     if (shopQueued) {
       shopQueued = false
+      // Mirrors ShopScreen.open. The tool already mirrors the four slots and
+      // the buy-and-refill loop; a visit that never closes would let §7.4’s
+      // ban list grow without bound and report a shop nobody plays.
+      offers.beginShopVisit()
       rec.shopVisits++
       for (let i = world.enemies.live - 1; i >= 0; i--) world.enemies.free(i)
       // Mirror ShopScreen: FOUR slots on the board at once, refilled one at a

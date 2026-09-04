@@ -190,6 +190,10 @@ function simulate(seed: number, classId: string, pilot: Pilot): Result {
     }
     if (shopQueued) {
       shopQueued = false
+      // Mirrors ShopScreen.open: a visit boundary is what makes §7.4’s
+      // no-repeat rule mean anything. Without it the harness measures a shop
+      // that never closes, which is not the shop the player sees.
+      offers.beginShopVisit()
       for (let i = world.enemies.live - 1; i >= 0; i--) world.enemies.free(i)
       for (let s = 0; s < 4; s++) {
         const o = pickSmart(offers.draw(world.player, 3, world.elapsed, world.player.stats.luck))
