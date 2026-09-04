@@ -909,7 +909,15 @@ const sustainAura: WeaponBehaviour = ({ world, player, slot, def, damage, dt, ti
 
   p.life = 0.1 // refreshed every tick; lapses the moment the weapon stops
   p.radius = radius
-  p.damage = damage * burn * interval
+  // `damage` (def.base * tierScale) IS the per-pass bite the card's own dps
+  // table is built from -- weapons.json's `_auraNote` says so in as many
+  // words, and `def.base / hitInterval` reproduces the tiers' quoted dps
+  // exactly (5/0.5=10, 8/0.5=16, 20.48/0.5=41, 32.768/0.5=65.5). Multiplying
+  // by `interval` here as well double-counted it: `interval` already governs
+  // how OFTEN a pass lands (the rearm above), so folding it into the pass's
+  // SIZE too was a second application of the same number, and it silently
+  // halved every tier's dps against its own card since the weapon shipped.
+  p.damage = damage * burn
   // T4 "the dust settles on them": the ring slows what is standing in it.
   // Damper Plate gives an early ring the same rider at a smaller number,
   // independent of tier — the larger of the two wins rather than summing.

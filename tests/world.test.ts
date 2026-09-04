@@ -461,6 +461,44 @@ describe('the aura weapon', () => {
     expect(radiusAt(4)).toBeGreaterThan(t2)
   })
 
+  /*
+   * The bug this test would have caught: `sustainAura` computed
+   * `p.damage = damage * burn * interval`, which folds `hitInterval` into the
+   * per-pass bite a SECOND time — `interval` already governs how often a pass
+   * lands (the rearm above it), so multiplying it into the pass's size too
+   * halved the delivered dps at every tier, silently, since the weapon
+   * shipped. None of the three tests above catch it: "kills things on its
+   * own" only asserts `kills > 0`, and half of a working dps still gets
+   * there eventually against a wave-1 farmhand.
+   *
+   * `weapons.json`'s own tier table states the dps this weapon is supposed to
+   * deal -- 10, 16, 41, 65.5 -- so the assertion is exact, not a floor.
+   */
+  it('deals the dps its own card states, at every tier', () => {
+    const dpsAt = (tier: number): number => {
+      const w = new World(15, 'hand')
+      equip(w)
+      w.player.weapons[0].tier = tier
+      const e = w.spawnEnemy('farmhand', w.player.x, w.player.y, false)!
+      e.hp = 1e9
+      e.speed = 0 // stands still, so it never drifts out of the ring
+      let dealt = 0
+      const seconds = 6
+      for (let i = 0; i < seconds * 60; i++) {
+        const before = e.hp
+        w.step(STEP, 0, 0, false)
+        e.x = w.player.x
+        e.y = w.player.y // pinned on the player, exactly like the ring itself
+        dealt += Math.max(0, before - e.hp)
+      }
+      return dealt / seconds
+    }
+    expect(dpsAt(1)).toBeCloseTo(10, 1)
+    expect(dpsAt(2)).toBeCloseTo(16, 1)
+    expect(dpsAt(3)).toBeCloseTo(41, 1)
+    expect(dpsAt(4)).toBeCloseTo(65.5, 1)
+  })
+
   it('is carried by nothing, and the loadout copes', async () => {
     const { assignCarrySlots } = await import('../src/content')
     const w = new World(14, 'hand')
