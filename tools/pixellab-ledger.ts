@@ -183,7 +183,7 @@ const BY_TAG: Record<string, Fam> = {
 
   'rdf-overhead-branches': { keys: ['cave.branches0', 'cave.branches1', 'cave.branches2', 'cave.branches3', 'cave.branches4', 'cave.branches5', 'cave.branches6'], note: 'boneOrchard overhead layer, and the roots in the descent' },
   'rdf-cave-stalactite': { keys: ['cave.stalactite0', 'cave.stalactite1', 'cave.stalactite2', 'cave.stalactite3', 'cave.stalactite4', 'cave.stalactite5'], note: 'strata hanging in the descent column (wired by this audit)' },
-  'rdf-cave-web': { keys: ['cave.web0', 'cave.web1', 'cave.web3', 'cave.web4', 'cave.web5'], note: 'OPEN: packed, drawn by nothing — see the open questions below', verdict: 'open' },
+  'rdf-cave-web': { keys: ['cave.web0', 'cave.web1', 'cave.web3', 'cave.web4', 'cave.web5'], note: 'OPEN: five webs packed and drawn by nothing. sprites.json says they are corner-anchored and NOT overhead art -- they belong ON something, as webbed breakable variants, and no webbed variant art exists. Recommend compositing one web over prop.crate and prop.oilDrum offline (free) rather than generating', verdict: 'open' },
 
   'rdf-scene-barn': { keys: ['ranch.barn'], note: 'title screen, both surface scenes' },
   'rdf-scene-farmhouse': { keys: ['ranch.farmhouse'], note: 'title screen' },
@@ -536,7 +536,7 @@ for (const o of [...inv.objects].sort((a, b) => (a.prompt ?? '').localeCompare(b
     id: o.id,
     what: short(o.prompt ?? o.name ?? '?'),
     size: `${o.size?.width ?? '?'}x${o.size?.height ?? '?'}`,
-    v, where: short(where, 96),
+    v, where: short(where, 200),
     sort: (o.prompt ?? o.name ?? '').toLowerCase(),
   })
 }
@@ -685,6 +685,20 @@ const deadList = deadKeys
   .join('\n')
 const deadHard = deadKeys.filter((n) => reachedBy(n) === 'no')
 
+/**
+ * The open rows, rolled up by reason, biggest first.
+ *
+ * A hundred-odd `open` rows is not a queue anybody works; sixteen questions is.
+ * The rows and the roll-up come from the same strings, so the summary cannot
+ * drift from the table under it.
+ */
+const openReasons = new Map<string, number>()
+for (const r of [...objectRows, ...charRows, ...tileRows]) {
+  if (r.v !== 'open') continue
+  openReasons.set(r.where, (openReasons.get(r.where) ?? 0) + 1)
+}
+const openGroups = [...openReasons].sort((a, b) => b[1] - a[1])
+
 const order: Verdict[] = ['wired', 'packed-unused', 'surplus', 'unclaimed', 'review', 'retired', 'open']
 const total = objectRows.length + charRows.length + tileRows.length
 
@@ -720,6 +734,17 @@ ${order.map((v) => `| **${v}** | ${{
 }[v]} | ${counts[v] ?? 0} |`).join('\n')}
 
 ${total} rows: ${objectRows.length} objects, ${charRows.length} characters, ${tileRows.length} tilesets.
+
+## The open questions, in one place
+
+Every \`open\` row rolled up by its reason. This is the queue: each line is one
+decision the owner owns, and closing it turns N rows green at once. On the
+account the same rows carry \`rdf-open\`, so
+\`list_objects(tags="rdf-open")\` is this list from the other side.
+
+| n | the question |
+|---|---|
+${openGroups.map(([reason, n]) => `| ${n} | ${esc(reason.replace(/^OPEN:\s*/, ''))} |`).join('\n')}
 
 ## How the join is made
 
