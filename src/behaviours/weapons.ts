@@ -571,14 +571,88 @@ const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier })
   }
 }
 
+/**
+ * A damaging ring that stays on you — the genre's other constant, next to the
+ * orbit. The owner asked for it in as many words: "some type of floating ring
+ * around you that causes damage in a radius around you and powers up with
+ * larger size area/circle or more damage."
+ *
+ * SUSTAIN, `cooldown: 0`: **one** attached projectile, repositioned every tick
+ * and re-armed on an interval, exactly as the Scythe's blades are. It is not
+ * a stream of pulses — a weapon that spawned a hitbox per tick would put sixty
+ * projectiles a second through the pool for one ring — and it is not a hazard,
+ * because a hazard does not move with you and the whole point is that it does.
+ *
+ * The interval is what stops it grinding one enemy every frame: `hitInterval`
+ * seconds between passes, `damage` per pass, so the number on the card is a
+ * DPS and the number in the sim is a bite. The Chem Sprayer proved the
+ * `type: 'aura'` path years before this — `renderer.ts:drawArcs` already
+ * strokes a soft ring for it and `applyHit` already resolves it as ranged —
+ * so the ring needed no renderer change and no new projectile type.
+ *
+ * T2 widens it, T3 hits harder and shoves on every pass, T4 slows what is
+ * standing in it.
+ */
+const sustainAura: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) => {
+  const grow = tier >= 2 ? num(def, 't2RadiusMultiplier', 1.3) : 1
+  const wide = tier >= 4 ? num(def, 't4RadiusMultiplier', 1.25) : 1
+  const radius = num(def, 'radius', 96)
+    * (1 + player.stats.rangePct / 100) * grow * wide
+  const interval = num(def, 'hitInterval', 0.5)
+  const burn = tier >= 3 ? num(def, 't3DamageMultiplier', 1.6) : 1
+
+  let p = world.findAttached(slot.id, 0)
+  if (!p) {
+    p = world.spawnProjectile()
+    if (!p) return
+    p.weaponId = slot.id
+    p.type = 'aura'
+    p.behaviour = 'sustainAura'
+    p.attached = true
+    p.pierce = 999
+    p.t1 = 0
+    // A real stamp from the tick, never a constant: -1 collides with the value
+    // `spawnEnemy` leaves in `e.t1`, and the "already hit by this stamp" guard
+    // is then true before the ring has touched anything. That is the bug the
+    // orbit shipped with and it is written up above; this does not repeat it.
+    p.hitStamp = world.tick
+    p.rearm = 0
+  }
+
+  p.rearm -= dt
+  if (p.rearm <= 0) {
+    p.rearm = interval
+    p.hitStamp = world.tick
+    p.hitsLeft = 999
+    // T3's shove rides the pass rather than being continuous — a knockback
+    // applied sixty times a second is a wall, not a pulse.
+    p.knockback = tier >= 3 ? num(def, 't3Knockback', 110) : 0
+  } else {
+    p.knockback = 0
+  }
+
+  p.life = 0.1 // refreshed every tick; lapses the moment the weapon stops
+  p.radius = radius
+  p.damage = damage * burn * interval
+  // T4 "the dust settles on them": the ring slows what is standing in it.
+  p.slowOnHit = tier >= 4 ? num(def, 't4SlowPct', 35) : 0
+  p.slowSeconds = num(def, 't4SlowSeconds', 1.2)
+  p.px = p.x
+  p.py = p.y
+  p.x = player.x
+  p.y = player.y
+}
+
 /** Weapons whose projectiles are repositioned every tick rather than fired. */
 export const SUSTAIN: Record<string, WeaponBehaviour> = {
   orbit,
   minionHunt,
+  sustainAura,
 }
 
 export const FIRE: Record<string, WeaponBehaviour> = {
   arcSwing,
+  sustainAura,
   rotatingJet,
   hookFurthest,
   stream,
