@@ -8,7 +8,7 @@ import { Player, hasMod } from '../src/sim/player'
 import { Spawner } from '../src/sim/spawner'
 import { OfferPool, applySwap } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
-import { ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES } from '../src/content'
+import { CLASSES, ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES } from '../src/content'
 
 describe('stat resolution', () => {
   it('sums percentages additively, never multiplicatively', () => {
@@ -525,6 +525,142 @@ describe('OfferPool', () => {
     const added = [...new Set(p.weapons.map((w) => w.id))].find((id) => !before.has(id))
     expect(added, 'a new weapon must have arrived').toBeDefined()
     expect(p.weapons.find((w) => w.id === added)?.tier).toBe(1)
+  })
+})
+
+/*
+   docs/UPGRADE_ROSTER.md batch 4, H13 — the 18 class cards.
+*/
+describe('class cards (H13)', () => {
+  const CLASS_IDS = Object.keys(CLASSES).filter((k) => !k.startsWith('_'))
+  const CLASS_CARDS = Object.entries(ITEMS)
+    .filter(([, def]) => typeof def.requiresClass === 'string')
+
+  it('exist for every class, three each, gated on requiresClass', () => {
+    for (const classId of CLASS_IDS) {
+      const own = CLASS_CARDS.filter(([, def]) => def.requiresClass === classId)
+      expect(own, `${classId} has no class cards`).toHaveLength(3)
+      for (const [, def] of own) {
+        expect(def.category, `${def.name} category`).toBe('class')
+        expect(def.maxStacks, `${def.name} maxStacks`).toBe(1)
+      }
+    }
+  })
+
+  // Mirrors "never offers a weapon upgrade before the weapon it belongs to"
+  // above: a class card must never appear for a run playing a different
+  // class, and must appear for the run it is gated to.
+  it('never offers a class card for the wrong class, and always for the right one', () => {
+    for (const classId of CLASS_IDS) {
+      const p = new Player()
+      p.init(classId)
+      const pool = new OfferPool(new Rng(7))
+      const seen = new Set<string>()
+      for (let i = 0; i < 120; i++) {
+        for (const o of pool.draw(p, 6, i * 1000, 0, 'shop')) seen.add(o.id)
+      }
+      for (const id of seen) {
+        const requires = ITEMS[id]?.requiresClass
+        if (typeof requires === 'string') {
+          expect(requires, `${id} appeared for ${classId}`).toBe(classId)
+        }
+      }
+      const own = CLASS_CARDS.filter(([, def]) => def.requiresClass === classId).map(([id]) => id)
+      expect(
+        own.some((id) => seen.has(id)),
+        `${classId} never saw any of its own class cards (${own.join(', ')})`,
+      ).toBe(true)
+    }
+  })
+
+  /*
+     "Each overlay changes the number it claims to" — for every one of the 18
+     cards, taking it must move every field its own `classBonus` block names,
+     by exactly the value declared, on the player of the class it is gated
+     to. This is the wiring check: `resolveClassBonus` reading the right key
+     off the right item into the right slot of `player.classBonus`. The
+     behavioural end of each overlay (Braced's cap, Overwatch's bands, the
+     rest) is exercised individually below and, in aggregate, by the balance
+     harness's parity ladder.
+  */
+  it('moves player.classBonus by exactly the amount each card declares', () => {
+    for (const [id, def] of CLASS_CARDS) {
+      const classId = def.requiresClass as string
+      const p = new Player()
+      p.init(classId)
+      const bonus = def.classBonus as Record<string, number>
+      expect(bonus, `${id} has a requiresClass but no classBonus`).toBeTruthy()
+      for (const key of Object.keys(bonus)) {
+        expect(
+          (p.classBonus as unknown as Record<string, number>)[key],
+          `${id} before taking it: ${key}`,
+        ).toBe(0)
+      }
+      p.addItem(id)
+      for (const [key, value] of Object.entries(bonus)) {
+        expect(
+          (p.classBonus as unknown as Record<string, number>)[key],
+          `${id} after taking it: ${key}`,
+        ).toBeCloseTo(value, 6)
+      }
+    }
+  })
+
+  it("Deep Rooted raises the Hand's realised Braced cap past today's base 45%", () => {
+    const p = new Player()
+    p.init('hand')
+    for (let i = 0; i < 600; i++) p.move(0, 0, 1 / 60, 2000, 2000) // stand still well past the cap
+    p.updatePassive(1 / 60)
+    const before = p.passiveDamageReduction
+    expect(before).toBeCloseTo(0.45, 3) // today's shipped base (batch 1)
+
+    p.addItem('handDeepRooted')
+    p.updatePassive(1 / 60)
+    expect(p.passiveDamageReduction).toBeCloseTo(0.55, 3)
+    expect(p.passiveDamageReduction).toBeGreaterThan(before)
+  })
+
+  it("Long Stride raises the Kid's realised Momentum cap past the base 50%", () => {
+    const p = new Player()
+    p.init('kid')
+    // Full speed, held for several ticks so the echo (Following Wind's field,
+    // unrelated and zero here) has settled to the raw value.
+    for (let i = 0; i < 5; i++) {
+      p.move(1, 0, 1 / 60, 4000, 4000)
+      p.updatePassive(1 / 60)
+    }
+    const before = p.passiveDamagePct
+    expect(before).toBeCloseTo(50, 3)
+
+    p.addItem('kidLongStride')
+    p.move(1, 0, 1 / 60, 4000, 4000)
+    p.updatePassive(1 / 60)
+    expect(p.passiveDamagePct).toBeCloseTo(70, 3)
+    expect(p.passiveDamagePct).toBeGreaterThan(before)
+  })
+
+  it("Enfilade zeroes the Veteran's near-contact Overwatch penalty", () => {
+    const p = new Player()
+    p.init('vet')
+    expect(p.overwatchPct(10, 0)).toBeLessThan(0) // -20% at contact range, base
+
+    p.addItem('vetEnfilade')
+    expect(p.overwatchPct(10, 0)).toBe(0)
+  })
+
+  it('Cut and Run leaves half the streak standing instead of clearing it', () => {
+    const p = new Player()
+    p.init('drifter')
+    for (let i = 0; i < 10; i++) p.onKill(0, 0)
+    expect(p.streak).toBe(10)
+    p.onHurt()
+    expect(p.streak).toBe(0) // base: one hit clears it outright
+
+    for (let i = 0; i < 10; i++) p.onKill(0, 0)
+    p.addItem('drifterCutAndRun')
+    expect(p.streak).toBe(10)
+    p.onHurt()
+    expect(p.streak).toBe(5)
   })
 })
 
