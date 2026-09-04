@@ -16,6 +16,7 @@ import audioRaw from './audio.json'
 import mapsRaw from './maps.json'
 import breakablesRaw from './breakables.json'
 import { FOUR_WAY, directionIndex } from '../core/facing'
+import { STEP } from '../core/step'
 
 /** Every stat the resolver knows about. Keys ending `Pct` are percentages
  *  summed additively; everything else is a flat addend. */
@@ -809,6 +810,59 @@ export function carryAimsOf(weaponId: string): boolean {
 export function carryAngleOf(weaponId: string): number {
   const a = WEAPONS[weaponId]?.carryAngle
   return typeof a === 'number' ? a : 0
+}
+
+/**
+ * How a melee weapon PRESENTS its attack: `'sweep'` (the default) or `'thrust'`.
+ *
+ * The sim is identical either way — `arcSwing` spawns the same attached disc,
+ * with the same radius, damage, arc and cooldown — so this is a drawing
+ * instruction and nothing else. It exists because the pitchfork was being drawn
+ * as a sword: a white crescent (`fx.slash`) over the FX pack's demon-bite loop
+ * (`proj.claw`) stretched to the swing's 78px diameter. The owner's words for
+ * the second one were "a giant sand mouth eating things", which is exactly what
+ * `pj3_demon_bite_loop_large_orange` is. A pitchfork stabs; a sledge and a
+ * scythe do not, and they keep what they have.
+ *
+ * `'thrust'` turns off BOTH — the clip and the tinted wedge it would otherwise
+ * fall back to — and turns on the lunge, the jab streak and the tine spark.
+ */
+export function swingStyleOf(weaponId: string): 'sweep' | 'thrust' {
+  return (WEAPONS[weaponId] as { swingStyle?: string } | undefined)?.swingStyle === 'thrust'
+    ? 'thrust'
+    : 'sweep'
+}
+
+/**
+ * How far the HELD art lunges forward along its aim as the weapon fires, in
+ * world pixels. Zero — the default — leaves the recoil kick exactly as it was.
+ *
+ * The recoil pulls a gun BACKWARD along its aim, which is what a gun does. A
+ * thrust weapon does the opposite, and the difference is the whole animation:
+ * without it the pitchfork has no attack pose at all, which was the owner's
+ * first complaint and the reason a sword's crescent had been bolted on to
+ * stand in for one.
+ */
+export function carryThrustOf(weaponId: string): number {
+  const t = (WEAPONS[weaponId] as { carryThrustPixels?: number } | undefined)?.carryThrustPixels
+  return typeof t === 'number' ? t : 0
+}
+
+/**
+ * How far through its thrust a slot is: 0 at rest, rising to 1 and back to 0.
+ *
+ * Derived from `slot.firedAt`, the world-tick stamp the sim already writes for
+ * the hand slot, and a duration in `tuning.json`. Deliberately NOT new sim
+ * state: nothing here can change an outcome, and both painters — the renderer
+ * and `tools/draw-world.ts` — read the same function, for the reason
+ * `assignCarrySlots` lives in content rather than in the renderer.
+ */
+export function thrustPhase(firedAt: number, tick: number): number {
+  if (firedAt < 0) return 0
+  const seconds = (TUNING.carry as { thrustSeconds?: number }).thrustSeconds ?? 0.14
+  const since = (tick - firedAt) * STEP
+  if (since < 0 || since >= seconds) return 0
+  return Math.sin((since / seconds) * Math.PI)
 }
 
 /**

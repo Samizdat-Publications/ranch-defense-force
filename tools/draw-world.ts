@@ -16,7 +16,8 @@ import { readAtlas, type AtlasFrame } from './atlas-read.ts'
 import { Rng } from '../src/core/rng.ts'
 import {
   CARRY, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf, carryAnchorOf,
-  carryHeightOf, carryPivotOf, carrySpriteOf, decalKindsFor, projectileScaleFor, sceneryKindsFor,
+  carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf, decalKindsFor, projectileScaleFor,
+  sceneryKindsFor, swingStyleOf, thrustPhase,
   type CarrySlot, type MapBoundary,
 } from '../src/content/index.ts'
 import type { World } from '../src/sim/world.ts'
@@ -381,6 +382,37 @@ export class WorldPainter {
    * canvas pixel leaves every other one untouched at 2x, which reads as a dither
    * screen rather than a wash — the reason hazard discs came out as moire.
    */
+  /**
+   * The pitchfork's tine streaks, restated from `Renderer.drawJabs`.
+   *
+   * Three straight strokes along the swing's own angle, centred on the hitbox,
+   * fading as the projectile's life runs out. Plotted with `tint` a point at a
+   * time because this painter has no stroking primitive and does not want one:
+   * a jab is thirty world pixels long and the loop is bounded by that.
+   */
+  private jab(
+    p: { x: number; y: number; radius: number; angle: number; hitStamp: number },
+    tick: number, lift: number,
+  ): void {
+    const j = (TUNING.fx as unknown as Record<string, Record<string, number>>).jab!
+    const t = thrustPhase(p.hitStamp, tick)
+    if (t <= 0) return
+    const rgb = 0xf2ead2
+    const half = (p.radius * j.lengthFraction!) / 2
+    const c = p.radius * j.forwardBias!
+    const mid = (j.tines! - 1) / 2
+    const cos = Math.cos(p.angle)
+    const sin = Math.sin(p.angle)
+    for (let n = 0; n < j.tines!; n++) {
+      const off = (n - mid) * j.tineSpacing!
+      const ox = -sin * off
+      const oy = cos * off
+      for (let d = c - half; d <= c + half; d += 0.5) {
+        this.tint(p.x + cos * d + ox, p.y + sin * d + oy - lift, rgb, j.alpha! * t)
+      }
+    }
+  }
+
   private tint(worldX: number, worldY: number, rgb: number, a: number): void {
     const { canvas } = this
     const bx = Math.round((worldX - this.camX) * this.zoom)
@@ -872,6 +904,17 @@ export class WorldPainter {
       if (p.behaviour !== 'arcSwing' && !aura) continue
       // A swing with its own art is drawn as a sprite below, not as a wedge.
       if (!aura && swingSprite(world, p)) continue
+      // A THRUST gets neither: no wedge, no clip, three tine streaks instead.
+      // Restated from `Renderer.drawJabs`.
+      if (!aura && swingStyleOf(p.weaponId) === 'thrust') {
+        // Hand height, restated from `Renderer.drawJabs`.
+        const pl = world.player
+        const ds = atlas.dirSets?.[pl.classId] ?? atlas.rig.directions
+        const d = ds[this.directionIndex(pl.facing, ds.length)] ?? ds[0] ?? 'down'
+        const h = carryAnchorOf('hand', d, pl.classId)
+        this.jab(p, world.tick, -(CARRY.bootOffsetY + (h?.dy ?? 0)))
+        continue
+      }
       const half = 0.85
       for (let r = 0; r <= p.radius; r += 0.5) {
         const inner = aura ? p.radius * 0.86 : 0
@@ -888,6 +931,7 @@ export class WorldPainter {
       const p = world.projectiles.items[i]
       const swing = p.type !== 'aura' ? swingSprite(world, p) : null
       if ((p.behaviour === 'arcSwing' || p.type === 'aura') && !swing) continue
+      if (p.behaviour === 'arcSwing' && swingStyleOf(p.weaponId) === 'thrust') continue
       const f = swing?.frame ?? this.projectileFrame(world, p)
       if (!f) continue
       const rot = p.vx !== 0 || p.vy !== 0 ? Math.atan2(p.vy, p.vx) : p.angle
@@ -1030,6 +1074,11 @@ export class WorldPainter {
       const kick = held && slot.recoil > 0
         ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
         : 0
+      // A thrust weapon drives FORWARD along its aim where a gun kicks back.
+      // Restated from `Renderer.collectCarried` -- this file is the check on
+      // that one, and a screenshot that arms the player differently to the game
+      // is worse than no screenshot.
+      const along = (held ? carryThrustOf(slot.id) * thrustPhase(slot.firedAt, world.tick) : 0) - kick
       const aims = held && carryAimsOf(slot.id)
       const facingLeft = aims ? Math.abs(slot.aimAngle) > Math.PI / 2 : a.flip
       const rot = aims
@@ -1041,8 +1090,8 @@ export class WorldPainter {
         // `weaponFlash` pulse is deliberately omitted -- a shot is a still, and
         // a two-second highlight in one would only be a puzzle.
         y: p.y,
-        x: p.x + a.dx - Math.cos(slot.aimAngle) * kick,
-        lift: -(bootY + a.dy) + Math.sin(slot.aimAngle) * kick,
+        x: p.x + a.dx + Math.cos(slot.aimAngle) * along,
+        lift: -(bootY + a.dy) - Math.sin(slot.aimAngle) * along,
         f,
         rot,
         scale: Math.min(1, carryHeightOf(slot.id) / Math.max(1, Math.max(f.w, f.h))),

@@ -21,7 +21,7 @@ import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar, waveHpScalar } from './formulas'
 import {
   BREAKABLES, BREAKABLE_CLASSES, ELEMENTS, ENEMIES, FIELD_GEAR_POOL, ITEMS, MAPS,
-  NODES, TUNING, WAVES, WEAPONS, carryMuzzleOffset, pickMapId,
+  NODES, TUNING, WAVES, WEAPONS, carryMuzzleOffset, pickMapId, swingStyleOf,
   type BreakableClass, type DropRow, type MapDef, type NodeVariant, type StatMods,
 } from '../content'
 import { FIRE, SUSTAIN, type FireContext } from '../behaviours/weapons'
@@ -1125,7 +1125,11 @@ export class World {
         // meant six weapons shared two sounds and you could not hear what your
         // build was doing.
         this.sound(typeof def.sound === 'string' ? def.sound : 'shootLight')
-        if (def.behaviour === 'arcSwing') {
+        // The crescent is a SWING. A thrust weapon gets none of it -- not the
+        // crescent here and not the swept clip the renderer would otherwise
+        // stretch across the hitbox -- because between them they were drawing a
+        // sword and a bite on a tool that stabs. See `swingStyleOf`.
+        if (def.behaviour === 'arcSwing' && swingStyleOf(slot.id) !== 'thrust') {
           this.playFx('slash', p.x + Math.cos(p.facing) * 30, p.y + Math.sin(p.facing) * 30, p.facing)
         } else if (def.type === 'ranged') {
           this.muzzleAcc += T.fx.muzzleChance
@@ -1168,7 +1172,10 @@ export class World {
           p.t1--
           p.hitStamp = this.tick
           p.hitsLeft = 999
-          this.playFx('slash', p.x, p.y, p.angle)
+          // The re-arm draws the same crescent the first swing did, so a thrust
+          // weapon skips it here too -- its second jab is the streak coming
+          // back, drawn from the projectile's own life.
+          if (swingStyleOf(p.weaponId) !== 'thrust') this.playFx('slash', p.x, p.y, p.angle)
         }
         continue
       }
@@ -1382,6 +1389,34 @@ export class World {
   private applyHit(enemyIndex: number, p: Projectile): void {
     const e = this.enemies.items[enemyIndex]
     const type = p.type === 'melee' || p.type === 'orbit' ? 'melee' : 'ranged'
+
+    /*
+       A weapon may name its own impact, and one does: the pitchfork sparks
+       where a TINE lands rather than at the middle of whatever it hit.
+
+       Placed on the enemy's near edge, on the line back to the swing's centre,
+       because that is the face the tines went into. It is not rate-limited the
+       way the shared spark is -- a fork hits at most a handful of things per
+       jab and stops, where a stream weapon hits continuously.
+
+       Decoration, and provably so: `playFx` draws no random numbers, acquires
+       from a pool that drops silently when full, and touches nothing the sim
+       reads back. A fixed seed reports the same quantities with it and without.
+    */
+    const hitFx = (WEAPONS[p.weaponId] as { hitFx?: string } | undefined)?.hitFx
+    if (hitFx) {
+      const dx = p.x - e.x
+      const dy = p.y - e.y
+      const d = Math.hypot(dx, dy) || 1
+      this.playFx(
+        hitFx as keyof typeof T.fx & string,
+        e.x + (dx / d) * e.radius,
+        e.y + (dy / d) * e.radius,
+        Math.atan2(-dy, -dx),
+        T.fx.jab.sparkScale,
+      )
+    }
+
     const isCrit = this.rng.chance(this.player.stats.critChance)
 
     // Statuses land BEFORE the damage, so a killing blow still leaves them on
