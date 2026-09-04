@@ -181,8 +181,10 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. Batches 2, 3 and 4 are merged. Queue: batch 5 (ledger and shop UI, full
-  retune — the ladder has drifted easier), the 57 packed-unused sprites.
+  merged. All five roster batches are merged; the roster is 56 → 164 cards. Queue: the
+  57 packed-unused sprites the ledger surfaced; human play of the roster and
+  the six classes; PIXELLAB_API_KEY in the shell so npm run inventory and
+  npm run tag --write can refresh the account-side tags.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -826,6 +828,56 @@ One incident, disclosed by the agent: cleaning up a temporary worktree, a
 `Remove-Item` on a directory junction recursed into the real `node_modules` and
 deleted most of it; caught on the next `vite-node` failure, restored with
 `npm ci`, no source touched. Junctions and `-Recurse` do not mix.
+
+## Batch 5 of the upgrade roster: the ledger, and the retune
+
+Five Field & Ledger cards, the shop's fifth slot and free first reroll
+(Handbill), a free level-up reroll per stack per level (Spare Choke), and a
+shared ledger (`src/ui/ledger.ts`) that renders weapon mods by name, class
+cards, and every item's `n/N` stack in both the pause screen and the shop —
+one builder, so the two cannot disagree about the same run. Cards print their
+draw category and a `SHOP ONLY` flag in the kind band; the shop's subtitle
+says how many cards on the board a level-up will never show. Four icons, one
+style-anchored batch; Early Bird reuses `pickup.feed`. 164 cards render.
+
+**The retune.** Four batches had each nudged something (mostly The Hand) to
+hold a test bar while the roster grew, and the six-class ladder had drifted to
+hand 17 / kid 14 / widow 18 / vet 14 / agronomist 17 / drifter 16 of 24 against
+an 11-15 target. Tried in the doc's own lever order: (a) rolling The Hand all
+the way back to batch 1's flat stats broke `run.test.ts`'s own >=12/24 kite bar
+(5/24) — dodge turned out to be the load-bearing half of batch 3's fix for a
+bot that never stands still; hp/regen only needed pushing back a third of the
+way. Shipped 165hp / 1.4 regen / 15 dodge. (b) Steepening `waveHpScalar`'s
+quadratic term was tried and REVERTED — the Widow and Agronomist, the real
+outliers, barely moved (their deaths were never a durability problem; contact
+damage taken sat under 200 across a full clear), while the Vet and the Hand's
+kite number fell out of range. (c) The Widow's actual lever was `immediatePct`
+55→85, not the kill-close percentage guessed first: Grit's kill-close is
+multiplicative against the outstanding wound, so at a brawler's kill rate it
+closed almost as fast as it grew whatever the closing percentage said. The
+Drifter's `lifestealPct` is a CLIFF in 0.5-1.0 (0.7 through 0.85 all measured
+11/24 on the same seeds); 0.95 clears it. The Kid drifted to 16/24 purely from
+the RNG-stream shift five new items cause by existing in the pool, and a small
+maxHp trim (75→65) settled her. Agronomist and Vet needed nothing once (b) was
+reverted.
+
+    class        pilot     before   after   target
+    hand         brawl       17      12     11-15
+    kid          kite        14      15
+    widow        brawl       18      14
+    vet          space       14      15
+    agronomist   brawl       17      12
+    drifter      kite        16      12
+
+Deaths spread across the run (hand w6-19, widow w11-25, agronomist w5-25) with
+the expected cluster at the wave-12 boss. Offer-stream's targets hold at their
+batch 1-4 values, checked against an unmodified `main` via `git stash` rather
+than assumed. 241/241 tests.
+
+**This is still bots.** Every number in the roster has now been tuned by a
+pilot that cannot dodge, aim or read a card. The owner's verdicts so far
+(session 21 "too easy", the density pass) came from a human; the roster
+wants the same, and the ladder above is the baseline to compare against.
 
 ## The four locked classes now answer the game differently
 
