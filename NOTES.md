@@ -181,8 +181,8 @@ atlas built and the other session's vite server on port 5180 was serving it.
 - **The weapon ring is replaced, twice over** (the two loadout sections below).
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. Queue: roster batch 2 (48 weapon upgrades) on Sonnet; the 57 packed-unused
-  sprites; batches 3-5.
+  merged. Batch 2 is merged. Queue: roster batch 3 (allies, placeables, shield,
+  revive) on Sonnet; the 57 packed-unused sprites; batches 4-5.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -724,6 +724,37 @@ mismatched jars" came back as RPG potions and backpacks. Everything is packed
 under item.<id>, verified on docs/progress/cards-batch1-icons.png, 216/216.
 One loose end: the 17 fresh images are not PixelLab "objects", so the ledger's
 family table needs rows for them or the next refresh reports them as open.
+
+## Batch 2 of the upgrade roster: the cards were never the risk, the draw was
+
+48 weapon-upgrade cards (three per weapon, uncommon/rare/epic) plus three for
+the Smudge Pot, which the roster doc predates. H12: `WeaponSlot.mods` and
+`hasMod(slot, id)`, read beside the `tier >= n` checks every behaviour already
+had — the magnitude lives in weapons.json next to the tier riders, the card in
+items.json with `requiresWeapon`/`weaponMod` driving the gate, the art the
+weapon's own T1 sprite, zero new generations. Slots-full contributes up to 18
+weapon-upgrade cards instead of six merges alone, plus a shop-only `swap` —
+trade the lowest-tier weapon for one you do not own, at T1, resolved at
+PURCHASE rather than draw time so building the candidate list stays RNG-free.
+
+Batch 2's own targets, hand/kite over 24 seeds: candidates at L30-34
+27 → 40 (batch 1) → 55; merges 2.9% → ~9.8% → 10.9% (8-14% target);
+distinct-by-end ≥ 65, measured 70.8. All pass, all six classes. Balance:
+hand/brawl 13/24 and kid/kite 13/24 — each class at its own game, identical.
+
+`tests/run.test.ts`'s hand/kite ladder is what found the real cost: once any
+upgrade exists — the Pitchfork's, from level 1 — `offers.ts`'s slot B always
+succeeds on its gated quota, and the "or a weapon" fallback batch 1 wrote for
+an EMPTY gated pool never fires again. A merge lost the one slot the redesign
+had quietly been guaranteeing it. 12+/24 fell to 4/24, dying by wave 9 with
+weapons stuck at tier 1-2. Fixed by folding merge/newWeapon into slot B's
+quota rather than a fallback behind it, and re-measuring `weaponOfferWeight`
+directly against the failing test: 1.6 through 4 still failed, 6 passed every
+case, 8-15 were flat or worse. Re-measure if the item or upgrade count changes.
+
+Art: the 26 icons tagged `rdf-hold-batch2` were checked against the 51 cards —
+none fit (seven are concept weapons that never made the sixteen), so they stay
+held. 220/220 tests. `docs/progress/cards-batch2.png`: 130 cards, all render.
 
 ## The four locked classes now answer the game differently
 
