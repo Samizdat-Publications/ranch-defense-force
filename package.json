@@ -54,7 +54,9 @@
     "play": "vite-node tools/play.ts --",
     "carrysheet": "vite-node tools/carry-contact.ts --",
     "facings": "vite-node tools/carry-facings.ts --",
-    "cards": "vite-node tools/card-contact.ts --"
+    "cards": "vite-node tools/card-contact.ts --",
+    "ledger": "vite-node tools/pixellab-ledger.ts --",
+    "tag": "vite-node tools/pixellab-tag.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
