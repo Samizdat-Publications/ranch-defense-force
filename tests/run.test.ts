@@ -14,7 +14,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { World } from '../src/sim/world'
-import { OfferPool, type Offer } from '../src/sim/offers'
+import { OfferPool, applySwap, type Offer } from '../src/sim/offers'
 import { STEP } from '../src/core/loop'
 import { WAVES } from '../src/content'
 
@@ -111,6 +111,7 @@ function simulate(
 
   const take = (o: Offer): void => {
     if (o.kind === 'weapon') world.player.addWeapon(o.id, o.tierJump)
+    else if (o.kind === 'swap') applySwap(world.player, world.rng)
     else { world.player.addItem(o.id, o.boosted); world.refreshSpecialItems() }
   }
 

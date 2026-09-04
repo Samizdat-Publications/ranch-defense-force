@@ -92,7 +92,10 @@ export class LevelUpScreen {
 
     const built = this.offers.map((offer, i) => {
       const c = card({
-        kind: `[${i + 1}]  ${offer.kind}${offer.boosted ? ' · 2x' : ''}`,
+        // §5: a weapon-upgrade card (batch 4's class cards will follow) names
+        // what it belongs to instead of the generic kind — `offer.band`,
+        // driven off `ItemDef.requiresWeapon`/`requiresClass` in content.
+        kind: `[${i + 1}]  ${offer.band ?? offer.kind}${offer.boosted ? ' · 2x' : ''}`,
         name: offer.name,
         blurb: offer.detail,
         sprite: offer.sprite,
@@ -111,7 +114,7 @@ export class LevelUpScreen {
         lot: lotOf(offer.id),
         // §5: the card says what taking it AGAIN does, or that it cannot be.
         stack: stackLabel(offer.stacks),
-        source: offer.kind === 'weapon' ? 'WEAPON' : 'ITEM',
+        source: offer.band?.toUpperCase() ?? (offer.kind === 'weapon' ? 'WEAPON' : 'ITEM'),
         onClick: () => this.pick(offer),
       })
       this.cardsEl.appendChild(c)

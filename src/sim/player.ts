@@ -23,6 +23,18 @@ export interface WeaponSlot {
   cooldownLeft: number
   /** Per-weapon scratch: orbit angle, minion index, and so on. */
   t0: number
+  /**
+   * H12 (docs/UPGRADE_ROSTER.md §8): the weapon-upgrade cards this slot has
+   * taken, by short id — `'chokeTube'`, not the item id that granted it.
+   *
+   * A per-slot list rather than a player-wide flag because the same short id
+   * is scoped to the weapon that owns it: `hasMod(slot, 'chokeTube')` only
+   * ever asks the Scattergun's own slot. `addItem` is the only writer — see
+   * its `weaponMod`/`requiresWeapon` handling — and every behaviour reads it
+   * beside the `tier >= n` checks that already gate the built-in riders, so a
+   * run with no upgrades pays one array scan of length zero per read.
+   */
+  mods: string[]
 
   // --- what the carried loadout draws from --------------------------------
   // The sim owns these because targeting is a simulation decision; the
@@ -49,6 +61,18 @@ export interface WeaponSlot {
 }
 
 export const MAX_WEAPON_SLOTS = 6
+
+/**
+ * H12: whether a weapon slot has taken a given upgrade.
+ *
+ * A standalone function rather than a method so `behaviours/weapons.ts` reads
+ * it the same way it already reads `tier >= n` — beside the number, not
+ * through the player. `slot.mods` is empty for every run that owns none of
+ * the 48+3 cards, so this is one array scan of length zero.
+ */
+export function hasMod(slot: WeaponSlot, id: string): boolean {
+  return slot.mods.indexOf(id) !== -1
+}
 
 /**
  * Highest index into a tool's tier list in nodes.json.
@@ -212,7 +236,7 @@ export class Player {
     this.metaMods = metaMods
     this.weapons = [{
       id: this.def.startingWeapon, tier: 1, cooldownLeft: 0, t0: 0,
-      aimAngle: 0, recoil: 0, firedAt: -1,
+      aimAngle: 0, recoil: 0, firedAt: -1, mods: [],
     }]
     this.items = []
     this.pickaxeTier = 0
@@ -401,7 +425,9 @@ export class Player {
     // tier cannot be expressed as a percentage in the stat block, so it is
     // applied here. Boosted offers step twice, matching the double-magnitude
     // rule the level-up screen uses for everything else.
-    const def = ITEMS[id] as { toolUpgrade?: string; element?: string } | undefined
+    const def = ITEMS[id] as
+      { toolUpgrade?: string; element?: string; weaponMod?: string; requiresWeapon?: string }
+      | undefined
 
     // An element replaces whatever was on the weapons before.
     if (def?.element) this.element = def.element
@@ -411,6 +437,20 @@ export class Player {
       const cap = TOOL_TIER_CAP
       if (def.toolUpgrade === 'pickaxe') this.pickaxeTier = Math.min(cap, this.pickaxeTier + steps)
       else if (def.toolUpgrade === 'axe') this.axeTier = Math.min(cap, this.axeTier + steps)
+    }
+
+    /*
+       H12 (docs/UPGRADE_ROSTER.md §8): a weapon-upgrade card attaches to the
+       WEAPON's slot rather than the stat resolver. `requiresWeapon` is the
+       same gate `OfferPool.gateOpen` already reads to keep the card off the
+       board until the weapon is owned; `weaponMod` is the short id the
+       behaviour reads back with `hasMod`. Every one of the 48+3 cards has
+       `maxStacks: 1`, so this can only ever push the id once per run — the
+       `indexOf` guard is defensive, not load-bearing.
+    */
+    if (typeof def?.weaponMod === 'string' && typeof def?.requiresWeapon === 'string') {
+      const slot = this.weapons.find((w) => w.id === def.requiresWeapon)
+      if (slot && slot.mods.indexOf(def.weaponMod) === -1) slot.mods.push(def.weaponMod)
     }
 
     this.resolve()
@@ -436,7 +476,7 @@ export class Player {
     if (this.weapons.length >= MAX_WEAPON_SLOTS) return false
     this.weapons.push({
       id, tier: 1, cooldownLeft: 0, t0: 0,
-      aimAngle: 0, recoil: 0, firedAt: -1,
+      aimAngle: 0, recoil: 0, firedAt: -1, mods: [],
     })
     // The loadout is a readout, and one more object on an already-equipped man
     // is easy to miss entirely — which is exactly what happened in play.
@@ -464,6 +504,27 @@ export class Player {
   /** True when a new weapon could not be taken — used to filter the card pool. */
   get slotsFull(): boolean {
     return this.weapons.length >= MAX_WEAPON_SLOTS
+  }
+
+  /**
+   * The id of the lowest-tier owned weapon, or `null` with none carried.
+   *
+   * §7.5's `swap` offer trades this one away — "your lowest-tier weapon" — so
+   * a run that filled its slots with the wrong thing in wave 2 has recourse
+   * without touching a slot it has since built around. Ties go to pickup
+   * order, which is the same tie-break the loadout's own hand slot uses.
+   */
+  lowestTierWeaponId(): string | null {
+    if (this.weapons.length === 0) return null
+    let best = this.weapons[0]
+    for (const w of this.weapons) if (w.tier < best.tier) best = w
+    return best.id
+  }
+
+  /** Drop a weapon outright — the half of a swap that is not `addWeapon`. */
+  removeWeapon(id: string): void {
+    const i = this.weapons.findIndex((w) => w.id === id)
+    if (i >= 0) this.weapons.splice(i, 1)
   }
 
   gainXp(amount: number): number {

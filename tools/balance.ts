@@ -17,7 +17,7 @@
  * prediction of how a person will do.
  */
 import { World } from '../src/sim/world.ts'
-import { OfferPool, type Offer } from '../src/sim/offers.ts'
+import { OfferPool, applySwap, type Offer } from '../src/sim/offers.ts'
 import { CLASSES, WAVES, WEAPONS } from '../src/content/index.ts'
 
 const STEP = 1 / 60
@@ -127,6 +127,7 @@ function simulate(seed: number, classId: string, pilot: Pilot): Result {
 
   const take = (o: Offer): void => {
     if (o.kind === 'weapon') world.player.addWeapon(o.id, o.tierJump)
+    else if (o.kind === 'swap') applySwap(world.player, world.rng)
     else { world.player.addItem(o.id, o.boosted); world.refreshSpecialItems() }
   }
 

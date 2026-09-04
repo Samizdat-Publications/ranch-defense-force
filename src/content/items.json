@@ -1117,8 +1117,884 @@
   "burstRadius": 70,
   "cardSprite": "item.lastRites"
  },
+ "scattergunChokeTube": {
+  "name": "Choke Tube",
+  "icon": "scattergunChokeTube",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "scattergun",
+  "weaponMod": "chokeTube",
+  "blurb": "Tightens the choke. Spread 14° → 7.7°.",
+  "mods": {},
+  "cardSprite": "carry.scattergun"
+ },
+ "scattergunBuckBall": {
+  "name": "Buck & Ball",
+  "icon": "scattergunBuckBall",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "scattergun",
+  "weaponMod": "buckBall",
+  "blurb": "Loads buck with the ball. +2 pellets, each hitting for 15% less.",
+  "mods": {},
+  "cardSprite": "carry.scattergun"
+ },
+ "scattergunCutShell": {
+  "name": "Cut Shell",
+  "icon": "scattergunCutShell",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "pierce"
+  ],
+  "requiresWeapon": "scattergun",
+  "weaponMod": "cutShell",
+  "blurb": "Notches the wad. Pellets pierce 1 and knock back 90.",
+  "mods": {},
+  "cardSprite": "carry.scattergun"
+ },
+ "varmintRifleMatchBarrel": {
+  "name": "Match Barrel",
+  "icon": "varmintRifleMatchBarrel",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "varmintRifle",
+  "weaponMod": "matchBarrel",
+  "blurb": "A truer bore. +60% shot speed, and the round steers 60°/s onto its first target.",
+  "mods": {},
+  "cardSprite": "carry.varmintRifle"
+ },
+ "varmintRifleHotLoad": {
+  "name": "Hot Load",
+  "icon": "varmintRifleHotLoad",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "fire"
+  ],
+  "requiresWeapon": "varmintRifle",
+  "weaponMod": "hotLoad",
+  "blurb": "A hotter charge. The burn ticks ×1.8.",
+  "mods": {},
+  "cardSprite": "carry.varmintRifle"
+ },
+ "varmintRifleSetTrigger": {
+  "name": "Set Trigger",
+  "icon": "varmintRifleSetTrigger",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "varmintRifle",
+  "weaponMod": "setTrigger",
+  "blurb": "A hair trigger. Fires twice per cooldown — the second round at 60%.",
+  "mods": {},
+  "cardSprite": "carry.varmintRifle"
+ },
+ "grenadeLauncherThinCasing": {
+  "name": "Thin Casing",
+  "icon": "grenadeLauncherThinCasing",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "grenadeLauncher",
+  "weaponMod": "thinCasing",
+  "blurb": "Thinner steel, a bigger bang. Blast radius ×1.35.",
+  "mods": {},
+  "cardSprite": "carry.grenadeLauncher"
+ },
+ "grenadeLauncherWilliePete": {
+  "name": "Willie Pete",
+  "icon": "grenadeLauncherWilliePete",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "fire"
+  ],
+  "requiresWeapon": "grenadeLauncher",
+  "weaponMod": "williePete",
+  "blurb": "White phosphorus. The blast leaves fire — 60px, 3s, 12 dps.",
+  "mods": {},
+  "cardSprite": "carry.grenadeLauncher"
+ },
+ "grenadeLauncherRifledCup": {
+  "name": "Rifled Cup",
+  "icon": "grenadeLauncherRifledCup",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "grenadeLauncher",
+  "weaponMod": "rifledCup",
+  "blurb": "A launching cup with rifling. The shell bounces once and blows again at 60%.",
+  "mods": {},
+  "cardSprite": "carry.grenadeLauncher"
+ },
+ "drumGunWaxWads": {
+  "name": "Wax Wads",
+  "icon": "drumGunWaxWads",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "drumGun",
+  "weaponMod": "waxWads",
+  "blurb": "Waxed wadding rides the ricochet true. +2 wall bounces.",
+  "mods": {},
+  "cardSprite": "carry.drumGun"
+ },
+ "drumGunFrangible": {
+  "name": "Frangible",
+  "icon": "drumGunFrangible",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "drumGun",
+  "weaponMod": "frangible",
+  "blurb": "Frangible slugs burst harder. +2 shards, +25% shard damage.",
+  "mods": {},
+  "cardSprite": "carry.drumGun"
+ },
+ "drumGunLiveWire": {
+  "name": "Live Wire",
+  "icon": "drumGunLiveWire",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "spark"
+  ],
+  "requiresWeapon": "drumGun",
+  "weaponMod": "liveWire",
+  "blurb": "A live core in every shard. Shards arc to 1 more enemy within 130px for 40%.",
+  "mods": {},
+  "cardSprite": "carry.drumGun"
+ },
+ "tarBombThinCut": {
+  "name": "Thin Cut",
+  "icon": "tarBombThinCut",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "tar",
+   "slick"
+  ],
+  "requiresWeapon": "tarBomb",
+  "weaponMod": "thinCut",
+  "blurb": "A thinner cut spreads further. Puddle radius ×1.4.",
+  "mods": {},
+  "cardSprite": "carry.tarBomb"
+ },
+ "tarBombHeavyCut": {
+  "name": "Heavy Cut",
+  "icon": "tarBombHeavyCut",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "tar",
+   "slick"
+  ],
+  "requiresWeapon": "tarBomb",
+  "weaponMod": "heavyCut",
+  "blurb": "A heavier cut holds them down. Slow 50% → 70%.",
+  "mods": {},
+  "cardSprite": "carry.tarBomb"
+ },
+ "tarBombSumpOil": {
+  "name": "Sump Oil",
+  "icon": "tarBombSumpOil",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "tar",
+   "slick"
+  ],
+  "requiresWeapon": "tarBomb",
+  "weaponMod": "sumpOil",
+  "blurb": "Sump oil catches on its own. The puddle burns 10 dps — no fire load needed.",
+  "mods": {},
+  "cardSprite": "carry.tarBomb"
+ },
+ "harpoonBarbedHead": {
+  "name": "Barbed Head",
+  "icon": "harpoonBarbedHead",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "bleed"
+  ],
+  "requiresWeapon": "harpoon",
+  "weaponMod": "barbedHead",
+  "blurb": "A barbed point tears on the way out. Hooked targets bleed 8 dps for 4s.",
+  "mods": {},
+  "cardSprite": "carry.harpoon"
+ },
+ "harpoonTwinLine": {
+  "name": "Twin Line",
+  "icon": "harpoonTwinLine",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "harpoon",
+  "weaponMod": "twinLine",
+  "blurb": "A second line, coiled and ready. +1 target hooked per shot.",
+  "mods": {},
+  "cardSprite": "carry.harpoon"
+ },
+ "harpoonWinch": {
+  "name": "Winch",
+  "icon": "harpoonWinch",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "stun"
+  ],
+  "requiresWeapon": "harpoon",
+  "weaponMod": "winch",
+  "blurb": "A hand winch, geared low. Hauled targets land stunned 0.8s.",
+  "mods": {},
+  "cardSprite": "carry.harpoon"
+ },
+ "chemSprayerWideNozzle": {
+  "name": "Wide Nozzle",
+  "icon": "chemSprayerWideNozzle",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "slick"
+  ],
+  "requiresWeapon": "chemSprayer",
+  "weaponMod": "wideNozzle",
+  "blurb": "A wider fan. Reach ×1.3.",
+  "mods": {},
+  "cardSprite": "weapon.wateringCan"
+ },
+ "chemSprayerConcentrate": {
+  "name": "Concentrate",
+  "icon": "chemSprayerConcentrate",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "slick"
+  ],
+  "requiresWeapon": "chemSprayer",
+  "weaponMod": "concentrate",
+  "blurb": "A stronger cut. +80% damage, −20% reach.",
+  "mods": {},
+  "cardSprite": "weapon.wateringCan"
+ },
+ "chemSprayerBackpackTank": {
+  "name": "Backpack Tank",
+  "icon": "chemSprayerBackpackTank",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged",
+   "load"
+  ],
+  "requiresWeapon": "chemSprayer",
+  "weaponMod": "backpackTank",
+  "blurb": "A bigger reservoir. The jet applies your Load at double duration.",
+  "mods": {},
+  "cardSprite": "weapon.wateringCan"
+ },
+ "baitDrumSweetFeed": {
+  "name": "Sweet Feed",
+  "icon": "baitDrumSweetFeed",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresWeapon": "baitDrum",
+  "weaponMod": "sweetFeed",
+  "blurb": "Sweeter feed carries further. Pull radius ×1.4.",
+  "mods": {},
+  "cardSprite": "weapon.grainLure"
+ },
+ "baitDrumSpoiledFeed": {
+  "name": "Spoiled Feed",
+  "icon": "baitDrumSpoiledFeed",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresWeapon": "baitDrum",
+  "weaponMod": "spoiledFeed",
+  "blurb": "Spoiled feed leaves them sick. Lured enemies take +20% from everything.",
+  "mods": {},
+  "cardSprite": "weapon.grainLure"
+ },
+ "baitDrumBlastingCap": {
+  "name": "Blasting Cap",
+  "icon": "baitDrumBlastingCap",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresWeapon": "baitDrum",
+  "weaponMod": "blastingCap",
+  "blurb": "A hotter cap. Detonation damage ×1.8.",
+  "mods": {},
+  "cardSprite": "weapon.grainLure"
+ },
+ "pitchforkLongHaft": {
+  "name": "Long Haft",
+  "icon": "pitchforkLongHaft",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "pitchfork",
+  "weaponMod": "longHaft",
+  "blurb": "A longer haft. Range +25%.",
+  "mods": {},
+  "cardSprite": "weapon.pitchfork.t1"
+ },
+ "pitchforkThreeTine": {
+  "name": "Three Tine",
+  "icon": "pitchforkThreeTine",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "pitchfork",
+  "weaponMod": "threeTine",
+  "blurb": "A third tine widens the drive. Arc ×1.4.",
+  "mods": {},
+  "cardSprite": "weapon.pitchfork.t1"
+ },
+ "pitchforkAshHandle": {
+  "name": "Ash Handle",
+  "icon": "pitchforkAshHandle",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "melee",
+   "stun"
+  ],
+  "requiresWeapon": "pitchfork",
+  "weaponMod": "ashHandle",
+  "blurb": "Springy ash absorbs the recoil, then gives it back. Every 4th swing stuns 0.6s.",
+  "mods": {},
+  "cardSprite": "weapon.pitchfork.t1"
+ },
+ "scytheWhettedEdge": {
+  "name": "Whetted Edge",
+  "icon": "scytheWhettedEdge",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "scythe",
+  "weaponMod": "whettedEdge",
+  "blurb": "A keener edge catches faster. Hit interval ×0.75.",
+  "mods": {},
+  "cardSprite": "weapon.scythe.t1"
+ },
+ "scytheLongSnath": {
+  "name": "Long Snath",
+  "icon": "scytheLongSnath",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "scythe",
+  "weaponMod": "longSnath",
+  "blurb": "A longer snath widens the reach. Orbit radius +30%.",
+  "mods": {},
+  "cardSprite": "weapon.scythe.t1"
+ },
+ "scytheReverseSnath": {
+  "name": "Reverse Snath",
+  "icon": "scytheReverseSnath",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "scythe",
+  "weaponMod": "reverseSnath",
+  "blurb": "A reverse grip, planted. +40% damage while standing still.",
+  "mods": {},
+  "cardSprite": "weapon.scythe.t1"
+ },
+ "sledgeLongHandle": {
+  "name": "Long Handle",
+  "icon": "sledgeLongHandle",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "sledge",
+  "weaponMod": "longHandle",
+  "blurb": "A longer handle swings a wider circle. Radius ×1.3.",
+  "mods": {},
+  "cardSprite": "weapon.sledge.t1"
+ },
+ "sledgeDeadBlow": {
+  "name": "Dead Blow",
+  "icon": "sledgeDeadBlow",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "melee",
+   "stun"
+  ],
+  "requiresWeapon": "sledge",
+  "weaponMod": "deadBlow",
+  "blurb": "Shot-filled and dead-blow. Stun ×1.6.",
+  "mods": {},
+  "cardSprite": "weapon.sledge.t1"
+ },
+ "sledgeDropForged": {
+  "name": "Drop Forged",
+  "icon": "sledgeDropForged",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "sledge",
+  "weaponMod": "dropForged",
+  "blurb": "A drop-forged head cracks the ground. The slam leaves a 3s fissure, 40% slow.",
+  "mods": {},
+  "cardSprite": "weapon.sledge.t1"
+ },
+ "barnDogSlipLead": {
+  "name": "Slip Lead",
+  "icon": "barnDogSlipLead",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ally"
+  ],
+  "requiresWeapon": "barnDog",
+  "weaponMod": "slipLead",
+  "blurb": "A longer slip lead. Leash +50%.",
+  "mods": {},
+  "cardSprite": "feralDog.idle.down.0"
+ },
+ "barnDogCattleBred": {
+  "name": "Cattle Bred",
+  "icon": "barnDogCattleBred",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ally"
+  ],
+  "requiresWeapon": "barnDog",
+  "weaponMod": "cattleBred",
+  "blurb": "Bred to work stock. Bite +40%.",
+  "mods": {},
+  "cardSprite": "feralDog.idle.down.0"
+ },
+ "barnDogBloodUp": {
+  "name": "Blood Up",
+  "icon": "barnDogBloodUp",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ally",
+   "kill"
+  ],
+  "requiresWeapon": "barnDog",
+  "weaponMod": "bloodUp",
+  "blurb": "The blood is up. +15% dog speed per kill, to +90% — resets each wave.",
+  "mods": {},
+  "cardSprite": "feralDog.idle.down.0"
+ },
+ "postAugerCarbideTeeth": {
+  "name": "Carbide Teeth",
+  "icon": "postAugerCarbideTeeth",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "postAuger",
+  "weaponMod": "carbideTeeth",
+  "blurb": "Carbide teeth bite deeper. +35% damage.",
+  "mods": {},
+  "cardSprite": "weapon.postAuger.t1"
+ },
+ "postAugerTwoSpeed": {
+  "name": "Two Speed",
+  "icon": "postAugerTwoSpeed",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "postAuger",
+  "weaponMod": "twoSpeed",
+  "blurb": "A two-speed gearbox, left in high. +40% attack speed.",
+  "mods": {},
+  "cardSprite": "weapon.postAuger.t1"
+ },
+ "postAugerDownPressure": {
+  "name": "Down Pressure",
+  "icon": "postAugerDownPressure",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "melee",
+   "stun"
+  ],
+  "requiresWeapon": "postAuger",
+  "weaponMod": "downPressure",
+  "blurb": "Steady down pressure stalls the bit. 5 hits on one target stun it 0.8s.",
+  "mods": {},
+  "cardSprite": "weapon.postAuger.t1"
+ },
+ "crowBellHeavierClapper": {
+  "name": "Heavier Clapper",
+  "icon": "crowBellHeavierClapper",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "crowBell",
+  "weaponMod": "heavierClapper",
+  "blurb": "A heavier clapper rings harder. +45% damage.",
+  "mods": {},
+  "cardSprite": "weapon.crowBell"
+ },
+ "crowBellCrackedBell": {
+  "name": "Cracked Bell",
+  "icon": "crowBellCrackedBell",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "crowBell",
+  "weaponMod": "crackedBell",
+  "blurb": "A crack in the bronze sours the ring. Slows 30% for 2s.",
+  "mods": {},
+  "cardSprite": "weapon.crowBell"
+ },
+ "crowBellTollsTwice": {
+  "name": "Tolls Twice",
+  "icon": "crowBellTollsTwice",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "crowBell",
+  "weaponMod": "tollsTwice",
+  "blurb": "It tolls twice. A second ring 0.5s later at 60%.",
+  "mods": {},
+  "cardSprite": "weapon.crowBell"
+ },
+ "seedDrillDeepSet": {
+  "name": "Deep Set",
+  "icon": "seedDrillDeepSet",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "seedDrill",
+  "weaponMod": "deepSet",
+  "blurb": "Set deeper, it holds longer. Patch lasts +4s.",
+  "mods": {},
+  "cardSprite": "weapon.seedDrill"
+ },
+ "seedDrillVolunteerCorn": {
+  "name": "Volunteer Corn",
+  "icon": "seedDrillVolunteerCorn",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "seedDrill",
+  "weaponMod": "volunteerCorn",
+  "blurb": "Volunteer corn comes up fast. Patch damage ticks 50% faster.",
+  "mods": {},
+  "cardSprite": "weapon.seedDrill"
+ },
+ "seedDrillBroadcast": {
+  "name": "Broadcast",
+  "icon": "seedDrillBroadcast",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "ranged"
+  ],
+  "requiresWeapon": "seedDrill",
+  "weaponMod": "broadcast",
+  "blurb": "Broadcast rather than drilled. Throws 2 patches.",
+  "mods": {},
+  "cardSprite": "weapon.seedDrill"
+ },
+ "combineHeadWiderTable": {
+  "name": "Wider Table",
+  "icon": "combineHeadWiderTable",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "combineHead",
+  "weaponMod": "widerTable",
+  "blurb": "A wider header table. Arc ×1.15.",
+  "mods": {},
+  "cardSprite": "weapon.combineHead.t1"
+ },
+ "combineHeadConcaveAdjust": {
+  "name": "Concave Adjust",
+  "icon": "combineHeadConcaveAdjust",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [
+   "melee"
+  ],
+  "requiresWeapon": "combineHead",
+  "weaponMod": "concaveAdjust",
+  "blurb": "Tightened concave. +25% damage.",
+  "mods": {},
+  "cardSprite": "weapon.combineHead.t1"
+ },
+ "combineHeadStrawChopper": {
+  "name": "Straw Chopper",
+  "icon": "combineHeadStrawChopper",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [
+   "melee",
+   "kill"
+  ],
+  "requiresWeapon": "combineHead",
+  "weaponMod": "strawChopper",
+  "blurb": "A straw chopper on the back end. Its kills leave a 40px hazard, 3s, 10 dps.",
+  "mods": {},
+  "cardSprite": "weapon.combineHead.t1"
+ },
+ "smudgePotBiggerBatch": {
+  "name": "Bigger Batch",
+  "icon": "smudgePotBiggerBatch",
+  "rarity": "uncommon",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 20,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresWeapon": "smudgePot",
+  "weaponMod": "biggerBatch",
+  "blurb": "A bigger batch of rags. Ring radius ×1.25.",
+  "mods": {},
+  "cardSprite": "weapon.smudgePot"
+ },
+ "smudgePotOldRags": {
+  "name": "Old Rags",
+  "icon": "smudgePotOldRags",
+  "rarity": "rare",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 30,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresWeapon": "smudgePot",
+  "weaponMod": "oldRags",
+  "blurb": "Old rags burn dirtier. Ring damage ×1.5.",
+  "mods": {},
+  "cardSprite": "weapon.smudgePot"
+ },
+ "smudgePotDamperPlate": {
+  "name": "Damper Plate",
+  "icon": "smudgePotDamperPlate",
+  "rarity": "epic",
+  "source": "both",
+  "category": "weaponMod",
+  "cost": 44,
+  "maxStacks": 1,
+  "tags": [],
+  "requiresWeapon": "smudgePot",
+  "weaponMod": "damperPlate",
+  "blurb": "A damper plate thickens the smoke. Every pass also slows 25% for 1s.",
+  "mods": {},
+  "cardSprite": "weapon.smudgePot"
+ },
  "_categoryNote": "SS7.1: `category` is DECLARED, never sniffed. The draw quotas its board on it (at most one `stat`, at most one `merge`, one gated slot, one behavioural slot), and a draw that guesses its own quotas changes meaning every time a card gains a field. `tags` is SS4: the draw biases toward tags the build already holds, so a build FORMS instead of accumulating. Both are content; offers.ts reads and never infers.",
- "_gateNote": "`requiresLoad`, `requiresWeapon`, `requiresClass` and `requiresItem` are the gates that make the pool GROW through a run instead of shrinking. A gated card costs the early game nothing because it cannot appear yet, and it is where two runs stop looking alike. Only `requiresLoad` is used in batch 1 (the four Load Riders, which are meaningless without a Load on); the other three are read by offers.ts so batches 2 and 4 are a content edit.",
+ "_gateNote": "`requiresLoad`, `requiresWeapon`, `requiresClass` and `requiresItem` are the gates that make the pool GROW through a run instead of shrinking. A gated card costs the early game nothing because it cannot appear yet, and it is where two runs stop looking alike. `requiresLoad` was batch 1's (the four Load Riders). Batch 2 turns on `requiresWeapon` for real: the 48 weapon-upgrade cards below plus the Smudge Pot's own three, each also carrying `weaponMod` -- the short id `Player.addItem` pushes onto that weapon's `WeaponSlot.mods` and `hasMod(slot, id)` reads back in `behaviours/weapons.ts`. `requiresClass` is still batch 4's.",
+ "_weaponModNote": "docs/UPGRADE_ROSTER.md batch 2, SS6 (Weapon Upgrades) plus the Smudge Pot's own three, authored here because the doc predates that weapon. Rarity ladder uncommon/rare/epic at cost 20/30/44, `maxStacks: 1`, `source: \"both\"`, `category: \"weaponMod\"` -- all per SS6's table. Each carries a static `cardSprite` at the owning weapon's T1 art (weaponCardSprite(id, 1), computed once and pasted in rather than resolved live) -- zero new generations, exactly as SS10 plans, and it satisfies tests/content.test.ts's own rule that every cardSprite is a packed atlas key. OfferPool.itemOffer still falls back to weaponCardSprite off requiresWeapon for any future item that omits one. The magnitudes are not repeated here -- they live in weapons.json beside the tier riders they sit next to, at `<modId><Field>`, which is what lets behaviours/weapons.ts read hasMod(slot, 'chokeTube') beside tier >= n without a second source of the same number.",
  "_stackNote": "SS5, the card-text contract. `stackBlurb` is the behavioural card's answer to \"what does taking this AGAIN do\": `{n}` is the copy being offered and `{total}` is `n x stackPer`, so a card whose whole effect is prose still prints its number at the stack the player is looking at. A card with no `stackBlurb` falls back to `blurb`, which is what every stat card wants -- its numbers are in the delta line already.",
  "_atlasNote": "_atlas marks the cardSprite values art/sprites.json cannot resolve today. NEW ATLAS KEY (18): needs an itemIcons entry and, for most, new art — see SPRITE_REQUESTS.md. FRAME PICK (7): the clip is already packed and only needs a named frame exported as an icon. Everything unmarked resolves against sprites.json as it stands.",
  "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns.",

@@ -4,9 +4,9 @@ import {
   acresEarned, interestOn, resolveDamage, shopRerollCost, threatBudget,
   waveIncome, waveScalar, xpToNext,
 } from '../src/sim/formulas'
-import { Player } from '../src/sim/player'
+import { Player, hasMod } from '../src/sim/player'
 import { Spawner } from '../src/sim/spawner'
-import { OfferPool } from '../src/sim/offers'
+import { OfferPool, applySwap } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
 import { ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES } from '../src/content'
 
@@ -436,6 +436,95 @@ describe('OfferPool', () => {
       ([, def]) => (def.mods?.damagePct ?? 0) > 0 || (def.mods?.meleePct ?? 0) > 0 || (def.mods?.rangedPct ?? 0) > 0,
     )
     expect(damageItems.length).toBeGreaterThan(0)
+  })
+
+  /*
+     docs/UPGRADE_ROSTER.md batch 2, H12 — the 48 weapon-upgrade cards (plus
+     the Smudge Pot's own three) never appear before the weapon they belong
+     to, and always do once it is owned.
+  */
+  it('never offers a weapon upgrade before the weapon it belongs to', () => {
+    const p = new Player()
+    p.init('hand') // starts with the pitchfork only
+    const pool = new OfferPool(new Rng(3))
+    const seen = new Set<string>()
+    for (let i = 0; i < 100; i++) {
+      for (const o of pool.draw(p, 6, i * 1000, 0, 'shop')) seen.add(o.id)
+    }
+    for (const id of seen) {
+      const requires = ITEMS[id]?.requiresWeapon
+      if (typeof requires === 'string') {
+        expect(p.hasWeapon(requires), `${id} requires ${requires}, which The Hand does not own`).toBe(true)
+      }
+    }
+    // And the gate opens the instant the weapon is owned, rather than the
+    // card being lost entirely — the whole point of a gate over an omission.
+    p.addWeapon('scattergun')
+    const pool2 = new OfferPool(new Rng(3))
+    const seenAfter = new Set<string>()
+    for (let i = 0; i < 100; i++) {
+      for (const o of pool2.draw(p, 6, i * 1000, 0, 'shop')) seenAfter.add(o.id)
+    }
+    expect(['scattergunChokeTube', 'scattergunBuckBall', 'scattergunCutShell'].some(
+      (id) => seenAfter.has(id),
+    )).toBe(true)
+  })
+
+  it('caps a weapon upgrade at one copy, same as any other ONE ONLY card', () => {
+    const p = new Player()
+    p.init('hand')
+    expect(p.canTakeItem('pitchforkLongHaft')).toBe(true)
+    p.addItem('pitchforkLongHaft')
+    expect(p.canTakeItem('pitchforkLongHaft')).toBe(false)
+    // And the mod actually landed on the right slot, not just the item log.
+    const slot = p.weapons.find((w) => w.id === 'pitchfork')
+    expect(slot && hasMod(slot, 'longHaft')).toBe(true)
+  })
+
+  /*
+     docs/UPGRADE_ROSTER.md §7.5 — slots full.
+  */
+  it('fills a full loadout with weapon-upgrade cards and a swap, not new weapons', () => {
+    const p = new Player()
+    p.init('hand')
+    for (const id of ['scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher']) {
+      expect(p.addWeapon(id)).toBe(true)
+    }
+    expect(p.slotsFull).toBe(true)
+
+    const pool = new OfferPool(new Rng(5))
+    let sawWeaponMod = false
+    let sawSwap = false
+    for (let i = 0; i < 60; i++) {
+      for (const o of pool.draw(p, 6, i * 1000, 0, 'shop')) {
+        // No NEW weapon is ever offered once the loadout is full.
+        if (o.kind === 'weapon') expect(o.mergesTo, `${o.id} offered as new while full`).not.toBeNull()
+        if (o.kind === 'swap') sawSwap = true
+        if (o.kind === 'item' && ITEMS[o.id]?.category === 'weaponMod') sawWeaponMod = true
+      }
+    }
+    expect(sawWeaponMod).toBe(true)
+    expect(sawSwap).toBe(true)
+  })
+
+  it('a swap trades the lowest-tier weapon for one the run does not own, at tier 1', () => {
+    const p = new Player()
+    p.init('hand')
+    for (const id of ['scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher']) p.addWeapon(id)
+    expect(p.weapons).toHaveLength(6)
+    p.addWeapon('scythe') // tier 2, so it is not the one traded away
+    const before = new Set(p.weapons.map((w) => w.id))
+    const lowest = p.lowestTierWeaponId()
+    expect(lowest).not.toBeNull()
+    expect(p.weapons.find((w) => w.id === lowest)?.tier).toBe(1)
+
+    applySwap(p, new Rng(11))
+
+    expect(p.weapons).toHaveLength(6)
+    expect(p.hasWeapon(lowest as string)).toBe(false)
+    const added = [...new Set(p.weapons.map((w) => w.id))].find((id) => !before.has(id))
+    expect(added, 'a new weapon must have arrived').toBeDefined()
+    expect(p.weapons.find((w) => w.id === added)?.tier).toBe(1)
   })
 })
 

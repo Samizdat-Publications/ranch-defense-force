@@ -128,6 +128,13 @@ export interface Enemy {
   /** Whether the last damage this enemy took was melee. Drives the Reaper's re-swing. */
   lastHitMelee: boolean
   slowLife: number
+  /**
+   * Which weapon's hit landed last, by id. `''` for a hit that carries none
+   * (a chain, a burst, a corpse split) — see `applyHit`. Batch 2's Straw
+   * Chopper is the only reader today: a per-weapon "this weapon's kills do
+   * X" card needs to know whose kill it was, and nothing before it did.
+   */
+  lastHitWeaponId: string
 }
 
 export function makeEnemy(): Enemy {
@@ -140,6 +147,7 @@ export function makeEnemy(): Enemy {
     burnDps: 0, burnLife: 0, burnAcc: 0, burnGen: 0,
     bleedDps: 0, bleedLife: 0, bleedAcc: 0,
     markPct: 0, markLife: 0, slowPct: 0, slowLife: 0, saltMark: 0, lastHitMelee: false,
+    lastHitWeaponId: '',
   }
 }
 
@@ -209,6 +217,31 @@ export interface Projectile {
    * avoid.
    */
   ricochets: number
+
+  // --- docs/UPGRADE_ROSTER.md batch 2, H12 (per-weapon, not player-wide) ---
+  // H1 and H4 already exist as PLAYER-WIDE fields on `World`'s `specialItems`
+  // (Fence Charge's chain, Burr Load's homing) because those cards apply to
+  // every shot the player owns. A weapon-upgrade card is scoped to the ONE
+  // weapon that granted it — Live Wire's chain is the Drum Gun's shards only,
+  // Match Barrel's homing is the Varmint Rifle's own round — so it rides the
+  // PROJECTILE instead: set once at spawn by the behaviour that owns it, read
+  // once by the same generic call sites the player-wide fields already use.
+  /** H4 — Match Barrel. Zero for every projectile that is not one. */
+  homingRate: number
+  /** H1 — Live Wire. Zero for every projectile that is not a Drum Gun shard
+   *  carrying it. */
+  chainCount: number
+  chainRange: number
+  chainMul: number
+  /**
+   * Backpack Tank (Chem Sprayer epic): the LOAD this shot stamps on lasts
+   * this many times as long. Read once, in `World.applyElementTo`, where
+   * every other weapon's shot already picks up the player's element — 1 for
+   * every projectile that is not the Chem Sprayer's jet with the card taken,
+   * so this is arithmetically identical to the line it multiplies onto for
+   * every other weapon.
+   */
+  loadDurationMul: number
 }
 
 export function makeProjectile(): Projectile {
@@ -220,6 +253,7 @@ export function makeProjectile(): Projectile {
     hitsLeft: 999, rearm: 0, stunOnHit: 0, burnDps: 0, burnSeconds: 0,
     bleedDps: 0, bleedSeconds: 0, markPct: 0, markSeconds: 0,
     slowOnHit: 0, slowSeconds: 0, ricochets: 0,
+    homingRate: 0, chainCount: 0, chainRange: 0, chainMul: 0, loadDurationMul: 1,
   }
 }
 
@@ -345,6 +379,13 @@ export interface Hazard {
    */
   playerSlowPct: number
   pullForce: number
+  /**
+   * Batch 2, Spoiled Feed: a `lure` hazard can mark whatever it pulls, 0 for
+   * every hazard this weapon did not make — which is every hazard that
+   * existed before this card, so this is arithmetically identical for them.
+   */
+  markPct: number
+  markSeconds: number
   /** Accumulates so damage-over-time applies in whole points, not fractions
    *  that round to zero every tick. */
   tickAcc: number
@@ -365,7 +406,7 @@ export function makeHazard(): Hazard {
   return {
     active: false, kind: 'slow', x: 0, y: 0, radius: 0, growth: 0,
     life: 0, maxLife: 1, dps: 0, playerDps: 0, slowPct: 0, playerSlowPct: 0,
-    pullForce: 0, tickAcc: 0, playerAcc: 0, sprite: '',
+    pullForce: 0, markPct: 0, markSeconds: 0, tickAcc: 0, playerAcc: 0, sprite: '',
   }
 }
 
