@@ -16,6 +16,7 @@
     "sfx": "vite-node tools/fetch-sfx.ts --",
     "audio": "npm run sfx && npm run music",
     "balance": "vite-node tools/balance.ts --",
+    "probe": "vite-node tools/difficulty-probe.ts --",
     "inspect": "vite-node tools/inspect-sheet.ts --",
     "inventory": "vite-node tools/pixellab-inventory.ts --",
     "catalog": "vite-node tools/asset-catalog.ts --",

@@ -3,8 +3,10 @@
   "waveCount": 25,
   "waveDuration": 40,
   "continuous": true,
+  "_bossNote": "The Prize Bull runs twice. Wave 18 was empty of anything a run could lose to -- session 23 measured the home pilots' deaths and waves 15-25 held almost none of them, which is the shape behind the owner's 'I could have gone probably infinitely longer'. He is not re-tuned for it: `waveHpScalar` is 3.6x at wave 12 and 6.4x at wave 18, so the same nine hundred pounds arrives with nearly twice the health, against a build that has had six more waves to get ready for him. Measured: the home pilots now die on waves 18-21 on seeds where nothing used to kill them at all.",
   "bossWaves": {
     "12": "prizeBull",
+    "18": "prizeBull",
     "25": "duster"
   },
   "shopAfterWaves": [
@@ -14,17 +16,25 @@
     20,
     24
   ],
-  "eliteEveryNWaves": 5,
+  "_eliteNote": "Every third wave, not every fifth. Elites were the only thing in the back half of a run that was not just a bigger number, and at every fifth wave there were five of those waves in twenty-five. See `elite` below for the per-enemy chance, which moved with it.",
+  "eliteEveryNWaves": 3,
   "elite": {
-    "chance": 0.1,
-    "hpMultiplier": 4,
+    "_session23Note": "0.1/4x -> 0.14/6x, and the reason is the death histogram, not the clear rate. Waves 15-25 held almost no deaths at all -- the owner's 'I could have gone probably infinitely longer' is that gap, measured. Elites are the one thing on the field that a player CANNOT out-range with a bigger ring, so they are the lever that reaches a stationary player without also feeding him: hand/brawl 10/24 -> 8/24 (still inside the 8-12 band) while his deaths moved from w5-w13 to w7-w21, and hand/idle 2/24 -> 1/24.",
+    "chance": 0.14,
+    "hpMultiplier": 6,
     "drawScale": 1.5,
     "outline": "gold",
     "guaranteedFeed": true
   },
   "threatBudget": {
-    "formula": "30 + 22*n + 1.4*n*n"
+    "_note": "The coefficients are DATA now, not a string beside a duplicate in formulas.ts. Session 23 swept them twenty times; doing that by editing two files in lockstep is how a sweep gets a number wrong. `formula` stays as the human-readable statement of what the three numbers mean.",
+    "formula": "intercept + linear*n + quadratic*n*n",
+    "_densityNote": "Session 23, the owner, on the live build: 'waves 1-5 were painfully slow and need double the enemies.' Measured before: 17.0 enemies alive on average across waves 1-5. After: 34.9, which is 2.05x, and the median field at t=60s -- twenty seconds into wave 2 -- went 15 -> 32. The intercept did that (30 -> 96) with the slope carrying it forward (22 -> 30); the QUADRATIC IS UNTOUCHED, deliberately, because the late game already had more bodies than a player could be threatened by and the thing it was short of was not numbers. Raising it to 2.6 was measured and made the game EASIER -- see the xp note below for why.",
+    "intercept": 96,
+    "linear": 30,
+    "quadratic": 1.4
   },
+  "_pressureNote": "Left at 380 after being measured, twice, as INERT. Session 23 ran the whole ladder at 700 against the doubled density and got byte-identical results: peak live count averages 194 over a run and the ceiling withholds for a mean of ZERO seconds. It is a guard against a compounding failure that no longer happens, not a difficulty knob, and raising it would only spend frames. `spawn.minDistanceFromPlayer` is the same story -- 130 measured identical to 220, because `Spawner.pickSpawnPoint` only ever picks ARENA EDGES and the `cornTile` source listed below has never been implemented.",
   "pressureCeiling": 380,
   "spawn": {
     "minDistanceFromPlayer": 220,
@@ -40,7 +50,15 @@
     "_groupIntervalNote": "Seconds between GROUPS, not enemies. This was hardcoded in spawner.ts as rng.range(0.5, 1.5) and it was the real throughput cap: the budget could allow more, but one group per second is all the director could physically emit, so a wave finished spawning around the 23s mark and the field drained for the rest of it. Halving it is most of what makes the arena feel like a bullet-heaven rather than a skirmish."
   },
   "waveScalar": {
-    "formula": "1 + 0.06*(wave-1)"
+    "formula": "1 + linear*(wave-1)",
+    "linear": 0.06
+  },
+  "waveHpScalar": {
+    "_note": "Enemy HP only -- contact damage stays on `waveScalar`, because multiplying incoming damage rewards flat damage reduction and punishes a low-hp dodger, which was measured twice (see formulas.ts). Lived only in formulas.ts until session 23 needed to sweep it.",
+    "formula": "1 + linear*(wave-1) + quadratic*(wave-1)^2",
+    "_session23Note": "0.06/0.010 -> 0.08/0.014. Batch 5 tried steepening the quadratic alone and reverted it, correctly, because it was trying to hold an 11-15 clear band; session 23 moved the band down to 8-12 on purpose, which is what makes the same lever available. 3.6x at wave 12 and 11.0x at wave 25 against 2.9x and 8.2x before -- so the MIDDLE of the run got most of the teeth, which is where the deaths were missing.",
+    "linear": 0.08,
+    "quadratic": 0.014
   },
   "economy": {
     "waveIncome": "6 + 3*n",
@@ -50,7 +68,12 @@
     "levelReroll": 4
   },
   "xp": {
-    "formula": "ceil(6 + 3*L + 0.9*pow(L,1.55))",
+    "formula": "ceil(flat + linear*L + power*pow(L,exponent))",
+    "flat": 6,
+    "linear": 3,
+    "_session23Note": "THE EXPONENT IS THE LEVER THIS WHOLE PASS TURNS ON, and it went 1.55 -> 1.85. Doubling the density of waves 1-5 made the game EASIER -- home pilots 13.7/24 -> 16.2/24, end-of-run level 30-43 -> 42-51 -- because twice as many bodies is twice as much xp, and the player converts a denser field into power faster than the field can convert into a threat. Every other lever was measured against that and lost: budget quadratic, hp scalar, pressure ceiling, spawn distance, elite rate, and the i-frame window all left the clear rate flat or moved it the wrong way, because they all feed the same loop. Slowing xp is the one change that does not. It is weighted LATE by construction -- level 5 costs 13% more, level 20 costs 63% more, level 35 costs 122% more -- so the opening waves keep the tempo the owner asked for and the back half stops handing out a level for free. Bots that ended a run at level 42-51 now end at 9-29 with a six-class median of 21, which is where the owner's own random-pick run ended (22). 2.10 was measured too and is the wall on the other side: the home ladder fell to a mean of about 4/24 and The Hand's own brawl number to 3.",
+    "power": 0.9,
+    "exponent": 1.85,
     "cardsPerLevel": 4,
     "cardsAtHighLuck": 5
   },

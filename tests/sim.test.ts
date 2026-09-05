@@ -94,12 +94,31 @@ describe('formulas', () => {
        compare it to the function — now the pair cannot drift silently, which is
        what the test was always named for.
     */
-    const evalSpec = (formula: string, n: number): number =>
-      Number(new Function('n', `return ${formula}`)(n))
+    /*
+       Session 23 moved the coefficients OUT of formulas.ts and into
+       waves.json, because a difficulty pass sweeps them twenty times and doing
+       that by editing a string and a duplicate literal in lockstep is how a
+       sweep gets a number wrong. So the strings now name their coefficients
+       ("intercept + linear*n + quadratic*n*n") instead of inlining them, and
+       the evaluator has to be handed the block they come from. The claim is
+       unchanged: the sentence a human reads and the arithmetic the game does
+       must be the same arithmetic.
+    */
+    const evalSpec = (formula: string, n: number, scope: object = {}): number => {
+      const keys = Object.entries(scope).filter(([, v]) => typeof v === 'number')
+      return Number(
+        new Function('n', ...keys.map(([k]) => k), `return ${formula}`)(n, ...keys.map(([, v]) => v)),
+      )
+    }
 
     for (const n of [1, 2, 7, 13, 24, 25]) {
-      expect(threatBudget(n)).toBeCloseTo(evalSpec(WAVES.threatBudget.formula, n), 6)
+      expect(threatBudget(n)).toBeCloseTo(
+        evalSpec(WAVES.threatBudget.formula, n, WAVES.threatBudget), 6,
+      )
       expect(waveIncome(n)).toBeCloseTo(evalSpec(WAVES.economy.waveIncome, n), 6)
+      expect(waveScalar(n)).toBeCloseTo(
+        evalSpec(WAVES.waveScalar.formula.replace(/wave/g, 'n'), n, WAVES.waveScalar), 6,
+      )
     }
     expect(waveIncome(1)).toBe(9)
     expect(waveIncome(24)).toBe(78)

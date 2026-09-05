@@ -13,7 +13,8 @@ const combat = TUNING.combat
 
 /** XP needed to go from level L to L+1. ~34 levels over a full run. */
 export function xpToNext(level: number): number {
-  return Math.ceil(6 + 3 * level + 0.9 * Math.pow(level, 1.55))
+  const x = WAVES.xp
+  return Math.ceil(x.flat + x.linear * level + x.power * Math.pow(level, x.exponent))
 }
 
 /** Feed paid at the end of wave n. */
@@ -45,9 +46,28 @@ export function waveIncome(wave: number): number {
  * threatCost together) and wants the balance session it was deferred to.
  *
  * Do not raise this on its own. It has been tried; the numbers are above.
+ *
+ * ## Session 23 raised it anyway, on instruction, and the note above held
+ *
+ * The owner played the live build and said "waves 1-5 were painfully slow and
+ * need double the enemies", so the intercept went 30 -> 96 and the slope
+ * 22 -> 30. It did exactly what he asked -- 17.0 enemies alive on average over
+ * waves 1-5 became 34.9 -- and ON ITS OWN IT MADE THE GAME EASIER, again: the
+ * six-class home ladder went 13.7/24 to 16.2/24 and end-of-run levels went
+ * 30-43 to 42-51.
+ *
+ * That is the same wall this note has described twice, and session 23 finally
+ * named the mechanism. **Twice as many bodies is twice as much xp and twice as
+ * much feed.** Density is an input to player power before it is a threat, and
+ * every lever that adds bodies pays the player first. The change that made the
+ * density cost something is in `xpToNext` -- see waves.json's `xp` note.
+ *
+ * The coefficients live in waves.json now, so this function and the string a
+ * human reads cannot drift apart while somebody sweeps them.
  */
 export function threatBudget(wave: number): number {
-  return 30 + 22 * wave + 1.4 * wave * wave
+  const b = WAVES.threatBudget
+  return b.intercept + b.linear * wave + b.quadratic * wave * wave
 }
 
 /**
@@ -108,9 +128,16 @@ export function threatBudget(wave: number): number {
  *
  * Do not reach for a bigger coefficient here. It has been tried three ways; the
  * numbers are above.
+ *
+ * Session 23 left it alone for the fourth time and instead cut what a level is
+ * worth. `TUNING.player.invulnSecondsAfterHit` was swept here too, since 0.5s
+ * of i-frames is what caps ANY crowd at two contact hits a second and is
+ * therefore the reason density cannot kill a stationary player; 0.30 and 0.18
+ * were measured and moved the idle clear rate the WRONG WAY (3/16 -> 5/16),
+ * so it is unchanged and stays a feel constant rather than a difficulty one.
  */
 export function waveScalar(wave: number): number {
-  return 1 + 0.06 * (wave - 1)
+  return 1 + WAVES.waveScalar.linear * (wave - 1)
 }
 
 /**
@@ -149,10 +176,19 @@ export function waveScalar(wave: number): number {
  * own seed ladder to 9/24, under its fixed >=12/24 acceptance bar. Reverted;
  * the retune's actual widow/agronomist/drifter fixes are each class's own
  * numbers, in classes.json.
+ *
+ * Session 23 steepened it after all -- 0.06/0.010 to 0.08/0.014 -- and the
+ * reason batch 5's revert does not apply is that batch 5 was defending an
+ * 11-15 clear band that session 23 deliberately moved to 8-12. Raising the
+ * LINEAR term alone to 0.12 was also measured and was worse than useless
+ * against a stationary player: tougher trash means fewer kills, a thinner ring,
+ * and a field the standing player farms at leisure (hand/idle 3/16 cleared
+ * became 8/16). Durability is a mid-game lever, not an answer to standing still.
  */
 export function waveHpScalar(wave: number): number {
   const n = wave - 1
-  return 1 + 0.06 * n + 0.010 * n * n
+  const c = WAVES.waveHpScalar
+  return 1 + c.linear * n + c.quadratic * n * n
 }
 
 /** Cost of the next reroll in a shop visit. */
