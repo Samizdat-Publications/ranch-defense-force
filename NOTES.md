@@ -183,9 +183,8 @@ atlas built and the other session's vite server on port 5180 was serving it.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
   merged. All five roster batches are merged; the roster is 56 → 164 cards. The owner played; his verdicts are the section "The first human
   playtest" and the passes under it. Landed since: bullet art and one active load; difficulty against a human
-  with an idle pilot; the shop sinks, trade-in and ledger. In flight: the class
-  pass against the idle pilot (Hand and Drifter exemptions; Vet and Agronomist
-  under band); the key fallback landed and the account tags are refreshed.
+  with an idle pilot; the shop sinks, trade-in and ledger. Landed: the class pass against the idle pilot. Nothing is in flight; the
+  next step is the owner playing again, on a class other than the Widow; the key fallback landed and the account tags are refreshed.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
@@ -1072,6 +1071,40 @@ six T4 weapons and 47 items at 1366x768 and 1920x1080.
 Five icons generated, style-anchored; packed under `item.<id>`. Not built: a
 "Hired Hand" ally sink — the only temporary-ally pattern (Scarecrow Post's
 turret) shares mutable state a second item would corrupt. 261 tests.
+
+## The Hand's idle and the Drifter's idle-buy, closed
+
+Both class-side exemptions the difficulty pass left in `tests/run.test.ts` are
+gone. **The Hand's Braced now needs INPUT to hold its ceiling**: `sinceAbility`
+(player.ts, reset in `World.tryAbility`) measures time since the last Dig In
+press, and past `abilityGraceSeconds` (20s, wider than the 14s cooldown) the
+realised cap drops from 45% to `drMaxStale` (20%). Standing still is still the
+trigger — his identity — only the ceiling a rooted-but-idle player reaches
+moved. Tried and abandoned first: gating the RATE on enemy proximity, which
+barely moved idle-buy (9/24 at 140px) because a stationary bot in the doubled
+opening is swarmed continuously, so "an enemy is near" was never the
+constraint. idle-buy 9/24 → 4/24.
+
+**The Drifter's lifesteal** (0.95%, unchanged) now scales by streak/maxStacks
+in `World.damageEnemy` rather than applying flatly to every point of damage —
+a standing aura's DoT ticks included, which is what let idle-buy farm near-full
+healing off a Smudge Pot with no kill ever landing. idle-buy 6/24 → 4/24,
+kite 11 → 8. Both exemptions retired; all six classes sit under the one
+`IDLE_BUY_CLEAR_CAP = 5`.
+
+**The Veteran and Agronomist move into band without touching the curve.** The
+Veteran: maxHp 115→135, hpRegen 0.5→1.2 (spacer 6→9). Overwatch's near
+penalty was tried first and reverted — halving it broke `vetEnfilade`'s fixed
++20 cancel-out delta in items.json, caught by `tests/sim.test.ts`; that
+coupling is worth remembering. The Agronomist: one stat, `rangePct: 20`, which
+the Chem Sprayer's `rotatingJet` already read and nothing had granted her
+(brawl 5→11).
+
+Final ladder, home pilots: hand 7, kid 12, widow 9, vet 9, agronomist 11,
+drifter 8 — mean 9.3, worst deviation 2.7; idle ≤2 and idle-buy ≤5 for every
+class. The Hand's 7 is one under the nominal floor and was 7 before this pass;
+his standing-over-kiting preference is intact at 14/32 against 3/32. 253 tests
+on the branch; the merged tree's count is in the next entry.
 
 ## The four locked classes now answer the game differently
 
