@@ -203,6 +203,15 @@ export class World {
   /** Bosses killed this run. Worth 25 acres each at the Homestead. */
   bossKills = 0
   cropsHarvested = 0
+  /**
+   * Acres bought with feed rather than earned by play — the Acre Bond shop
+   * sink (`items.json`, `special: 'acreBond'`). Feed is a SIM resource and
+   * acres are a META one earned only at `bankRun` (`meta.ts`), so this is the
+   * one bridge between them: `main.ts`'s `applyOffer` adds to it the instant
+   * the card is bought, and `finishRun` reads it into `RunResult.bonusAcres`
+   * so it survives however the run ends, win or die.
+   */
+  bonusAcres = 0
 
   events: WorldEvents = {}
 

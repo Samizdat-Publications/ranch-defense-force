@@ -7,7 +7,7 @@ import {
 import { Player, hasMod } from '../src/sim/player'
 import { World } from '../src/sim/world'
 import { Spawner } from '../src/sim/spawner'
-import { OfferPool, applySwap, describeItem, loadStatDelta } from '../src/sim/offers'
+import { OfferPool, applySwap, describeItem, loadStatDelta, type Offer } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
 import { CLASSES, ELEMENTS, ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES, elementStat } from '../src/content'
 import { loadItemFor } from '../src/ui/hud'
@@ -651,6 +651,186 @@ describe('OfferPool', () => {
     const added = [...new Set(p.weapons.map((w) => w.id))].find((id) => !before.has(id))
     expect(added, 'a new weapon must have arrived').toBeDefined()
     expect(p.weapons.find((w) => w.id === added)?.tier).toBe(1)
+  })
+
+  /*
+     The shop-sink pass (docs/NOTES.md "the shop never shows fewer than four
+     cards"). The first human playtest reached wave 24 with six weapons at T4
+     and every common item at LAST, and the shop's takeable pool ran dry to
+     exactly one card — the swap. This is that state, built directly rather
+     than played into, because the point is the DRAW's floor, not whether a
+     bot can reach it.
+  */
+  function maxOutPlayer(classId: string): Player {
+    const p = new Player()
+    p.init(classId)
+    const sixGuns = ['scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher']
+    for (const id of sixGuns) p.addWeapon(id) // + the starting weapon = 6
+    for (const id of [p.weapons[0].id, ...sixGuns]) p.addWeapon(id, 3) // 1 -> 4
+    expect(p.weapons.every((w) => w.tier === 4)).toBe(true)
+    // Every capped item pushed straight to its ceiling, bypassing gates and
+    // the draw entirely — `canTakeItem` only looks at the count, so this is a
+    // faithful stand-in for "a run that has taken everything it can".
+    for (const [id, def] of Object.entries(ITEMS)) {
+      const max = typeof def.maxStacks === 'number' ? def.maxStacks : 0
+      if (max <= 0) continue // no ceiling — never the thing going stale
+      for (let i = 0; i < max; i++) p.items.push({ id, boosted: false })
+    }
+    p.resolve()
+    return p
+  }
+
+  it('never shows fewer than four cards in the shop, even to a fully maxed player', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const p = maxOutPlayer(seed % 2 ? 'hand' : 'kid')
+      const pool = new OfferPool(new Rng(seed))
+      pool.beginShopVisit()
+      const board = pool.draw(p, 4, 0, 0, 'shop')
+      expect(board.length, `seed ${seed}`).toBeGreaterThanOrEqual(4)
+      // And a reroll of that same dry board holds too — the sinks are never
+      // banned by the shop's own repeat-visit memory the way a real card is,
+      // because there is nothing else left to fall back to.
+      const reroll = pool.draw(p, 4, 5, 0, 'shop')
+      expect(reroll.length, `seed ${seed} reroll`).toBeGreaterThanOrEqual(4)
+    }
+  })
+
+  it('never puts two of the same sink on one shop board', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const p = maxOutPlayer(seed % 2 ? 'hand' : 'kid')
+      const pool = new OfferPool(new Rng(seed))
+      pool.beginShopVisit()
+      const board = pool.draw(p, 4, 0, 0, 'shop')
+      const ids = board.map((o) => o.id)
+      expect(new Set(ids).size, `seed ${seed}`).toBe(ids.length)
+    }
+  })
+
+  it('guarantees a traded-in weapon its merge card on the very next level-up, and only once', () => {
+    const p = new Player()
+    p.init('hand')
+    for (const id of ['scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher']) {
+      p.addWeapon(id)
+    }
+    expect(p.slotsFull).toBe(true)
+    const pool = new OfferPool(new Rng(9))
+
+    const added = applySwap(p, new Rng(9))
+    expect(added).not.toBeNull()
+    pool.guaranteeMergeNext(added as string)
+
+    const board = pool.draw(p, 4, 0, 0, 'levelup')
+    expect(board.some((o) => o.kind === 'weapon' && o.id === added)).toBe(true)
+
+    // One-shot: the flag is spent the instant the first level-up draws from
+    // it, whether or not the card actually landed on the board (§ the doc
+    // comment on `applyMergeGuarantee`) — inspected directly rather than
+    // inferred from a second board's odds, which is not a guarantee either
+    // way.
+    const flag = pool as unknown as { pendingMergeGuarantee: string | null }
+    expect(flag.pendingMergeGuarantee).toBeNull()
+  })
+
+  it('never guarantees a merge on a shop board — only the next level-up', () => {
+    const p = new Player()
+    p.init('hand')
+    for (const id of ['scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher']) {
+      p.addWeapon(id)
+    }
+    const pool = new OfferPool(new Rng(9))
+    const added = applySwap(p, new Rng(9))
+    expect(added).not.toBeNull()
+    pool.guaranteeMergeNext(added as string)
+
+    pool.beginShopVisit()
+    pool.draw(p, 4, 0, 0, 'shop')
+    // The flag survives a shop draw untouched, ready for the level-up
+    // whenever it comes.
+    const flag = pool as unknown as { pendingMergeGuarantee: string | null }
+    expect(flag.pendingMergeGuarantee).toBe(added)
+  })
+
+  it('never offers the Tier-Up Token once every weapon is already tier 4', () => {
+    const p = maxOutPlayer('hand')
+    const pool = new OfferPool(new Rng(4))
+    for (let i = 0; i < 40; i++) {
+      const board = pool.draw(p, 4, i * 200, 0, 'shop')
+      expect(board.some((o) => o.id === 'tierUpToken'), `draw ${i}`).toBe(false)
+    }
+  })
+})
+
+/*
+   The shop-sink pass (docs/NOTES.md "the shop never shows fewer than four
+   cards"): the five always-on late-game feed sinks, and the price curve that
+   keeps an unlimited item from selling its hundredth copy at its first price.
+*/
+describe('shop sinks (batch 6)', () => {
+  it('heals to full the instant Field Ration is bought', () => {
+    const p = new Player()
+    p.init('hand')
+    p.hp = 1
+    p.addItem('fieldRation')
+    expect(p.hp).toBe(p.stats.maxHp)
+  })
+
+  it('bumps the lowest-tier weapon when a Tier-Up Token is redeemed', () => {
+    const p = new Player()
+    p.init('hand') // starts with the Pitchfork, tier 1
+    // `addWeapon`'s tierJump only applies on a MERGE (the id already owned);
+    // a brand-new weapon always starts at tier 1, so this is two calls.
+    p.addWeapon('scythe')
+    p.addWeapon('scythe', 3) // tier 4 — NOT the lowest
+    expect(p.weapons.find((w) => w.id === 'pitchfork')?.tier).toBe(1)
+
+    p.addItem('tierUpToken')
+
+    expect(p.weapons.find((w) => w.id === 'pitchfork')?.tier).toBe(2)
+    expect(p.weapons.find((w) => w.id === 'scythe')?.tier).toBe(4) // untouched
+  })
+
+  it('never wastes a Tier-Up Token past tier 4', () => {
+    const p = new Player()
+    p.init('hand')
+    p.addWeapon('pitchfork', 3) // the only weapon, already tier 4
+    p.addItem('tierUpToken')
+    expect(p.weapons.find((w) => w.id === 'pitchfork')?.tier).toBe(4)
+  })
+
+  it('prices every later copy of an uncapped sink higher than the last', () => {
+    // A board wide enough to draw the WHOLE candidate pool in one go is
+    // deterministic where a normal four-card board is chance — see
+    // `drawBoard`'s fallback chain, which never leaves a slot empty while
+    // any untaken candidate carries positive weight.
+    const wide = Object.keys(ITEMS).length + 20
+    const costOf = (p: Player, seed: number): number => {
+      const pool = new OfferPool(new Rng(seed))
+      pool.beginShopVisit()
+      const board = pool.draw(p, wide, 0, 0, 'shop')
+      const o = board.find((x) => x.id === 'fieldRation')
+      expect(o, 'fieldRation missing from a full-pool draw').toBeDefined()
+      return (o as Offer).cost
+    }
+    const fresh = new Player()
+    fresh.init('hand')
+    const first = costOf(fresh, 1)
+
+    const seasoned = new Player()
+    seasoned.init('hand')
+    seasoned.addItem('fieldRation')
+    seasoned.addItem('fieldRation')
+    const second = costOf(seasoned, 1)
+
+    expect(second).toBeGreaterThan(first)
+  })
+
+  it('never caps the five sinks — canTakeItem always allows another copy', () => {
+    const p = new Player()
+    p.init('hand')
+    for (const id of ['fieldRation', 'rerollChit', 'acreBond', 'secondHarvest']) {
+      for (let i = 0; i < 10; i++) p.addItem(id)
+      expect(p.canTakeItem(id), id).toBe(true)
+    }
   })
 })
 

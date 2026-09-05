@@ -229,6 +229,10 @@ export interface RunResult {
   bossKills: number
   tier: number
   cleared: boolean
+  /** Acres bought mid-run with feed via the Acre Bond shop sink — see
+   *  `World.bonusAcres`. Optional so every existing caller (and every
+   *  measurement tool that never touches the shop's specials) is unchanged. */
+  bonusAcres?: number
 }
 
 /**
@@ -243,6 +247,7 @@ export function bankRun(s: Save, r: RunResult, seed: number, classId: string): n
   const base = acres.perWaveCleared * r.wavesCleared
     + acres.perBossKill * r.bossKills
     + (firstTime && r.cleared ? acres.firstTimeThisTier : 0)
+    + (r.bonusAcres ?? 0)
   const earned = Math.round(base * tierAcreMultiplier(r.tier))
 
   s.acres += earned

@@ -168,6 +168,22 @@ export function interestOn(feed: number): number {
 }
 
 /**
+ * Price of the Nth copy of an uncapped shop sink (`items.json`'s
+ * `scalesWithStacks: true` — the field ration, tier-up token, reroll chit,
+ * acre bond and second harvest). `stacksOwned` is how many the run already
+ * holds, so the FIRST copy always sells at the card's own listed `cost`.
+ *
+ * These five have no `maxStacks` on purpose — a late shop with every capped
+ * item at LAST and every weapon at tier 4 must still have somewhere to put
+ * unspent feed — so without a growth curve the fifth copy would cost the same
+ * as the first and a run sitting on thousands of feed would never feel the
+ * price at all.
+ */
+export function sinkCost(baseCost: number, stacksOwned: number): number {
+  return Math.round(baseCost * Math.pow(econ.sinkCostGrowth, stacksOwned))
+}
+
+/**
  * §5 damage pipeline. `typePct` is the melee/ranged bonus for this weapon's
  * type — the caller picks which, because only it knows the weapon.
  *

@@ -47,7 +47,9 @@
     "interestPct": 8,
     "interestCap": 12,
     "shopReroll": "3 + 2*rerollsThisShop",
-    "levelReroll": 4
+    "levelReroll": 4,
+    "sinkCostGrowth": 1.18,
+    "_sinkCostGrowthNote": "The always-available shop sinks (fieldRation, tierUpToken, rerollChit, acreBond, secondHarvest — items.json's `scalesWithStacks: true`) have no maxStacks, so without this every copy after the first would sell at the same price forever and a run sitting on thousands of unspent feed would have nowhere real to put it. `sinkCost` in formulas.ts is the truth; this is the number, one knob for all five so they inflate at the same rate."
   },
   "xp": {
     "formula": "ceil(6 + 3*L + 0.9*pow(L,1.55))",

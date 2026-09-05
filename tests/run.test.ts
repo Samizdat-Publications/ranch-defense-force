@@ -111,7 +111,10 @@ function simulate(
 
   const take = (o: Offer): void => {
     if (o.kind === 'weapon') world.player.addWeapon(o.id, o.tierJump)
-    else if (o.kind === 'swap') applySwap(world.player, world.rng)
+    else if (o.kind === 'swap') {
+      const added = applySwap(world.player, world.rng)
+      if (added) offers.guaranteeMergeNext(added)
+    }
     else { world.player.addItem(o.id, o.boosted); world.refreshSpecialItems() }
   }
 

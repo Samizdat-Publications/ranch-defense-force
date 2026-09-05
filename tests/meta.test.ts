@@ -134,6 +134,22 @@ describe('banking a run', () => {
   })
 
   /**
+   * The Acre Bond shop sink (`items.json`, `special: 'acreBond'`) is the
+   * run-to-meta answer to unspent late-game feed — `World.bonusAcres`,
+   * folded in here rather than derived, so a died-mid-run bond still pays:
+   * it was already spent, whatever the run does next.
+   */
+  it('banks the Acre Bond bonus whether or not the run cleared', () => {
+    const s = emptySave()
+    const plain = bankRun(s, { wavesCleared: 8, bossKills: 0, tier: 1, cleared: false }, 1, 'hand')
+    const s2 = emptySave()
+    const withBond = bankRun(
+      s2, { wavesCleared: 8, bossKills: 0, tier: 1, cleared: false, bonusAcres: 9 }, 1, 'hand',
+    )
+    expect(withBond).toBe(plain + 9)
+  })
+
+  /**
    * The bug this guards is the reason `tiersPaid` exists at all: deriving
    * "first time" from `tierCleared` re-paid the bonus on every subsequent
    * clear, which is free acres forever.

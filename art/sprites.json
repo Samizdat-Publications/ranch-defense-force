@@ -567,7 +567,12 @@
       "prop.barbedWire": "barbed_wire_coil.png",
       "prop.scarecrow": "scarecrow.png",
       "prop.scarecrowRotted": "scarecrow_rotted.png",
-      "prop.burnBarrel": "burn_barrel.png"
+      "prop.burnBarrel": "burn_barrel.png",
+      "item.fieldRation": "field_ration.png",
+      "item.tierUpToken": "tier_up_token.png",
+      "item.rerollChit": "reroll_chit.png",
+      "item.acreBond": "acre_bond.png",
+      "item.secondHarvest": "second_harvest.png"
     },
     "conform": true,
     "_conformNote": "Conformed to the authored house palette, like the tilesets. This art was generated before the palette existed and came back on PixelLab's own brighter one \u2014 the yard rooster popped against a muted scene because he was never quantised to it.",
