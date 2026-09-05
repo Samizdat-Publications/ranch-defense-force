@@ -182,8 +182,10 @@ atlas built and the other session's vite server on port 5180 was serving it.
   The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
   The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
   merged. All five roster batches are merged; the roster is 56 → 164 cards. The owner played; his verdicts are the section "The first human
-  playtest" and the passes under it. In flight: bullet art and one active load;
-  difficulty against a human with an idle pilot; then the shop; the key fallback landed and the account tags are refreshed.
+  playtest" and the passes under it. Landed since: bullet art and one active load; difficulty against a human
+  with an idle pilot; the shop sinks, trade-in and ledger. In flight: the class
+  pass against the idle pilot (Hand and Drifter exemptions; Vet and Agronomist
+  under band); the key fallback landed and the account tags are refreshed.
 - **Owner rule, 2026-09-03: generated art gets wired in the same session.**
   Every session has opened by discovering paid-for art nobody claimed. That
   stops: a brief that permits generation requires claiming and wiring, and the
