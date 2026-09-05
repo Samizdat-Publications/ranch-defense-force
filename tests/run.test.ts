@@ -15,6 +15,7 @@
 import { describe, expect, it } from 'vitest'
 import { World } from '../src/sim/world'
 import { OfferPool, applySwap, type Offer } from '../src/sim/offers'
+import { Rng } from '../src/core/rng'
 import { STEP } from '../src/core/loop'
 import { WAVES } from '../src/content'
 
@@ -24,6 +25,14 @@ type Picker = (offers: Offer[]) => Offer | undefined
 const pickNothing: Picker = () => undefined
 /** Whatever came up first. */
 const pickFirst: Picker = (o) => o[0]
+/**
+ * A uniformly random card. The owner's own experiment: "chose every powerup
+ * randomly". Takes an Rng because it must NOT draw off the run's stream — a
+ * choice made there would shift every later sim decision, and then `idle` and
+ * `kite` would not be flying the same arena on the same seed.
+ */
+const pickRandomWith = (rng: Rng): Picker => (offers) =>
+  offers.length ? offers[rng.int(0, offers.length - 1)] : undefined
 /** Merge what we own, then take defence, then anything. */
 const pickSmart: Picker = (offers) => {
   const merge = offers.find((o) => o.mergesTo !== null)
@@ -43,6 +52,14 @@ interface RunResult {
   maxTier: number
   items: number
   seconds: number
+  /**
+   * Enemies alive at exactly t=60s — twenty seconds into wave 2. The opening
+   * waves' density, as one number. The owner's verdict on the build before
+   * session 23 was "waves 1-5 were painfully slow and need double the
+   * enemies", and nothing in this file could have caught that: every other
+   * assertion here is about whether a run ENDS.
+   */
+  aliveAt60s: number
 }
 
 /**
@@ -55,7 +72,26 @@ interface RunResult {
  * still and has an ability that roots it in place. Measuring both classes with
  * a kiting bot reports The Hand as weaker no matter what the game does.
  */
-type Pilot = 'kite' | 'brawl' | 'wander' | 'space'
+/*
+   `idle` is the fifth, and it is the only one that is not a bot's idea.
+
+   Session 23, the owner, on a live build: "I became overpowered by wave 5 ...
+   from that point on I stood still and let it run and chose every powerup
+   randomly and it got to level 22 without me having to move the character at
+   all because it was so OP. I could have gone probably infinitely longer."
+
+   So this pilot moves nowhere, presses nothing, takes a uniformly random card,
+   and leaves every shop without buying. `idle-buy` is the same bot that takes
+   the first card it can afford.
+
+   The point is not that a person plays this way. The point is that the four
+   pilots above are ALSO a floor -- they cannot dodge, aim, or read an offer --
+   and five batches of the upgrade roster were each tuned to keep their clear
+   rate inside a band, which made the game easier for a human every time. A run
+   that nobody is playing must not finish. That bar cannot be gamed by making
+   the bots better, which is what every other bar in this file quietly can be.
+*/
+type Pilot = 'kite' | 'brawl' | 'wander' | 'space' | 'idle'
 
 /**
  * The pilot each class is flown by, and the whole reason the parity test can
@@ -96,6 +132,12 @@ function simulate(
   classId: string,
   pick: Picker,
   pilot: Pilot,
+  /**
+   * What the bot does with a shop board. `'none'` walks out without spending —
+   * the owner banked 4,614 feed doing exactly that. `'firstAffordable'` is
+   * `idle-buy`: it buys, but it does not choose.
+   */
+  shops: 'pick' | 'none' | 'firstAffordable' = 'pick',
 ): RunResult {
   const world = new World(seed, classId)
   const offers = new OfferPool(world.rng)
@@ -116,12 +158,14 @@ function simulate(
   }
 
   let ticks = 0
+  let aliveAt60s = 0
   const maxTicks = 60 * 60 * 25
+  const idle = pilot === 'idle'
   while (!world.over && world.spawner.wave <= WAVES.waveCount && ticks < maxTicks) {
     const t = ticks * STEP
-    let mx = Math.cos(t * 0.6)
-    let my = Math.sin(t * 0.6)
-    if (pilot !== 'wander' && world.enemies.live > 0) {
+    let mx = idle ? 0 : Math.cos(t * 0.6)
+    let my = idle ? 0 : Math.sin(t * 0.6)
+    if (!idle && pilot !== 'wander' && world.enemies.live > 0) {
       let cx = 0
       let cy = 0
       let near = 0
@@ -165,8 +209,10 @@ function simulate(
       }
     }
 
-    world.step(STEP, mx, my, ticks % 400 === 0)
+    // `idle` never presses the ability either.
+    world.step(STEP, mx, my, !idle && ticks % 400 === 0)
     ticks++
+    if (ticks === 60 * 60) aliveAt60s = world.enemies.live
 
     if (pending > 0) {
       const chosen = pick(
@@ -180,9 +226,17 @@ function simulate(
       offers.beginShopVisit()
       // The arena clears at a shop, as it does in the real loop.
       for (let i = world.enemies.live - 1; i >= 0; i--) world.enemies.free(i)
-      for (let s = 0; s < 4; s++) {
-        const o = pick(offers.draw(world.player, 3, world.elapsed, world.player.stats.luck))
-        if (o && world.player.feed >= o.cost) { world.player.feed -= o.cost; take(o) }
+      if (shops === 'none') {
+        // Still opens the board, so the offer stream advances the same way.
+        offers.draw(world.player, 3, world.elapsed, world.player.stats.luck)
+      } else {
+        for (let s = 0; s < 4; s++) {
+          const board = offers.draw(world.player, 3, world.elapsed, world.player.stats.luck)
+          const o = shops === 'firstAffordable'
+            ? board.find((c) => world.player.feed >= c.cost)
+            : pick(board)
+          if (o && world.player.feed >= o.cost) { world.player.feed -= o.cost; take(o) }
+        }
       }
     }
   }
@@ -196,6 +250,7 @@ function simulate(
     maxTier: Math.max(...world.player.weapons.map((w) => w.tier)),
     items: world.player.items.length,
     seconds: world.elapsed,
+    aliveAt60s,
   }
 }
 
@@ -221,18 +276,47 @@ function simulate(
 const SEEDS = Array.from({ length: 24 }, (_, i) => 1009 * (i + 1))
 
 describe('a full run', () => {
-  it('completes all 25 waves on most seeds, in about 17 minutes', () => {
-    // Surveyed rather than pinned to one seed: a single seed passing proves
-    // that seed, and balance work would silently start optimising for it.
+  it('completes all 25 waves on a minority of seeds, in about 17 minutes', () => {
+    /*
+       THE BAR MOVED, AND IT IS THE BAR THAT WAS WRONG.
+
+       This asserted "at least half of them clear" for five milestones, and
+       `formulas.ts` said in as many words that the assertion ENCODED the
+       difficulty target: "A game the owner considers appropriately hard may
+       well clear on fewer than half of seeds, and until somebody says so,
+       every change that makes it harder reads as a regression."
+
+       Session 23 is somebody saying so. The owner played the live build to
+       wave 25 without moving the character, taking random cards, and said he
+       could have gone "probably infinitely longer". These bots cannot dodge,
+       aim or read an offer; a human is comfortably above them, so a bar that
+       makes THEM clear half the time is a bar that makes the game trivial for
+       a person. Five batches of the upgrade roster each retuned something to
+       keep this number up, and every one of those retunes made the real game
+       easier.
+
+       So: a sixth, not a half. Measured after the pass, hand/kite over these
+       twenty-four seeds is 7/24, dying w7-w18 with no boss cluster. A quarter
+       would sit almost exactly on the measurement and turn red on noise; a
+       sixth is two standard deviations of slack below it, the same reasoning
+       the twenty-four-seed comment above uses. If this climbs back over half,
+       the curve has drifted and the fix is the curve.
+
+       Surveyed rather than pinned to one seed: a single seed passing proves
+       that seed, and balance work would silently start optimising for it.
+    */
     const results = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'kite'))
     const cleared = results.filter((r) => r.cleared)
-    expect(cleared.length).toBeGreaterThanOrEqual(Math.ceil(SEEDS.length / 2))
+    expect(cleared.length).toBeGreaterThanOrEqual(Math.ceil(SEEDS.length / 6))
+    expect(cleared.length).toBeLessThan(Math.ceil(SEEDS.length / 2))
 
     for (const r of cleared) {
       // 25 waves x 40s = 1000s. The count went from 24 to 25 so wave 25 —
       // the Duster's wave in §9 — can actually be reached; it never was.
       expect(r.seconds).toBeGreaterThan(940)
       expect(r.seconds).toBeLessThan(1060)
+      // The density pass doubled the opening waves and a cleared run now kills
+      // well over three thousand things; 1000 stays as the floor it always was.
       expect(r.kills).toBeGreaterThan(1000)
       expect(r.maxTier).toBe(4)
     }
@@ -439,4 +523,145 @@ describe('a full run', () => {
     const b = simulate(31337, 'hand', pickSmart, 'kite')
     expect(a).toEqual(b)
   }, 300_000)
+})
+
+/*
+   The floor under the floor.
+
+   Everything above measures a bot that at least moves. Session 23's playtest
+   is the reason that is not enough: the owner played The Widow to wave 25,
+   "stood still and let it run and chose every powerup randomly and it got to
+   level 22 without me having to move the character at all because it was so
+   OP." Five batches of the upgrade roster were each tuned to keep the moving
+   bots inside a clear-rate band, and every one of those retunes made the game
+   easier for a person, because the bots are a FLOOR and the band was being
+   held from below.
+
+   These two bars cannot be satisfied that way. A run nobody is playing must
+   not finish and must not last, on its own money or on the shop's. If a later
+   batch reseeds the offer stream and these go red, the fix is the difficulty
+   curve, not the bot.
+
+   THE BANDS, AND WHERE THEY CAME FROM.
+
+   All measured on the shipped numbers over the twenty-four SEEDS above,
+   session 23, with `npm run probe -- 24 idle`:
+
+       class        idle cleared / median death wave    idle-buy cleared
+       hand              1/24   w12                          8/24
+       kid               0/24   w8.5                         0/24
+       widow             0/24   w9                           2/24
+       vet               0/24   w2.5                         0/24
+       agronomist        0/24   w6                           1/24
+       drifter           1/24   w12                          5/24
+
+   Before this pass, on the same ladder: idle cleared 4/1/0/0/0/7 and idle-buy
+   14/8/4/3/4/9, with idle medians of w12.5, w12, w11.5, w7.5, w8 and w12.
+
+   THE HAND IS THE OUTLIER AND IT IS NOT A BUG IN THE NUMBERS. Braced pays 45%
+   damage reduction for standing still and Dig In roots him: `idle` is not
+   "nobody playing" for The Hand, it is his home pilot with the ability button
+   unplugged and the shop skipped. Session 23 could not close that gap, because
+   closing it means moving Braced and Braced lives in classes.json, which that
+   session did not own. The caps below are therefore stated per class with The
+   Hand's exemption written down rather than hidden inside a looser global bar
+   -- if a later pass touches Braced, tighten HAND_IDLE_BUY_CAP first and
+   delete this paragraph.
+
+   The Veteran is the outlier at the other end: Overwatch charges for contact,
+   so a stationary Vet dies in wave 2 on half the ladder. That is the class
+   working, not the curve failing, which is why the per-class band below only
+   bounds the median from ABOVE, and the six-class pooled median from both.
+*/
+/** No class may clear a run nobody is playing. One seed of slack for The Hand. */
+const IDLE_CLEAR_CAP = 2
+/** With the shop on. Every class but The Hand measured 0-3. */
+const IDLE_BUY_CLEAR_CAP = 5
+/** The Hand's exemption, above. Measured 8/24; it was 14/24 before this pass. */
+const HAND_IDLE_BUY_CAP = 11
+/** Per class, the median death wave must be at or before this. Measured 2.5-12. */
+const IDLE_MEDIAN_MAX = 14
+/** And the six classes together must sit in the opening third. Measured 8.75. */
+const IDLE_POOLED_MEDIAN_MIN = 5
+const IDLE_POOLED_MEDIAN_MAX = 11
+
+describe('a run nobody is playing', () => {
+  const IDLE_CLASSES = Object.keys(HOME_PILOT)
+  /** One stream per (class, seed), so `idle` replays and never touches the sim's. */
+  const idleRun = (seed: number, classId: string, shops: 'none' | 'firstAffordable') =>
+    simulate(seed, classId, pickRandomWith(new Rng(seed ^ 0x9e3779b9)), 'idle', shops)
+  const median = (xs: number[]): number => {
+    const sorted = [...xs].sort((a, b) => a - b)
+    const m = sorted.length >> 1
+    return sorted.length % 2 ? sorted[m] : (sorted[m - 1] + sorted[m]) / 2
+  }
+
+  it('almost never completes a run, and dies in the opening third', () => {
+    const medians: number[] = []
+    for (const classId of IDLE_CLASSES) {
+      const runs = SEEDS.map((s) => idleRun(s, classId, 'none'))
+      const cleared = runs.filter((r) => r.cleared).length
+      const waves = runs.map((r) => r.waveReached)
+      const med = median(waves)
+      medians.push(med)
+      expect(
+        cleared,
+        `${classId} cleared ${cleared}/${SEEDS.length} runs without the player moving`,
+      ).toBeLessThanOrEqual(IDLE_CLEAR_CAP)
+      expect(
+        med,
+        `${classId} idle median death wave ${med} (${waves.join(' ')})`,
+      ).toBeLessThanOrEqual(IDLE_MEDIAN_MAX)
+    }
+    const pooled = median(medians)
+    const table = IDLE_CLASSES.map((c, i) => `${c} ${medians[i]}`).join(', ')
+    expect(pooled, `six-class idle median ${pooled} (${table})`)
+      .toBeGreaterThanOrEqual(IDLE_POOLED_MEDIAN_MIN)
+    expect(pooled, `six-class idle median ${pooled} (${table})`)
+      .toBeLessThanOrEqual(IDLE_POOLED_MEDIAN_MAX)
+  }, 3_600_000)
+
+  it('does not buy its way through on shop money alone', () => {
+    // `idle-buy` takes the first card it can afford and still never moves. The
+    // owner's own wave-24 ledger had 4,614 feed unspent, so this is the
+    // STRONGER of the two do-nothing runs.
+    for (const classId of IDLE_CLASSES) {
+      const cleared = SEEDS
+        .map((s) => idleRun(s, classId, 'firstAffordable'))
+        .filter((r) => r.cleared).length
+      const cap = classId === 'hand' ? HAND_IDLE_BUY_CAP : IDLE_BUY_CLEAR_CAP
+      expect(
+        cleared,
+        `${classId} idle-buy cleared ${cleared}/${SEEDS.length} without moving`,
+      ).toBeLessThanOrEqual(cap)
+    }
+  }, 3_600_000)
+})
+
+/** Measured median 32 over 24 seeds, against 15 before this pass. */
+const EARLY_ALIVE_FLOOR = 20
+
+describe('the opening waves', () => {
+  /*
+     The owner: "waves 1-5 were painfully slow and need double the enemies."
+
+     Nothing in this file could have caught that. Every other assertion here is
+     about whether a run ENDS; none of them looks at how much is on the screen
+     while it runs, and a wave that is boring passes all of them. So this one
+     samples the field at t=60s — twenty seconds into wave 2, past the opening
+     trickle and before the first shop — and asserts a floor.
+
+     The floor is deliberately well under what was measured -- 20 against a
+     measured median of 32, and against 15 before this pass -- because the
+     number a given seed produces depends on how fast the pilot's build happens
+     to be clearing. It is a guard against the density regressing to what the
+     owner called painful, not a pin on today's exact value.
+  */
+  it('puts a crowd on the field by the middle of wave 2', () => {
+    const alive = SEEDS.map((s) => simulate(s, 'hand', pickSmart, 'brawl').aliveAt60s)
+      .sort((a, b) => a - b)
+    const med = alive[alive.length >> 1]
+    expect(med, `only ${med} enemies alive at t=60s (${alive.join(' ')})`)
+      .toBeGreaterThanOrEqual(EARLY_ALIVE_FLOOR)
+  }, 900_000)
 })

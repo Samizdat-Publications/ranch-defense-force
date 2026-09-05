@@ -2,7 +2,7 @@
  * Balance harness: run the whole game many times headlessly and report what
  * happened.
  *
- *   npm run balance -- [runs] [class|both]
+ *   npm run balance -- [runs] [class|both|all] [pilot] [ladder]
  *
  * `tests/run.test.ts` asks yes/no questions — does a run complete, is either
  * class a trap. This asks *how* and *why*: which wave runs die on, what killed
@@ -15,9 +15,18 @@
  * read these numbers as *relative*: the comparison between two runs of this
  * tool across a change is meaningful, the absolute clear rate is not a
  * prediction of how a person will do.
+ *
+ * Session 23 added the sentence that matters more than that one. The owner
+ * played the live build to wave 25 without moving the character, taking
+ * random cards, and reported he could have gone "probably infinitely longer".
+ * **These bots are a FLOOR, not a ceiling, and every batch so far has tuned
+ * the game to the floor.** `idle` and `idle-buy` below are that verdict turned
+ * into an instrument; read them as an absolute bar, not a relative one, and
+ * read kite/brawler/spacer as relative, the way this paragraph always said.
  */
 import { World } from '../src/sim/world.ts'
 import { OfferPool, applySwap, type Offer } from '../src/sim/offers.ts'
+import { Rng } from '../src/core/rng.ts'
 import { CLASSES, WAVES, WEAPONS } from '../src/content/index.ts'
 
 const STEP = 1 / 60
@@ -64,13 +73,47 @@ const pilotArg = process.argv[4] ?? ''
  * far and backing off when the crowd closes. A kiting bot runs to the far wall
  * and a brawling bot lets the crowd inside the penalty ring, so neither of the
  * two existing pilots can measure a spacing class at all.
+ *
+ * `idle` is the owner's own experiment, turned into an instrument. Session 23:
+ * he played The Widow to wave 25, "stood still and let it run and chose every
+ * powerup randomly and it got to level 22 without me having to move the
+ * character at all". So: never moves, never presses the ability, takes a
+ * uniformly random card off every level-up board, and walks out of every shop
+ * without spending. It is the FLOOR OF THE FLOOR — a player who is not playing
+ * — and the whole point of it is that the three pilots above are ALSO a floor.
+ * They cannot dodge, aim or read a card, and five batches of the upgrade
+ * roster were each tuned to keep their clear rate at a bar, which pushed the
+ * game easier for a person every time. `idle` is the bar that cannot be gamed:
+ * if a run that nobody is playing completes, the difficulty is wrong, and no
+ * amount of kite/brawler/spacer agreement says otherwise.
+ *
+ * `idle-buy` is the same bot with the shop turned on — it takes the first card
+ * it can afford — because "unspent feed" and "no build" are two different
+ * failures and the owner's ledger had 4,614 feed banked.
+ *
+ * Neither is in the default sweep: they answer a different question, and
+ * running five pilots per class triples the tool's runtime. Ask for them by
+ * name (`npm run balance -- 24 widow idle`).
  */
-type Pilot = 'kite' | 'brawler' | 'spacer'
+type Pilot = 'kite' | 'brawler' | 'spacer' | 'idle' | 'idle-buy'
 const PILOTS: Pilot[] = pilotArg
   ? [pilotArg as Pilot]
   : ['kite', 'brawler', 'spacer']
 /** The distance `spacer` tries to keep, in pixels. */
 const SPACER_RANGE = 200
+
+/**
+ * A uniformly random card, off a stream of its OWN.
+ *
+ * The idle pilot's coin flips deliberately do not come from `world.rng`: a
+ * choice drawn from the run's stream would shift every later sim decision, so
+ * the same seed would produce a different arena fight for `idle` than for
+ * `kite` and the two pilots could not be compared on it. Seeded off the run
+ * seed, so `idle` still replays.
+ */
+function pickRandom(offers: Offer[], rng: Rng): Offer | undefined {
+  return offers.length ? offers[rng.int(0, offers.length - 1)] : undefined
+}
 
 /** Merge what we own, then take defence, then anything. Mirrors the run test. */
 function pickSmart(offers: Offer[]): Offer | undefined {
@@ -103,6 +146,8 @@ interface Result {
 function simulate(seed: number, classId: string, pilot: Pilot): Result {
   const world = new World(seed, classId)
   const offers = new OfferPool(world.rng)
+  const idle = pilot === 'idle' || pilot === 'idle-buy'
+  const choice = new Rng(seed ^ 0x9e3779b9)
   let pending = 0
   let shopQueued = false
   let feedSpent = 0
@@ -135,9 +180,9 @@ function simulate(seed: number, classId: string, pilot: Pilot): Result {
   const maxTicks = 60 * 60 * 25
   while (!world.over && world.spawner.wave <= WAVES.waveCount && ticks < maxTicks) {
     const t = ticks * STEP
-    let mx = Math.cos(t * 0.6)
-    let my = Math.sin(t * 0.6)
-    if (world.enemies.live > 0) {
+    let mx = idle ? 0 : Math.cos(t * 0.6)
+    let my = idle ? 0 : Math.sin(t * 0.6)
+    if (!idle && world.enemies.live > 0) {
       let cx = 0
       let cy = 0
       let near = 0
@@ -179,13 +224,13 @@ function simulate(seed: number, classId: string, pilot: Pilot): Result {
       }
     }
 
-    world.step(STEP, mx, my, ticks % 400 === 0)
+    // `idle` never presses the ability either — the owner did not.
+    world.step(STEP, mx, my, !idle && ticks % 400 === 0)
     ticks++
 
     if (pending > 0) {
-      const chosen = pickSmart(
-        offers.draw(world.player, 4, world.elapsed, world.player.stats.luck, 'levelup'),
-      )
+      const board = offers.draw(world.player, 4, world.elapsed, world.player.stats.luck, 'levelup')
+      const chosen = idle ? pickRandom(board, choice) : pickSmart(board)
       if (chosen) take(chosen)
       pending--
     }
@@ -196,12 +241,21 @@ function simulate(seed: number, classId: string, pilot: Pilot): Result {
       // that never closes, which is not the shop the player sees.
       offers.beginShopVisit()
       for (let i = world.enemies.live - 1; i >= 0; i--) world.enemies.free(i)
-      for (let s = 0; s < 4; s++) {
-        const o = pickSmart(offers.draw(world.player, 3, world.elapsed, world.player.stats.luck))
-        if (o && world.player.feed >= o.cost) {
-          world.player.feed -= o.cost
-          feedSpent += o.cost
-          take(o)
+      if (pilot === 'idle') {
+        // Opens the board and walks out. The owner's wave-24 ledger had 4,614
+        // feed unspent, so this is the run he actually played.
+        offers.draw(world.player, 3, world.elapsed, world.player.stats.luck)
+      } else {
+        for (let s = 0; s < 4; s++) {
+          const board = offers.draw(world.player, 3, world.elapsed, world.player.stats.luck)
+          const o = pilot === 'idle-buy'
+            ? board.find((c) => world.player.feed >= c.cost)
+            : pickSmart(board)
+          if (o && world.player.feed >= o.cost) {
+            world.player.feed -= o.cost
+            feedSpent += o.cost
+            take(o)
+          }
         }
       }
     }
