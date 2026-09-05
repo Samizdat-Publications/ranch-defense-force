@@ -10,10 +10,11 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 "MUCH better." Still overpowered enough to stand still and never be touched
 from about wave 5 on, but a long way from the level-22 idle run that started
-the retune. His end wave is not in the report yet; that number is what the
-next tuning pass turns on. The dial has not moved this session — the owner's
-rule is to tune from his play, not from the bots, and the bots say only that
-the WIDOW IDLE BOT dies at median wave 9 (`npm run probe -- 24 idle`, all
+the retune. (His end wave came later the same night: he stopped at wave 10,
+"invincible forever"; the second half of this entry is what was done with
+that.) The dial has not moved this session — the owner's rule is to tune
+from his play, not from the bots, and the bots say only that the WIDOW IDLE
+BOT dies at median wave 9 (`npm run probe -- 24 idle`, all
 six classes, 24 seeds, unchanged tree):
 
     class       pilot      cleared  median  min  max
@@ -89,6 +90,111 @@ The Hand before this session, which the owner called great. The Kid's fork
 facing DOWN runs to the ground at her feet; she is 40px tall and the fork is
 31. If either reads wrong in play, `offhand.byClass` is the place and no code
 moves.
+
+## The second answer: he stopped at wave 10, "invincible forever", through card choice
+
+The end wave arrived: he did not die, he quit at wave 10 because nothing could
+touch him, and he put it down to the cards he chose, with a worry that
+something like damage was compounding. So this pass did two things: audited
+the damage pipeline for compounding, and built a bot that picks the way he
+did so the claim could be measured instead of argued about.
+
+### The audit: nothing compounds
+
+`resolveStats` is one additive sum per key. `resolveDamage` is one additive
+percentage sum (damage%, melee/ranged%, Overwatch, mark, Cross-Contamination)
+applied once, then crit, then armour. Per-shot damage is `base x 1.6^(tier-1)`
+into that. Attack speed is capped at +300%, dodge at 60. The on-kill effects
+that scale off `e.maxHp` (Threshing Floor, Reaper, Split Shot, Last Rites)
+share one re-entry guard so a kill cannot chain a kill. The only deliberate
+multiplicative exception is Two Speed's per-weapon rate on the Post Hole Auger,
+written up in `world.ts`. **There is no compounding bug.** The strength is
+the product of independent systems — tier x weapon count x enemy HP curve —
+and that is the design working as written.
+
+### The bot that plays like him: `idle-greedy`
+
+`npm run probe` has two new pilots beside `idle` (random cards, walks past the
+shop) and `idle-buy` (first affordable card): **`idle-smart`** stands still and
+picks merges, then defence, then anything — `tests/run.test.ts`'s `pickSmart`;
+**`idle-greedy`** stands still and picks merges, then a new weapon, then a
+damage/attack-speed/ranged/crit stat, then any on-hit or on-kill rider. Both
+buy at the shop. The table now also prints median contact damage taken by
+wave 10 and over the run, because "untouched" is the owner's word and the
+clear rate does not measure it. `npm run dump -- <class> <seed> <pilot>`
+narrates one such run wave by wave: level, hp, every weapon and tier, every
+card taken, damage dealt and taken. Both are in `tools/`.
+
+`idle-greedy` reproduces him. Widow, 24 seeds, unchanged tree: **9/24
+cleared, median 14 contact damage by wave 10.** The narrated runs (seeds
+1009, 2018, 3027, all cleared) are the same story three times: six weapons by
+wave 4, first T3 at wave 5, first T4 at wave 7, every weapon T4 by wave 14,
+**zero stat cards until wave 15**, 0-17 contact damage through wave 11.
+Enemy hp at wave 10 is 2.9x base; six T4 weapons are 24x base damage.
+
+Then all six classes, and this is the finding of the session:
+
+    class       idle    idle-buy  idle-smart  idle-greedy   greedy dmg by w10
+    hand        0/24     4/24      7/24       18/24            46
+    kid         1/24     2/24     11/24       12/24             3
+    widow       0/24     2/24      2/24        9/24            14
+    vet         0/24     0/24      1/24       16/24           124
+    agronomist  2/24     1/24      7/24       20/24            15
+    drifter     0/24     4/24      8/24       14/24            47
+
+**A player who stands still and takes weapons and merges clears the game on
+every class but the Widow, and she is the weakest at it.** The moving home
+pilots (`pickSmart`) clear 6-9/24. Standing still with the right cards beats
+moving with the wrong ones by two to three times, and the previous session's
+idle assertions (random cards, cap 2; first-affordable, cap 5) never saw it
+because neither of those bots chooses.
+
+### Four levers, measured, none of them it
+
+Each on the Widow unless noted, 24 seeds, `idle-greedy` cleared / contact
+damage by wave 10 / Widow home pilot cleared:
+
+| lever | greedy | dmg by w10 | home | note |
+|---|---|---|---|---|
+| as shipped | 9/24 | 14 | 6/24 | |
+| `waveHpScalar` quadratic 0.014 → 0.02 | 6/24 | 11 | 5/24 | deaths move LATER (median w18); still untouched |
+| quadratic → 0.026 | 3/24 | 27 | 3/24 | costs the mover as much as the idler |
+| `xp.exponent` 1.85 → 2.0 | 3/24 | 9 | 5/24 | the cleanest number, and still untouched to w10; 2.1 was the wall last session |
+| merge gate: T3 from wave 6, T4 from wave 11 (built, measured, reverted) | 5/24 | 16 | 5/24 | Hand greedy 18 → 17. The kit at T2-T3 already consumes waves 4-12 |
+| enemy move speed +2.5%/wave (built, measured, reverted) | 4/24 | 23 | **9/24** | the mover gets BETTER: arrivals are xp. Hand greedy 18 → 16 |
+
+The hp curve and the xp exponent move WHEN a run ends. The gate and the speed
+move nothing that matters. All of them leave "untouched through wave 10"
+standing, because the thing that produces it is not a number on the curve: a
+six-weapon kit at any tier kills a steady trickle from the arena edge before
+it arrives, and waves 4-18 are a steady trickle from the arena edge. Wave 20
+walks in exactly the way wave 1 does — there is no per-wave speed, spawn
+distance or arrival shape in the game, only more bodies with more hp, and
+bodies are xp. Session 23's note said it: every lever on the curve feeds the
+same loop.
+
+### What is open, and it is the owner's call
+
+The bar is now measurable — `idle-greedy` on all six classes — and it is not
+in `tests/run.test.ts` yet because it would fail on `main` today and the fix
+is a design decision, not a dial:
+
+1. **Is standing still supposed to lose on every class?** The Hand is built
+   to stand still (Braced, Dig In, 165 hp), and at 18/24 he is the best at
+   it. If the answer is "everyone but him", that is a per-class bar.
+2. **The candidates that do not feed the loop**, in the order this session
+   would measure them: **weapon slots that open over the run** (three at the
+   start, one more at each shop — a greedy picker cannot have six weapons by
+   wave 4, and it touches nothing else); `weaponOfferWeight` down from 6
+   (measured up to 6 in the roster pass against the home pilots, never
+   against a greedy idler); a share of each wave that spawns close, behind,
+   or as a burst rather than a trickle (arrival shape, not arrival count).
+3. The xp exponent at 2.0 is the fallback if none of those is wanted: it
+   takes the Widow from 9 to 3 without touching the opening, and the home
+   ladder held at 5/24.
+
+Nothing in the sim changed this pass. The probe pilots, the dump tool and
+these numbers are what landed.
 
 ---
 
@@ -262,10 +368,13 @@ is in flight. Run `git fetch && git status` anyway.
 
 ### What the next session does first
 
-- **Get the owner's END WAVE from the second playtest** — session 24 has his
-  verdict on The Widow ("MUCH better", still untouchable standing still from
-  about wave 5) but not where the run ended; see the session 24 entry for which
-  dial each answer moves. Every number is bots plus two evenings of his play. If the opening is
+- **Decide what standing still is allowed to do.** Session 24 measured it: a
+  bot that stands still and takes weapons and merges (`npm run probe`'s
+  `idle-greedy`) clears the game on five of six classes; the owner quit his
+  Widow run at wave 10 untouched. Four curve levers were measured and none
+  reach it; the candidates that do not feed the xp loop are listed at the end
+  of the session 24 entry, weapon slots opening over the run first. That is a
+  design call for the owner before any dial moves. If the opening is
   now too hard, `xp.exponent` in `waves.json` is the one dial; if standing still
   still wins, the idle pilot's caps in `tests/run.test.ts` are the bar to
   tighten and `classes.json` the place.

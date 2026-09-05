@@ -62,7 +62,7 @@ function applySpec(spec: string): void {
   }
 }
 
-type Pilot = 'kite' | 'brawl' | 'space' | 'idle' | 'idle-buy'
+type Pilot = 'kite' | 'brawl' | 'space' | 'idle' | 'idle-buy' | 'idle-smart' | 'idle-greedy'
 
 const HOME_PILOT: Record<string, Pilot> = {
   hand: 'brawl',
@@ -83,6 +83,27 @@ const pickSmart = (offers: Offer[]): Offer | undefined => {
   return defensive ?? offers[0]
 }
 
+/**
+ * Offence first, the way a player who wants the crowd dead before it arrives
+ * picks: merge what we own, take a new weapon, take a damage / attack-speed /
+ * ranged / crit / projectile stat, take any on-hit or on-kill rider, then
+ * anything. Session 24: the owner stood still as The Widow and was 'invincible
+ * forever' by wave 10 through card choice alone; `idle` and `idle-buy` cannot
+ * reproduce a run like that because neither CHOOSES.
+ */
+const pickGreedy = (offers: Offer[]): Offer | undefined => {
+  const merge = offers.find((o) => o.mergesTo !== null)
+  if (merge) return merge
+  const weapon = offers.find((o) => o.kind === 'weapon')
+  if (weapon) return weapon
+  const offence = offers.find((o) =>
+    (o.mods.damagePct ?? 0) > 0 || (o.mods.attackSpeedPct ?? 0) > 0 || (o.mods.rangedPct ?? 0) > 0
+    || (o.mods.critChancePct ?? 0) > 0 || (o.mods.projectileCount ?? 0) > 0 || (o.mods.meleePct ?? 0) > 0)
+  if (offence) return offence
+  const rider = offers.find((o) => o.category === 'onHit' || o.category === 'onKill' || o.category === 'rider')
+  return rider ?? offers[0]
+}
+
 interface Probe {
   cleared: boolean
   waveReached: number
@@ -96,6 +117,10 @@ interface Probe {
   peakAlive: number
   ceilingSeconds: number
   aliveAt60s: number
+  /** What the field threw at the player over the run (`damageTakenFromContact`). */
+  damageTaken: number
+  /** ...and by the end of wave 10, which is where the owner stopped. */
+  damageTakenByW10: number
 }
 
 function simulate(seed: number, classId: string, pilot: Pilot): Probe {
@@ -105,7 +130,9 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
   const choice = new Rng(seed ^ 0x9e3779b9)
   let pending = 0
   let shopQueued = false
-  const idle = pilot === 'idle' || pilot === 'idle-buy'
+  const idle = pilot.startsWith('idle')
+  const idlePick = pilot === 'idle-smart' ? pickSmart : pilot === 'idle-greedy' ? pickGreedy : null
+  let damageTakenByW10 = -1
 
   const alivePerWave = new Array<number>(WAVES.waveCount + 2).fill(0)
   const aliveSamples = new Array<number>(WAVES.waveCount + 2).fill(0)
@@ -117,6 +144,7 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
     onLevelUp: (n) => { pending += n },
     onWaveComplete: (wave) => {
       if ((WAVES.shopAfterWaves as number[]).includes(wave)) shopQueued = true
+      if (wave === 10) damageTakenByW10 = world.damageTakenFromContact
     },
   }
 
@@ -189,9 +217,11 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
 
     if (pending > 0) {
       const board = offers.draw(world.player, 4, world.elapsed, world.player.stats.luck, 'levelup')
-      const chosen = idle
-        ? (board.length ? board[choice.int(0, board.length - 1)] : undefined)
-        : pickSmart(board)
+      const chosen = idlePick
+        ? idlePick(board)
+        : idle
+          ? (board.length ? board[choice.int(0, board.length - 1)] : undefined)
+          : pickSmart(board)
       if (chosen) take(chosen)
       pending--
     }
@@ -205,9 +235,12 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
       } else {
         for (let s = 0; s < 4; s++) {
           const board = offers.draw(world.player, 3, world.elapsed, world.player.stats.luck)
+          const affordable = board.filter((c) => world.player.feed >= c.cost)
           const o = pilot === 'idle-buy'
-            ? board.find((c) => world.player.feed >= c.cost)
-            : pickSmart(board)
+            ? affordable[0]
+            : idlePick
+              ? idlePick(affordable)
+              : pickSmart(board)
           if (o && world.player.feed >= o.cost) { world.player.feed -= o.cost; take(o) }
         }
       }
@@ -224,6 +257,8 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
     peakAlive,
     ceilingSeconds,
     aliveAt60s,
+    damageTaken: world.damageTakenFromContact,
+    damageTakenByW10: damageTakenByW10 < 0 ? world.damageTakenFromContact : damageTakenByW10,
   }
 }
 
@@ -243,15 +278,17 @@ const hist = (rs: Probe[]): string => {
 function report(): void {
   if (what === 'idle' || what === 'all') {
     console.log(`
---- idle / idle-buy (${runs} seeds each) ---`)
-    console.log('class       pilot      cleared  median  min  max   deaths')
+--- idle / idle-buy / idle-smart / idle-greedy (${runs} seeds each) ---`)
+    console.log('class       pilot        cleared  median  min  max  dmg<=w10  dmg/run  deaths')
     for (const cls of Object.keys(HOME_PILOT).filter((c) => !only.length || only.includes(c))) {
-      for (const p of ['idle', 'idle-buy'] as Pilot[]) {
+      for (const p of ['idle', 'idle-buy', 'idle-smart', 'idle-greedy'] as Pilot[]) {
         const rs = SEEDS.map((s) => simulate(s, cls, p))
         const w = rs.map((r) => r.waveReached)
         console.log(
-          `${cls.padEnd(11)} ${p.padEnd(9)} ${String(rs.filter((r) => r.cleared).length).padStart(3)}/${runs}` +
-          `  ${String(median(w)).padStart(5)}  ${String(Math.min(...w)).padStart(3)}  ${String(Math.max(...w)).padStart(3)}   ${hist(rs)}`,
+          `${cls.padEnd(11)} ${p.padEnd(11)} ${String(rs.filter((r) => r.cleared).length).padStart(3)}/${runs}` +
+          `  ${String(median(w)).padStart(5)}  ${String(Math.min(...w)).padStart(3)}  ${String(Math.max(...w)).padStart(3)}` +
+          `  ${String(Math.round(median(rs.map((r) => r.damageTakenByW10)))).padStart(7)}` +
+          `  ${String(Math.round(median(rs.map((r) => r.damageTaken)))).padStart(7)}  ${hist(rs)}`,
         )
       }
     }
