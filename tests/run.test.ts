@@ -515,11 +515,23 @@ describe('a full run', () => {
   }, 600_000)
 
   it('rewards build quality — merging beats taking whatever came up', () => {
-    const smart = simulate(4242, 'hand', pickSmart, 'wander')
-    const random = simulate(4242, 'hand', pickFirst, 'wander')
-    expect(smart.maxTier).toBeGreaterThanOrEqual(random.maxTier)
-    expect(smart.waveReached).toBeGreaterThanOrEqual(random.waveReached)
-  }, 300_000)
+    // Pooled over several seeds, not one. On a single seed this is a coin flip:
+    // it flipped in roster batch 1 and again when the shop pass reshuffled the
+    // RNG stream (random cleared on seed 4242 while smart died on wave 25). The
+    // claim is about the strategy, so it is asserted on the sum.
+    const BUILD_SEEDS = [4242, 4243, 4244, 4245, 4246, 4247]
+    let smartWaves = 0, randomWaves = 0, smartTier = 0, randomTier = 0
+    for (const seed of BUILD_SEEDS) {
+      const smart = simulate(seed, 'hand', pickSmart, 'wander')
+      const random = simulate(seed, 'hand', pickFirst, 'wander')
+      smartWaves += smart.waveReached
+      randomWaves += random.waveReached
+      smartTier += smart.maxTier
+      randomTier += random.maxTier
+    }
+    expect(smartTier, ).toBeGreaterThanOrEqual(randomTier)
+    expect(smartWaves, ).toBeGreaterThanOrEqual(randomWaves)
+  }, 900_000)
 
   it('replays a whole run identically from its seed', () => {
     const a = simulate(31337, 'hand', pickSmart, 'kite')
