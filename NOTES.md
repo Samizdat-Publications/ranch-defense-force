@@ -4,6 +4,95 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 24 — the second playtest, and the fork stays in her hands
+
+## What the owner reported (The Widow, on the live site, 2026-09-05)
+
+"MUCH better." Still overpowered enough to stand still and never be touched
+from about wave 5 on, but a long way from the level-22 idle run that started
+the retune. His end wave is not in the report yet; that number is what the
+next tuning pass turns on. The dial has not moved this session — the owner's
+rule is to tune from his play, not from the bots, and the bots say only that
+the WIDOW IDLE BOT dies at median wave 9 (`npm run probe -- 24 idle`, all
+six classes, 24 seeds, unchanged tree):
+
+    class       pilot      cleared  median  min  max
+    hand        idle        0/24     10    6   15
+    hand        idle-buy    4/24     12    6   26
+    kid         idle        1/24      9    3   26
+    kid         idle-buy    2/24   10.5    3   26
+    widow       idle        0/24      9    4   15
+    widow       idle-buy    2/24      9    4   26
+    vet         idle        0/24    7.5    2   18
+    vet         idle-buy    0/24      8    2   14
+    agronomist  idle        2/24    9.5    3   26
+    agronomist  idle-buy    1/24     12    3   26
+    drifter     idle        0/24     11    2   22
+    drifter     idle-buy    4/24   11.5    2   26
+
+So the gap between "the idle bot dies at 9" and "a human standing still is
+untouchable from 5" is card choice: `idle-buy` takes the first card it can
+afford, the owner takes the right one. When his end wave arrives: if he
+cleared or got past ~18 standing still, the idle-buy cap in
+`tests/run.test.ts` is the bar to tighten and `xp.exponent` in `waves.json`
+the dial; if he died in the teens, the opening is right and only the
+mid-game (waves 5-12) wants steeper `waveHpScalar` — the probe's 4th argument
+sweeps `hplin`/`hpq` without editing JSON.
+
+## The pitchfork, on a class whose primary is a gun
+
+The owner's second note: on The Hand the fork is his, a clear thrust left,
+right, up, down. On The Widow it "comes in diagonal so it looks like it's
+sort of on her back arbitrarily spinning around". He asked for the Hand's
+look on every class that can hold a fork.
+
+**Cause.** The `hand` anchor belongs to whichever weapon fired last
+(`slot.firedAt`). On The Hand the fork fires often enough to hold it. On The
+Widow the rifle takes the hand back between every jab, so the fork snapped
+between her hands (aimed, thrusting) and a slung diagonal on her back several
+times a second. Not a bad angle — a weapon with no business having a resting
+pose at all.
+
+**Fix, in content, so both painters inherit it.** `carryHeld: true` on the
+pitchfork in `weapons.json`. `assignCarrySlots` writes such a weapon
+`offhand` before any other rule runs: it does not win the hand by firing, it
+takes no resting slot, and it does not stop the last-fired weapon being held
+beside it. `isHeldSlot()` is the one place that says which anchors are held
+(aim, kick, lunge); the renderer and `tools/draw-world.ts` both call it
+rather than comparing against `'hand'` themselves.
+
+**Why a second anchor and not `hand` itself.** The first cut put the fork at
+`hand`, and the facings sheet showed the rifle GONE: the tool aims every
+weapon along the facing, so rifle and fork landed on the same pixels and the
+fork drew last. In play the rifle tracks its target, so that happens whenever
+the target is where she faces, which for the thing she is walking toward is
+often. `offhand` in `tuning.json` is a few pixels off `hand` on the far side
+and a rung lower — rifle at the shoulder, fork at the waist — with `byClass`
+rows for The Hand, The Kid and The Widow matching their `hand` overrides. Not
+in `fallbackOrder`, named by nothing else, so no gun can rest there.
+
+**Retired with it.** `classSlot.hand.pitchfork: "back"` — the fork never
+rests now, so the entry was dead. The `_handNote` on the back slot says so.
+The Hand's back override itself stays; it is for the guns he picks up.
+
+**Verified.** `npm run facings` for The Widow (rifle held, fork alongside;
+full kit), The Hand (fork alone), The Kid (scattergun and fork): the fork
+points where they face on all four facings, the guns are visible beside it.
+The six sheets under `docs/progress/carry-facings-*.png` are regenerated.
+Two tests in `tests/world.test.ts`: the fork is `offhand` whichever of it or
+the rifle fired last, and with six weapons the five resting anchors go to
+the five guns, none of them `hand` or `offhand`.
+
+**Known, not done.** Facing UP, the fork is drawn behind the body like
+everything at `hand` is, so only the tines show above the head — the same as
+The Hand before this session, which the owner called great. The Kid's fork
+facing DOWN runs to the ground at her feet; she is 40px tall and the fork is
+31. If either reads wrong in play, `offhand.byClass` is the place and no code
+moves.
+
+---
+
+
 # RESOLVED — the 2fps was a backgrounded window; here is what was measured on the way
 
 **Read this before anything else in the performance line.** The owner reports
@@ -173,8 +262,10 @@ is in flight. Run `git fetch && git status` anyway.
 
 ### What the next session does first
 
-- **Ask the owner how the second playtest went** — a class other than the
-  Widow. Every number is bots plus one evening of his play. If the opening is
+- **Get the owner's END WAVE from the second playtest** — session 24 has his
+  verdict on The Widow ("MUCH better", still untouchable standing still from
+  about wave 5) but not where the run ended; see the session 24 entry for which
+  dial each answer moves. Every number is bots plus two evenings of his play. If the opening is
   now too hard, `xp.exponent` in `waves.json` is the one dial; if standing still
   still wins, the idle pilot's caps in `tests/run.test.ts` are the bar to
   tighten and `classes.json` the place.

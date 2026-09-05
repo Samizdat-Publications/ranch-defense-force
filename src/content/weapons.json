@@ -402,6 +402,7 @@
     "behaviour": "arcSwing",
     "carry": "hand",
     "carrySprite": "carry.pitchfork",
+    "carryHeld": true,
     "carryHeight": 31,
     "carryPivot": 0.18,
     "carryAim": true,

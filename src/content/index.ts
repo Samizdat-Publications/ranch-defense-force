@@ -723,7 +723,7 @@ export const ALL_ENEMY_IDS = Object.keys(ENEMIES)
  * No weapon names them and the assignment loop cannot reach them.
  */
 export type CarrySlot =
-  | 'hand' | 'back' | 'backX' | 'shoulder' | 'hipR' | 'hipL' | 'beltR' | 'beltL'
+  | 'hand' | 'offhand' | 'back' | 'backX' | 'shoulder' | 'hipR' | 'hipL' | 'beltR' | 'beltL'
 
 /** Where a slot sits for one facing. See tuning.json -> carry. */
 export interface CarryAnchor {
@@ -865,6 +865,40 @@ export function carryAimsOf(weaponId: string): boolean {
   return WEAPONS[weaponId]?.carryAim === true
 }
 
+/**
+ * True when the weapon is ALWAYS drawn as held: at the `hand` anchor, pointed
+ * where he faces, lunging when it fires, on every class and whatever else he
+ * owns.
+ *
+ * The pitchfork. The hand slot belongs to whichever weapon fired last, and on
+ * The Hand that is the fork often enough that it reads as his: a clear thrust
+ * left, right, up, down. Give the same fork to The Widow and her rifle takes
+ * the hand back between every jab, so the fork snapped between her hands and
+ * a slung diagonal on her back several times a second -- the owner's words
+ * were "arbitrarily spinning around". A weapon that stabs where you face has
+ * no resting pose worth drawing; it is held or it is nothing.
+ *
+ * It never competes for the hand and never claims a resting slot, so the
+ * weapon that fired last still goes to his hands beside it, and the five
+ * anchors are left to the guns. It draws at `offhand`, a second held anchor a
+ * few pixels off `hand` -- the facings sheet showed why: the tool aims every
+ * weapon along the facing, the rifle and the fork landed on the same pixels,
+ * and the rifle was simply gone under the fork. In play the rifle tracks its
+ * target, so that happens whenever the target is where she faces.
+ */
+export function carryHeldOf(weaponId: string): boolean {
+  return WEAPONS[weaponId]?.carryHeld === true
+}
+
+/**
+ * Is this anchor one he HOLDS? Held weapons aim, kick and lunge; resting ones
+ * hang at their slot's angle. Both painters ask this rather than comparing
+ * against `'hand'` themselves, so a second held anchor cannot split them.
+ */
+export function isHeldSlot(slot: CarrySlot | null | undefined): boolean {
+  return slot === 'hand' || slot === 'offhand'
+}
+
 /** Extra rotation on top of the slot's resting angle, radians. */
 export function carryAngleOf(weaponId: string): number {
   const a = WEAPONS[weaponId]?.carryAngle
@@ -1002,6 +1036,11 @@ const CARRY_MUZZLE_FALLBACK =
  *  4. `hand` is never a resting destination: it is not in `fallbackOrder` at
  *     all, so a weapon that declares `hand` and is not the active one falls to
  *     the front of the order instead of stacking on the held weapon.
+ *  0. Before any of that: a weapon that declares `carryHeld` is in his hands
+ *     ALWAYS. It is written `offhand` and skipped by every rule below -- it
+ *     does not win the hand by firing, it does not take a resting slot, and it
+ *     does not stop the last-fired weapon being held beside it. See
+ *     `carryHeldOf`.
  *
  * Six inventory slots against `hand` plus five anchors means this always fits,
  * so there is no overflow case and nothing is ever dropped.
@@ -1018,6 +1057,7 @@ export function assignCarrySlots(
   let latest = 0
   for (let i = 0; i < n; i++) {
     if (carrySlotOf(weapons[i].id, classId) === 'none') continue
+    if (carryHeldOf(weapons[i].id)) continue
     if (hand < 0 || weapons[i].firedAt > latest) {
       hand = i
       latest = weapons[i].firedAt
@@ -1027,13 +1067,17 @@ export function assignCarrySlots(
   // A bitmask rather than a scratch array: five anchors, no allocation, and
   // nothing to reset between calls.
   let taken = 0
-  for (let i = 0; i < n; i++) out[i] = null
+  for (let i = 0; i < n; i++) {
+    out[i] = carryHeldOf(weapons[i].id) && carrySlotOf(weapons[i].id, classId) !== 'none'
+      ? 'offhand'
+      : null
+  }
 
   // The class's own postures claim their slots first. See rule 2.
   const prefs = classId ? CARRY.classSlot?.[classId] : undefined
   if (prefs) {
     for (let i = 0; i < n; i++) {
-      if (i === hand || carrySlotOf(weapons[i].id) === 'none') continue
+      if (i === hand || out[i] || carrySlotOf(weapons[i].id) === 'none') continue
       const pref = prefs[weapons[i].id]
       if (!pref) continue
       const idx = order.indexOf(pref)

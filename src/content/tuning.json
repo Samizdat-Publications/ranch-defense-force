@@ -175,9 +175,6 @@
   "_classNote": "Each class carries its kit its own way, and it is the cheapest characterisation in the game: no new art, no new stat, one block of numbers. A slot's four facings are the DEFAULT; `byClass` beside them overrides any field of any facing for one class, and only the fields it names -- so `{ \"dy\": -40 }` raises a shoulder without restating its dx, its depth or its angle. `classSlot` is the other half: it overrides which RESTING slot a weapon asks for, for one class, which is how the Veteran's drum gun goes to his shoulder when weapons.json says every drum gun rides on the back. A `classSlot` entry claims its anchor BEFORE pickup order gets a look in, and it has to: the drum gun and the Varmint Rifle both declare `back`, so whichever was picked up first won it, and the Veteran shouldered his rifle only on the runs where he happened not to own one. Both are resolved into complete anchors ONCE at load, so the merge never runs in the frame loop and the loadout still allocates nothing.",
   "_classPickNote": "The overrides were chosen to be VISIBLE, and that ruled out the obvious ones. A class's starting weapon is the weapon it fires, so it is in his hands almost every frame of the run and its RESTING slot is the thing you never see: a low hip holster for the scattergun The Kid never holsters would have been a change nobody could photograph. So the two classes whose signature is about the held weapon -- The Kid low at the hip, The Widow braced in on the centreline -- move the `hand` anchor, and the four whose signature is a weapon at rest move the resting one.",
   "classSlot": {
-   "hand": {
-    "pitchfork": "back"
-   },
    "widow": {
     "varmintRifle": "backX"
    },
@@ -274,6 +271,89 @@
      }
     }
    },
+   "_offhandNote": "The OTHER hand. A weapon that declares `carryHeld` in weapons.json -- the pitchfork -- is drawn held on every frame, on every class, whatever fired last, and it draws here rather than at `hand` because the facings sheet put the rifle and the fork on the same pixels and the rifle disappeared under the fork. A few pixels off `hand` on the far side and a rung lower: rifle at the shoulder, fork at the waist, both pointed where he faces. Not in `fallbackOrder` and named by nothing in weapons.json, so no gun can ever rest here. `angle` is inert -- everything that lands here aims.",
+   "offhand": {
+    "down": {
+     "dx": -7,
+     "dy": -21,
+     "behind": false,
+     "flip": false,
+     "angle": 0.35
+    },
+    "up": {
+     "dx": 7,
+     "dy": -23,
+     "behind": true,
+     "flip": false,
+     "angle": -0.35
+    },
+    "left": {
+     "dx": -8,
+     "dy": -19,
+     "behind": false,
+     "flip": true,
+     "angle": 0.35
+    },
+    "right": {
+     "dx": 8,
+     "dy": -19,
+     "behind": false,
+     "flip": false,
+     "angle": 0.35
+    },
+    "byClass": {
+     "hand": {
+      "down": {
+       "dy": -25
+      },
+      "up": {
+       "dy": -26
+      },
+      "left": {
+       "dy": -23
+      },
+      "right": {
+       "dy": -23
+      }
+     },
+     "kid": {
+      "down": {
+       "dx": -9,
+       "dy": -14
+      },
+      "up": {
+       "dx": 9,
+       "dy": -15
+      },
+      "left": {
+       "dx": -10,
+       "dy": -14
+      },
+      "right": {
+       "dx": 10,
+       "dy": -14
+      }
+     },
+     "widow": {
+      "down": {
+       "dx": -4,
+       "dy": -23
+      },
+      "up": {
+       "dx": 4,
+       "dy": -24
+      },
+      "left": {
+       "dx": -5,
+       "dy": -22
+      },
+      "right": {
+       "dx": 5,
+       "dy": -22
+      }
+     }
+    }
+   },
    "back": {
     "down": {
      "dx": 5,
@@ -304,7 +384,7 @@
      "angle": -1.152
     },
     "byClass": {
-     "_handNote": "The Hand's back slot is NOT the pitchfork's private anchor and must not be tuned as if it were. `classSlot` claims it for the fork only on the frames the fork is not the one he just used; six auto-firing weapons hand that slot back and forth all run, so a slung rifle rests here too. It was briefly set to -2.721 -- a quarter turn, to keep the fork standing over his shoulder the way its old 3/4 icon did -- and that stands a RIFLE up like a post, which is the exact pose `_slingNote` records the owner rejecting. Left at -1.15. The carried fork is side-on and points right like the six guns now, so it slings on a back and hangs down a thigh the way they do, at every slot, with no per-weapon `carryAngle` at all: the correction `_twoFamiliesNote` wanted, arrived at by fixing the ART rather than the angles.",
+     "_handNote": "The pitchfork no longer rests here, or anywhere: it declares `carryHeld` in weapons.json and is drawn in his hands on every frame, on every class, pointed where he faces (the owner, playing The Widow: her rifle took the hand back between every jab and the fork snapped between her hands and a slung diagonal on her back several times a second). The `classSlot` entry that used to send The Hand's fork to his back is gone with it. The Hand's back override stays for the guns he picks up. The history, because the angle has been wrong twice: six auto-firing weapons hand the slot back and forth all run, so a slung rifle rests here. It was briefly set to -2.721 -- a quarter turn, to keep the fork standing over his shoulder the way its old 3/4 icon did -- and that stands a RIFLE up like a post, which is the exact pose `_slingNote` records the owner rejecting. Left at -1.15. The carried fork is side-on and points right like the six guns now, so it slings on a back and hangs down a thigh the way they do, at every slot, with no per-weapon `carryAngle` at all: the correction `_twoFamiliesNote` wanted, arrived at by fixing the ART rather than the angles.",
      "hand": {
       "down": {
        "dy": -29,

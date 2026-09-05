@@ -16,6 +16,7 @@ import { readAtlas, type AtlasFrame } from './atlas-read.ts'
 import { Rng } from '../src/core/rng.ts'
 import {
   CARRY, ITEMS, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf, carryAnchorOf,
+  isHeldSlot,
   carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf, decalKindsFor, projectileScaleFor,
   sceneryKindsFor, swingStyleOf, thrustPhase,
   type CarrySlot, type MapBoundary,
@@ -1080,7 +1081,7 @@ export class WorldPainter {
         ?? frames[`weapon.${slot.id}`]
       if (!f) continue
 
-      const held = anchorSlot === 'hand'
+      const held = isHeldSlot(anchorSlot)
       const kick = held && slot.recoil > 0
         ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
         : 0

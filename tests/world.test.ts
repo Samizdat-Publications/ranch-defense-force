@@ -513,3 +513,48 @@ describe('the aura weapon', () => {
     expect(out[1]).toBe('hand')
   })
 })
+
+describe('the pitchfork is held, always', () => {
+  // The owner, playing The Widow: her rifle took the hand back between every
+  // jab, so the fork snapped between her hands and a slung diagonal on her
+  // back several times a second. A weapon that stabs where you face has no
+  // resting pose; `carryHeld` keeps it in the hand on every class.
+  it('stays in the hand when the rifle fired last, and the rifle is held beside it', async () => {
+    const { assignCarrySlots } = await import('../src/content')
+    const w = new World(14, 'widow')
+    w.player.addWeapon('pitchfork')
+    const rifle = w.player.weapons[0]
+    const fork = w.player.weapons[1]
+    expect(rifle.id).toBe('varmintRifle')
+    expect(fork.id).toBe('pitchfork')
+    const out: (string | null)[] = [null, null, null, null, null, null, null, null]
+
+    fork.firedAt = 10
+    rifle.firedAt = 20
+    assignCarrySlots(w.player.weapons, out as never, 'widow')
+    expect(out[0]).toBe('hand')
+    expect(out[1]).toBe('offhand')
+
+    // The other way round, the same answer: firing last no longer matters to it.
+    fork.firedAt = 30
+    assignCarrySlots(w.player.weapons, out as never, 'widow')
+    expect(out[0]).toBe('hand')
+    expect(out[1]).toBe('offhand')
+  })
+
+  it('takes no resting slot, so the five anchors are left to the guns', async () => {
+    const { assignCarrySlots } = await import('../src/content')
+    const w = new World(14, 'hand')
+    for (const id of ['scattergun', 'varmintRifle', 'drumGun', 'harpoon', 'chemSprayer']) w.player.addWeapon(id)
+    const out: (string | null)[] = [null, null, null, null, null, null, null, null]
+    w.player.weapons[1].firedAt = 5
+    assignCarrySlots(w.player.weapons, out as never, 'hand')
+    expect(out[0]).toBe('offhand')
+    expect(out[1]).toBe('hand')
+    const rest = out.slice(2, 6)
+    expect(rest).not.toContain('hand')
+    expect(rest).not.toContain('offhand')
+    expect(rest).not.toContain(null)
+    expect(new Set(rest).size).toBe(4)
+  })
+})

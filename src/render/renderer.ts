@@ -17,6 +17,7 @@ import type { World } from '../sim/world'
 import { Camera } from './camera'
 import {
   CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
+  isHeldSlot,
   carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf, decalKindsFor,
   itemCardSprite, projectileScaleFor, swingStyleOf, thrustPhase,
   sceneryKindsFor, type CarrySlot, type MapBoundary, type MapTerrain,
@@ -1945,7 +1946,7 @@ export class Renderer {
       // Recoil kicks the weapon back along its own aim as it fires. Only the
       // held weapon kicks: a rifle on his back does not move when the pitchfork
       // swings, and it used to.
-      const held = anchorSlot === 'hand'
+      const held = isHeldSlot(anchorSlot)
       const kick = held && slot.recoil > 0
         ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels
         : 0
