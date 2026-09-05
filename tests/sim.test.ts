@@ -754,6 +754,14 @@ describe('class cards (H13)', () => {
   it("Deep Rooted raises the Hand's realised Braced cap past today's base 45%", () => {
     const p = new Player()
     p.init('hand')
+    // Class pass (this session): Braced's CEILING now depends on `sinceAbility`
+    // — see classes.json's `_inputNote` on the Hand's passive — so a bare
+    // Player that never presses Dig In sits at `drMaxStale`, not `drMax`. This
+    // test is about Deep Rooted's own +10 delta on the ceiling, not about the
+    // input gate (that is covered by tests/run.test.ts's idle-buy bar), so it
+    // sets `sinceAbility` to 0 directly, the same state a real `tryAbility`
+    // press leaves it in, rather than routing through a World to get there.
+    p.sinceAbility = 0
     for (let i = 0; i < 600; i++) p.move(0, 0, 1 / 60, 2000, 2000) // stand still well past the cap
     p.updatePassive(1 / 60)
     const before = p.passiveDamageReduction

@@ -2464,6 +2464,10 @@ export class World {
     if (p.abilityCooldown > 0 || p.abilityActive > 0) return
     const a = p.def.ability
     p.abilityCooldown = a.cooldown
+    // Class pass: any class's successful press counts, cheap enough that a
+    // per-class gate to skip it would cost more than just always doing it.
+    // Only The Hand's Braced ever reads it (see the note on `updatePassive`).
+    p.sinceAbility = 0
 
     if (a.id === 'digIn') {
       this.sound('digIn')
@@ -3413,10 +3417,34 @@ export class World {
     }
 
     if (s.lifestealPct > 0) {
-      this.player.hp = Math.min(
-        this.player.stats.maxHp,
-        this.player.hp + (dmg * s.lifestealPct) / 100,
-      )
+      /*
+         Class pass (this session): The Drifter's lifesteal now scales with
+         his OWN Hot Streak rather than being a flat percentage of every hit —
+         see `_lifestealGateNote` on the class. Everyone else keeps `scale`
+         at 1, byte-identical to the old unconditional line.
+
+         The cause it fixes: `lifestealPct` reads every point of damage that
+         reaches this function, weapon fire and a standing aura's DoT ticks
+         alike, so a stationary build (a Smudge Pot, chip-finishing whatever
+         wanders into it) farmed near-full healing off ticks Hot Streak was
+         never meant to be paid for. Hot Streak's own rule is "any hit at all
+         ends it", so `pl.streak` is lowest exactly when a passive, standing
+         build is taking the most contact damage — the moment it needs
+         healing most — while a build that is actually dodging keeps its
+         streak up and its lifesteal with it. Ties his sustain to the same
+         mechanic his damage and speed already scale with, rather than
+         leaving it the one flat stat on his sheet.
+      */
+      const pas = pl.def.passive
+      const scale = pas.id === 'hotStreak'
+        ? pl.streak / ((pas.maxStacks as number) ?? 12)
+        : 1
+      if (scale > 0) {
+        this.player.hp = Math.min(
+          this.player.stats.maxHp,
+          this.player.hp + (dmg * s.lifestealPct * scale) / 100,
+        )
+      }
     }
 
     // Hitstop on crits only — on chaff it reads as lag (§11).
