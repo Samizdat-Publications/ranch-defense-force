@@ -617,7 +617,10 @@ export class Player {
     // applied here. Boosted offers step twice, matching the double-magnitude
     // rule the level-up screen uses for everything else.
     const def = ITEMS[id] as
-      { toolUpgrade?: string; element?: string; weaponMod?: string; requiresWeapon?: string }
+      {
+        toolUpgrade?: string; element?: string; weaponMod?: string; requiresWeapon?: string
+        special?: string
+      }
       | undefined
 
     /*
@@ -661,6 +664,33 @@ export class Player {
     }
 
     this.resolve()
+
+    /*
+       The shop-sink pass (batch 6): two of the five always-on late-game feed
+       sinks resolve here as a ONE-TIME effect rather than through
+       `mods`/`resolveStats` — a heal and a tier bump are not percentages to
+       sum, they are things that happen once, exactly when bought. Placed
+       AFTER `resolve()` so `stats.maxHp` and the tier-4 clamp below both read
+       the fully-resolved build, including whatever this same purchase did.
+    */
+    if (def?.special === 'healFull') {
+      // Field Ration. `canTakeItem` never caps this (no `maxStacks`), so it is
+      // always on the board — the late-game answer to a shop with nothing
+      // left to sell but stat commons already at LAST.
+      this.hp = this.stats.maxHp
+    } else if (def?.special === 'tierUpLowest') {
+      /*
+         Tier-Up Token. Redeems on whichever owned weapon is at the LOWEST
+         tier — `lowestTierWeaponId()`, the same target `swap` trades away —
+         which is exactly what makes a Trade-In's fresh tier-1 weapon viable
+         again: the run does not have to wait on the draw for a merge card,
+         it can buy the tier directly. `requiresWeaponBelowMax` on the item
+         (read in `OfferPool.gateOpen`) keeps this off the board once every
+         weapon is already tier 4, so it can never be a wasted purchase.
+      */
+      const target = this.lowestTierWeaponId()
+      if (target) this.addWeapon(target, 1)
+    }
   }
 
   /** Ids only, for the results screen and anything that just wants names. */

@@ -20,11 +20,38 @@
    silently in this repo five times.
    =================================================================== */
 
-.pshop {
+/*
+   `.screen.pshop`, NOT bare `.pshop` — the shop's root carries BOTH classes
+   (`el('div', { class: 'screen pshop' })`), and `.screen` in style.css sets
+   `display: grid` and its own `background` at equal specificity. `@import`
+   is hoisted to the top of the cascade, so this whole file loads before
+   `.screen` is ever declared and the later, same-specificity rule would
+   silently win the conflicting properties — the exact "adding to a
+   namespace someone already owns fails silently" trap this file's own
+   header warns about, just between two selectors instead of two names.
+   Two classes on one selector is (0,2,0), which beats `.screen` (0,1,0)
+   regardless of source order, so this wins on purpose rather than by
+   accident of import position.
+*/
+/*
+   `align-items: flex-start`, NOT `center` — a centred flex item that
+   overflows its container splits the overflow evenly above AND below, and
+   `overflow: auto` only ever reveals the BELOW half by scrolling down; the
+   above half sits past `scrollTop: 0` with no gesture that reaches it. Five
+   full-width cards (Handbill's fifth slot) plus the 236px counter add up to
+   more than `.pshop-inner`'s own 1240px max-width at ANY viewport width, so
+   the row wraps onto two lines and the page is taller than one screen more
+   often than it looks from a normal four-card visit — measured directly at
+   1366x768 with Handbill and a long ledger: `.pshop-inner` rendered 1120px
+   tall, and centering put "BACK TO THE FIELD" 148px below `y: 768` with no
+   way to scroll to it. Top-aligned, the same page starts at `y: 0` and the
+   full 148px of overflow is reachable below the fold, every time.
+*/
+.screen.pshop {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   overflow: auto;
   background:
@@ -110,8 +137,27 @@
 }
 
 /* --- the counter --- */
+/*
+   THE LEDGER CANNOT PUSH CONTINUE OFF SCREEN.
+
+   The owner's wave-24 report: six weapons named, every common item at LAST,
+   34-odd rows in "CARRYING" plus a full STATS list ran the counter taller
+   than a 1366x768 window, with "BACK TO THE FIELD" past the bottom and no
+   way to reach it. A ledger that grows with how long the run has gone on
+   was always going to outrun a fixed-height panel eventually — the fix is
+   to stop treating the counter as one block.
+
+   `.pshop-counter` is now a column with a bound on its OWN height, split
+   into a head (fixed), a body (the only part that scrolls), and a foot
+   (fixed) — shop.ts builds exactly those three pieces. The max-height is
+   two numbers because the two viewports named in NOTES.md have different
+   headroom: 620px covers the head+cards+padding at 1920x1080 with room to
+   spare, and 66vh keeps the same panel from running off the bottom of a
+   1366x768 window (66% of 768 is ~507px) without a separate media query.
+*/
 .pshop-counter {
   width: 236px;
+  max-height: min(620px, 66vh);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -122,6 +168,29 @@
   background-image: var(--paper-dots), var(--paper);
   background-size: 4px 4px, 100% 100%;
   border: 3px solid var(--paper-edge);
+}
+
+/* The only scrolling region in the counter — everything that grows with the
+   run (weapons, class cards, carrying, stats) lives in here. */
+.pshop-counter-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 6px;
+  scrollbar-width: thin;
+}
+
+/* Feed, reroll, continue: never inside the scrolling region, so they are
+   always in the viewport whatever the ledger above has grown to. */
+.pshop-counter-foot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .pshop-counter-head {

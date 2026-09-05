@@ -1012,6 +1012,65 @@ owner asked for, and the trade is flagged rather than hidden. Distinct ids by
 level 10 slid 41.8→36 because runs are shorter; offers were not touched. And a
 balance constant is hardcoded in `killEnemy`: the feed-drop chance, 0.04.
 
+### Every bullet looked the same, and the palette was why
+
+The renderer and draw-world were already right: both look up
+`proj.<clip>.<element>` and fall back to the base clip. The bug was upstream in
+`tools/build-atlas.ts`: every projectile clip, element-tinted or not, was
+quantised through the 32-colour LimeZu farm palette, and that palette has no
+warm/hot or cold/corrosive swatch — so `proj.pellet.fire` snapped to the same
+entry as `proj.pellet`, measured 0 of 1,600 pixels different. Element clips
+skip the conform pass now and keep the source pack's saturated colour; the base
+clip still conforms, so house style is unchanged with no Load active. The
+impact clips (`bigImpact`/`arrowImpact` variants) still conform and want the
+same audit if impacts read muddy.
+
+### One load at a time, and the card says so
+
+The three original element items and the six batch-1 Loads were two
+generations of the same idea, and the owner ended a run owning Tracer Rounds
+3/3 and Cold Rounds 3/3 at once. They are one family now: taking a Load sets
+`player.element`; switching SUPERSEDES (the old copies stay in `player.items`
+and stop contributing — no refund plumbing) and resumes at the depth already
+invested if you switch back, because `loadStacks` is derived from ownership
+rather than tracked. Stacks deepen: `elements.json` carries `<field>PerStack`
+and one `elementStat()` in content is read by both `World.applyElementTo` and
+the card text, so the sim and the card cannot disagree. A card reads "Replaces
+your current load (Fire)" on a switch and "2/3 — burn 7 → 10 dps" on a
+deepen; the HUD shows the active Load beside the weapon slots. 249 tests. The
+roster doc's Loads table still lists flat numbers and wants reconciling.
+
+## The shop's floor, the Trade-In's dead end, and the ledger that ate Continue
+
+The first human playtest hit three bugs at wave 24: six weapons T4, every
+common item at LAST, 4,614 feed — and the shop fell to one card (the swap),
+because every other candidate has a `maxStacks` ceiling. Five uncapped sinks
+(Field Ration, Tier-Up Token, Reroll Chit, Acre Bond, Second Harvest) answer
+it, but only as a **floor**: `items.json`'s `sink: true`, read in
+`OfferPool.draw`, pulls them in only when the real pool cannot fill the board.
+The first version had them always in the mix and cost the hand/kite ladder two
+clears (12/24 → 10/24) by diluting a healthy shop's weighted draw from wave
+one — gating behind "pool ran dry" restored it exactly and made a normal shop
+draw byte-identical to before. Costs escalate per copy (`sinkCost`, 1.18).
+
+Trade-In stopped being a dead end two ways: `OfferPool.guaranteeMergeNext` is
+a one-shot flag that forces the traded-in weapon's merge card onto the very
+next level-up board, and the Tier-Up Token buys the tier directly at the shop.
+Acre Bond is the first thing that converts feed to acres mid-run
+(`World.bonusAcres`, read into `bankRun` whether the run clears or dies).
+
+The ledger fix found a second, independent bug while stress-testing: the shop
+screen's outer `.pshop` was `align-items: center`, and a centered flex item
+that overflows hides half the overflow ABOVE the viewport with nothing that
+scrolls to it. Fixed to `flex-start`, with the counter's ledger in its own
+scrolling box and the footer (feed, reroll, continue) outside it, always
+visible; the pause screen's chip list got the same treatment. Verified with
+six T4 weapons and 47 items at 1366x768 and 1920x1080.
+
+Five icons generated, style-anchored; packed under `item.<id>`. Not built: a
+"Hired Hand" ally sink — the only temporary-ally pattern (Scarecrow Post's
+turret) shares mutable state a second item would corrupt. 261 tests.
+
 ## The four locked classes now answer the game differently
 
 The standing directive is done. `widow`, `vet`, `agronomist` and `drifter` were

@@ -64,6 +64,21 @@ describe('every declared special is dispatched', () => {
       'windbreak',
       // docs/UPGRADE_ROSTER.md batch 5: the Field & Ledger cards.
       'ledgerInterest', 'feedBonus',
+      /*
+         The shop-sink pass (batch 6). These four are deliberately NOT in
+         `refreshSpecialItems`'s switch: that function recomputes every
+         special from the WHOLE owned-item list on every purchase, which is
+         right for a persistent modifier (a shield cap, a stun multiplier)
+         and wrong for a one-time effect — a re-run on every later purchase
+         would re-heal, re-tier-up or re-grant acres each time. `healFull`
+         and `tierUpLowest` dispatch once, in `Player.addItem` (see its doc
+         comment); `freeReroll` in `ShopScreen.buy` (a UI-only effect — the
+         board it redraws is not the sim's to own); `acreBond` in `main.ts`'s
+         `applyOffer` (it bridges feed, a sim resource, to acres, a meta
+         one — see `World.bonusAcres`). Each has its own direct test:
+         tests/sim.test.ts's "shop sinks (batch 6)" describe block.
+      */
+      'healFull', 'tierUpLowest', 'freeReroll', 'acreBond',
     ])
     expect([...declared].filter((s) => !handled.has(s))).toEqual([])
   })

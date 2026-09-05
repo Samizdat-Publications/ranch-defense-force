@@ -25,7 +25,7 @@ import { PauseScreen } from './ui/pause'
 import { HomesteadScreen } from './ui/homestead'
 import { DevOverlay } from './ui/dev'
 import { setSpriteAtlas, installRarityTheme } from './ui/sprite'
-import { WAVES, RARITY } from './content'
+import { WAVES, RARITY, ITEMS } from './content'
 import { load as loadSave, save as writeSave, type Save } from './sim/save'
 import {
   metaStats, unlockedWeapons, unlockedItems, bankRun, unlockedClasses, bunkhouseOffers,
@@ -233,10 +233,28 @@ function applyOffer(offer: Offer): void {
   if (!world) return
   audio.play('purchase')
   if (offer.kind === 'weapon') world.player.addWeapon(offer.id, offer.tierJump)
-  else if (offer.kind === 'swap') applySwap(world.player, world.rng)
-  else {
+  else if (offer.kind === 'swap') {
+    // §Trade-In: the weapon that just arrived at tier 1 is guaranteed on the
+    // run's next level-up board — see `OfferPool.guaranteeMergeNext`.
+    const added = applySwap(world.player, world.rng)
+    if (added) offers?.guaranteeMergeNext(added)
+  } else {
     world.player.addItem(offer.id, offer.boosted)
     world.refreshSpecialItems()
+    /*
+       Acre Bond (`items.json`, `special: 'acreBond'`): feed spent here is a
+       SIM resource, acres are a META one banked only at `bankRun`, so this is
+       the one place that bridges them. Applied HERE rather than inside
+       `refreshSpecialItems` — that function recomputes every special from the
+       WHOLE owned-item list on every purchase, so a case there would re-grant
+       every existing Acre Bond's acres again each time anything else was
+       bought. This runs exactly once per purchase, which is what "bought"
+       means. `world.bonusAcres` is read into `RunResult` in `finishRun`.
+    */
+    if (offer.id === 'acreBond') {
+      const def = ITEMS.acreBond as { grantsAcres?: number } | undefined
+      world.bonusAcres += def?.grantsAcres ?? 0
+    }
   }
 }
 
@@ -250,7 +268,10 @@ function finishRun(cleared: boolean): void {
   // credited rather than a second, separately-computed number.
   const earned = bankRun(
     profile,
-    { wavesCleared: world.wavesCleared, bossKills: world.bossKills, tier: currentTier, cleared },
+    {
+      wavesCleared: world.wavesCleared, bossKills: world.bossKills, tier: currentTier, cleared,
+      bonusAcres: world.bonusAcres,
+    },
     world.seed,
     currentClassId,
   )

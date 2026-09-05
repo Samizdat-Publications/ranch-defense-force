@@ -21,6 +21,9 @@ import { buildLedger } from './ledger'
 
 const SLOTS = 4
 
+/** `items.json`'s Reroll Chit — see `buy()`. */
+const REROLL_CHIT_ID = 'rerollChit'
+
 /**
  * Handbill (batch 5, epic, shop-only): the shop shows five cards instead of
  * four, and the first reroll each visit is free. Both are read off the item
@@ -195,6 +198,19 @@ export class ShopScreen {
     this.onBuy?.(offer)
     this.offers[index] = null
     this.locked[index] = null
+    /*
+       Reroll Chit (batch 6 shop sink, `items.json` id `rerollChit`): spending
+       it turns the WHOLE board over for free, right now — no cost, no bump to
+       `rerollsThisShop`'s escalating price, held cards untouched. A UI-only
+       effect (the board it redraws belongs to this screen, not the sim), so
+       it is special-cased here rather than routed through `Player.addItem`
+       the way the other four sinks are.
+    */
+    if (offer.id === REROLL_CHIT_ID) {
+      for (let i = 0; i < this.offers.length; i++) {
+        if (this.locked[i] === null) this.offers[i] = null
+      }
+    }
     this.fillEmptySlots()
     this.updateExclusiveNote()
     this.render()
@@ -332,6 +348,21 @@ export class ShopScreen {
     }, [el('span', { text: label }), el('b', { text: value })])
 
     /*
+       The ledger CANNOT push the buttons below off screen — the third shop
+       problem the owner hit at wave 24: 34 items plus 14-odd stat rows ran
+       the panel past the bottom of a 1366x768 window with no way to reach
+       "BACK TO THE FIELD". Everything that can grow without bound (the
+       ledger sections AND the stat rows — both scale with how long the run
+       has gone on) lives inside `.pshop-counter-body`, which is the ONLY
+       part of the counter with `overflow-y: auto`; the head above it and the
+       feed/reroll/continue footer below it are outside that box and cannot
+       scroll away. See shop.css's `.pshop-counter` for the max-height that
+       makes this matter instead of decoration.
+    */
+    const body = el('div', { class: 'pshop-counter-body' })
+    this.sheetEl.appendChild(body)
+
+    /*
      * The ledger (docs/UPGRADE_ROSTER.md batch 5, part 1): the same builder
      * the pause screen reads, so "readable from the pause screen and the
      * shop" is one fact rather than two screens each keeping their own copy.
@@ -339,21 +370,21 @@ export class ShopScreen {
      * section; everything else prints its stack footer, n/N.
      */
     const ledger = buildLedger(p)
-    this.sheetEl.appendChild(el('div', {
+    body.appendChild(el('div', {
       class: 'pshop-section',
       text: `WEAPONS ${ledger.weapons.length}/6`,
     }))
-    this.sheetEl.appendChild(rows(ledger.weapons.map((w) =>
+    body.appendChild(rows(ledger.weapons.map((w) =>
       line(w.name, w.mods.length > 0 ? `T${w.tier} · ${w.mods.join(', ')}` : `T${w.tier}`))))
 
     if (ledger.classCards.length > 0) {
-      this.sheetEl.appendChild(el('div', { class: 'pshop-section', text: 'CLASS CARDS' }))
-      this.sheetEl.appendChild(rows(ledger.classCards.map((name) => line(name, '✓'))))
+      body.appendChild(el('div', { class: 'pshop-section', text: 'CLASS CARDS' }))
+      body.appendChild(rows(ledger.classCards.map((name) => line(name, '✓'))))
     }
 
     if (ledger.items.length > 0) {
-      this.sheetEl.appendChild(el('div', { class: 'pshop-section', text: 'CARRYING' }))
-      this.sheetEl.appendChild(rows(ledger.items.map((it) => line(it.name, it.stack || '·'))))
+      body.appendChild(el('div', { class: 'pshop-section', text: 'CARRYING' }))
+      body.appendChild(rows(ledger.items.map((it) => line(it.name, it.stack || '·'))))
     }
 
     // Hover preview resolves the hovered card against the live build.
@@ -363,7 +394,7 @@ export class ShopScreen {
       preview = this.scratchB
     }
 
-    this.sheetEl.appendChild(el('div', { class: 'pshop-section', text: 'STATS' }))
+    body.appendChild(el('div', { class: 'pshop-section', text: 'STATS' }))
     const statLines: HTMLElement[] = []
     for (const key of STAT_KEYS) {
       const value = p.stats[key]
@@ -383,17 +414,19 @@ export class ShopScreen {
         previewed ? 'preview' : changedThisWave ? 'changed' : undefined,
       ))
     }
-    this.sheetEl.appendChild(rows(statLines))
+    body.appendChild(rows(statLines))
 
-    this.sheetEl.appendChild(el('div', { class: 'pshop-dash' }))
+    const foot = el('div', { class: 'pshop-counter-foot' })
+    foot.appendChild(el('div', { class: 'pshop-dash' }))
     this.feedEl.textContent = `FEED ${p.feed}`
-    this.sheetEl.appendChild(this.feedEl)
-    this.sheetEl.appendChild(this.rerollBtn)
-    this.sheetEl.appendChild(el('button', {
+    foot.appendChild(this.feedEl)
+    foot.appendChild(this.rerollBtn)
+    foot.appendChild(el('button', {
       class: 'pshop-btn',
       text: 'BACK TO THE FIELD',
       onClick: () => this.finish(),
     }))
+    this.sheetEl.appendChild(foot)
   }
 
   destroy(): void {

@@ -48,9 +48,14 @@
       "bloodMeal",
       "barbedWire",
       "tracerRounds",
-      "coldRounds"
+      "coldRounds",
+      "fieldRation",
+      "tierUpToken",
+      "rerollChit",
+      "acreBond",
+      "secondHarvest"
     ],
-    "startingItemNote": "The opening pool, named rather than sliced. It USED to be `Object.keys(ITEMS).slice(0, 12)` -- the first twelve keys of items.json in authoring order -- and eleven of those twelve are the common stat cards. So a fresh save's entire item pool was the eleven percentages, and every board the player saw for the first several hours was four of them: exactly the complaint docs/UPGRADE_ROSTER.md exists to answer, invisible to both harnesses because neither calls setUnlocked. A real run photographed it (tools/play/batch1) after the rebuild had already measured clean. Ten commons stay -- they are the teaching set and they should be -- and six cards that DO something join them: a pierce, two on-kill cards, a reflect, and two Loads, so the first shop is a real decision and the first level-up board is not four percentages. Everything else is still bought at the catalog. A card named here that does not exist is skipped, so this list cannot break a rename silently.",
+    "startingItemNote": "The opening pool, named rather than sliced. It USED to be `Object.keys(ITEMS).slice(0, 12)` -- the first twelve keys of items.json in authoring order -- and eleven of those twelve are the common stat cards. So a fresh save's entire item pool was the eleven percentages, and every board the player saw for the first several hours was four of them: exactly the complaint docs/UPGRADE_ROSTER.md exists to answer, invisible to both harnesses because neither calls setUnlocked. A real run photographed it (tools/play/batch1) after the rebuild had already measured clean. Ten commons stay -- they are the teaching set and they should be -- and six cards that DO something join them: a pierce, two on-kill cards, a reflect, and two Loads, so the first shop is a real decision and the first level-up board is not four percentages. Everything else is still bought at the catalog. A card named here that does not exist is skipped, so this list cannot break a rename silently. The five shop sinks from the shop-pass batch (fieldRation, tierUpToken, rerollChit, acreBond, secondHarvest) are named here too, unconditionally -- they are the floor under every shop board (`OfferPool.draw`'s pool can otherwise run dry to a single card once a build is maxed, which is the bug this batch exists to fix), and a floor gated behind Seed Catalog progress a new save has not bought yet is not a floor.",
     "totalItems": 20,
     "costRange": [
       15,

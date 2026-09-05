@@ -141,8 +141,21 @@
   margin: 16px 0 0;
 }
 
-/* What you are carrying: one chip per weapon and item. */
-.psheet-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+/*
+   What you are carrying: one chip per weapon and item.
+
+   Same fix as the shop's ledger column (shop.css's `.pshop-counter-body`):
+   this grows with the run and nothing bounded it, so a late build with 30+
+   chips could grow `.psheet` past `max-height: 92vh` and push the resume /
+   mute / quit row down with it. Capped with its own scroll rather than
+   shrinking the chips, so a short list never shows a scrollbar it does not
+   need.
+*/
+.psheet-chips {
+  display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;
+  max-height: 168px; overflow-y: auto; overflow-x: hidden;
+  padding-right: 4px; scrollbar-width: thin;
+}
 
 .psheet-chip {
   font-family: var(--label);
@@ -203,12 +216,22 @@
   border: 2px solid #2b241a;
 }
 
+/*
+   Sticky, not just relative — `.psheet` is the scrolling element (`overflow-y:
+   auto`, `sheet.css`), so `bottom: 0` here pins Resume / Sound / Give up the
+   field to the bottom of the VISIBLE panel as it scrolls, the same fix the
+   shop applies to "BACK TO THE FIELD" with a fixed foot outside its scrolling
+   ledger. `background-color` layered under the existing tint so scrolled
+   content sliding underneath cannot show through a merely translucent strip.
+*/
 .psheet-foot {
-  position: relative;
+  position: sticky;
+  bottom: 0;
   margin-top: 24px;
   padding: 16px 32px;
   border-top: 3px solid rgba(64, 49, 31, 0.5);
-  background: rgba(64, 49, 31, 0.1);
+  background-color: var(--paper-flat);
+  background-image: linear-gradient(rgba(64, 49, 31, 0.1), rgba(64, 49, 31, 0.1));
   display: flex;
   gap: 12px;
   align-items: center;

@@ -37,6 +37,7 @@ import {
 } from '../content'
 import type { Rng } from '../core/rng'
 import type { Player } from './player'
+import { sinkCost } from './formulas'
 
 /**
  * `'swap'` is §7.5's answer to a full loadout: shop-only, and it trades the
@@ -228,8 +229,64 @@ export class OfferPool {
   private readonly ownedTags = new Map<string, number>()
   /** Ids unlocked via the Homestead's Seed Catalog; empty means "all". */
   private unlocked: Set<string> | null = null
+  /**
+   * The Trade-In's answer to "the new weapon can never come back" — see
+   * `applySwap`'s doc comment. Set the instant a swap resolves, named by the
+   * weapon that just arrived at tier 1, and consumed (whether or not it
+   * lands) by the very next `draw()` in `'levelup'` mode.
+   */
+  private pendingMergeGuarantee: string | null = null
 
   constructor(private readonly rng: Rng) {}
+
+  /**
+   * Called after a swap resolves — see `applySwap` — so the weapon that just
+   * arrived at tier 1 is guaranteed on the run's next level-up board rather
+   * than left to the ordinary weighted draw, which is exactly the case that
+   * made a Trade-In read as a dead end: a T1 weapon competing for slot B
+   * against forty-odd other candidates, at the SAME weight as any other
+   * merge, with a run that just spent its whole loadout on it.
+   */
+  guaranteeMergeNext(weaponId: string): void {
+    this.pendingMergeGuarantee = weaponId
+  }
+
+  /**
+   * Redeem (or drop) the one-shot flag above. `applyMergeGuarantee` rather
+   * than folding this into `drawBoard` because it is not a quota — it is a
+   * post-hoc override the same shape as `guaranteeOneAboveCommon`, and unlike
+   * that one it costs no `next()` call: the target weapon is already named,
+   * so there is nothing left to roll.
+   */
+  private applyMergeGuarantee(mode: DrawMode, picked: Offer[], player: Player): void {
+    if (mode !== 'levelup') return
+    const id = this.pendingMergeGuarantee
+    if (id === null) return
+    this.pendingMergeGuarantee = null // one-shot regardless of outcome
+    const slot = player.weapons.find((w) => w.id === id)
+    // Traded away again, or merged up on its own, since the swap landed —
+    // nothing left to guarantee.
+    if (!slot || slot.tier >= 4) return
+    if (picked.some((o) => o.kind === 'weapon' && o.id === id)) return // already on the board
+    const def = WEAPONS[id] as WeaponDef | undefined
+    if (!def) return
+    const offer = this.weaponOffer(id, def, player)
+    /*
+       Overwrite another WEAPON slot if the board has one, never the
+       behavioural/stat slot — §7.2's slot D exists specifically to cover
+       whatever category the rest of the board is missing, and a bot that
+       leans on defensive stat cards (`tests/run.test.ts`'s hand/kite ladder)
+       measurably suffers if the guarantee is the thing paying for itself by
+       eating that slot. Falls back to the last slot only when the board has
+       no weapon-kind card to trade for one.
+    */
+    let replaceAt = picked.length - 1
+    for (let i = picked.length - 1; i >= 0; i--) {
+      if (picked[i].kind === 'weapon') { replaceAt = i; break }
+    }
+    if (picked.length > 0) picked[replaceAt] = offer
+    else picked.push(offer)
+  }
 
   setUnlocked(ids: readonly string[] | null): void {
     this.unlocked = ids && ids.length > 0 ? new Set(ids) : null
@@ -291,6 +348,10 @@ export class OfferPool {
 
     for (const [id, def] of Object.entries(ITEMS) as [string, ItemDef][]) {
       if (!this.isAvailable(id)) continue
+      // The shop sinks (§ below) never compete in the ordinary weighted draw
+      // — they are a FLOOR, not a fifth-through-ninth candidate on every
+      // visit from wave one.
+      if (def.sink === true) continue
       // Shop-only items are the reason a shop visit is worth stopping for: the
       // level-up hands you what the run offers, the shop is where the run's
       // best cards live and you pay feed for them.
@@ -306,6 +367,38 @@ export class OfferPool {
       candidates.push(this.itemOffer(id, def, player))
     }
 
+    /*
+       The shop-sink pass (docs/NOTES.md "the shop never shows fewer than
+       four cards"). Five items in `items.json` carry `sink: true` — Field
+       Ration, Tier-Up Token, Reroll Chit, Acre Bond, Second Harvest — and
+       none of them has a `maxStacks`, so they are ALWAYS takeable. They
+       exist purely as a floor: only added when the ordinary pool above
+       could not fill the board on its own, which in practice means never,
+       until a build has taken (or maxed out) everything else there is.
+
+       This is a deliberate choice over making them permanent candidates.
+       The first version of this fix did exactly that — five more weighted
+       entries in every shop draw from wave one — and `tests/run.test.ts`'s
+       hand/kite acceptance ladder (24 seeds, a razor's-edge 12/24 before
+       this batch touched anything, per classes.json's own `_flatNote`)
+       dropped to 10/24: diluting the FIRST shop's weighted pick, at a point
+       where the real pool has 27-44 candidates and has never once been
+       thin, still shifts which card wins the draw, and that shift cascades
+       through the rest of the run's shared RNG stream. Gating the sinks
+       behind "the real pool ran out" means an early, healthy shop draws
+       BYTE-IDENTICAL to a build with no shop-sink pass at all — the fix
+       only spends a `next()` differently on the visit it exists for.
+    */
+    if (mode === 'shop' && candidates.length < count) {
+      for (const [id, def] of Object.entries(ITEMS) as [string, ItemDef][]) {
+        if (def.sink !== true) continue
+        if (!this.isAvailable(id)) continue
+        if (!player.canTakeItem(id)) continue // defensive: none carry maxStacks today
+        if (!this.gateOpen(def, player)) continue
+        candidates.push(this.itemOffer(id, def, player))
+      }
+    }
+
     if (candidates.length === 0) return []
 
     this.boardIndex++
@@ -314,6 +407,7 @@ export class OfferPool {
     const picked = mode === 'levelup'
       ? this.drawBoard(candidates, count, luck, mode, true)
       : this.drawBoard(candidates, count, luck, mode, false)
+    this.applyMergeGuarantee(mode, picked, player)
 
     for (const o of picked) {
       this.offeredAt.set(o.id, this.boardIndex)
@@ -354,6 +448,16 @@ export class OfferPool {
     const needsType = def.requiresWeaponType
     if (typeof needsType === 'string'
       && !player.weapons.some((w) => WEAPONS[w.id]?.type === needsType)) return false
+    /*
+       The shop-sink pass: a Tier-Up Token that redeems on "whichever weapon
+       is lowest" is dead weight the instant every owned weapon is already
+       tier 4 — there is nothing left for it to do, and offering it anyway is
+       exactly the "same five things over and over" complaint this file
+       exists to answer. Gated on the SHAPE of the loadout, not on any one
+       weapon, which is why it is its own field rather than another
+       `requiresWeapon` string.
+    */
+    if (def.requiresWeaponBelowMax === true && !player.weapons.some((w) => w.tier < 4)) return false
     return true
   }
 
@@ -697,13 +801,23 @@ ${stats}` : stats
     // the 48+3 weapon-upgrade cards above.
     const requiresClass = typeof def.requiresClass === 'string' ? def.requiresClass : undefined
 
+    /*
+       The shop sinks (fieldRation, tierUpToken, rerollChit, acreBond,
+       secondHarvest) carry no `maxStacks` — they must never be the reason a
+       board falls short of four cards — so their price has to do the work a
+       cap usually does. `scalesWithStacks` opts an item into that curve; `n`
+       is already "the copy this offer would be", so `n - 1` is how many the
+       run already holds.
+    */
+    const cost = def.scalesWithStacks === true ? sinkCost(def.cost, n - 1) : def.cost
+
     return {
       kind: 'item',
       id,
       name: def.name,
       detail: describeItem(def, n, player.element),
       sprite,
-      cost: def.cost,
+      cost,
       rarity,
       category: categoryOf(def),
       tags: Array.isArray(def.tags) ? (def.tags as string[]) : EMPTY_TAGS,
@@ -733,13 +847,22 @@ ${stats}` : stats
     const leavingId = player.lowestTierWeaponId()
     const leaving = leavingId ? WEAPONS[leavingId] as WeaponDef | undefined : undefined
     const leavingTier = leavingId ? player.weapons.find((w) => w.id === leavingId)?.tier ?? 1 : 1
+    /*
+       The first human playtest: "the late shop offered one card, a Trade-In
+       whose T1 weapon could never tier up again." Two things answer that now
+       — a Tier-Up Token in the shop's own sink pool, and the guarantee below
+       — and the card says both, so the trade never reads as a dead end while
+       you are deciding whether to take it.
+    */
+    const guarantee = 'Its merge card is guaranteed on your next level-up, '
+      + 'and a Tier-Up Token can push it further at the shop.'
     return {
       kind: 'swap',
       id: 'swap',
       name: 'Trade-In',
       detail: leaving
-        ? `Trade your ${leaving.name} (tier ${leavingTier}) for a weapon you do not own, at tier 1.`
-        : 'Trade your lowest-tier weapon for one you do not own, at tier 1.',
+        ? `Trade your ${leaving.name} (tier ${leavingTier}) for a weapon you do not own, at tier 1. ${guarantee}`
+        : `Trade your lowest-tier weapon for one you do not own, at tier 1. ${guarantee}`,
       sprite: leavingId ? weaponCardSprite(leavingId, leavingTier) || undefined : undefined,
       cost: SWAP_COST,
       rarity: 'rare',
@@ -767,10 +890,16 @@ ${stats}` : stats
  * `kind: 'swap'` is otherwise a card-shaped `if` repeated six times, and one
  * of those six drifting from the other five is exactly the bug class this
  * project keeps finding in its own art manifest.
+ *
+ * Returns the id that arrived (or `null` if there was nothing left to trade
+ * for), so a caller can feed it straight to `OfferPool.guaranteeMergeNext` —
+ * the answer to "the T1 weapon can never tier up again" from the first human
+ * playtest. Every call site opts in by doing exactly that; none is required
+ * to, so a tool that only cares about the trade itself is unaffected.
  */
-export function applySwap(player: Player, rng: Rng): void {
+export function applySwap(player: Player, rng: Rng): string | null {
   const unowned = WEAPON_IDS.filter((id) => !player.hasWeapon(id))
-  if (unowned.length === 0) return
+  if (unowned.length === 0) return null
   const weights = unowned.map((id) => {
     const w = WEAPONS[id] as WeaponDef | undefined
     return rarityWeight((w?.rarity as Rarity | undefined) ?? 'common', player.stats.luck)
@@ -779,6 +908,7 @@ export function applySwap(player: Player, rng: Rng): void {
   const leaving = player.lowestTierWeaponId()
   if (leaving) player.removeWeapon(leaving)
   player.addWeapon(picked, 1)
+  return picked
 }
 
 /** §7.5/§7.7: the swap's feed price. Content, beside `weaponOfferWeight`. */

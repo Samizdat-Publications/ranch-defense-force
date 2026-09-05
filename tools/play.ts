@@ -1,8 +1,9 @@
 /**
  * Play a real run, in a real browser, and report what happened.
  *
- *     npm run play -- [class] [seconds] [outDir] [seed]
+ *     npm run play -- [class] [seconds] [outDir] [seed] [viewport]
  *     npm run play -- hand 240 tools/play "harvest"
+ *     npm run play -- widow 220 tools/play/shop harvest 1366x768
  *
  * ## Why this exists
  *
@@ -41,6 +42,10 @@ const classId = process.argv[2] ?? 'hand'
 const seconds = Number(process.argv[3] ?? 180)
 const outDir = process.argv[4] ?? 'tools/play'
 const seed = process.argv[5] ?? 'playtest'
+/** `WIDTHxHEIGHT`, e.g. `1366x768` — the second of the two viewports the
+ *  shop's ledger fix (shop.css `.pshop-counter`) is sized against. Defaults
+ *  to the tool's long-standing 1600x900 so every existing call is unchanged. */
+const [viewportW, viewportH] = (process.argv[6] ?? '1600x900').split('x').map(Number)
 const PORT = 5198
 /* How often to sample. Configurable so the sampler can be ruled IN or OUT as
    the cause of a periodic hitch -- if a spike period follows this value, the
@@ -83,7 +88,7 @@ const browser = await launchBrowser({ headed: process.env.RDF_HEADLESS !== '1' }
 
 try {
   const page = await browser.newPage({
-    viewport: { width: 1600, height: 900 },
+    viewport: { width: viewportW, height: viewportH },
     deviceScaleFactor: 1,
   })
   const problems: string[] = []
