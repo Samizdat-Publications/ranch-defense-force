@@ -4,7 +4,7 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
-# STILL OPEN — the owner sees ~2fps, and this session measured why it cannot see it
+# RESOLVED — the 2fps was a backgrounded window; here is what was measured on the way
 
 **Read this before anything else in the performance line.** The owner reports
 the game at about 2 frames per second while playing. Session 22 spent a
@@ -136,95 +136,70 @@ drop; the composition stays), and the home screen gets a scene sequence — calm
 lightning, blight, then a camera descent through the soil to the lab that is
 "secretly right under the farm."
 
-## Where session 22 stopped, and what the next session does first
+## Where things stand for the next session (written 2026-09-05)
 
-The session ended on the owner's usage limit, not on a natural boundary.
-**The work is on branch `session-22-integration`, NOT on `main`.** The owner
-asked to be asked before anything lands on `main`, and had not yet answered
-when the limit hit. `main` is still b6b0b6a4. Do not fast-forward it without
-the owner's word; do not start a new session branch from `main` either, or the
-two-heads scar in CLAUDE.md reopens.
+**`main` is the only head, it is pushed, and the live site is at it.** Tree
+clean, 264 tests, typecheck clean, atlas six pages. No branch carries unmerged
+work; no worktree is registered (`git worktree list` shows one entry). Nothing
+is in flight. Run `git fetch && git status` anyway.
 
-State of `session-22-integration` at the stop:
+### What sessions 22-23 shipped, in the order it matters to a player
 
-| workstream | status |
-|---|---|
-| perf measurement + tools + `docs/PERF_FINDINGS_2026-09-02.md` | merged |
-| audio committed (live site was silent) | merged, deploys with `main` |
-| farmhand recolour + player ground mark | merged |
-| atlas split into seven ≤2048 pages | merged |
-| four locked classes redesigned, six-class parity test | merged |
-| vitest excludes `.claude/**` (worktrees were being swept) | merged |
-| **home screen**: page-width bug, dev overlay hidden in prod, smaller cards, scene selector, calm→lightning→blight→descend-to-lab sequence, lab actor patrols | merged (4f11ab69), after the session was told to wrap up; its own account is `docs/HOME_SEQUENCE_HANDOFF.md` and the section below |
+1. **Difficulty against a human.** The owner stood still, picked at random and
+   reached level 22; now an `idle` pilot in the harness encodes that and must
+   die (wave 6-9). The lever was XP (`xp.exponent` 1.55→1.85), not bodies —
+   doubling early density alone made the game EASIER. Waves 1-5 hold ~2x the
+   enemies; elites every 3 waves; a second Prize Bull at 18; late hp scaling
+   steeper. Home pilots clear ~9/24, deaths spread waves 3-21.
+2. **The roster: 56 → 164+ cards** in five batches on rebuilt draw rules; stat
+   cards ≤25% of what you see, no single-category boards, shop never repeats a
+   visit, weapon-specific upgrades gated on ownership, class cards, allies and
+   placeables, the Smudge Pot aura weapon, one active Load with deepening
+   stacks, five late-game feed sinks, Trade-In guarantees its merge.
+3. **Six distinct classes** (attrition, spacing, status, tempo, plus the two
+   originals), each with a passive that needs input — Braced needs a Dig In
+   press to hold its ceiling.
+4. **The carried loadout**: weapons worn on the body at life scale, per class,
+   purpose-drawn guns and pitchfork, a thrust instead of a slash, the flash
+   from the barrel.
+5. **The home screen**: calm → lightning → blight → descent through soil to the
+   lab → up into the field, a dev picker (F1) for all eight states, the barn
+   interior as the Homestead, props at scale.
+6. **Performance**: the 2fps was a backgrounded window; the atlas is six pages
+   of ≤2048 so Chrome stops re-decoding 12MB once a second; audio ships.
+7. **Every PixelLab asset accounted for**: `docs/PIXELLAB_LEDGER.md`, open 0;
+   `npm run ledger` / `npm run tag` keep it so; the CLI tools read the key from
+   `.mcp.json`.
 
-`npm run typecheck` clean and **207/207 tests pass** on the integration branch
-with everything above merged, home screen included — the final state of the
-branch at 0c959623+, run after the last merge. The main checkout has the paged
-atlas built and the other session's vite server on port 5180 was serving it.
+### What the next session does first
 
-### Day two: shipped, and two loose ends closed
+- **Ask the owner how the second playtest went** — a class other than the
+  Widow. Every number is bots plus one evening of his play. If the opening is
+  now too hard, `xp.exponent` in `waves.json` is the one dial; if standing still
+  still wins, the idle pilot's caps in `tests/run.test.ts` are the bar to
+  tighten and `classes.json` the place.
+- Known soft spots, all measured and written down in the sections below: The
+  Hand clears 7/24 at his home pilot (band 8-12); the Vet's Overwatch near
+  penalty is coupled to the `vetEnfilade` card's fixed delta; a feed-drop rate
+  0.04 is hardcoded in `killEnemy`; `spawn.sources` lists `cornTile` but
+  `pickSpawnPoint` only ever uses arena edges; impact FX clips still go through
+  the palette conform that muddied the rounds; the roster doc's Loads table
+  predates deepening; batch 1/3 icons have no ledger rows by construction
+  (`create_image_pro` makes no object); 25 held weapon icons and 4 pens remain
+  packed-unused by decision; a stale `.claude/worktrees/agent-*` directory or
+  two may linger on disk, unregistered, held by a file lock — safe to delete.
 
-- **The stutter is gone.** The owner played the integration build to wave 7 and
-  spawned several hundred enemies at once with no hitch. The once-a-second
-  stutter on the live site was the atlas re-decode and the per-shot audio 404,
-  both removed here; the 2fps was the backgrounded window. Closed.
-- **main is at the integration head and deployed.** Verified on the live site:
-  atlas-0..6.png, atlas.json and public/audio all serve; atlas.png 404s, as it
-  should.
-- **The dev server crawled because of the agent worktrees.** Four of them sat
-  under .claude/worktrees/ with a full node_modules each, inside the folder vite
-  watches and OneDrive syncs -- ten seconds per module, a page that never
-  loaded. Removed; vite and vitest both ignore .claude/ now (vite.config.ts).
-  The first request after a cold start still pays ~17s of vite warm-up.
-- **The player mark was drawn in a hole.** Character origins are the cell floor,
-  twelve pixels below the boots; footOffsetY is -10 now. The owner saw it first.
-- **The weapon ring is replaced, twice over** (the two loadout sections below).
-  The inventory audit and roster batch 1 (with the Smudge Pot) are merged.
-  The art pass (pitchfork thrust, barn Homestead, fifteen ledger decisions) is
-  merged. All five roster batches are merged; the roster is 56 → 164 cards. The owner played; his verdicts are the section "The first human
-  playtest" and the passes under it. Landed since: bullet art and one active load; difficulty against a human
-  with an idle pilot; the shop sinks, trade-in and ledger. Landed: the class pass against the idle pilot. Nothing is in flight; the
-  next step is the owner playing again, on a class other than the Widow; the key fallback landed and the account tags are refreshed.
-- **Owner rule, 2026-09-03: generated art gets wired in the same session.**
-  Every session has opened by discovering paid-for art nobody claimed. That
-  stops: a brief that permits generation requires claiming and wiring, and the
-  report lists every generation with where it is used.
-- Formerly open: the weapon ring. Tiny icons in a perfect
-  circle; it is purely decorative (projectiles spawn from facing, not from the
-  ring). Proposal on the table: carried, not orbited -- weapons on body anchors
-  at natural scale, per-tier art the atlas already holds, orbiters keep
-  orbiting, items stay on the HUD until there is wearable art. Not built.
+### How this session worked, for the next one
 
-### Observations still owed by the owner (answered above, day two)
-
-- **The once-a-second stutter.** Fronted, on the LIVE build (old atlas, no
-  audio), the owner saw good fps but a stutter on every shot, roughly once a
-  second, with two isolated spikes on the F1 frame graph and 1.7ms of game work
-  per frame — the stall is outside the game's own code. Two candidates, both
-  once-a-second: the atlas re-decode (now gone on the integration branch) and
-  the per-shot audio 404 (audio now committed). The owner was asked to compare
-  on `localhost:5180` and had not answered. **That comparison is the first
-  thing to ask for.**
-- The fps cap of 68 in the fronted live build with 2.5ms frames is the
-  display's presentation rate, not the game; worth one question (external
-  monitor? power mode?) but not work.
-
-### Next steps, in order
-
-1. Ask the owner: stutter on `localhost:5180` — gone or not? And: merge to
-   `main`?
-2. Confirm the full suite on the merged integration branch (207 expected),
-   then look at the home screen in a real browser: the sequence, the selector,
-   the lab patrols. `npm run blight` must say every mapping resolves.
-3. Then `main`: fast-forward from `session-22-integration` with the owner's
-   go-ahead, push, and confirm the Pages deploy ships `atlas-0..6.png` AND the
-   audio.
-4. Human play of the six classes. The class section above lists what the
-   harness cannot see: Grit has no HUD readout, the Claymore's blast radius is
-   never drawn, Overwatch's bands have no on-screen expression, the Harpoon Gun
-   is still a bad T1 weapon for anyone who is not the Drifter.
-5. Design calls the owner still owns: `bloatedFarmhand`/`acidZombie` keeping
-   the straw hat; the arena's hard black bottom edge; `scene.fencePicket`.
+Read first, spawn second. Measurement alone on a quiet machine before any
+implementation agent. **Sonnet for anything with a spec and a test; Opus only
+for design judgment** — eleven Opus agents with five-part briefs cost ~$250 in
+one session before that rule. One-part briefs, one full test run per agent at
+the end, no two browser-driving agents at once. Worktrees are fine again (vite
+and vitest ignore `.claude/`), but never `git add -A`, and a worktree left with
+`main` checked out blocks the main checkout from switching to it. Whatever is
+generated is wired the same task. NOTES sections come from the agent's own
+report, edited against the diff, and land with the merge.
 
 
 ## The farm turns over, and the lab is under it

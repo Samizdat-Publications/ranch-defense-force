@@ -3,7 +3,7 @@
 Wave-based bullet-heaven, TypeScript + Vite + Canvas 2D, no engine.
 Full spec in `design_handoff_ranch_defense_force/GAME_DESIGN.md`.
 
-**M0–M4 are done. Read [NOTES.md](NOTES.md) before doing anything** — it has what
+**Everything through session 23 (2026-09-05) is on `main`. Read [NOTES.md](NOTES.md) before doing anything** — it has what
 was built, what deviated from the spec and why, the bugs found and their causes,
 and the design decisions currently open. It is the handoff, and it is kept
 current.
@@ -50,7 +50,7 @@ atlas costs the art, not the game.
 
 | Command | What |
 |---|---|
-| `npm test` | 216 tests, including headless full-run acceptance tests for all six classes |
+| `npm test` | 264 tests, including headless full-run acceptance for all six classes and an `idle` pilot that must never clear |
 | `npm run typecheck` | game and tools (they have separate tsconfigs) |
 | `npm run atlas` | slice + pack `art/sprites.json` → `public/atlas-*.png` + `atlas.json` (a frame carries its `page`) |
 | `npm run cards` / `ledger` / `tag` / `facings` / `carrysheet` / `blight` / `offer-stream` | session-22 instruments: photograph every card; the PixelLab ledger; write verdicts to the account; a class in four facings with a full kit; carried-art contact sheet; assert the home-screen blight mapping; measure the offer stream |
