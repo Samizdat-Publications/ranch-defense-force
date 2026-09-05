@@ -959,6 +959,59 @@ Batch 1's four aura tests asserted `kills > 0`, which half a weapon still
 passes. Fixed to `damage * burn`; a new test pins a stationary dummy and
 asserts the exact dps at all four tiers. 242 tests.
 
+## Difficulty against a human, and the lever that was not bodies
+
+Every balance number before this came from bots that cannot dodge, aim or read
+an offer, and five roster batches each retuned to hold THEIR bar. The owner
+stood still, picked at random, and reached level 22. So the first thing built
+was his experiment as an instrument: an `idle` pilot (never moves, never uses
+the ability, uniformly random card off an RNG seeded from the run seed so it
+flies the same arena as `kite`), and `idle-buy`, the same bot that buys the
+first affordable card. Before, on the test ladder: idle cleared 4/24 as The
+Hand and 7/24 as The Drifter with median deaths around wave 12; idle-buy
+cleared 14/24 as The Hand. Home pilots averaged 13.7/24 and finished at level
+30-43. Embarrassing, as predicted.
+
+**Doubling the density of waves 1-5 — the owner's own request — made the game
+EASIER on its own.** Threat intercept 30→96: alive in waves 1-5 went 17→35,
+the home ladder went 13.7→16.2, end level 42-51. Every body-adding lever pays
+the player first, in XP and feed, before it is any threat. **The only lever
+that does not is XP**, and the pass turns on it: `xp.exponent` 1.55→1.85 took
+the home ladder 16.2→8.3 and end level to a median of 21 — the owner's own run
+reached 22. 1.85 is the knee: 2.10 zeroes idle but collapses the home pilots.
+
+Shipped with it: `waveHpScalar` 0.06/0.010→0.08/0.014 (3.6x at wave 12, 11x
+at 25); elites every 3 waves instead of 5, 14% at x6 — which moved The Hand's
+deaths from waves 5-13 to 7-21; a second Prize Bull at wave 18, so the home
+pilots now die on 18-21 at all. Rejected, with numbers: the quadratic threat
+term alone (breaks parity — vet 6/24, range 12); `waveHpScalar`'s linear term
+alone (BACKWARDS: tougher trash is a thinner ring a standing player farms);
+`pressureCeiling` 380→700 (inert — withholds zero seconds); shorter
+post-hit invulnerability (moved idle the wrong way); `minDistanceFromPlayer`
+(inert, because `pickSpawnPoint` only ever picks arena edges — **the
+`cornTile` spawn source has never been implemented**). Coefficients moved out
+of `formulas.ts` into `waves.json` so a sweep cannot desync a string from a
+duplicated literal.
+
+After: idle clears 1/24 as The Hand, 0 elsewhere, six-class median death wave
+8.75; idle-buy 0-8; home pilots hand 8, kid 12, widow 9, vet 4, agronomist 5,
+drifter 12 — mean 8.3, deaths spread wave 3 to 21. Waves 1-5 hold 35 alive
+(from 17), 32 on the field at t=60s (from 15). The acceptance bar "completes
+all 25 waves on most seeds" is now "on a minority of seeds" — `formulas.ts`
+had written that the half-bar encoded a difficulty target and needed somebody
+to say otherwise; the owner did. New tests: a run nobody is playing never
+clears; shop money alone does not buy a clear; the opening waves hold a floor.
+
+**Still open, stated:** The Hand's idle is his kit — Braced pays 45% for
+standing still and Dig In roots him — so "nobody playing" is his home game
+with the button unplugged; closing it means moving Braced, in classes.json.
+Vet (4) and Agronomist (5) sit under the 8-12 band because they are the two
+classes that pay for contact and doubled early density is what they cannot
+answer; the elite buff cost the Vet three clears and bought the late deaths the
+owner asked for, and the trade is flagged rather than hidden. Distinct ids by
+level 10 slid 41.8→36 because runs are shorter; offers were not touched. And a
+balance constant is hardcoded in `killEnemy`: the feed-drop chance, 0.04.
+
 ## The four locked classes now answer the game differently
 
 The standing directive is done. `widow`, `vet`, `agronomist` and `drifter` were
