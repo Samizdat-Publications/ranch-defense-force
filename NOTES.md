@@ -1104,7 +1104,7 @@ Final ladder, home pilots: hand 7, kid 12, widow 9, vet 9, agronomist 11,
 drifter 8 — mean 9.3, worst deviation 2.7; idle ≤2 and idle-buy ≤5 for every
 class. The Hand's 7 is one under the nominal floor and was 7 before this pass;
 his standing-over-kiting preference is intact at 14/32 against 3/32. 253 tests
-on the branch; the merged tree's count is in the next entry.
+on the branch, 264 on the merged tree, typecheck clean.
 
 ## The four locked classes now answer the game differently
 
