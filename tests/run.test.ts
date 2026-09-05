@@ -529,8 +529,8 @@ describe('a full run', () => {
       smartTier += smart.maxTier
       randomTier += random.maxTier
     }
-    expect(smartTier, ).toBeGreaterThanOrEqual(randomTier)
-    expect(smartWaves, ).toBeGreaterThanOrEqual(randomWaves)
+    expect(smartTier, `max tier: smart ${smartTier} vs random ${randomTier}`).toBeGreaterThanOrEqual(randomTier)
+    expect(smartWaves, `waves: smart ${smartWaves} vs random ${randomWaves}`).toBeGreaterThanOrEqual(randomWaves)
   }, 900_000)
 
   it('replays a whole run identically from its seed', () => {
