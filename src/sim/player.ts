@@ -222,6 +222,20 @@ export class Player {
    * cap is already being computed.
    */
   bracedAtCap = false
+  /**
+   * Class pass (this session): seconds since the last successful `tryAbility`
+   * call, ANY class — set in `World.tryAbility`, not per-class, because it
+   * costs nothing to maintain for the five classes that never read it and a
+   * per-class branch to skip it would be the more expensive thing.
+   *
+   * Only The Hand's Braced reads it (`abilityGraceSeconds`/`drMaxStale` in
+   * classes.json), and only he initialises it non-zero: everyone else starts
+   * at 0 and it is simply never compared against anything. Starting The Hand
+   * at a value already past his own grace window means `idle`/`idle-buy` —
+   * which press nothing, ever — get no free head start from a field that
+   * happens to default low.
+   */
+  sinceAbility = 0
 
   /**
    * H13: the current class's cards, summed. Recomputed in `resolve()` —
@@ -380,6 +394,11 @@ export class Player {
     this.mineLife = 0
     this.mineArm = 0
     this.momentumEcho = 0
+    // Class pass: starts already past the grace window (rather than 0, which
+    // would hand every class a few free seconds at full Braced ceiling before
+    // its first ability press) — harmless for the five classes that never
+    // compare it to anything.
+    this.sinceAbility = ((this.def.passive.abilityGraceSeconds as number) ?? 0) + 1
 
     // `resolve()` below rebuilds `classBonus` off `this.items` (empty here)
     // and then unpacks the two hot-path passive caches (Overwatch, Cultivar)
@@ -850,6 +869,7 @@ export class Player {
 
     if (this.invuln > 0) this.invuln -= dt
     if (this.abilityCooldown > 0) this.abilityCooldown -= dt
+    this.sinceAbility += dt
   }
 
   /** Class passives, recomputed every tick (§6). */
@@ -899,10 +919,30 @@ export class Player {
       // raises the ceiling past today's base 45%.
       const delay = Math.max(0, ((p.stillDelay as number) ?? 1) + this.classBonus.bracedStillDelayDelta)
       const perSec = (p.drPerSec as number) ?? 6
-      const max = ((p.drMax as number) ?? 30) + this.classBonus.bracedDrMaxBonus
+      const fullMax = ((p.drMax as number) ?? 30) + this.classBonus.bracedDrMaxBonus
+      /*
+         Class pass (this session): Braced needs INPUT now, not just
+         idleness — see `_inputNote` in classes.json. Standing still is still
+         the trigger (his identity, untouched), but the CEILING it can reach
+         depends on whether Dig In has actually been pressed recently:
+         `sinceAbility` counts seconds since the last successful `tryAbility`
+         call (any class, set in World; only Hand reads it) and resets to 0
+         there. Within `abilityGraceSeconds` of a press the ceiling is the
+         full `drMax`; past it, it drops to `drMaxStale`. A rooted player who
+         never presses the button — `idle` and `idle-buy` press nothing, ever
+         — sits at the lower ceiling for the whole run. A brawler pressing on
+         anything close to Dig In's own 14s cooldown never sees the drop: the
+         grace window is wider than the cooldown on purpose.
+      */
+      const grace = (p.abilityGraceSeconds as number) ?? Infinity
+      const staleMax = (p.drMaxStale as number) ?? fullMax
+      const max = this.sinceAbility <= grace ? fullMax : staleMax
       if (this.stillFor >= delay) {
         const dr = Math.min(max, (this.stillFor - delay) * perSec)
         this.passiveDamageReduction = dr / 100
+        // Whatever ceiling is active right now, not always the full 45 —
+        // Anchor Stone (`cb.bracedCapSlowPct`) reads this to mean "he cannot
+        // bank any more reduction", which is equally true at the stale cap.
         this.bracedAtCap = dr >= max
       }
     } else if (p.id === 'momentum') {

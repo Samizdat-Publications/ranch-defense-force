@@ -573,15 +573,33 @@ describe('a full run', () => {
    Before this pass, on the same ladder: idle cleared 4/1/0/0/0/7 and idle-buy
    14/8/4/3/4/9, with idle medians of w12.5, w12, w11.5, w7.5, w8 and w12.
 
-   THE HAND IS THE OUTLIER AND IT IS NOT A BUG IN THE NUMBERS. Braced pays 45%
-   damage reduction for standing still and Dig In roots him: `idle` is not
-   "nobody playing" for The Hand, it is his home pilot with the ability button
-   unplugged and the shop skipped. Session 23 could not close that gap, because
-   closing it means moving Braced and Braced lives in classes.json, which that
-   session did not own. The caps below are therefore stated per class with The
-   Hand's exemption written down rather than hidden inside a looser global bar
-   -- if a later pass touches Braced, tighten HAND_IDLE_BUY_CAP first and
-   delete this paragraph.
+   THE HAND WAS THE OUTLIER AND IT WAS NOT A BUG IN THE NUMBERS, BUT THE
+   EXEMPTION BELOW IS GONE. Braced pays 45% damage reduction for standing
+   still and Dig In roots him: `idle` was not "nobody playing" for The Hand,
+   it was his home pilot with the ability button unplugged and the shop
+   skipped, and session 23 could not close that gap because closing it meant
+   moving Braced, in classes.json, which that session did not own. The class
+   pass that did own it moved Braced's CEILING (not its rate) onto whether
+   Dig In has actually been pressed recently rather than pure idleness --
+   `sinceAbility` in player.ts, `abilityGraceSeconds`/`drMaxStale` in
+   classes.json -- so a build that presses the button on anything near its
+   own cooldown keeps the full ceiling and a build that never presses it (both
+   idle bots, by construction) does not. Measured on this file's own ladder:
+   idle-buy 8/24 before this pass, 4/24 after -- inside IDLE_BUY_CLEAR_CAP,
+   same as every other class, so HAND_IDLE_BUY_CAP is retired rather than
+   tightened.
+
+   THE DRIFTER'S EXEMPTION IS ALSO GONE. He measured 6/24, one over the cap,
+   because `lifestealPct` read every point of damage `damageEnemy` ever sees --
+   weapon fire and a standing aura's DoT ticks alike -- so a Smudge Pot
+   chip-finishing whatever wandered into it healed him near full value with no
+   kill, no dash and no streak required, even though Hot Streak is supposed to
+   be his engine. The fix scales his lifesteal by `streak / maxStacks`
+   (world.ts, `damageEnemy`) rather than touching the stat itself: full value
+   only at a maxed streak, nothing at zero, and "any hit ends the streak" means
+   a passive, standing build is at its lowest streak exactly when it is taking
+   the most contact damage. Measured: 6/24 before, 4/24 after -- inside
+   IDLE_BUY_CLEAR_CAP, so DRIFTER_IDLE_BUY_CAP is retired too.
 
    The Veteran is the outlier at the other end: Overwatch charges for contact,
    so a stationary Vet dies in wave 2 on half the ladder. That is the class
@@ -590,18 +608,12 @@ describe('a full run', () => {
 */
 /** No class may clear a run nobody is playing. One seed of slack for The Hand. */
 const IDLE_CLEAR_CAP = 2
-/** With the shop on. Every class but The Hand measured 0-3. */
-const IDLE_BUY_CLEAR_CAP = 5
-/** The Hand's exemption, above. Measured 8/24; it was 14/24 before this pass. */
-const HAND_IDLE_BUY_CAP = 11
 /**
- * The Drifter measured 6/24 on the merged tree, one over the cap, the moment the
- * Smudge Pot started dealing its full dps (session 22): an aura is the one weapon
- * a stationary player gets full value from, and his lifesteal is a cliff at 0.95
- * (batch 5). Written down rather than hidden in a looser global cap; the class
- * pass that owes The Hand's exemption owes this one too.
+ * With the shop on. Every class measures 0-4 as of the class pass that retired
+ * The Hand's and The Drifter's separate, higher exemptions (see the comment
+ * above) -- one bar for all six now, not three.
  */
-const DRIFTER_IDLE_BUY_CAP = 6
+const IDLE_BUY_CLEAR_CAP = 5
 /** Per class, the median death wave must be at or before this. Measured 2.5-12. */
 const IDLE_MEDIAN_MAX = 14
 /** And the six classes together must sit in the opening third. Measured 8.75. */
@@ -652,13 +664,10 @@ describe('a run nobody is playing', () => {
       const cleared = SEEDS
         .map((s) => idleRun(s, classId, 'firstAffordable'))
         .filter((r) => r.cleared).length
-      const cap = classId === 'hand' ? HAND_IDLE_BUY_CAP
-        : classId === 'drifter' ? DRIFTER_IDLE_BUY_CAP
-        : IDLE_BUY_CLEAR_CAP
       expect(
         cleared,
         `${classId} idle-buy cleared ${cleared}/${SEEDS.length} without moving`,
-      ).toBeLessThanOrEqual(cap)
+      ).toBeLessThanOrEqual(IDLE_BUY_CLEAR_CAP)
     }
   }, 3_600_000)
 })
