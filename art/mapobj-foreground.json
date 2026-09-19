@@ -1,0 +1,14 @@
+[
+ {"name":"fgFenceRun","width":400,"height":128,"n":2,
+  "description":"a long run of weathered grey timber post and rail fence seen close up and side on, four posts and two rails crossing the whole width, tufts of dry grass at the feet of the posts, low top-down farm view, no background"},
+ {"name":"fgWeeds","width":256,"height":160,"n":2,
+  "description":"a big untidy clump of tall dry roadside weeds and thistles, seed heads and broad dock leaves, close up and foreground scale, low top-down farm view, no background"},
+ {"name":"fgFeedSacks","width":256,"height":160,"n":2,
+  "description":"a stack of four burlap feed sacks leaning against each other, one split open with grain spilling out, close up and foreground scale, low top-down farm view, no background"},
+ {"name":"fgCartWheel","width":192,"height":192,"n":2,
+  "description":"a large old wooden cart wheel with an iron rim leaning against nothing, half sunk in dry grass, close up and foreground scale, low top-down farm view, no background"},
+ {"name":"fgTrough","width":320,"height":128,"n":2,
+  "description":"a long galvanised steel water trough seen close up and side on, rusted at the seams, a dark puddle spreading under one end, trodden mud around it, low top-down farm view, no background"},
+ {"name":"fgMilkChurns","width":224,"height":160,"n":2,
+  "description":"three tall dented steel milk churns standing together, lids askew, close up and foreground scale, low top-down farm view, no background"}
+]

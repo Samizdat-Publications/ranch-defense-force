@@ -1,0 +1,5 @@
+[
+ {"object":"8a958ffa-9d98-4f72-bd00-a7b7845b5c1f","name":"bossScarecrow","clip":"walk","action":"lurching forward with a stiff uneven gait, long coat swinging, arms hanging limp at its sides","frames":8},
+ {"object":"8a958ffa-9d98-4f72-bd00-a7b7845b5c1f","name":"bossScarecrow","clip":"attack","action":"swinging both long arms down in a heavy overhead strike, loose straw bursting from the cuffs","frames":8},
+ {"object":"8a958ffa-9d98-4f72-bd00-a7b7845b5c1f","name":"bossScarecrow","clip":"death","action":"folding at the middle and collapsing into a loose heap of straw and rags, sack head rolling clear","frames":8}
+]

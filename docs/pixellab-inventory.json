@@ -1,6 +1,262 @@
 {
- "taken": "2026-09-19T08:43:13.529Z",
+ "taken": "2026-09-19T22:12:40.050Z",
  "objects": [
+  {
+   "id": "bd52d668-7fe9-444a-87b5-ced2fbb47ffd",
+   "name": "three tall dented steel milk c",
+   "state_name": "base",
+   "prompt": "three tall dented steel milk churns standing together, lids askew, close up and foreground scale, low top-down farm view, no background",
+   "size": {
+    "width": 224,
+    "height": 160
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:54:32.736271+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/bd52d668-7fe9-444a-87b5-ced2fbb47ffd/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "9b41943b-fc30-45e4-95a6-2df368f7e8da",
+   "name": "three tall dented steel milk c",
+   "state_name": "base",
+   "prompt": "three tall dented steel milk churns standing together, lids askew, close up and foreground scale, low top-down farm view, no background",
+   "size": {
+    "width": 224,
+    "height": 160
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:54:32.472165+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/9b41943b-fc30-45e4-95a6-2df368f7e8da/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "a14a6ebf-674e-47ca-be72-5c7fadd5a5c5",
+   "name": "a long galvanised steel water ",
+   "state_name": "base",
+   "prompt": "a long galvanised steel water trough seen close up and side on, rusted at the seams, a dark puddle spreading under one end, trodden mud around it, low top-down farm view, no background",
+   "size": {
+    "width": 320,
+    "height": 128
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:54:32.447469+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/a14a6ebf-674e-47ca-be72-5c7fadd5a5c5/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "cdc183e5-0897-4869-8249-13e3e6d3629d",
+   "name": "a long galvanised steel water ",
+   "state_name": "base",
+   "prompt": "a long galvanised steel water trough seen close up and side on, rusted at the seams, a dark puddle spreading under one end, trodden mud around it, low top-down farm view, no background",
+   "size": {
+    "width": 320,
+    "height": 128
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:54:32.174079+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/cdc183e5-0897-4869-8249-13e3e6d3629d/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "1cd70fa3-606c-48a6-b400-3d533f342c3b",
+   "name": "a stack of four burlap feed sa",
+   "state_name": "base",
+   "prompt": "a stack of four burlap feed sacks leaning against each other, one split open with grain spilling out, close up and foreground scale, low top-down farm view, no background",
+   "size": {
+    "width": 256,
+    "height": 160
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:53:51.986452+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/1cd70fa3-606c-48a6-b400-3d533f342c3b/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "ba53a281-b858-4c51-9ac7-62f59e6452e6",
+   "name": "a large old wooden cart wheel ",
+   "state_name": "base",
+   "prompt": "a large old wooden cart wheel with an iron rim leaning against nothing, half sunk in dry grass, close up and foreground scale, low top-down farm view, no background",
+   "size": {
+    "width": 192,
+    "height": 192
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:53:43.854027+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/ba53a281-b858-4c51-9ac7-62f59e6452e6/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "152ac0fa-dd18-4a34-8398-8e9cb6e01367",
+   "name": "a large old wooden cart wheel ",
+   "state_name": "base",
+   "prompt": "a large old wooden cart wheel with an iron rim leaning against nothing, half sunk in dry grass, close up and foreground scale, low top-down farm view, no background",
+   "size": {
+    "width": 192,
+    "height": 192
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:53:43.719738+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/152ac0fa-dd18-4a34-8398-8e9cb6e01367/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "7c19b8c9-0b09-4f68-a95e-e866bbda302a",
+   "name": "a stack of four burlap feed sa",
+   "state_name": "base",
+   "prompt": "a stack of four burlap feed sacks leaning against each other, one split open with grain spilling out, close up and foreground scale, low top-down farm view, no background",
+   "size": {
+    "width": 256,
+    "height": 160
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:53:34.093285+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/7c19b8c9-0b09-4f68-a95e-e866bbda302a/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "939e5320-a892-48bf-a2fe-af2bbad84be6",
+   "name": "a big untidy clump of tall dry",
+   "state_name": "base",
+   "prompt": "a big untidy clump of tall dry roadside weeds and thistles, seed heads and broad dock leaves, close up and foreground scale, low top-down farm view, no background",
+   "size": {
+    "width": 256,
+    "height": 160
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:52:18.421044+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/939e5320-a892-48bf-a2fe-af2bbad84be6/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "e7d914f4-8c53-43e2-ad97-10ab6e6e0e7c",
+   "name": "a long run of weathered grey t",
+   "state_name": "base",
+   "prompt": "a long run of weathered grey timber post and rail fence seen close up and side on, four posts and two rails crossing the whole width, tufts of dry grass at the feet of the posts, low top-down farm view, no background",
+   "size": {
+    "width": 400,
+    "height": 128
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:52:18.413959+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/e7d914f4-8c53-43e2-ad97-10ab6e6e0e7c/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "95abaea0-d226-4a1b-95a3-cf2c50db398a",
+   "name": "a long run of weathered grey t",
+   "state_name": "base",
+   "prompt": "a long run of weathered grey timber post and rail fence seen close up and side on, four posts and two rails crossing the whole width, tufts of dry grass at the feet of the posts, low top-down farm view, no background",
+   "size": {
+    "width": 400,
+    "height": 128
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T19:52:18.396643+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/95abaea0-d226-4a1b-95a3-cf2c50db398a/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "8a958ffa-9d98-4f72-bd00-a7b7845b5c1f",
+   "name": "rdf-boss-scarecrow-v2",
+   "state_name": "base",
+   "prompt": "a scarecrow come alive and walking upright like a man on two thin straw-stuffed legs, burlap sack head with a stitched mouth, long rotted coat, arms hanging at its sides, bipedal human posture, two legs only, never on all fours",
+   "size": {
+    "width": 97,
+    "height": 97
+   },
+   "directions": 8,
+   "created_at": "2026-09-19T18:10:05.504050+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/8a958ffa-9d98-4f72-bd00-a7b7845b5c1f/rotations/south.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "2ad85726-a8d7-4e62-974b-e00fe75a56c8",
+   "name": "rdf-boss-cockerel",
+   "state_name": "base",
+   "prompt": "an enormous infected cockerel towering on long scaled legs, ragged iridescent black and green plumage, torn comb and wattles, beak open mid-scream, milky white eyes, wings half spread",
+   "size": {
+    "width": 97,
+    "height": 97
+   },
+   "directions": 8,
+   "created_at": "2026-09-19T17:52:35.034823+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/2ad85726-a8d7-4e62-974b-e00fe75a56c8/rotations/south.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "a1d6829b-6e69-4633-ab4a-88c91f526367",
+   "name": "rdf-boss-scarecrow",
+   "state_name": "base",
+   "prompt": "a tall gaunt scarecrow come alive, burlap sack head with stitched mouth and one dark eyehole, straw bursting from the cuffs of a rotted coat, arms hanging long, standing on two thin legs instead of a post, moving wrong",
+   "size": {
+    "width": 97,
+    "height": 97
+   },
+   "directions": 8,
+   "created_at": "2026-09-19T17:52:32.397451+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/a1d6829b-6e69-4633-ab4a-88c91f526367/rotations/south.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "dd904910-2ace-4db9-910d-ebc779ef3cba",
+   "name": "rdf-boss-combine",
+   "state_name": "base",
+   "prompt": "a derelict combine harvester with a wide spinning reel header across its front, rusted red and grey, cab windows dark and empty, straw and chaff caught in the reel, nobody driving it",
+   "size": {
+    "width": 136,
+    "height": 136
+   },
+   "directions": 8,
+   "created_at": "2026-09-19T17:52:00.027329+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/dd904910-2ace-4db9-910d-ebc779ef3cba/rotations/south.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "7323925e-ea13-4732-bdec-332f61ccc5fc",
+   "name": "rdf-boss-sow",
+   "state_name": "base",
+   "prompt": "an enormous infected brood sow, hugely swollen and sagging, patchy bristled hide, milky white eyes, rows of distended teats, jaw hanging open, sickly grey-green tinge, still recognisably a farm pig",
+   "size": {
+    "width": 97,
+    "height": 97
+   },
+   "directions": 8,
+   "created_at": "2026-09-19T17:51:57.178037+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/7323925e-ea13-4732-bdec-332f61ccc5fc/rotations/south.png",
+   "tags": [],
+   "status": "completed"
+  },
   {
    "id": "706c7895-657c-44a9-aa32-33aa6a52da80",
    "name": "a burst of thick black tar spl",

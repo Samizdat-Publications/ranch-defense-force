@@ -15,7 +15,7 @@ The owner said on 2026-09-18 that he is keeping PixelLab for **one more month**
 and does not know the cut-off: *"once its cut off its cut off and i dont know
 when it cuts off."*
 
-State at the end of session 25: Tier 2, **4718 generations** left this cycle (282 spent),
+State at the end of session 25: Tier 2, **~4300 generations** left this cycle (~700 spent),
 **$8.52** credits, allowance resets 2026-10-14. Generations are abundant.
 Credits barely move, because template animations and map-objects bill the
 monthly allowance and not the USD pot — measured either side, repeatedly.
@@ -79,7 +79,29 @@ is a CONTENT job — items carrying a `minionSprite`, the way the Barn Dog and
 Broody Hen already work. It was left alone because it changes balance, and
 balance is the owner's call.
 
-## 2. The endpoints, so you do not rediscover them
+## 2. What is banked and not switched on
+
+Four bosses, a crow, five biome props and twenty-five unused Wang sets are
+built, packed, tested and deliberately inert. Each is one line from live:
+
+| thing | the line |
+|---|---|
+| a boss | `waves.json` -> `bossWaves`, e.g. `"15": "bossSow"` |
+| the crow | a map's `enemyBias`, e.g. `"crow": 0.9` |
+| a biome node | a map's `nodes.variantWeights`, e.g. `"node.cattails": 20` |
+| a new level | a `maps.json` entry naming one of the 25 unused ground sets |
+
+They are inert because **`weight: 0` is the only thing that holds an enemy
+out** -- the spawner reads `map.enemyBias[id] ?? def.weight ?? 1`, so deleting a
+bias entry PROMOTES an enemy to weight 1 on every map rather than removing it.
+That cost a full test cycle to find. Same pattern for node variants.
+
+The flooded-bottoms biome is the cheapest new level to build: its ground is
+already packed (`short_green_to_shallow_muddy`, `water_to_grass`,
+`lush_overgrown_to_stagnant_black`) and its props are already packed
+(`node.cattails`, `node.reeds`).
+
+## 3. The endpoints, so you do not rediscover them
 
 Both were found by reading `/v2/openapi.json`, which is fetchable with the same
 key. **Ask the API rather than guessing at it.**
@@ -109,7 +131,7 @@ Three more things that cost session 25 time:
   is not an integer and the boss would visibly shrink when it faced west.
   Regenerate that direction with `replace_existing: true`.
 
-## 3. What a generated loop is good for
+## 4. What a generated loop is good for
 
 Session 25 bought 42 clips through `/animate-with-text-v3` and wired twelve.
 **The endpoint regenerates its subject on every frame.** It is good when a rigid
@@ -123,7 +145,7 @@ content (a water trough drained).
 `tuning.json` -> `sway`, a rotation about the sprite's bottom-centre draw origin
 so a plant pivots at its roots. Free, deterministic, cannot morph.
 
-## 4. Then play and tune — still the owner's call, still untouched
+## 5. Then play and tune — still the owner's call, still untouched
 
 **The balance question has not been touched.** Session 24 measured it precisely
 and deliberately stopped; session 25 was an art session and changed exactly two
@@ -157,6 +179,7 @@ changed game.
 ```bash
 npm run atlas      # and READ THE PRINTED DIMENSIONS, not just the exit code
 npm test           # 273 tests, and run.test.ts alone takes about 20 minutes
+npm run objfill -- <id>:<name>                # loop until every clip is 8/8 -- one round is never enough
 npm run typecheck  # game and tools have separate tsconfigs
 npm run shot -- 600 out.png 4242 hand --hit   # a real run, headless; --hit forces recoils
 npm run contact -- <sheet> <clip>             # pull frames back OUT of the packed atlas

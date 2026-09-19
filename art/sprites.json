@@ -405,10 +405,23 @@
   },
   "pixellab": {
     "_note": "Generated with PixelLab, style-anchored to assets/pixellab/limezu_style_256.png. Ours and commercially licensed, so unlike the purchased packs these CAN be committed. Card icons only -- they are 44-62px and exempt from the 32x32 field rule because a card draws at any integer zoom. Anything that reaches the game field must still be 32x32. See docs/PIXELLAB.md.",
+    "_foregroundNote": "Six FOREGROUND-scale scene props, 164-374px, generated in session 25 for the near band of the home screen. DESIGN_BRIEF_HOMESCREEN.md says the foreground of both scenes is a flat empty expanse and that the composition needs filling; everything already in `ranch` is 64-128px, which is barn-and-silo scale for the MIDDLE distance and disappears at the front of a 1920x1080 stage. Four of the six came back on an opaque card: three were cut free with `npm run decard` (offline, free) and the fence needed `npm run rmbg` because the sky between its rails is enclosed card colour, which decard deliberately will not cut. PLACEMENT IS STILL DESIGN'S -- the brief asks for a coordinate table and this does not answer that, it only makes sure the art exists when the table arrives.",
+    "_biomePropNote": "Five biome props claimed from the account's awaiting-review pile in session 25 -- generated in earlier sessions, never picked up. They are weight-0 node variants in nodes.json, so they cost nothing until a map raises them, the same way node.boneHeap and node.saltRock already work.",
     "_sceneBandNote": "Crop-row and orchard art for the FIELD scene band. All ten were generated, cut into picked/ and then referenced by nothing at all -- bought and left on the floor. The homescreen brief complains that the scene foreground is empty; this is the art it was empty of. Healthy and ROTTED are both here so the band can turn with the fiction, the same way the field crops do in a run.",
     "_base": "assets/pixellab/picked/",
     "files": {
       "pickup.heal": "heal_jar.png",
+      "scene.fgFenceRun": "fg_fence_run.png",
+      "scene.fgFeedSacks": "fg_feed_sacks.png",
+      "scene.fgTrough": "fg_trough.png",
+      "scene.fgWeeds": "fg_weeds.png",
+      "scene.fgCartWheel": "fg_cart_wheel.png",
+      "scene.fgMilkChurns": "fg_milk_churns.png",
+      "node.appleTree": "node_apple_tree.png",
+      "node.cattails": "prop_cattails.png",
+      "node.reeds": "prop_reeds.png",
+      "node.wheatBlight": "node_wheat_blight.png",
+      "node.cornRot": "node_corn_rot.png",
       "scene.cropRowCabbage": "cabbage_row_healthy.png",
       "scene.cropRowCabbageRot": "cabbage_row_rotted.png",
       "scene.cropRowCorn": "corn_rows_healthy.png",
@@ -1042,6 +1055,46 @@
       "south-east": "downRight"
     },
     "sheets": {
+      "bossSow": {
+        "_note": "The Sow. A wave boss that is slow and enormous rather than fast and sharp -- the fight is about where you are when it arrives, not about reacting to it.",
+        "dir": "bossSow",
+        "cell": 97,
+        "clips": {
+          "walk": { "slug": "lumbering_forward_with_a_heavy_rolling_gait_swoll", "frames": 9 },
+          "attack": { "slug": "lunging_forward_and_goring_upward_with_its_snout", "frames": 9 },
+          "death": { "slug": "collapsing_onto_its_side_legs_buckling_under_the", "frames": 9 }
+        }
+      },
+      "bossCombine": {
+        "_note": "The Combine. The Duster's sibling and its opposite: the Duster patrols a fixed pattern and never chases, this one does nothing but. 136px, the biggest sheet in the game.",
+        "dir": "bossCombine",
+        "cell": 136,
+        "clips": {
+          "walk": { "slug": "driving_steadily_forward_the_header_reel_turning", "frames": 9 },
+          "attack": { "slug": "surging_forward_as_the_header_reel_spins_up_fast", "frames": 9 },
+          "death": { "slug": "grinding_to_a_halt_as_the_header_jams_and_tears_lo", "frames": 9 }
+        }
+      },
+      "bossCockerel": {
+        "_note": "The Cockerel. The fast boss -- the roster's early bosses are all heavy, and a light one that closes distance is the shape that was missing.",
+        "dir": "bossCockerel",
+        "cell": 97,
+        "clips": {
+          "walk": { "slug": "striding_forward_on_long_scaled_legs_head_bobbing", "frames": 9 },
+          "attack": { "slug": "rearing_up_and_slashing_forward_with_its_spurs_wi", "frames": 9 },
+          "death": { "slug": "toppling_forward_onto_the_ground_in_a_burst_of_loo", "frames": 9 }
+        }
+      },
+      "bossScarecrow": {
+        "_note": "The Thing in the North Pasture -- the name the HUD's boss bar has carried since M5 with nothing behind it. Generated bipedal on the SECOND attempt: anchored to the prize bull, a quadruped, two of its eight back views came back on four legs.",
+        "dir": "bossScarecrowV2",
+        "cell": 97,
+        "clips": {
+          "walk": { "slug": "lurching_forward_with_a_stiff_uneven_gait_long_co", "frames": 9 },
+          "attack": { "slug": "swinging_both_long_arms_down_in_a_heavy_overhead_s", "frames": 9 },
+          "death": { "slug": "folding_at_the_middle_and_collapsing_into_a_loose", "frames": 9 }
+        }
+      },
       "duster": {
         "_note": "The wave-25 boss. It was LimeZu's Tractor_32x32 until session 25 -- a clean green farm tractor standing in for an infected agricultural machine, and the last LimeZu sheet any ENEMY used. This one was already on the account, generated and paid for, tagged rdf-surplus and never claimed: eight rotations AND a nine-frame breakdown-to-smouldering-wreck in all eight directions. The drive cycle is the only part that had to be generated.",
         "_sizeNote": "113px source against an enemy radius of 52, so it is close to twice the hitbox -- which is what the spec asks of a boss and what the retired sheet was doing at ~130px anyway.",

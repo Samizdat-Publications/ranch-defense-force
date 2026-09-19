@@ -1,0 +1,144 @@
+[
+ {
+  "object": "7323925e-ea13-4732-bdec-332f61ccc5fc",
+  "name": "bossSow",
+  "clip": "collapsing_onto_it",
+  "group": "55f15986-9df9-404d-b774-0acecd6414fc",
+  "directions": [
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "7323925e-ea13-4732-bdec-332f61ccc5fc",
+  "name": "bossSow",
+  "clip": "lunging_forward_an",
+  "group": "ab4f9be1-0e33-4d5a-9c93-90a834fde178",
+  "directions": [
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "dd904910-2ace-4db9-910d-ebc779ef3cba",
+  "name": "bossCombine",
+  "clip": "driving_steadily_f",
+  "group": "f323455f-ca9e-46d0-b288-3b351a504c47",
+  "directions": [
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "dd904910-2ace-4db9-910d-ebc779ef3cba",
+  "name": "bossCombine",
+  "clip": "surging_forward_as",
+  "group": "8a69f386-73c2-44d6-82da-f3665b98d4df",
+  "directions": [
+   "south-west",
+   "west",
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "dd904910-2ace-4db9-910d-ebc779ef3cba",
+  "name": "bossCombine",
+  "clip": "grinding_to_a_halt",
+  "group": "01bad042-d391-48be-b93e-b5d765b086e6",
+  "directions": [
+   "south-west",
+   "west",
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "2ad85726-a8d7-4e62-974b-e00fe75a56c8",
+  "name": "bossCockerel",
+  "clip": "toppling_forward_o",
+  "group": "472e8f85-07af-4d8d-99e4-2e0321b2e9e7",
+  "directions": [
+   "west",
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "2ad85726-a8d7-4e62-974b-e00fe75a56c8",
+  "name": "bossCockerel",
+  "clip": "rearing_up_and_sla",
+  "group": "2d5d8978-33be-48bb-9884-dd719a3c9954",
+  "directions": [
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "2ad85726-a8d7-4e62-974b-e00fe75a56c8",
+  "name": "bossCockerel",
+  "clip": "striding_forward_o",
+  "group": "bf747bff-4f41-439d-aea9-0094b08caeef",
+  "directions": [
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "8a958ffa-9d98-4f72-bd00-a7b7845b5c1f",
+  "name": "bossScarecrow",
+  "clip": "folding_at_the_mid",
+  "group": "d5183540-92c1-44d2-9ecd-6894f276d3fc",
+  "directions": [
+   "west",
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "8a958ffa-9d98-4f72-bd00-a7b7845b5c1f",
+  "name": "bossScarecrow",
+  "clip": "swinging_both_long",
+  "group": "f3d9f0e8-c7fe-452d-8e09-f400c590e51a",
+  "directions": [
+   "west",
+   "north-west",
+   "north",
+   "north-east",
+   "east",
+   "south-east"
+  ],
+  "frames": 8
+ }
+]

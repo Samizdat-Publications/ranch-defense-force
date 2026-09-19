@@ -1,0 +1,13 @@
+[
+ {"object":"7323925e-ea13-4732-bdec-332f61ccc5fc","name":"bossSow","clip":"walk","action":"lumbering forward with a heavy rolling gait, swollen belly swaying side to side, head low","frames":8},
+ {"object":"7323925e-ea13-4732-bdec-332f61ccc5fc","name":"bossSow","clip":"attack","action":"lunging forward and goring upward with its snout, jaw wide","frames":8},
+ {"object":"7323925e-ea13-4732-bdec-332f61ccc5fc","name":"bossSow","clip":"death","action":"collapsing onto its side, legs buckling under the weight, body settling flat","frames":8},
+
+ {"object":"dd904910-2ace-4db9-910d-ebc779ef3cba","name":"bossCombine","clip":"walk","action":"driving steadily forward, the header reel turning, wheels rolling, chaff and straw spitting out behind","frames":8},
+ {"object":"dd904910-2ace-4db9-910d-ebc779ef3cba","name":"bossCombine","clip":"attack","action":"surging forward as the header reel spins up fast, dust and chaff blasting out in front","frames":8},
+ {"object":"dd904910-2ace-4db9-910d-ebc779ef3cba","name":"bossCombine","clip":"death","action":"grinding to a halt as the header jams and tears loose, black smoke pouring from the stack, panels falling off","frames":8},
+
+ {"object":"2ad85726-a8d7-4e62-974b-e00fe75a56c8","name":"bossCockerel","clip":"walk","action":"striding forward on long scaled legs, head bobbing with each step, wings held half open","frames":8},
+ {"object":"2ad85726-a8d7-4e62-974b-e00fe75a56c8","name":"bossCockerel","clip":"attack","action":"rearing up and slashing forward with its spurs, wings flared wide, beak open screaming","frames":8},
+ {"object":"2ad85726-a8d7-4e62-974b-e00fe75a56c8","name":"bossCockerel","clip":"death","action":"toppling forward onto the ground in a burst of loose black feathers, wings splayed","frames":8}
+]

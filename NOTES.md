@@ -373,6 +373,118 @@ Two things worth keeping past the crow:
   question is still the owner's.
 - **Balance is still untouched** beyond pricing the crow to be neutral.
 
+## Session 25, part three: four bosses, ground for twenty-five levels, and a foreground
+
+The owner's brief for this stretch: *"continue generating any assets we need or
+think we will need in the future, all work should be around generating the
+assets to be able to make multiple levels, bosses etc etc along with our front
+hero scene."*
+
+So: levels, bosses, hero scene. In that order of how much was missing.
+
+### Levels: the ground was already bought
+
+The account held **49 Wang tilesets and 23 were on disk**. The other 26 had been
+generated in earlier sessions and never pulled down, so the game could not use
+ground it already owned. 24 came down clean; `assets/tilesets/` auto-discovers,
+so packing them was the next `npm run atlas` and nothing else. **47 sets packed,
+22 used by a map, 25 sitting unused and ready.**
+
+What arrived is not filler. `water_to_grass`, `water_to_wood`,
+`short_mown_to_shallow_muddy`, `short_green_to_shallow_muddy` and
+`lush_overgrown_to_stagnant_black` are a **flooded bottoms biome with its ground
+already complete**. `lush_overgrown_to_sun_baked` and
+`dry_cracked_to_coarse_overgrown` are a drought biome. Five more concrete and
+steel pairs are underground variety, and two more ash-to-sickly pairs are blight
+bands for maps that do not have three yet.
+
+Deduplicated by the `id` each tileset json records, **not by name**: the
+account's names are long English descriptions, slugifying them does not
+reproduce the names already on disk, and a name-based check would have
+re-downloaded all 23 under second names and packed every ground twice.
+
+Five biome props came out of the awaiting-review pile the same way — cattails,
+water reeds, an apple tree, a blighted wheat stand and rotted corn. They are
+weight-0 node variants in `nodes.json`, which is the pattern
+`node.boneHeap` and `node.saltRock` already use: they cost nothing until a map
+raises them.
+
+### Bosses: four, and none of them switched on
+
+The roster had two — the Prize Bull, who charges in a straight line, and the
+Duster, who patrols a fixed pattern and never chases. Both heavy, both slow.
+
+| boss | shape that was missing |
+|---|---|
+| **The Cockerel** (700hp, speed 118) | something light that closes distance and keeps closing |
+| **The Sow** (1400hp, speed 58) | enormous and unhurried; the fight is where you are standing when it arrives |
+| **The Thing in the North Pasture** (1600hp) | the name the HUD's boss bar has carried since M5 with nothing behind it |
+| **The Combine** (2000hp, 136px) | the Duster's opposite: a machine that does nothing but come for you |
+
+All four are eight-direction with walk, attack and death, and all four sit at
+`weight: 0` and are absent from `bossWaves`. **Switching one on is one line in
+`waves.json`.** They are held out for the same reason the crow is: a boss
+changes the shape of a run, that is the owner's call, and the art and the wiring
+are finished either way.
+
+**The style anchor decides the anatomy.** The scarecrow was generated first
+against the prize bull — a quadruped — and two of its eight rotations came back
+**on four legs**. Regenerated against the cockerel, a biped, it is upright in all
+eight. The reference carries far more than palette.
+
+### Eight directions is not what eight directions means
+
+Every animation batch this session came back short, and the missing directions
+were overwhelmingly `east`, `north-east` and `south-east`. The object reports
+`status: completed` with no pending jobs and simply has fewer directions than
+were asked for. Nothing surfaces it; a caller that trusts the status ships a
+boss that vanishes when it turns east.
+
+Re-asking for exactly the gap closes part of it each round. Three rounds is
+typical and one is never enough, so `npm run objfill` now does that loop:
+download, measure the directions **on disk**, submit the gap, wait, repeat.
+
+Disk and not the API, because a clip can have two groups carrying the same
+description — a killed batch that was re-run — and they merge into one folder on
+download. The union only exists on disk.
+
+`npm run objanim` also skips a clip the object already has, so a re-run after a
+kill no longer pays twice. It had already paid twice on all four bosses before
+that went in.
+
+### Hero scene: the foreground
+
+`DESIGN_BRIEF_HOMESCREEN.md` says the foreground of both scenes is a flat empty
+expanse. Two things went in for it, and neither is the answer to the brief's
+actual question, which is a coordinate table.
+
+**Twelve sprites that nothing referenced.** `cabbage_row_healthy`,
+`corn_rows_rotted`, both pumpkin patches, both wheat rows, both orchard trees, a
+perched crow, a fence row: generated in earlier sessions, cut into `picked/`, and
+referenced nowhere. The art the scene band was empty of, sitting on the floor.
+They come in healthy AND rotted pairs, so the band can turn with the fiction the
+way the field crops now do in a run.
+
+**Six foreground-scale props, generated.** 164-374px: a fence run, feed sacks, a
+water trough, thistles, a cart wheel, milk churns. Everything already in `ranch`
+is 64-128px, which is barn-and-silo scale for the middle distance and vanishes
+at the front of a 1920x1080 stage.
+
+Four of the six came back on an opaque card. Three were cut free with `npm run
+decard`, which is offline and free. The fence needed `npm run rmbg` and one
+generation, because the sky between its rails is *enclosed* card colour and
+decard deliberately will not cut an enclosed region — it cannot tell a gap from
+a highlight, and guessing wrong on a highlight is worse.
+
+### One number to watch
+
+The atlas is **10,610 frames on 9 pages, 17.9MB**, up from 14.8MB before this
+stretch. Roughly 3MB of that is four bosses the game never draws yet, because
+they are held out of rotation. For a game that ships its atlas over the web that
+is a real cost to carry on a maybe. If the bosses stay off for long, the pages
+are already split and the later ones are already scenery-only -- loading them
+lazily is the obvious lever, and `npm run load-time` is the measurement.
+
 ## Still open, and unchanged by this session
 
 - **Session 24's balance question is untouched.** `idle-greedy` clears on every

@@ -190,6 +190,14 @@
           "xp": 10,
           "weight": 10
         },
+    {
+     "_note": "Biome variant, weight 0 by default. Claimed from the review pile in session 25 for an orchard map.",
+     "sprite": "node.appleTree",
+     "hp": 85,
+     "feed": 9,
+     "xp": 8,
+     "weight": 0
+    },
         {
           "_note": "Biome variant, weight 0 by default. See the rock note above.",
           "sprite": "node.ashStump",
@@ -206,6 +214,38 @@
       "radius": 11,
       "hpPerWave": 4,
       "variants": [
+    {
+     "_note": "Biome variant, weight 0 by default -- a map raises it.",
+     "sprite": "node.cattails",
+     "hp": 22,
+     "feed": 3,
+     "xp": 2,
+     "weight": 0
+    },
+    {
+     "_note": "Biome variant, weight 0 by default -- a map raises it.",
+     "sprite": "node.reeds",
+     "hp": 22,
+     "feed": 3,
+     "xp": 2,
+     "weight": 0
+    },
+    {
+     "_note": "Biome variant, weight 0 by default -- a map raises it.",
+     "sprite": "node.wheatBlight",
+     "hp": 22,
+     "feed": 2,
+     "xp": 3,
+     "weight": 0
+    },
+    {
+     "_note": "Biome variant, weight 0 by default -- a map raises it.",
+     "sprite": "node.cornRot",
+     "hp": 22,
+     "feed": 2,
+     "xp": 3,
+     "weight": 0
+    },
         {
           "sprite": "crop.corn",
           "hp": 18,
