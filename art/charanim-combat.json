@@ -1,0 +1,40 @@
+[
+ {"character":"fb95af8d-7628-4b74-9c4d-85a3497d1a9b","name":"baseHazmat","clip":"attack","template":"cross-punch"},
+ {"character":"fb95af8d-7628-4b74-9c4d-85a3497d1a9b","name":"baseHazmat","clip":"hit","template":"taking-punch"},
+ {"character":"fb95af8d-7628-4b74-9c4d-85a3497d1a9b","name":"baseHazmat","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"f2c594e5-7369-4975-84ba-a3377352012f","name":"baseBreacher","clip":"attack","template":"pushing"},
+ {"character":"f2c594e5-7369-4975-84ba-a3377352012f","name":"baseBreacher","clip":"hit","template":"taking-punch"},
+ {"character":"f2c594e5-7369-4975-84ba-a3377352012f","name":"baseBreacher","clip":"death","template":"falling-back-death"},
+ {"character":"f2c594e5-7369-4975-84ba-a3377352012f","name":"baseBreacher","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"da70f7c4-7660-42b5-8532-81a5b3dee860","name":"baseOperator","clip":"attack","template":"lead-jab"},
+ {"character":"da70f7c4-7660-42b5-8532-81a5b3dee860","name":"baseOperator","clip":"hit","template":"taking-punch"},
+ {"character":"da70f7c4-7660-42b5-8532-81a5b3dee860","name":"baseOperator","clip":"death","template":"falling-back-death"},
+ {"character":"da70f7c4-7660-42b5-8532-81a5b3dee860","name":"baseOperator","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"8317aa47-9ad6-416d-8d18-89d1eb701e99","name":"baseTech","clip":"attack","template":"cross-punch"},
+ {"character":"8317aa47-9ad6-416d-8d18-89d1eb701e99","name":"baseTech","clip":"hit","template":"taking-punch"},
+ {"character":"8317aa47-9ad6-416d-8d18-89d1eb701e99","name":"baseTech","clip":"death","template":"falling-back-death"},
+ {"character":"8317aa47-9ad6-416d-8d18-89d1eb701e99","name":"baseTech","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"8d18e16d-4c2e-4ae1-a651-238c6388a464","name":"baseGuard","clip":"attack","template":"cross-punch"},
+ {"character":"8d18e16d-4c2e-4ae1-a651-238c6388a464","name":"baseGuard","clip":"hit","template":"taking-punch"},
+ {"character":"8d18e16d-4c2e-4ae1-a651-238c6388a464","name":"baseGuard","clip":"death","template":"falling-back-death"},
+ {"character":"8d18e16d-4c2e-4ae1-a651-238c6388a464","name":"baseGuard","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"8425b0a3-9527-4ea2-be55-50ca81965367","name":"maskedHauler","clip":"attack","template":"cross-punch"},
+ {"character":"8425b0a3-9527-4ea2-be55-50ca81965367","name":"maskedHauler","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"e8de8e6a-3077-4116-bec8-cb9df7a9c952","name":"maskedSprayer","clip":"attack","template":"throw-object"},
+ {"character":"e8de8e6a-3077-4116-bec8-cb9df7a9c952","name":"maskedSprayer","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"f6e8c1fb-9970-4cdf-985e-ccf93837f011","name":"bloatedFarmhand","clip":"attack","template":"cross-punch"},
+ {"character":"f6e8c1fb-9970-4cdf-985e-ccf93837f011","name":"bloatedFarmhand","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"371055e3-fa3e-417b-8377-734ab72efabf","name":"acidZombie","clip":"attack","template":"cross-punch"},
+ {"character":"371055e3-fa3e-417b-8377-734ab72efabf","name":"acidZombie","clip":"walkHurt","template":"sad-walk"},
+
+ {"character":"7418d20d-c4c0-4eb8-b936-af98f6d57979","name":"farmhand","clip":"attack","template":"cross-punch"},
+ {"character":"7418d20d-c4c0-4eb8-b936-af98f6d57979","name":"farmhand","clip":"walkHurt","template":"sad-walk"}
+]
