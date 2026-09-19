@@ -125,11 +125,44 @@ async function submit(j: Job): Promise<boolean> {
   return false
 }
 
+/**
+ * What the object ALREADY has, so a re-run does not duplicate a clip.
+ *
+ * These batches get killed and restarted -- a backgrounded shell loses its
+ * children, and the obvious response is to run the command again. Without this
+ * that submits every clip a second time: PixelLab happily makes a SECOND group
+ * with the same description, both slug to the same folder name on download, and
+ * the frames merge unpredictably. It also pays twice.
+ *
+ * Matched on the description because that is what the slug is built from, which
+ * is what actually collides.
+ */
+async function existingDescriptions(objectId: string): Promise<Set<string>> {
+  const r = await fetch(`${BASE}/objects/${objectId}`, { headers: H })
+  if (!r.ok) return new Set()
+  const j = await r.json() as { animations?: { description?: string }[] }
+  return new Set((j.animations ?? []).map((g) => (g.description ?? '').trim()).filter(Boolean))
+}
+
 let ok = 0
+let skipped = 0
 console.log(`${jobs.length} clips queued`)
+const seenByObject = new Map<string, Set<string>>()
 for (const j of jobs) {
+  // Only a NEW clip can duplicate; an explicit `group` is an extension by
+  // definition and is always allowed through.
+  if (!j.group && j.action) {
+    let have = seenByObject.get(j.object)
+    if (!have) { have = await existingDescriptions(j.object); seenByObject.set(j.object, have) }
+    if (have.has(j.action.trim())) {
+      console.log(`  ${j.name}.${j.clip}: already on the object, skipped`)
+      skipped++
+      continue
+    }
+    have.add(j.action.trim())
+  }
   if (await submit(j)) ok++
   await sleep(2500)
 }
-console.log(`${ok}/${jobs.length} submitted`)
+console.log(`${ok}/${jobs.length} submitted${skipped ? `, ${skipped} already present` : ''}`)
 console.log('jobs run server-side; pull them with: npm run object -- <object-id> <name>')
