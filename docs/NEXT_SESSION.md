@@ -15,7 +15,7 @@ The owner said on 2026-09-18 that he is keeping PixelLab for **one more month**
 and does not know the cut-off: *"once its cut off its cut off and i dont know
 when it cuts off."*
 
-State at the end of session 25: Tier 2, **~4870 generations** left this cycle,
+State at the end of session 25: Tier 2, **4718 generations** left this cycle (282 spent),
 **$8.52** credits, allowance resets 2026-10-14. Generations are abundant.
 Credits barely move, because template animations and map-objects bill the
 monthly allowance and not the USD pot — measured either side, repeatedly.
@@ -34,22 +34,50 @@ So the priority order is not "what art is missing". It is:
    `rdf-surplus` tag both mean "bought, never picked up". Claiming is free.
 3. **New subjects.** Last, because they are the spend that does not survive.
 
-## 1. Finish the enemy roster — two sheets left
+## 1. The enemy roster is finished — LimeZu is out of it entirely
 
-Session 25 took enemy clip coverage from 10 of 22 sheets to 20 of 22 by
-generating `attack`, `hit`, `death` and `walkHurt` on the ten humanoids that
-were short. What remains:
+Session 25 took enemy clip coverage from 10 of 22 sheets to **23 of 23 sheets
+carrying the art they are meant to carry**, and no enemy draws from a bought
+pack any more.
 
-| sheet | state |
+| sheet | what happened |
 |---|---|
-| `duckFlight` | idle + walk only, and still **LimeZu's `Duck_Brown_32x32`**. The last pack sheet any enemy uses. |
-| `duster` | now generated and 8-directional with a real death, but no `attack`. Arguably correct — nobody is driving it — decide rather than default. |
+| ten humanoids | `attack`, `hit`, `death`, `walkHurt` generated off the `mannequin` skeleton |
+| `duster` | was LimeZu's `Tractor_32x32`; now a generated 8-direction rusted crop duster with a nine-frame death |
+| `duckFlight` | was LimeZu's `Duck_Brown_32x32`; now a generated 8-direction mallard in flight with a death |
+| `crow` | generated in an earlier session, tagged `rdf-wired`, packed nowhere. Finished and packed; defined as an enemy but **held out of the rotation** |
 
-`duckFlight` is the one to finish. It is a bird, so it is an **object**, not a
-character: `POST /v2/objects/{id}/animations`. Grep
-`docs/PIXELLAB_INVENTORY.md` for duck first — session 25 found a complete
-8-direction boss sitting unclaimed under `rdf-surplus`, and that is the second
-time this repo has found finished work it had forgotten buying.
+**The crow is one line from being live, and that line is yours.** It is priced,
+packed and sitting at `"weight": 0`; putting `"crow": 0.9` in a map's
+`enemyBias` switches it on, because a map entry REPLACES the default rather than
+multiplying it. It is held out because at every price tried it pushed
+`tests/run.test.ts`'s idle-buy bar past its cap — 7/24 at `threatCost` 3, 6/24
+at 4, against a cap of 5. A new enemy type does not add bodies to a fixed wave
+budget, it redistributes them, so any crow worth fighting is also worth xp.
+
+**And note how an enemy is held out**, because the obvious way is wrong:
+
+    const bias = this.map.enemyBias[id] ?? def.weight ?? 1
+
+Deleting an enemy's bias entries does not remove it — it defaults to **1 and
+spawns on every map**. `"weight": 0` in `enemies.json` is the mechanism, and
+`spawner.ts` says so in the comment directly above that line.
+
+Two deliberate gaps, stated so they read as decisions: `duckFlight` has no
+attack or hit (a lane-flying flock never turns to face you) and `duster` has
+neither (its own content note says nobody is driving it).
+
+**What is left is not enemy art.** Terrain, weapon and tool icons, the FX pack's
+three surviving clips, the projectile pack, the scene strips. `terrainSource` is
+the big one and needs **no generation at all** — 29 Wang sets are already packed
+and retiring it is a wiring job.
+
+**And the companions need no generations either.** `joy` (idle/walk/attack/sit),
+`wiz`, `ouiji`, both cats, the mules and the hens are all packed with walk
+clips. The owner's "companions that follow you, each with special abilities" ask
+is a CONTENT job — items carrying a `minionSprite`, the way the Barn Dog and
+Broody Hen already work. It was left alone because it changes balance, and
+balance is the owner's call.
 
 ## 2. The endpoints, so you do not rediscover them
 
@@ -97,9 +125,12 @@ so a plant pivots at its roots. Free, deterministic, cannot morph.
 
 ## 4. Then play and tune — still the owner's call, still untouched
 
-**Nothing in the sim has moved since session 23.** Session 24 measured the
-problem precisely and deliberately stopped, and session 25 was an art session.
-The question is unchanged and it is a design decision, not a dial:
+**The balance question has not been touched.** Session 24 measured it precisely
+and deliberately stopped; session 25 was an art session and changed exactly two
+things in the sim — the `playFx` fallback that had been swallowing every
+elemental impact, and the crow's `threatCost`, which was priced to be
+balance-neutral because `tests/run.test.ts` caught it not being so. The question
+is unchanged and it is a design decision, not a dial:
 
 > A player who stands still and takes weapons and merges clears the game on
 > every class but the Widow. `idle-greedy` on all six classes: hand 18/24, kid
@@ -125,7 +156,7 @@ changed game.
 
 ```bash
 npm run atlas      # and READ THE PRINTED DIMENSIONS, not just the exit code
-npm test           # 271 tests
+npm test           # 273 tests, and run.test.ts alone takes about 20 minutes
 npm run typecheck  # game and tools have separate tsconfigs
 npm run shot -- 600 out.png 4242 hand --hit   # a real run, headless; --hit forces recoils
 npm run contact -- <sheet> <clip>             # pull frames back OUT of the packed atlas

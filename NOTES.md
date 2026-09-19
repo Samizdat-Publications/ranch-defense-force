@@ -242,16 +242,145 @@ not an integer and the boss would visibly shrink when it turned west. Regenerate
 with `replace_existing: true`, and note that it only took on one of the two
 directions per request.
 
+## The overnight pass: LimeZu is out of the enemy roster entirely
+
+The owner went to bed with *"continue generating anything you think you need or
+may need."* What follows is the second half of session 25.
+
+### Two more sheets were already bought
+
+`duckFlight` was LimeZu's `Duck_Brown_32x32` — the last PACK sheet any enemy
+used — and it had idle and walk and nothing else. It is now an eight-direction
+generated mallard in flight with a death, styled off the crow so the two birds
+belong to the same game. The `animals` group is deleted, not emptied.
+
+`crow` was the stranger find. Eight rotations, a hop cycle, a recoil, generated
+in an earlier session for the Crow Bell, tagged `rdf-wired` — and carrying
+**zero frames in the atlas**. Tagged as wired while being wired to nothing.
+Session 25 finished it (the missing walk direction, five hit directions, a
+death) and packed it. It is defined as an enemy and deliberately kept out of the
+map rotation; see below.
+
+`pickup.heal` was LimeZu's apple. It is a mason jar of preserves now, picked
+from candidates that were already on disk. `singlesExtra` held exactly that one
+entry and is deleted with it.
+
+### Every direction that failed was east-facing
+
+Three separate batches came back short, and every missing direction was `east`,
+`north-east` or `south-east` — the same side that failed on the duster earlier
+in the session. The object reports `status: completed` with the directions
+simply absent, so nothing raises it.
+
+**Count the directions after a batch. Do not trust `completed`.** The gaps
+resubmit cleanly one direction per call against the existing group id.
+
+### Blighted crops, which were bought and never wired
+
+`art/sprites.json` had been carrying a note for several sessions saying blighted
+variants for cabbage, corn, grain, pumpkin and tomato were "picked but not
+wired". They are wired now: once a map enters any of its blight bands, those
+five crops draw their rotted counterpart under the `<key>Blight` convention the
+cast already uses (`farmhandBlight`, `rosieBlight`, `scarecrowBlight`). The
+other five fall through to healthy art, which is what lets the set grow one crop
+at a time instead of the field going half-empty.
+
+The design asked for exactly this: a blighted map should SWAP the crop art, not
+remove the crop. A field that empties as the run darkens takes the harvest
+economy with it.
+
+**One rule is shared between the two painters and the rest is not.**
+`mapIsBlighted` lives in `src/content` because the ground turning and the crops
+turning are one event in the fiction, and deriving that from two copies of the
+same comparison is how they come apart — a screenshot with dead ground over a
+healthy field would be a picture of a different game. The atlas lookup beside it
+stays local to each painter, because that is the part that can differ
+harmlessly.
+
+A test tried to reach the resolver by importing `tools/draw-world` and broke
+`npm run typecheck`. That is not a nuisance, it is the boundary working:
+`tools/tsconfig.json` says in as many words that tools need `.ts` import
+extensions and node globals, "neither of which the game's tsconfig should
+allow". Sharing the pure rule and leaving the painters independent is the
+version that respects it.
+
+## The crow cost three balance runs, and the second failure was the interesting one
+
+Adding the crow to two maps made the game EASIER, and `tests/run.test.ts` said
+so immediately:
+
+    hand idle-buy cleared 7/24 without moving: expected 7 to be less than or equal to 5
+
+**The cause is arithmetic, not difficulty.** The wave budget is FIXED, so a new
+enemy type does not add bodies — it redistributes them. At `threatCost: 3` with
+`xp: 2` the crow paid **0.67 xp per point of threat** against 0.5 for the
+rooster and hen and 0.4 for the feral dog, the most xp-efficient body in the
+roster. The same budget bought more levels. Repricing to `threatCost: 4` moved
+it to 6/24. Still over a cap of 5.
+
+So the crow came out of the two maps — and the next run failed **on a different
+bot, for what looked like an unrelated reason**:
+
+    drifter cleared 3/24 runs without the player moving: expected 3 to be less than or equal to 2
+
+### Deleting a map's bias entry does not remove an enemy. It promotes it.
+
+    const bias = this.map.enemyBias[id] ?? def.weight ?? 1
+
+An enemy with no bias entry and no `weight` field defaults to **1 and spawns on
+every map**. Taking the crow out of the Bone Orchard and the Burn had moved it
+from 0.9 and 0.6 on two maps to 1.0 on all of them.
+
+The comment directly above that line already said how this is done: *"sit at
+weight 0 ... until a map raises them. Adding them to `enemies.json` therefore
+changes nothing above ground."* The mechanism was there, documented, one line
+up, and the obvious-looking action did the opposite of what it read like.
+
+The crow now carries `"weight": 0`. It is **built, priced, packed and not in
+rotation**; a map entry REPLACES the default rather than multiplying it, so
+`"crow": 0.9` in one map's `enemyBias` is the whole switch.
+
+It is held out because the bar it fails is the owner's to move, and a session
+that adds an enemy nobody asked for does not get to move it. The measured cost
+of turning it on is written into `enemies.json` beside the stat block.
+
+**The cap was never touched.** Raising a bar until the change fits under it is
+the failure this repo has a name for, and it would have quietly undone what
+session 24 spent its whole length measuring.
+
+Two things worth keeping past the crow:
+
+- **Any new enemy is an xp change before it is a difficulty change.** Not
+  obvious, and it cost two twenty-minute test cycles to see.
+- **A stochastic acceptance suite reports the SYMPTOM, not the change.** The
+  second failure named a different class and a different bot, and the cause was
+  the edit made to fix the first one.
+
+## What is left, honestly
+
+- **`duckFlight` has no attack, hit or walkHurt**, and `duster` has no attack or
+  hit. Both are deliberate: a lane-flying flock never turns to face you, and the
+  duster's own content note says nobody is driving it.
+- **The remaining pack art is not enemy art.** Terrain, weapon and tool icons,
+  the FX pack's three surviving clips, the projectile pack, the scene strips.
+  `terrainSource` is the big one and it needs no generation at all — 29 Wang
+  sets are already packed and retiring it is a wiring job.
+- **The companion art already exists.** `joy` (idle/walk/attack/sit), `wiz`,
+  `ouiji`, both cats, the mules and the hens are all packed with walk clips. The
+  owner's "companions that follow you" ask is a CONTENT job — items with a
+  `minionSprite`, the way the Barn Dog and Broody Hen already work — and needs
+  no generations. It was left alone because it changes balance and the balance
+  question is still the owner's.
+- **Balance is still untouched** beyond pricing the crow to be neutral.
+
 ## Still open, and unchanged by this session
 
 - **Session 24's balance question is untouched.** `idle-greedy` clears on every
-  class but the Widow, and the fix is a design decision rather than a dial.
-  Nothing in the sim moved this session except the `playFx` fallback.
-- **`duckFlight`** is the last LimeZu sheet any enemy uses, and still has only
-  idle and walk. It is a bird, so it is an OBJECT — different endpoint.
-- **Companions, destructibles and more enemy types** all want NEW subjects,
-  which is the spend that does not survive the account closing, so they rank
-  below finishing derivations.
+  class but the Widow, and the fix is a design decision rather than a dial. The
+  only sim changes this session were the `playFx` fallback and pricing the crow
+  so it is balance-neutral.
+- **Companions, destructibles and ambient haze** are all still on the backlog.
+  Companions need no art at all — see above — and the other two are code.
 - `docs/BACKLOG.md` now carries a checked status table at the top. Both of its
   P0s and two of its P1s were already done, and the prose had never been
   updated. `docs/NEXT_SESSION.md` is rewritten; the version it replaced said the

@@ -76,7 +76,7 @@
     "tar": {
       "name": "Tar Load",
       "_note": "H6 at the kill site. Slows on hit and leaves a slick where things die, so a crowd killed in one place becomes ground the rest of the crowd cannot cross.",
-      "impact": "arrowImpact",
+      "impact": "tarImpact",
       "slowOnHit": 35,
       "slowSeconds": 2.5,
       "killHazardKind": "slow",

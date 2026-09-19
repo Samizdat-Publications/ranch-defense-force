@@ -1103,3 +1103,27 @@ export function assignCarrySlots(
     }
   }
 }
+
+/**
+ * Has the map entered any of its blight bands by this wave?
+ *
+ * Shared by BOTH painters on purpose, and it is the only part of the blighted
+ * crop swap that is shared. `src/render/renderer.ts` and `tools/draw-world.ts`
+ * are deliberately independent implementations — a second painter that agrees
+ * with itself proves nothing — but the two things this decides are one event in
+ * the fiction: the ground turning and the crops turning. Deriving that from two
+ * copies of the same comparison is how they come apart, and a screenshot whose
+ * ground is dead over a healthy field would be a picture of a different game.
+ *
+ * What stays local to each painter is the ATLAS lookup — whether a
+ * `<key>Blight` counterpart is actually packed — because each reaches its
+ * frames differently. That is also the part that can differ harmlessly: a crop
+ * with no blighted art falls through to its healthy sprite either way.
+ */
+export function mapIsBlighted(
+  terrain: { blight: { fromWave: number }[] },
+  wave: number,
+): boolean {
+  for (const b of terrain.blight) if (wave >= b.fromWave) return true
+  return false
+}

@@ -17,6 +17,26 @@
     "xp": 1,
     "teaches": "chaff that makes AoE feel good"
   },
+  "crow": {
+   "name": "Carrion Crow",
+   "_note": "Generated in an earlier session for the Crow Bell and left unpacked -- eight rotations, a hop, a recoil and a death, all bought. Wired in session 25 rather than left as art nothing drew. It FLANKS like the feral dog but without the bark: small groups, fragile, fast, arriving from the side you are not watching while the herd holds your eye in front.",
+   "sheet": "crow",
+   "weight": 0,
+   "_weightNote": "ZERO, and this is the mechanism that actually holds an enemy out. The spawner reads `map.enemyBias[id] ?? def.weight ?? 1`, so an enemy with no bias entry and no weight defaults to ONE and spawns on EVERY map. Deleting the crow's two bias entries did not remove it from the game, it promoted it from 0.9 on the Bone Orchard to 1.0 everywhere -- and the next test run failed on a different bot for a reason that looked unrelated. The comment above that line in spawner.ts already said how this is done: sit at weight 0 until a map raises you. A map entry REPLACES this rather than multiplying it, so putting `\"crow\": 0.9` in a map's enemyBias is all it takes to switch on.",
+   "hp": 9,
+   "speed": 150,
+   "damage": 4,
+   "radius": 9,
+   "firstWave": 6,
+   "threatCost": 4,
+   "_costNote": "4 and not 3. At cost 3 with xp 2 the crow was the most XP-EFFICIENT body in the roster -- 0.67 xp per point of threat against 0.5 for the rooster and hen and 0.4 for the feral dog -- and the wave budget is FIXED, so it did not add bodies, it made the same budget pay out more. tests/run.test.ts caught it on the first run: the Hand idle-buy bot cleared 7 of 24 standing still against a cap of 5. Session 24 had already written down why, in words -- arrivals are xp -- and this is that sentence with a number on it. At cost 4 it pays 0.5, in line with the other birds.",
+   "_rotationNote": "BUILT AND NOT IN ROTATION, deliberately. No map gives the crow a weight, so it never spawns; enabling it is one line per map (`\"crow\": 0.9` in boneOrchard's enemyBias, 0.6 in theBurn's). It is held out because it FAILS the idle-buy bar in tests/run.test.ts and that bar is the owner's to move, not a passing session's. Measured, 24 seeds, The Hand standing still: at threatCost 3 it cleared 7/24, at threatCost 4 it cleared 6/24, against a cap of 5. The wave budget is fixed, so a new enemy type does not add bodies -- it redistributes them -- and any crow priced to be worth fighting is also worth xp. Session 24 said it in words: arrivals are xp. Raising the cap to fit was not considered; a guard relaxed until it passes is worse than no guard.",
+   "groupSize": 3,
+   "behaviour": "flank",
+   "separation": true,
+   "xp": 2,
+   "teaches": "they come from behind, in threes"
+  },
   "rooster": {
     "name": "Rooster",
     "sheet": "rooster",

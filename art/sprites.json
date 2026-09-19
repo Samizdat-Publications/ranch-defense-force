@@ -36,40 +36,10 @@
   "humanoids": {
     "_replacedNote": "EMPTY ON PURPOSE. Every character in the game is generated now and lives in pixellabStrips. The LimeZu entries were REMOVED rather than left alongside, because both groups write the same frame keys and the humanoid pass runs later, so it silently wins \u2014 the symptom last time was a walk with 6 frames instead of 8 and no error anywhere. The generator sheets in assets/generated/ are still built by npm run characters and are now unused by the atlas; leaving that pipeline in place costs nothing and is the way back if a generated character has to be replaced in a hurry."
   },
-  "animals": {
-    "_note": "The animal sheets do NOT share the humanoid rig, and they are not on a 32px grid either. Each walk band holds FOUR direction clips of six frames, and on the two-row sheets each frame is 64px wide with the animal centred in it \u2014 a side-view pig measures 54px across. Derived with tools/_pitch.ts by finding the empty columns between sprites: 24 sprites across 1536px is a 64.0px pitch exactly, on dog, duck, sheep and pig alike. The rooster is the one single-row sheet and its pitch is 32.",
-    "_historyNote": "An earlier pass read these as 12 frames of 32px per direction, which cut every side-view animal in half down the middle and produced the 16x52 'planks' for the front and back clips. The conclusion drawn then \u2014 that the front/back art was drawn at incompatible proportions and had to be dropped, with up and down aliased onto the side views \u2014 was wrong. Nothing is wrong with the art. All four facings are used now.",
-    "_directionNote": "directionOrder is the order the clips appear across the sheet, left to right, NOT the renderer's order. Verified by eye at 6x: clip 0 is the right-facing side view, clip 1 is the rear (walking away), clip 2 faces left, clip 3 is the front (walking toward you). The rooster shares it \u2014 which means it was previously drawing its right-facing side view whenever it walked down.",
-    "_base": "assets/modern-farm/32x32/Animals_32x32/",
-    "directionOrder": [
-      "right",
-      "up",
-      "left",
-      "down"
-    ],
-    "sheets": {
-      "duckFlight": {
-        "path": "Ducks_32x32/Duck_Brown_32x32.png",
-        "rows": 2,
-        "frameWidth": 64,
-        "walkRow": 2,
-        "framesPerDirection": 6
-      }
-    },
-    "_replacedNote": "feralDog, rooster, sickHog, blownSheep and prizeBull were REMOVED, not left alongside: they are generated now and live in pixellabObjects. Both groups write the same frame keys and whichever pass runs later silently wins, which is exactly the bug this rule exists for. duckFlight is still LimeZu \u2014 no duck was generated."
-  },
   "singles": {
     "_note": "Individually named files, packed under the given key. These are the harvestable crops scattered across the field \u2014 break one for feed.",
     "_base": "assets/modern-farm/32x32/Single_Files_32x32/Crops_32x32/",
     "files": {}
-  },
-  "singlesExtra": {
-    "_note": "Pickups the player collects. There is deliberately no pickup.xp: XP gems are the densest thing on screen by far, and a detailed 32px sprite reads worse at two hundred of them than the flat bright square the renderer falls back to. \u00a711 wants gems readable above all else.",
-    "_base": "assets/modern-farm/32x32/Single_Files_32x32/Pickup_Items_32x32/",
-    "files": {
-      "pickup.heal": "Pickup_Fruit_Apple_32x32.png"
-    },
-    "_replacedNote": "pickup.feed was REMOVED here, not left alongside: it is generated now and lives in the pixellab group. Two groups writing one frame key means the later pass silently wins. pickup.heal is still LimeZu \u2014 no heal pickup was generated, and the sim only spawns xp and feed kinds today."
   },
   "crops": {
     "_note": "The ten field crops, GENERATED, replacing the LimeZu pack crops whose keys these are. The pack entries are DELETED rather than left alongside -- two groups writing one frame key is the trap that has cost this project time before, and the later group wins silently.",
@@ -437,6 +407,12 @@
     "_note": "Generated with PixelLab, style-anchored to assets/pixellab/limezu_style_256.png. Ours and commercially licensed, so unlike the purchased packs these CAN be committed. Card icons only -- they are 44-62px and exempt from the 32x32 field rule because a card draws at any integer zoom. Anything that reaches the game field must still be 32x32. See docs/PIXELLAB.md.",
     "_base": "assets/pixellab/picked/",
     "files": {
+      "pickup.heal": "heal_jar.png",
+      "crop.cabbageBlight": "crop_cabbage_blight.png",
+      "crop.cornBlight": "crop_corn_blight.png",
+      "crop.grainBlight": "crop_grain_blight.png",
+      "crop.pumpkinBlight": "crop_pumpkin_blight.png",
+      "crop.tomatoBlight": "crop_tomato_blight.png",
       "item.ditchLight": "ditch_light.png",
       "scene.oak": "oak_tree.png",
       "scene.rooster": "rooster_big.png",
@@ -1065,6 +1041,40 @@
           },
           "death": {
             "slug": "The_tractor_further_breaks_down_until_it_is_comple",
+            "frames": 9
+          }
+        }
+      },
+      "duckFlight": {
+        "_note": "Replaces LimeZu's Duck_Brown_32x32, which was the last pack sheet any ENEMY used. Generated against the crow as a style anchor so the two birds belong to the same game. A `laneFly` flock crosses the arena at speed 185 and never turns to face you, so the eight-way ring matters more here than the hit reaction does.",
+        "dir": "duckFlightGen",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "beating_its_wings_in_steady_low_flight_body_level",
+            "frames": 9
+          },
+          "death": {
+            "slug": "tumbling_out_of_the_air_and_hitting_the_ground_in",
+            "frames": 9
+          }
+        }
+      },
+      "crow": {
+        "_note": "Generated in an earlier session for the Crow Bell and never packed -- eight rotations and a walk, tagged rdf-wired while having zero frames in the atlas. Session 25 finished it (walk south, five hit directions, a death) and wired it. The walk is a ground HOP, not flight, so this is a scavenger on foot.",
+        "dir": "crow",
+        "cell": 48,
+        "clips": {
+          "walk": {
+            "slug": "hopping_forward_with_a_stiff_jerking_gait_wings_h",
+            "frames": 9
+          },
+          "hit": {
+            "slug": "recoiling_backward_from_a_blow_head_snapping_back",
+            "frames": 7
+          },
+          "death": {
+            "slug": "crumpling_to_the_ground_in_a_heap_of_scattered_bla",
             "frames": 9
           }
         }
@@ -1855,6 +1865,9 @@
       },
       "limeImpact": {
         "dir": "limeImpact"
+      },
+      "tarImpact": {
+        "dir": "tarImpact"
       }
     }
   },

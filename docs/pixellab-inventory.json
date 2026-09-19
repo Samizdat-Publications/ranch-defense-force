@@ -1,6 +1,54 @@
 {
- "taken": "2026-09-19T06:08:48.661Z",
+ "taken": "2026-09-19T08:43:13.529Z",
  "objects": [
+  {
+   "id": "706c7895-657c-44a9-aa32-33aa6a52da80",
+   "name": "a burst of thick black tar spl",
+   "state_name": "base",
+   "prompt": "a burst of thick black tar splattering outward from a point, heavy glossy droplets and clinging strands flying out, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T07:01:33.565507+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/706c7895-657c-44a9-aa32-33aa6a52da80/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "9c22efe3-0e61-40f0-a566-969ed741dacc",
+   "name": "a burst of thick black tar spl",
+   "state_name": "base",
+   "prompt": "a burst of thick black tar splattering outward from a point, heavy glossy droplets and clinging strands flying out, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T07:01:33.556231+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/9c22efe3-0e61-40f0-a566-969ed741dacc/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "7cea2be6-88da-4d33-b2bd-24afe770159a",
+   "name": "rdf-duckFlight",
+   "state_name": "base",
+   "prompt": "an infected mallard duck in low flight with its wings spread, feathers patchy and greyed, one milky white eye, sickly grey-green tinge to the plumage, still clearly a farm duck",
+   "size": {
+    "width": 48,
+    "height": 48
+   },
+   "directions": 8,
+   "created_at": "2026-09-19T06:35:09.626543+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/7cea2be6-88da-4d33-b2bd-24afe770159a/rotations/south.png",
+   "tags": [],
+   "status": "completed"
+  },
   {
    "id": "7523e311-fd49-44a3-8f77-81d36927e09a",
    "name": "a burst of chalky bone-white p",

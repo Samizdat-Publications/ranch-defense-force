@@ -39,6 +39,7 @@
     "animate": "vite-node tools/pixellab-animate.ts --",
     "character": "vite-node tools/pixellab-character.ts --",
     "charanim": "vite-node tools/pixellab-charanim.ts --",
+    "objanim": "vite-node tools/pixellab-objanim.ts --",
     "tileset": "vite-node tools/pixellab-tileset.ts --",
     "frames": "vite-node tools/pixellab-frames.ts --",
     "objman": "vite-node tools/object-manifest.ts --",

@@ -6,7 +6,7 @@
  * run" — it ran fine, it just looked wrong.
  */
 import { describe, it, expect } from 'vitest'
-import { WEAPONS, ELEMENTS, ITEMS, TUNING, MAPS, ENEMIES, projectileScaleFor } from '../src/content/index'
+import { WEAPONS, ELEMENTS, ITEMS, TUNING, MAPS, ENEMIES, projectileScaleFor, mapIsBlighted } from '../src/content/index'
 
 /**
  * Behaviours that put a travelling object on screen.
@@ -512,5 +512,51 @@ describe('element impacts', () => {
     const impacts = Object.values(ELEMENTS as Record<string, { impact?: string }>)
       .map((d) => d.impact ?? 'arrowImpact')
     expect(new Set(impacts).size).toBeGreaterThanOrEqual(4)
+  })
+})
+
+/**
+ * Blighted crops — the field turning with the ground.
+ *
+ * The design asks for a blighted map to SWAP the crop art rather than remove
+ * the crop, because a field that empties as the run darkens takes the harvest
+ * economy with it. Five of the ten crops have a blighted counterpart; the other
+ * five fall through to their healthy art, which is what lets the set grow one
+ * crop at a time instead of going half-empty.
+ *
+ * Driven through `tools/draw-world.ts`'s real resolver rather than a
+ * restatement of it — a test that recomputes the rule it is checking passes
+ * just as happily when the rule is deleted.
+ */
+describe('blighted crops', () => {
+  /**
+   * The RULE is shared between the two painters (`mapIsBlighted`); the atlas
+   * lookup beside it is not, because each painter reaches its frames
+   * differently. This pins the shared half, which is the half that would
+   * silently desync the ground from the field.
+   */
+  it('turns the field exactly when the ground turns, and not before', () => {
+    const map = (MAPS as Record<string, { terrain: { blight: { fromWave: number }[] } }>).homeField
+    const first = Math.min(...map.terrain.blight.map((b) => b.fromWave))
+    expect(first).toBeGreaterThan(1)
+    expect(mapIsBlighted(map.terrain, first - 1)).toBe(false)
+    expect(mapIsBlighted(map.terrain, first)).toBe(true)
+    expect(mapIsBlighted(map.terrain, first + 99)).toBe(true)
+    // A map with no bands never blights, ground or crop.
+    expect(mapIsBlighted({ blight: [] }, 999)).toBe(false)
+  })
+
+  /**
+   * Five of the ten crops have a blighted counterpart; the rest fall through to
+   * their healthy art, which is what lets the set grow one crop at a time
+   * rather than the field going half-empty when the map turns.
+   */
+  it('packs both halves of every blighted crop pair', async () => {
+    const { readFileSync } = await import('node:fs')
+    const frames = JSON.parse(readFileSync('public/atlas.json', 'utf8')).frames as Record<string, unknown>
+    const pairs = Object.keys(frames).filter((k) => k.startsWith('crop.') && k.endsWith('Blight'))
+    expect(pairs.length).toBeGreaterThan(0)
+    const bad = pairs.filter((k) => !(k.slice(0, -'Blight'.length) in frames))
+    expect(bad).toEqual([])
   })
 })

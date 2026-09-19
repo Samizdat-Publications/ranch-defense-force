@@ -16,7 +16,7 @@ import { readAtlas, type AtlasFrame } from './atlas-read.ts'
 import { Rng } from '../src/core/rng.ts'
 import {
   CARRY, ITEMS, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf, carryAnchorOf,
-  isHeldSlot,
+  isHeldSlot, mapIsBlighted,
   carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf, decalKindsFor, projectileScaleFor,
   sceneryKindsFor, swingStyleOf, thrustPhase,
   type CarrySlot, type MapBoundary,
@@ -45,6 +45,21 @@ function groundSetFor(world: World, wave: number): string {
   }
   return set
 }
+/**
+ * Blighted crop art once the map has turned, restated from `Renderer.cropSprite`.
+ *
+ * Same reason the sway and the clip state machine are restated here: a
+ * screenshot taken by a different program from the one being reviewed is not
+ * evidence. The test is the one `groundSetFor` above makes -- the ground
+ * turning and the crops turning are one event.
+ */
+export function cropSpriteFor(world: World, sprite: string): string {
+  if (!sprite.startsWith('crop.')) return sprite
+  if (!mapIsBlighted(world.map.terrain, world.spawner.wave)) return sprite
+  const alt = `${sprite}Blight`
+  return frames[alt] ? alt : sprite
+}
+
 const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROP_FPS` in the renderer. Ambient loops run slower than combat art. */
 const PROP_FPS = 8
@@ -903,10 +918,11 @@ export class WorldPainter {
       // Renderer.propFrame exactly, including the position-derived phase --
       // a screenshot where the whole field sways on one frame while the game
       // staggers them would be a screenshot of a different program.
-      const len = clipLengths[c.sprite]?.play ?? 1
+      const cs = cropSpriteFor(world, c.sprite)
+      const len = clipLengths[cs]?.play ?? 1
       const f = len > 1
-        ? frames[`${c.sprite}.${((((world.elapsed * PROP_FPS) | 0) + ((c.x * 0.7 + c.y * 1.3) | 0)) % len)}`] ?? frames[c.sprite]
-        : frames[c.sprite]
+        ? frames[`${cs}.${((((world.elapsed * PROP_FPS) | 0) + ((c.x * 0.7 + c.y * 1.3) | 0)) % len)}`] ?? frames[cs]
+        : frames[cs]
       // Ambient sway, matching the renderer: only when the node is neither
       // being worked nor breaking, since both of those own the transform.
       const rot = (c.working > 0 || c.dying > 0) ? 0 : swayOf(c.sprite, c.x, c.y, world.elapsed)

@@ -131,6 +131,10 @@
    "life": 0.28,
    "scale": 0.75
   },
+  "tarImpact": {
+   "life": 0.3,
+   "scale": 0.8
+  },
   "bigImpact": {
    "life": 0.34,
    "scale": 0.8

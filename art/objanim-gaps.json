@@ -1,0 +1,82 @@
+[
+ {
+  "object": "7cea2be6-88da-4d33-b2bd-24afe770159a",
+  "name": "duckFlight",
+  "clip": "death",
+  "group": "177d0db2-ceca-4bd4-94b1-c15937a0a82d",
+  "directions": [
+   "east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "7cea2be6-88da-4d33-b2bd-24afe770159a",
+  "name": "duckFlight",
+  "clip": "death",
+  "group": "177d0db2-ceca-4bd4-94b1-c15937a0a82d",
+  "directions": [
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "7cea2be6-88da-4d33-b2bd-24afe770159a",
+  "name": "duckFlight",
+  "clip": "walk",
+  "group": "1edffb94-c7aa-48f5-b307-608c4628f246",
+  "directions": [
+   "north-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "7cea2be6-88da-4d33-b2bd-24afe770159a",
+  "name": "duckFlight",
+  "clip": "walk",
+  "group": "1edffb94-c7aa-48f5-b307-608c4628f246",
+  "directions": [
+   "east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "7cea2be6-88da-4d33-b2bd-24afe770159a",
+  "name": "duckFlight",
+  "clip": "walk",
+  "group": "1edffb94-c7aa-48f5-b307-608c4628f246",
+  "directions": [
+   "south-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "1597da81-71fe-430b-9e17-4353004e2d60",
+  "name": "crow",
+  "clip": "death",
+  "group": "f05a547b-7d46-4c99-8751-1208df0dc0df",
+  "directions": [
+   "north-east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "1597da81-71fe-430b-9e17-4353004e2d60",
+  "name": "crow",
+  "clip": "death",
+  "group": "f05a547b-7d46-4c99-8751-1208df0dc0df",
+  "directions": [
+   "east"
+  ],
+  "frames": 8
+ },
+ {
+  "object": "1597da81-71fe-430b-9e17-4353004e2d60",
+  "name": "crow",
+  "clip": "death",
+  "group": "f05a547b-7d46-4c99-8751-1208df0dc0df",
+  "directions": [
+   "south-east"
+  ],
+  "frames": 8
+ }
+]

@@ -1,0 +1,5 @@
+[
+ {"object":"1597da81-71fe-430b-9e17-4353004e2d60","name":"crow","clip":"walk","group":"1a7de934-02d3-4d38-938f-a519b03b02e3","directions":["south"],"frames":8},
+ {"object":"1597da81-71fe-430b-9e17-4353004e2d60","name":"crow","clip":"hit","group":"805e3161-1028-4830-9205-90035afedb35","directions":["east","north","north-east","north-west","south-east"],"frames":6},
+ {"object":"1597da81-71fe-430b-9e17-4353004e2d60","name":"crow","clip":"death","action":"crumpling to the ground in a heap of scattered black feathers, wings folding under it","frames":8}
+]

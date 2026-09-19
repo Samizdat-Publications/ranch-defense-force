@@ -17,6 +17,7 @@ import type { World } from '../sim/world'
 import { Camera } from './camera'
 import {
   CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
+  mapIsBlighted,
   isHeldSlot,
   carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf, decalKindsFor,
   itemCardSprite, projectileScaleFor, swingStyleOf, thrustPhase,
@@ -503,6 +504,37 @@ export class Renderer {
       if (wave >= b.fromWave && b.fromWave > best) { best = b.fromWave; set = b.groundSet }
     }
     return set
+  }
+
+  /**
+   * True once the map has entered any of its blight bands.
+   *
+   * The SAME test `groundSetFor` makes, deliberately: the ground turning and the
+   * crops turning are one event, and deriving them from two rules is how they
+   * come apart. A map with an empty `blight` array never blights, ground or
+   * crop.
+   */
+  private isBlighted(wave: number): boolean {
+    return mapIsBlighted(this.terrainCfg, wave)
+  }
+
+  /**
+   * The blighted counterpart of a crop sprite, once the field has turned.
+   *
+   * `<key>Blight` is the convention the cast already uses — `farmhandBlight`,
+   * `rosieBlight`, `scarecrowBlight` — so a crop needs no new shape, only the
+   * art. Falls through to the healthy sprite when no counterpart is packed,
+   * which is what lets the five that HAVE one turn while the other five do not,
+   * rather than the field going half-empty.
+   *
+   * The design asks for exactly this: a blighted map should swap the crop art,
+   * not remove the crop. A field that empties as the run darkens takes the
+   * harvest economy with it.
+   */
+  private cropSprite(sprite: string, wave: number): string {
+    if (!sprite.startsWith('crop.') || !this.isBlighted(wave)) return sprite
+    const blighted = `${sprite}Blight`
+    return this.atlas?.has(blighted) ? blighted : sprite
   }
 
   private bakeTerrain(groundSet: string = this.terrainCfg.groundSet): void {
@@ -1287,7 +1319,7 @@ export class Renderer {
       if (!it) break
       it.x = c.x
       it.y = c.y
-      it.frame = this.propFrame(c.sprite, c.x, c.y)
+      it.frame = this.propFrame(this.cropSprite(c.sprite, w.spawner.wave), c.x, c.y)
       it.flash = c.flash > 0
       it.colour = '#8fbf5a'
       it.w = c.radius * 2
