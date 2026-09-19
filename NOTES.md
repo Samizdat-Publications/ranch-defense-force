@@ -476,6 +476,46 @@ generation, because the sky between its rails is *enclosed* card colour and
 decard deliberately will not cut an enclosed region — it cannot tell a gap from
 a highlight, and guessing wrong on a highlight is worse.
 
+### The Bottoms: a sixth level, built and not switched on
+
+Banking assets is only a claim until a level is made out of them, so one was.
+**The Bottoms** is a wide shallow bog -- 2700x1500, an aspect no other map uses,
+at almost exactly the Home Field's area so the size is not a stealth difficulty
+knob. Its ground, its two node variants and its hazard decal were all pulled off
+the account this session rather than generated:
+
+  ground   short_green_to_shallow_muddy, turning through
+           short_mown_to_shallow_muddy and lush_overgrown_to_stagnant_black
+  nodes    node.cattails and node.reeds, raised from weight 0 by this map
+  hazard   sucking mud: big, slow, thirty seconds, almost no damage
+  bias     a bird map -- duckFlight leads, the heavy shamblers are cut
+
+**It sits at weight 0, and the reason is a measurement rather than a worry.**
+With six surface maps instead of five, `tests/run.test.ts` has the Hand idle-buy
+bot clearing 6 of 24 standing still against a cap of 5.
+
+That number **did not move** when the bias was retuned hard -- duckFlight 2.1 to
+1.3, the mud given real damage to stand in. Two quite different maps, the same 6.
+So it is not this map being soft: a sixth map reshuffles which map every seed
+rolls, and one seed lands better. Tuning against that is tuning against noise,
+and raising the cap is not on the table. `"weight": 1` is the whole switch when
+the owner wants it.
+
+#### The test gap that found
+
+Built at weight 0 the map failed three assertions in `maps.test.ts`, all saying
+"no seed produced theBottoms". They reached a map by rolling up to 400 seeds
+until one landed on it, which only ever works for maps IN the rotation.
+
+That is a gap in the guard, not a property of the map. A preview map's hazards
+are exactly as worth testing as a live one's -- and `theVault` and `theLift`
+have been quietly exempt from those two assertions all along for the same
+reason. Both now FORCE the map through `World`'s `forceMapId`, the same argument
+`npm run shot --map=` uses, which overrides the draw's result and not the draw.
+
+Strictly more coverage, not less: verified by breaking The Bottoms' hazard and
+watching the forced guard fail on a map the old one could not even reach.
+
 ### One number to watch
 
 The atlas is **10,610 frames on 9 pages, 17.9MB**, up from 14.8MB before this

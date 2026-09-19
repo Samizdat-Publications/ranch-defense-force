@@ -89,17 +89,23 @@ built, packed, tested and deliberately inert. Each is one line from live:
 | a boss | `waves.json` -> `bossWaves`, e.g. `"15": "bossSow"` |
 | the crow | a map's `enemyBias`, e.g. `"crow": 0.9` |
 | a biome node | a map's `nodes.variantWeights`, e.g. `"node.cattails": 20` |
-| a new level | a `maps.json` entry naming one of the 25 unused ground sets |
+| **The Bottoms** | `"weight": 1` on the map that is already written |
+| another level | a `maps.json` entry naming one of the 25 unused ground sets |
 
 They are inert because **`weight: 0` is the only thing that holds an enemy
 out** -- the spawner reads `map.enemyBias[id] ?? def.weight ?? 1`, so deleting a
 bias entry PROMOTES an enemy to weight 1 on every map rather than removing it.
 That cost a full test cycle to find. Same pattern for node variants.
 
-The flooded-bottoms biome is the cheapest new level to build: its ground is
-already packed (`short_green_to_shallow_muddy`, `water_to_grass`,
-`lush_overgrown_to_stagnant_black`) and its props are already packed
-(`node.cattails`, `node.reeds`).
+**The Bottoms is already built** -- a wide shallow bog on ground, nodes and a
+hazard decal that were all already paid for. It sits at weight 0 because a sixth
+surface map costs exactly one seed on the idle-buy bar: 6 of 24 against a cap of
+5. That number did not move when its bias was retuned hard in both directions,
+so it is the reshuffle of which map each seed rolls rather than the map being
+soft. Turning it on is a decision about that bar, which is yours.
+
+The Feedlot, the Orchard and the Dustbowl all have their ground packed and
+waiting, and The Bottoms is the template.
 
 ## 3. The endpoints, so you do not rediscover them
 

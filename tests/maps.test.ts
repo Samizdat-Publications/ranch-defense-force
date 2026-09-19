@@ -284,13 +284,25 @@ describe('maps', () => {
       for (const id of MAP_IDS) {
         for (const s of Object.keys(MAPS[id].nodes.variantWeights ?? {})) wanted.set(id, s)
       }
+      /*
+         FORCED per map, for the reason `runOn` below is: hunting seeds only
+         reaches maps in the rotation, so a map at weight 0 reported its biome
+         node as invisible when the truth was that the test could not get to the
+         map. `forceMapId` overrides the draw's result and not the draw.
+
+         Several seeds per map because node placement is itself a roll — one
+         seed that happens not to place the variant is not evidence it cannot.
+      */
       const found = new Set<string>()
-      for (let seed = 0; seed < 400 && found.size < wanted.size; seed++) {
-        const w = new World(seed, 'hand')
-        const want = wanted.get(w.mapId)
-        if (!want) continue
-        for (let i = 0; i < w.props.live; i++) {
-          if (w.props.items[i].sprite === want) { found.add(w.mapId); break }
+      for (const [mapId, want] of wanted) {
+        for (let seed = 0; seed < 40; seed++) {
+          const w = new World(seed, 'hand', {}, 1, mapId)
+          if (w.mapId !== mapId) break
+          let hit = false
+          for (let i = 0; i < w.props.live; i++) {
+            if (w.props.items[i].sprite === want) { hit = true; break }
+          }
+          if (hit) { found.add(mapId); break }
         }
       }
       expect([...found].sort()).toEqual([...wanted.keys()].sort())
@@ -299,14 +311,25 @@ describe('maps', () => {
 
   describe('ambient hazards', () => {
     /** Run a world on a named map until `seconds` have passed. */
+    /*
+       FORCES the map rather than hunting 400 seeds for one that rolls it.
+
+       Hunting only reaches maps that are in the rotation, so a map at weight 0
+       was unreachable and this returned null — which reads as "the hazard did
+       not vent" when the truth is "the test could not get there". That is a gap
+       in the guard and not a property of the map: a preview map's hazards are
+       exactly as worth testing as a live one's, and `theVault` and `theLift`
+       have been exempt from these two assertions all along for the same reason.
+
+       `forceMapId` overrides the map draw's RESULT and not the draw itself —
+       the same argument `npm run shot --map=` uses — so the run is still a
+       real, replayable one with the RNG stream seated identically.
+    */
     const runOn = (mapId: string, seconds: number): World | null => {
-      for (let seed = 0; seed < 400; seed++) {
-        const w = new World(seed, 'hand')
-        if (w.mapId !== mapId) continue
-        for (let i = 0; i < seconds / STEP; i++) w.step(STEP, 0, 0, false)
-        return w
-      }
-      return null
+      const w = new World(0, 'hand', {}, 1, mapId)
+      if (w.mapId !== mapId) return null
+      for (let i = 0; i < seconds / STEP; i++) w.step(STEP, 0, 0, false)
+      return w
     }
 
     it('vent on the maps that declare them', () => {
