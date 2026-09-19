@@ -114,6 +114,23 @@
    "life": 0.28,
    "scale": 0.7
   },
+  "_impactNote": "One impact per ELEMENT, so a build decision the design calls \"visible everywhere\" is visible at the moment it lands. acid/frost/salt/lime all resolved to arrowImpact until session 25, which meant four of the six elements looked identical on hit. Timed just under arrowImpact: these are generated bursts that dissipate rather than pack sprites that hold, so they read as done sooner.",
+  "acidImpact": {
+   "life": 0.3,
+   "scale": 0.75
+  },
+  "frostImpact": {
+   "life": 0.32,
+   "scale": 0.8
+  },
+  "saltImpact": {
+   "life": 0.26,
+   "scale": 0.7
+  },
+  "limeImpact": {
+   "life": 0.28,
+   "scale": 0.75
+  },
   "bigImpact": {
    "life": 0.34,
    "scale": 0.8

@@ -1,0 +1,6 @@
+[
+ {"key":"acidImpact","file":"assets/pixellab/fx-src/acidImpact_1.png","action":"the acid splash bursting further outward and thinning as it goes, droplets flying apart and fading away to nothing","frames":6},
+ {"key":"frostImpact","file":"assets/pixellab/fx-src/frostImpact_1.png","action":"the ice shards bursting further outward and thinning, splinters flying apart and fading away to nothing","frames":6},
+ {"key":"saltImpact","file":"assets/pixellab/fx-src/saltImpact_1.png","action":"the salt grains scattering further outward and thinning, fragments flying apart and fading away to nothing","frames":6},
+ {"key":"limeImpact","file":"assets/pixellab/fx-src/limeImpact2_0.png","action":"the powder cloud puffing further outward and thinning, dust dispersing and fading away to nothing","frames":6}
+]

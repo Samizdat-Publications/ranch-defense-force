@@ -1728,6 +1728,18 @@
       },
       "slash": {
         "dir": "slash"
+      },
+      "acidImpact": {
+        "dir": "acidImpact"
+      },
+      "frostImpact": {
+        "dir": "frostImpact"
+      },
+      "saltImpact": {
+        "dir": "saltImpact"
+      },
+      "limeImpact": {
+        "dir": "limeImpact"
       }
     }
   },

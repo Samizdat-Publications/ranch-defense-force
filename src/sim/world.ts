@@ -4012,7 +4012,25 @@ export class World {
     vy = 0,
     under = false,
   ): void {
-    const def = T.fx[clip] as { life: number; scale: number } | undefined
+    /*
+       Fall back to the BASE clip's timing when an element-suffixed key has none
+       of its own — the same fallback `Renderer.drawEffects` already does for the
+       ART, and for the same stated reason: without it this silently draws
+       nothing.
+
+       It was missing here, and the consequence was not subtle. `elementalFx`
+       builds `<clip>.<element>` for every element except None, `tuning.fx` has
+       no dotted keys at all, so this returned early on EVERY elemental impact —
+       fire included. Equipping any element removed the impact effect entirely
+       rather than recolouring it. "Adding a fire upgrade or an acid bullet
+       upgrade changed nothing" is recorded above as a half-fixed art problem;
+       this was the other half, and it was a sim problem.
+
+       A tint changes the art and never the timing, so the base entry is the
+       right answer and not merely a safe one.
+    */
+    const def = (T.fx[clip] ?? T.fx[clip.slice(0, clip.lastIndexOf('.')) as typeof clip]) as
+      { life: number; scale: number } | undefined
     if (!def) return
     const e = this.effects.acquire()
     if (!e) return

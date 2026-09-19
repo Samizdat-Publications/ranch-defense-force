@@ -25,7 +25,7 @@
     "acid": {
       "name": "Acid",
       "_note": "Corrodes. Lower burst than fire, longer bite, and it stacks with the armour-shredding fantasy of the late waves.",
-      "impact": "arrowImpact",
+      "impact": "acidImpact",
       "bleedDps": 5,
       "bleedDpsPerStack": 2,
       "bleedSeconds": 5,
@@ -34,7 +34,7 @@
     "frost": {
       "name": "Frost",
       "_note": "No damage over time; it buys space instead. The one element that is defensive, so an element pick is not purely a damage race.",
-      "impact": "arrowImpact",
+      "impact": "frostImpact",
       "slowOnHit": 45,
       "slowOnHitPerStack": 15,
       "slowSeconds": 2,
@@ -43,14 +43,14 @@
     "salt": {
       "name": "Rock Salt",
       "_note": "No damage of its own at all. It opens the target up and lets everything ELSE you own do more — which is why it is the Load a heavy weapon build wants and the one a solo pistol build should not take.",
-      "impact": "arrowImpact",
+      "impact": "saltImpact",
       "markPct": 30,
       "markSeconds": 4
     },
     "lime": {
       "name": "Quicklime",
       "_note": "Half of salt's mark and a slow with it. The compromise Load: a little of both, best of neither, and the one that makes Cross-Contamination trivial to satisfy on its own.",
-      "impact": "arrowImpact",
+      "impact": "limeImpact",
       "markPct": 20,
       "markSeconds": 5,
       "slowOnHit": 25,

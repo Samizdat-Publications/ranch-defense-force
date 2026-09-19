@@ -447,3 +447,70 @@ describe('ambient field motion', () => {
     expect(sway.phaseScale).toBeGreaterThan(0)
   })
 })
+
+/**
+ * Element impacts — the moment of contact, which is the moment you are looking.
+ *
+ * `World.elementalFx` builds `<clip>.<element>` for every element except None,
+ * and BOTH lookups that key feeds have to tolerate the suffix being absent:
+ * `playFx` reads `tuning.fx` for the timing, `Renderer.drawEffects` reads the
+ * atlas for the art. The renderer had that fallback and the sim did not, so
+ * every elemental impact resolved to `undefined` timing and `playFx` returned
+ * before spawning anything. Equipping ANY element — fire included — removed the
+ * impact effect rather than recolouring it, and it stayed that way through the
+ * sessions that were trying to fix the complaint it caused.
+ */
+describe('element impacts', () => {
+  it('gives every element an impact with both timing and art', async () => {
+    const { readFileSync } = await import('node:fs')
+    const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
+      clipLengths: Record<string, Record<string, number>>
+    }
+    const fx = (TUNING as unknown as { fx: Record<string, { life: number; scale: number }> }).fx
+    // The two fallbacks, restated exactly as the sim and the renderer do them.
+    const base = (k: string): string => (k.includes('.') ? k.slice(0, k.lastIndexOf('.')) : k)
+
+    const { World } = await import('../src/sim/world')
+
+    const bad: string[] = []
+    for (const [id, def] of Object.entries(ELEMENTS as Record<string, { impact?: string }>)) {
+      const impact = def.impact ?? 'arrowImpact'
+
+      /*
+         Driven through the REAL sim, not through a restatement of its rules.
+
+         The first version of this test recomputed the fallback here and then
+         asserted on its own arithmetic, which passed just as happily with the
+         fix reverted — it was testing the test. Building a World, setting the
+         element and asking `playFx` to spawn is the only version that fails
+         when `playFx` stops resolving the key.
+      */
+      const w = new World(1234, 'hand')
+      w.player.element = id
+      const before = w.effects.live
+      w.playFx(w.elementalFx(impact), 100, 100)
+      if (w.effects.live === before) {
+        bad.push(`${id}: playFx("${w.elementalFx(impact)}") spawned nothing`)
+      }
+
+      // And the art half, which `Renderer.drawEffects` resolves the same way.
+      const key = id === 'none' ? impact : `${impact}.${id}`
+      const artKey = atlas.clipLengths[`fx.${key}`] ? `fx.${key}` : `fx.${base(key)}`
+      if ((atlas.clipLengths[artKey]?.play ?? 0) < 1) {
+        bad.push(`${id}: no packed art for "fx.${key}" or its base`)
+      }
+      void fx
+    }
+    expect(bad).toEqual([])
+  })
+
+  /**
+   * Distinctness. An element is sold as a build decision that is "visible
+   * everywhere"; four of them resolving to one clip is the opposite of that.
+   */
+  it('does not collapse most elements onto a single impact clip', () => {
+    const impacts = Object.values(ELEMENTS as Record<string, { impact?: string }>)
+      .map((d) => d.impact ?? 'arrowImpact')
+    expect(new Set(impacts).size).toBeGreaterThanOrEqual(4)
+  })
+})
