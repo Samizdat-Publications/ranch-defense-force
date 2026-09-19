@@ -601,7 +601,7 @@
     },
     "sheets": {
       "farmhandBlight": {
-        "cellWidth": 32,
+        "cellWidth": 44,
         "cellHeight": 64,
         "clips": {
           "idle": {
@@ -612,6 +612,10 @@
             "file": "walk_{compass}_strip.png",
             "frames": 8
           },
+          "attack": {
+            "file": "cross_punch_attack_{compass}_strip.png",
+            "frames": 6
+          },
           "hit": {
             "file": "hit_{compass}_strip.png",
             "frames": 6
@@ -619,6 +623,10 @@
           "death": {
             "file": "death_{compass}_strip.png",
             "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
@@ -707,7 +715,7 @@
         }
       },
       "acidZombie": {
-        "cellWidth": 32,
+        "cellWidth": 46,
         "cellHeight": 64,
         "clips": {
           "idle": {
@@ -718,6 +726,10 @@
             "file": "walk_{compass}_strip.png",
             "frames": 8
           },
+          "attack": {
+            "file": "cross_punch_attack_{compass}_strip.png",
+            "frames": 6
+          },
           "hit": {
             "file": "hit_{compass}_strip.png",
             "frames": 6
@@ -725,12 +737,16 @@
           "death": {
             "file": "death_{compass}_strip.png",
             "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
       "bloatedFarmhand": {
-        "cellWidth": 32,
-        "cellHeight": 64,
+        "cellWidth": 50,
+        "cellHeight": 68,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -740,6 +756,10 @@
             "file": "walk_{compass}_strip.png",
             "frames": 8
           },
+          "attack": {
+            "file": "cross_punch_attack_{compass}_strip.png",
+            "frames": 6
+          },
           "hit": {
             "file": "hit_{compass}_strip.png",
             "frames": 6
@@ -747,11 +767,15 @@
           "death": {
             "file": "death_{compass}_strip.png",
             "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
       "maskedSprayer": {
-        "cellWidth": 32,
+        "cellWidth": 48,
         "cellHeight": 64,
         "clips": {
           "idle": {
@@ -762,6 +786,10 @@
             "file": "walk_{compass}_strip.png",
             "frames": 8
           },
+          "attack": {
+            "file": "animating_{compass}_strip.png",
+            "frames": 7
+          },
           "hit": {
             "file": "hit_{compass}_strip.png",
             "frames": 6
@@ -769,11 +797,15 @@
           "death": {
             "file": "death_{compass}_strip.png",
             "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
       "maskedHauler": {
-        "cellWidth": 32,
+        "cellWidth": 54,
         "cellHeight": 64,
         "clips": {
           "idle": {
@@ -784,6 +816,10 @@
             "file": "walk_{compass}_strip.png",
             "frames": 8
           },
+          "attack": {
+            "file": "cross_punch_attack_{compass}_strip.png",
+            "frames": 6
+          },
           "hit": {
             "file": "hit_{compass}_strip.png",
             "frames": 6
@@ -791,12 +827,16 @@
           "death": {
             "file": "death_{compass}_strip.png",
             "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
       "baseGuard": {
-        "cellWidth": 44,
-        "cellHeight": 78,
+        "cellWidth": 64,
+        "cellHeight": 79,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -804,13 +844,29 @@
           },
           "walk": {
             "file": "walk_{compass}_strip.png",
+            "frames": 8
+          },
+          "attack": {
+            "file": "cross_punch_attack_{compass}_strip.png",
+            "frames": 6
+          },
+          "hit": {
+            "file": "taking_a_punch_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "falling_backward_{compass}_strip.png",
+            "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
             "frames": 8
           }
         }
       },
       "baseTech": {
-        "cellWidth": 44,
-        "cellHeight": 76,
+        "cellWidth": 62,
+        "cellHeight": 77,
         "clips": {
           "idle": {
             "file": "idle_{compass}.png",
@@ -819,11 +875,27 @@
           "walk": {
             "file": "walk_{compass}_strip.png",
             "frames": 8
+          },
+          "attack": {
+            "file": "cross_punch_attack_{compass}_strip.png",
+            "frames": 6
+          },
+          "hit": {
+            "file": "taking_a_punch_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "falling_backward_{compass}_strip.png",
+            "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
       "baseHazmat": {
-        "cellWidth": 44,
+        "cellWidth": 64,
         "cellHeight": 75,
         "clips": {
           "idle": {
@@ -833,11 +905,27 @@
           "walk": {
             "file": "walk_{compass}_strip.png",
             "frames": 8
+          },
+          "attack": {
+            "file": "cross_punch_attack_{compass}_strip.png",
+            "frames": 6
+          },
+          "hit": {
+            "file": "taking_a_punch_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "falling_backward_{compass}_strip.png",
+            "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
       "baseOperator": {
-        "cellWidth": 46,
+        "cellWidth": 66,
         "cellHeight": 76,
         "clips": {
           "idle": {
@@ -847,11 +935,27 @@
           "walk": {
             "file": "walk_{compass}_strip.png",
             "frames": 8
+          },
+          "attack": {
+            "file": "jab_attack_{compass}_strip.png",
+            "frames": 3
+          },
+          "hit": {
+            "file": "taking_a_punch_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "falling_backward_{compass}_strip.png",
+            "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
+            "frames": 8
           }
         }
       },
       "baseBreacher": {
-        "cellWidth": 48,
+        "cellWidth": 82,
         "cellHeight": 79,
         "clips": {
           "idle": {
@@ -860,6 +964,22 @@
           },
           "walk": {
             "file": "walk_{compass}_strip.png",
+            "frames": 8
+          },
+          "attack": {
+            "file": "animating_{compass}_strip.png",
+            "frames": 6
+          },
+          "hit": {
+            "file": "taking_a_punch_{compass}_strip.png",
+            "frames": 6
+          },
+          "death": {
+            "file": "falling_backward_{compass}_strip.png",
+            "frames": 7
+          },
+          "walkHurt": {
+            "file": "walking_sadly_{compass}_strip.png",
             "frames": 8
           }
         }
