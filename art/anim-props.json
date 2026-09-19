@@ -1,0 +1,13 @@
+[
+ {"key":"prop.burnBarrel","file":"assets/pixellab/picked/burn_barrel.png","action":"flames leap and flicker out of the top of the barrel with smoke curling off them; the steel barrel itself does not move or change shape","frames":8},
+ {"key":"prop.carcass","file":"assets/pixellab/picked/carcass_picked.png","action":"a cloud of small black flies circles and darts above the carcass; the carcass itself does not move or change shape","frames":8},
+ {"key":"prop.bonePile","file":"assets/pixellab/picked/bone_pile.png","action":"small black flies circle above the pile; the bones themselves do not move or change shape","frames":8},
+ {"key":"prop.troughFouled","file":"assets/pixellab/picked/water_trough_fouled.png","action":"the green fouled water bubbles, bubbles rising and bursting on its surface; the wooden trough itself does not move or change shape","frames":8},
+ {"key":"prop.trough","file":"assets/pixellab/picked/water_trough.png","action":"the water surface ripples and catches the light; the wooden trough itself does not move or change shape","frames":8},
+ {"key":"prop.scarecrowRotted","file":"assets/pixellab/picked/scarecrow_rotted.png","action":"the loose rags and sleeves flutter and snap in the wind; the post and the head stay in place","frames":8},
+ {"key":"prop.hayBaleRotted","file":"assets/pixellab/picked/hay_bale_rotted.png","action":"thin steam rises off the wet rotting bale and flies drift around it; the bale itself does not move or change shape","frames":8},
+ {"key":"prop.oilDrumWebbed","file":"assets/pixellab/webbed/oil_drum_webbed.png","action":"the cobwebs stretched across the drum drift and tremble in a draught; the steel drum itself does not move or change shape","frames":8},
+ {"key":"prop.feedBin","file":"assets/pixellab/picked/feed_bin.png","action":"loose grain trickles out in a thin stream and dust puffs where it lands; the wooden bin itself does not move or change shape","frames":8},
+ {"key":"prop.gate","file":"assets/pixellab/picked/gate_wooden.png","action":"the gate swings open and shut on its hinges, pivoting at the hinge side; the posts stay planted","frames":8},
+ {"key":"prop.fencePost","file":"assets/pixellab/picked/fence_post_wire.png","action":"the strung wires vibrate and ripple along their length; the wooden post itself does not move or change shape","frames":8}
+]

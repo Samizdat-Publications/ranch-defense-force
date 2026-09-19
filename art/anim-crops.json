@@ -1,0 +1,12 @@
+[
+ {"key":"crop.cabbage","file":"assets/pixellab/field/crop_cabbage_0.png","action":"the cabbage leaves stirring gently in a light breeze, the outer leaves lifting and settling back","frames":8},
+ {"key":"crop.cauliflower","file":"assets/pixellab/field/crop_cauliflower_0.png","action":"the cauliflower leaves swaying gently side to side in a light breeze","frames":8},
+ {"key":"crop.chili","file":"assets/pixellab/field/crop_chili_1.png","action":"the chili plant swaying gently in a breeze, the hanging peppers bobbing","frames":8},
+ {"key":"crop.corn","file":"assets/pixellab/field/crop_corn_0.png","action":"the corn stalk leaves rippling and swaying in a breeze, the tassel nodding","frames":8},
+ {"key":"crop.grain","file":"assets/pixellab/field/crop_grain_1.png","action":"the heads of grain nodding and swaying in a breeze, stalks bending and springing back","frames":8},
+ {"key":"crop.pumpkin","file":"assets/pixellab/field/crop_pumpkin_1.png","action":"the pumpkin sitting still while its broad leaves and vine stir in a light breeze","frames":8},
+ {"key":"crop.strawberry","file":"assets/pixellab/field/crop_strawberry_0.png","action":"the strawberry plant leaves trembling gently in a breeze, the berries bobbing slightly","frames":8},
+ {"key":"crop.tomato","file":"assets/pixellab/field/crop_tomato_1.png","action":"the tomato vine swaying gently, the hanging fruit bobbing on the stems","frames":8},
+ {"key":"crop.watermelon","file":"assets/pixellab/field/crop_watermelon_0.png","action":"the watermelon sitting still while its vine leaves stir and lift in a light breeze","frames":8},
+ {"key":"crop.zucchini","file":"assets/pixellab/field/crop_zucchini_1.png","action":"the zucchini plant's broad leaves swaying and lifting in a light breeze","frames":8}
+]

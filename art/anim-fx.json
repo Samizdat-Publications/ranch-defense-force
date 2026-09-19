@@ -1,0 +1,8 @@
+[
+ {"key":"hazard.fire","file":"assets/pixellab/field/hazard_fire_0.png","action":"the fire burning, flames leaping and flickering wildly with embers rising off it","frames":8},
+ {"key":"hazard.gas","file":"assets/pixellab/field/hazard_gas_1.png","action":"the sickly yellow-green gas cloud billowing and roiling, swelling and thinning","frames":8},
+ {"key":"hazard.mud","file":"assets/pixellab/field/hazard_mud_0.png","action":"the mud bubbling sluggishly, thick bubbles rising and bursting on the surface","frames":8},
+ {"key":"pickup.xp","file":"assets/pixellab/picked/xp_seed_16.png","action":"the seed glowing brighter and dimmer in a steady pulse and turning slowly","frames":8},
+ {"key":"pickup.feed","file":"assets/pixellab/picked/feed_token_16.png","action":"the feed token turning slowly and catching the light with a soft warm pulse","frames":8},
+ {"key":"pickup.magnet","file":"assets/pixellab/picked/magnet.png","action":"the horseshoe magnet pulsing with a faint electric shimmer arcing between its poles","frames":8}
+]

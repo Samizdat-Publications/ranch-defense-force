@@ -49,6 +49,34 @@ const PIXELS_PER_WALK_FRAME = 11
 /** Matches `PROP_FPS` in the renderer. Ambient loops run slower than combat art. */
 const PROP_FPS = 8
 
+/**
+ * Ambient sway, restated from `Renderer.swayOf` against the same content.
+ *
+ * Restated rather than imported for the reason the clip state machine below is:
+ * `src/` and `tools/` do not share a renderer, and a screenshot taken by a
+ * DIFFERENT program from the one being reviewed proves nothing. Both read
+ * `tuning.json`, so the numbers cannot drift; only this arithmetic could, and
+ * it is four lines sitting next to the sentence that says so.
+ */
+const SWAY = TUNING.sway as unknown as {
+  rate: number
+  gustRate: number
+  phaseScale: number
+  byPrefix: Record<string, number>
+}
+const SWAY_PREFIXES: [string, number][] = Object.entries(SWAY?.byPrefix ?? {})
+
+function swayOf(sprite: string, x: number, y: number, elapsed: number): number {
+  let amp = 0
+  for (let i = 0; i < SWAY_PREFIXES.length; i++) {
+    if (sprite.startsWith(SWAY_PREFIXES[i][0])) { amp = SWAY_PREFIXES[i][1]; break }
+  }
+  if (amp === 0) return 0
+  const phase = (x + y) * SWAY.phaseScale
+  const gust = 0.65 + 0.35 * Math.sin(elapsed * SWAY.gustRate + phase * 0.3)
+  return Math.sin(elapsed * SWAY.rate + phase) * amp * gust
+}
+
 /** Must match src/render/renderer.ts. */
 const HIT_SECONDS = TUNING.combat.hitClipSeconds as number
 const INJURED_BELOW = (TUNING.combat.injuredBelowPct as number) / 100
@@ -347,7 +375,7 @@ export class WorldPainter {
    */
   private drawFrameT(
     f: Frame, worldX: number, worldY: number, rot: number, scale: number, flip = false,
-    pivot = 0.5,
+    pivot = 0.5, anchor: 'centre' | 'frame' = 'centre',
   ): void {
     const src = imageFor(f)
     const { canvas } = this
@@ -355,7 +383,32 @@ export class WorldPainter {
     const cy = (worldY - this.camY) * this.zoom
     const cos = Math.cos(rot)
     const sin = Math.sin(rot)
-    const half = (Math.max(f.w, f.h) * Math.abs(scale) * this.zoom) / 2 + 2
+    /*
+       Two anchors, and the difference is not cosmetic.
+
+       `centre` turns the frame about its own middle. That is what the carried
+       weapons want and it is what this function was written for.
+
+       `frame` turns it about the DRAW ORIGIN — the point `drawFrame` puts at
+       (worldX, worldY) by offsetting with `f.ox`/`f.oy`. Since the singles
+       pivot is bottom-centre, that origin is the foot of the sprite, so a
+       swaying plant pivots at its roots. It also matches what the game does:
+       `Renderer` translates to the item position, rotates, and only THEN
+       offsets by `f.ox`/`f.oy`.
+
+       Rotating a prop about its centre instead would lift it by half its own
+       height and slide it sideways — silently, since nothing here can tell a
+       floating sprite from a grounded one.
+    */
+    const ax = anchor === 'frame' ? -f.ox : f.w * pivot
+    const ay = anchor === 'frame' ? -f.oy : f.h / 2
+    // Bound the scan by the furthest corner from the turning point, which for a
+    // frame anchor is NOT half the diagonal.
+    const corner = Math.max(
+      Math.hypot(ax, ay), Math.hypot(f.w - ax, ay),
+      Math.hypot(ax, f.h - ay), Math.hypot(f.w - ax, f.h - ay),
+    )
+    const half = corner * Math.abs(scale) * this.zoom + 2
     for (let dy = -half; dy <= half; dy++) {
       for (let dx = -half; dx <= half; dx++) {
         // Rotate the destination offset back into unrotated frame space.
@@ -369,8 +422,8 @@ export class WorldPainter {
         // 0.5 is the centre and is what everything but the purpose-drawn guns
         // uses. Mirroring happens above, in source space and about this same
         // column, so a flipped gun grips in the same place.
-        const fx = Math.floor(ux + f.w * pivot)
-        const fy = Math.floor(uy + f.h / 2)
+        const fx = Math.floor(ux + ax)
+        const fy = Math.floor(uy + ay)
         if (fx < 0 || fy < 0 || fx >= f.w || fy >= f.h) continue
         const si = ((f.y + fy) * src.width + (f.x + fx)) * 4
         if (src.data[si + 3] === 0) continue
@@ -834,6 +887,8 @@ export class WorldPainter {
     const drawList: {
       y: number; f: Frame; x: number
       rot?: number; scale?: number; flip?: boolean; lift?: number; pivot?: number
+      /** `frame` turns about the sprite's own draw origin — see `drawFrameT`. */
+      anchor?: 'centre' | 'frame'
     }[] = []
     // Scenery joins the same sorted list as everything else, as in the game.
     for (const sc of this.scenery(world)) drawList.push({ y: sc.y, x: sc.x, f: sc.f })
@@ -852,7 +907,10 @@ export class WorldPainter {
       const f = len > 1
         ? frames[`${c.sprite}.${((((world.elapsed * PROP_FPS) | 0) + ((c.x * 0.7 + c.y * 1.3) | 0)) % len)}`] ?? frames[c.sprite]
         : frames[c.sprite]
-      if (f) drawList.push({ y: c.y, x: c.x, f })
+      // Ambient sway, matching the renderer: only when the node is neither
+      // being worked nor breaking, since both of those own the transform.
+      const rot = (c.working > 0 || c.dying > 0) ? 0 : swayOf(c.sprite, c.x, c.y, world.elapsed)
+      if (f) drawList.push({ y: c.y, x: c.x, f, rot: rot || undefined, anchor: 'frame' })
     }
     // Breakables: a separate pool, so a separate loop, same as in the renderer.
     for (let i = 0; i < world.breakables.live; i++) {
@@ -903,7 +961,7 @@ export class WorldPainter {
     drawList.sort((a, b) => a.y - b.y)
     for (const d of drawList) {
       if (d.rot === undefined) this.drawFrame(d.f, d.x, d.y)
-      else this.drawFrameT(d.f, d.x, d.y - (d.lift ?? 0), d.rot, d.scale ?? 1, d.flip, d.pivot)
+      else this.drawFrameT(d.f, d.x, d.y - (d.lift ?? 0), d.rot, d.scale ?? 1, d.flip, d.pivot, d.anchor)
     }
 
     // Melee sweeps and auras: swept wedges, matching the renderer. These used to
@@ -984,7 +1042,13 @@ export class WorldPainter {
       // same pass above. A screenshot that omitted this would show the Burn's
       // fires as plain orange discs.
       if (h.sprite) {
-        const f = frames[h.sprite]
+        // Animated if the atlas has a loop for it, matching the renderer's own
+        // `propFrame` call here — same position-derived phase, so two fires
+        // side by side are not on the same frame in either program.
+        const len = clipLengths[h.sprite]?.play ?? 1
+        const f = len > 1
+          ? frames[`${h.sprite}.${((((world.elapsed * PROP_FPS) | 0) + ((h.x * 0.7 + h.y * 1.3) | 0)) % len)}`] ?? frames[h.sprite]
+          : frames[h.sprite]
         if (f) this.drawFrameCentred(f, h.x, h.y)
       }
     }
@@ -1007,7 +1071,12 @@ export class WorldPainter {
 
     for (let i = 0; i < world.pickups.live; i++) {
       const g = world.pickups.items[i]
-      const f = frames[`pickup.${g.kind}`]
+      // Animated if the atlas has a loop, matching the renderer's `propFrame`.
+      const pk = `pickup.${g.kind}`
+      const plen = clipLengths[pk]?.play ?? 1
+      const f = plen > 1
+        ? frames[`${pk}.${((((world.elapsed * PROP_FPS) | 0) + ((g.x * 0.7 + g.y * 1.3) | 0)) % plen)}`] ?? frames[pk]
+        : frames[pk]
       if (f) {
         this.drawFrame(f, g.x, g.y)
       } else {

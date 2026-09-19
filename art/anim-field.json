@@ -1,0 +1,17 @@
+[
+ {"key":"node.oreBronze","file":"assets/pixellab/env/stone_rust_ore.png","action":"the rusty ore veins catching the light and dimming again, a slow glint travelling across them, the rock itself completely still","frames":8},
+ {"key":"node.oreSilver","file":"assets/pixellab/env/rock_bonewhite_crystal.png","action":"the bone-white crystals brightening and fading in a slow pulse, a cold glint sliding across the facets, the rock itself completely still","frames":8},
+ {"key":"node.oreGold","file":"assets/pixellab/env/boulder_yellowgreen_crystal.png","action":"the sickly yellow-green crystals glowing brighter then dimmer in a slow sickly pulse, the boulder itself completely still","frames":8},
+ {"key":"node.oreBlue","file":"assets/pixellab/env/boulder_pale_blue_crystal.png","action":"the pale blue crystals shimmering with a cold light that travels across the facets and fades, the boulder itself completely still","frames":8},
+ {"key":"node.oreRed","file":"assets/pixellab/env/boulder_flesh.png","action":"the raw red flesh in the crack swelling and contracting as if breathing slowly, wet and glistening, the surrounding rock completely still","frames":8},
+ {"key":"node.rockSmall","file":"assets/pixellab/env/stone_rust_corrosion.png","action":"a faint dust settling off the stone and a very subtle shimmer of heat, the stone itself still","frames":8},
+ {"key":"node.rockMedium","file":"assets/pixellab/env/rock_damp_stained.png","action":"damp glistening on the rock surface, a slow drip and a faint sheen moving over the wet patches","frames":8},
+ {"key":"node.rockBig","file":"assets/pixellab/env/boulder_rot_stained.png","action":"the rot stains darkening and lightening slowly, a faint wisp of dust drifting off the boulder","frames":8},
+ {"key":"node.treeSmall","file":"assets/pixellab/env/dead_sapling.png","action":"the bare sapling swaying gently side to side in a light breeze, thin branches flexing","frames":8},
+ {"key":"node.treeMedium","file":"assets/pixellab/env/dead_tree_snapped_96.png","action":"the dead snapped tree swaying stiffly in the wind, its broken limbs creaking back and forth","frames":8},
+ {"key":"node.treeBig","file":"assets/pixellab/env/dying_tree_split_a.png","action":"the dying split tree swaying slowly in the wind, bare branches flexing and settling back","frames":8},
+ {"key":"node.saltRock","file":"assets/pixellab/field/node_saltrock_2.png","action":"the salt crust glittering, tiny sparkles appearing and vanishing across the white surface, the rock still","frames":8},
+ {"key":"node.scrapHeap","file":"assets/pixellab/field/node_scrapheap_0.png","action":"loose sheet metal ticking and shifting slightly on the heap, a faint glint moving over the rusted scrap","frames":8},
+ {"key":"node.boneHeap","file":"assets/pixellab/field/node_boneheap_2.png","action":"flies circling over the pile of bones, the bones themselves still","frames":8},
+ {"key":"node.ashStump","file":"assets/pixellab/field/node_ashstump_1.png","action":"the charred stump smouldering, thin grey smoke curling up and ember glow pulsing in the cracks","frames":8}
+]

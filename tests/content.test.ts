@@ -351,3 +351,99 @@ describe('enemy art', () => {
     expect(bad).toEqual([])
   })
 })
+
+/**
+ * Ambient field motion — the generated loops and the code-driven sway.
+ *
+ * Both of these fail SILENTLY when they are wrong, which is the only reason
+ * they are worth a test. A loop whose frames are missing falls back to the
+ * still and the field is merely lifeless; a sway prefix that matches no sprite
+ * key sways nothing and says nothing. Neither errors, and neither is visible
+ * in a screenshot unless you already suspect it.
+ */
+describe('ambient field motion', () => {
+  /**
+   * The jump bug, pinned.
+   *
+   * `Renderer.propFrame` plays `<key>.<n>` when the atlas has a `play` clip for
+   * the key and falls back to the flat `<key>` still otherwise. So the still
+   * and frame 0 are drawn through the same code path at different moments, and
+   * if the packer gave them different pivots the prop would visibly jump the
+   * instant it started animating. `fieldClips` packs both with the singles
+   * pivot precisely so they cannot.
+   */
+  it('lands every field loop on the same pivot as the still it replaces', async () => {
+    const { readFileSync } = await import('node:fs')
+    const atlas = JSON.parse(readFileSync('public/atlas.json', 'utf8')) as {
+      frames: Record<string, { w: number; h: number; ox: number; oy: number }>
+      clipLengths: Record<string, Record<string, number>>
+    }
+    const manifest = JSON.parse(readFileSync('art/sprites.json', 'utf8')) as {
+      fieldClips?: { clips: string[] }
+    }
+    const keys = manifest.fieldClips?.clips ?? []
+    expect(keys.length).toBeGreaterThan(0)
+
+    const bad: string[] = []
+    for (const key of keys) {
+      const len = atlas.clipLengths[key]?.play ?? 0
+      if (len < 2) { bad.push(`${key}: play clip is ${len}, so it would never animate`); continue }
+      const still = atlas.frames[key]
+      if (!still) { bad.push(`${key}: no flat still, so propFrame has nothing to fall back to`); continue }
+      for (let i = 0; i < len; i++) {
+        if (!atlas.frames[`${key}.${i}`]) { bad.push(`${key}: missing frame ${i} of ${len}`); break }
+      }
+      const f0 = atlas.frames[`${key}.0`]
+      if (f0 && (f0.ox !== still.ox || f0.oy !== still.oy)) {
+        bad.push(`${key}: frame 0 pivot (${f0.ox},${f0.oy}) != still pivot (${still.ox},${still.oy})`)
+      }
+    }
+    expect(bad).toEqual([])
+  })
+
+  /**
+   * A sway prefix that matches nothing is the silent half of this feature.
+   *
+   * `byPrefix` is matched with `startsWith` against a sprite key, so a rename,
+   * a typo or a group that never shipped leaves an entry that costs a string
+   * compare per prop per frame and moves nothing. Checked against the ATLAS
+   * rather than against a hand-written list, so it tracks the art.
+   */
+  it('matches every sway prefix to art that actually exists', async () => {
+    const { readFileSync } = await import('node:fs')
+    const frames = JSON.parse(readFileSync('public/atlas.json', 'utf8')).frames as Record<string, unknown>
+    const sway = (TUNING as unknown as {
+      sway: { byPrefix: Record<string, number> }
+    }).sway
+    const keys = Object.keys(frames)
+    const orphans = Object.keys(sway.byPrefix).filter(
+      (p) => !keys.some((k) => k.startsWith(p)),
+    )
+    expect(orphans).toEqual([])
+  })
+
+  /**
+   * Sway is a breeze, not a shake.
+   *
+   * The amplitude is in radians about the sprite's foot, so it grows with
+   * height: at 0.1 rad the top of a 64px tree travels six pixels, which on a
+   * 32px-tile field reads as the tree being struck rather than blown. The
+   * ceiling is here rather than in a comment because the number is in content,
+   * where the next person to tune it will not be reading the renderer.
+   */
+  it('keeps sway amplitudes inside a believable breeze', () => {
+    const sway = (TUNING as unknown as {
+      sway: { rate: number; gustRate: number; phaseScale: number; byPrefix: Record<string, number> }
+    }).sway
+    for (const [prefix, amp] of Object.entries(sway.byPrefix)) {
+      expect(amp, `${prefix} amplitude`).toBeGreaterThan(0)
+      expect(amp, `${prefix} amplitude`).toBeLessThanOrEqual(0.1)
+    }
+    // A gust that reached zero would stall the sway dead for a moment, and one
+    // over 1 would invert it — the plant would snap the other way.
+    expect(sway.rate).toBeGreaterThan(0)
+    expect(sway.gustRate).toBeGreaterThan(0)
+    expect(sway.gustRate).toBeLessThan(sway.rate)
+    expect(sway.phaseScale).toBeGreaterThan(0)
+  })
+})

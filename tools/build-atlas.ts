@@ -177,6 +177,22 @@ interface Manifest {
    */
   pixellabFx?: { _base: string; clips: Record<string, { dir: string }> }
   sceneClips?: { _base: string; sheets: Record<string, string[]> }
+  /**
+   * Ambient loops for FIELD objects — nodes, crops, props, hazards, pickups.
+   *
+   * Packed as `<key>.<n>` under a `play` clip, which is the shape
+   * `Renderer.propFrame` already reads: it asks `clipLength(sprite, 'play')`
+   * and falls back to the flat still when that is 1. So a key listed here
+   * animates and a key left out keeps drawing its still, with no renderer
+   * change either way.
+   *
+   * The pivot is deliberately IDENTICAL to the singles group above —
+   * bottom-centre of the FULL source image, not of the trimmed box. The frames
+   * come from `animate-with-text-v3` fed the very still the singles group
+   * packs, so they share its dimensions; any other pivot would make a prop jump
+   * the moment it started animating.
+   */
+  fieldClips?: { _base: string; clips: string[] }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
 }
 
@@ -962,6 +978,55 @@ if (sceneClips) {
       if (!packed) { errors.push(`sceneClips ${sheet}.${clip}: no frames in ${dir}`); continue }
       clipLengths[sheet] = { ...(clipLengths[sheet] ?? {}), [clip]: packed }
     }
+  }
+}
+
+// ------------------------------------------------------------ field clips
+
+/*
+   Ambient field loops. One directory of frames per key, written by
+   `npm run animate` — `frame_000.png` IS the original still, because
+   animate-with-text-v3 keeps its input as frame 0, so the loop contains the
+   sprite the singles group already packs and the two cannot disagree.
+
+   Trimmed to content like every single, with the pivot measured against the
+   FULL image so a trimmed frame still lands where the still does.
+*/
+const fieldClips = manifest.fieldClips
+if (fieldClips) {
+  for (const key of fieldClips.clips) {
+    const dir = `${fieldClips._base}${key}`
+    let files: string[]
+    try {
+      files = readdirSync(dir).filter((f) => f.endsWith('.png')).sort()
+    } catch (e) {
+      errors.push(`fieldClips ${key}: ${(e as Error).message}`)
+      continue
+    }
+    let packed = 0
+    for (const f of files) {
+      let img: Image
+      try {
+        img = decodePng(readFileSync(`${dir}/${f}`))
+      } catch (e) {
+        errors.push(`${dir}/${f}: ${(e as Error).message}`)
+        continue
+      }
+      const b = contentBounds(img, 0, 0, img.width, img.height)
+      if (b.empty) continue
+      pending.push({
+        name: `${key}.${packed}`,
+        img,
+        sx: b.x, sy: b.y, sw: b.w, sh: b.h,
+        // Bottom-centre of the FULL image — the singles convention, so the
+        // loop sits exactly where the still sat.
+        ox: b.x - img.width / 2,
+        oy: b.y - img.height,
+      })
+      packed++
+    }
+    if (!packed) { errors.push(`fieldClips ${key}: no usable frames in ${dir}`); continue }
+    clipLengths[key] = { ...(clipLengths[key] ?? {}), play: packed }
   }
 }
 

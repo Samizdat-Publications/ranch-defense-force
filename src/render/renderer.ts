@@ -92,6 +92,21 @@ const INJURED_BELOW = (TUNING.combat.injuredBelowPct as number) / 100
 
 const PROP_FPS = 8
 
+/**
+ * Ambient sway, read once. See `tuning.json` -> `sway` for why this is geometry
+ * and not art: the generated-frame version morphed the subject it was meant to
+ * be moving.
+ */
+const SWAY = TUNING.sway as unknown as {
+  rate: number
+  gustRate: number
+  phaseScale: number
+  byPrefix: Record<string, number>
+}
+/** Prefix table flattened to pairs once, so the per-prop lookup is a short scan
+ *  over 3 entries rather than an Object.entries() allocation every frame. */
+const SWAY_PREFIXES: [string, number][] = Object.entries(SWAY?.byPrefix ?? {})
+
 /** Fog tile edge, in world pixels. A power of two so the wrap arithmetic is exact. */
 const FOG_TILE = 512
 /** Blobs per fog tile. More is not denser, only slower -- alpha carries density. */
@@ -1289,6 +1304,11 @@ export class Renderer {
         const shake = Math.sin(this.world.elapsed * 42 + c.x) * 1.2
         it.x += shake
         it.scaleY = 1 + Math.sin(this.world.elapsed * 30 + c.y) * 0.05
+      } else {
+        // Ambient sway. Last in the chain on purpose: a node being harvested or
+        // breaking apart has earned the right to own its transform, and a plant
+        // that keeps nodding through its own death animation reads as a bug.
+        it.rotation = this.swayOf(c.sprite, c.x, c.y)
       }
     }
 
@@ -1798,6 +1818,31 @@ export class Renderer {
    * and a field of forty crops all swaying on the same frame reads as a screen
    * refreshing rather than as wind. The same trick the projectile pass uses.
    */
+  /**
+   * Radians of ambient sway for a prop, or 0 for anything that does not sway.
+   *
+   * Rotation is applied about the item's draw origin, and the singles pivot is
+   * bottom-centre, so this pivots a plant at its roots. Two sines: `rate`
+   * carries the sway, `gustRate` swells and drops it so a field breathes
+   * instead of ticking. The phase term is what stops a whole crop row moving
+   * as one object.
+   *
+   * Allocation-free and side-effect-free — it reads `elapsed` and returns a
+   * number, so it is safe to call once per visible prop per frame.
+   */
+  private swayOf(sprite: string, x: number, y: number): number {
+    if (SWAY_PREFIXES.length === 0) return 0
+    let amp = 0
+    for (let i = 0; i < SWAY_PREFIXES.length; i++) {
+      if (sprite.startsWith(SWAY_PREFIXES[i][0])) { amp = SWAY_PREFIXES[i][1]; break }
+    }
+    if (amp === 0) return 0
+    const t = this.world.elapsed
+    const phase = (x + y) * SWAY.phaseScale
+    const gust = 0.65 + 0.35 * Math.sin(t * SWAY.gustRate + phase * 0.3)
+    return Math.sin(t * SWAY.rate + phase) * amp * gust
+  }
+
   private propFrame(sprite: string, x: number, y: number): AtlasFrame | null {
     const atlas = this.atlas
     if (!atlas) return null
@@ -2136,7 +2181,10 @@ export class Renderer {
       // turn a warning into decoration. Weapon-made hazards have no sprite and
       // are untouched.
       if (h.sprite) {
-        const f = this.atlas?.get(h.sprite)
+        // Through `propFrame`, so a hazard with a packed loop burns, roils or
+        // bubbles, and one without keeps drawing its still. A static fire was
+        // the most obviously wrong thing on the field.
+        const f = this.propFrame(h.sprite, h.x, h.y)
         if (f) {
           ctx.drawImage(
             this.atlas!.images[f.page], f.x, f.y, f.w, f.h,
@@ -2182,9 +2230,13 @@ export class Renderer {
       // parcel. The player is being asked whether the walk is worth it while a
       // wave is on top of them, and they cannot answer that without seeing
       // which item it is.
+      // A plain pickup goes through `propFrame` so one with a packed loop
+      // pulses or arcs; a gear drop keeps its flat card, because the card IS
+      // the information and a card that animated would be harder to read, not
+      // easier.
       const f = g.kind === 'gear' && g.itemId
         ? this.atlas?.get(itemCardSprite(g.itemId)) ?? this.atlas?.get('pickup.feed')
-        : this.atlas?.get(`pickup.${g.kind}`)
+        : this.propFrame(`pickup.${g.kind}`, g.x, g.y)
       if (f && imgs) {
         ctx.drawImage(
           imgs[f.page], f.x, f.y, f.w, f.h,
