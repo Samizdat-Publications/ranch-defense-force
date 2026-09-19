@@ -4,6 +4,193 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
+# Session 25 — the account is closing, so buy what cannot be re-bought
+
+The owner is keeping PixelLab for **one more month** and does not know the exact
+cut-off: *"once its cut off its cut off and i dont know when it cuts off."* That
+makes art the only perishable thing in this project — code and balance can be
+done for free, forever, at any time. So this session is about spending an
+expiring account correctly, and the first finding is that the obvious way to
+spend it is the wrong one.
+
+State on arrival: Tier 2, **~5000 generations** for the cycle, **$8.52** credits,
+allowance resetting 2026-10-14. `docs/NEXT_SESSION.md` said the account was
+cancelled and the key dead. It is neither; that document is from session 15 and
+had been wrong for nine sessions.
+
+## What actually dies with the account
+
+Not the art. Every PNG downloaded is ours, commercially licensed, and committed.
+What dies are the **object, character and tileset IDS**, because
+`animate_character`, `create_object_state` and style-chaining all take an id that
+lives on PixelLab's servers.
+
+So the audit that matters is not "what art is missing". It is **"what derivations
+would we ever want off what we already own"** — which inverts the instinct, since
+the instinct on a closing account is to spend it on new subjects.
+
+`docs/PIXELLAB.md` already said this in as many words. It is restated because
+this session nearly spent the whole budget on the other thing.
+
+## The blanket animate pass, and why two thirds of it was unusable
+
+42 clips through `/animate-with-text-v3`, one generation each, against stills
+already in the repo. **Twelve are wired.** Thirty are not, and the frames are
+committed anyway so nobody buys them a second time.
+
+The endpoint **regenerates its subject on every frame**. That is fine when a
+rigid body carries a small bright emitter and the emitter is what changes, and it
+fails when the subject is a large textured mass, because the regeneration noise
+is larger than the motion asked for. Judged on contact sheets, never single
+frames:
+
+| wired | why it worked |
+|---|---|
+| `node.ore{Bronze,Silver,Gold,Blue,Red}` | the crystal glows; the rock under it never moves |
+| `node.saltRock`, `node.ashStump` | glitter, and flame on a charred stump |
+| `hazard.{fire,gas,mud}` | all three are emitters and nothing else |
+| `pickup.{xp,magnet}` | a pulse, and an electric arc across the poles |
+
+| retired | what came back |
+|---|---|
+| three rocks | they morph into different stones frame to frame |
+| three trees | a white smear crawls down the trunk; the sway is invisible |
+| ten crops | texture shimmer, and the watermelon rotates |
+| `prop.burnBarrel` | the barrel came back **teal** |
+| `prop.hayBale*` | came back **sage green** |
+| `prop.trough` | the water **drained** |
+| `prop.{bonePile,carcass,feedBin,gate,oilDrumWebbed}` | morph |
+
+`hazard.fire` alone justifies the pass. A fire that did not burn was the most
+obviously wrong thing on the field, and there are now two of them on The Burn on
+different frames of the same loop — which is the per-position phase working.
+
+**The rule, for the next person:** before queueing, ask whether the moving part
+is a small bright thing on a body that holds still. If it is not, do not buy it.
+
+## Sway is geometry, so it is done with geometry
+
+Trees and crops still needed to move and the endpoint could not do it. Rotating
+about the sprite's own draw origin does it for nothing: the singles pivot is
+bottom-centre, so a rotation there pivots a plant **at its roots**.
+
+Two sines — one carries the sway, a slower one swells and drops it so a field
+breathes instead of ticking — with a phase off the prop's position so a crop row
+does not move as one object. `tuning.json` -> `sway`, matched by sprite-key
+PREFIX, so a new crop sways with no code edit and no new art.
+
+Free, deterministic, and it cannot morph the thing it is moving.
+
+## The renderer needed nothing
+
+`propFrame` already played `<key>.<n>` off a `play` clip and already carried the
+per-position phase. The whole pass was art plus a manifest group. Two places were
+still doing a flat atlas lookup and now call `propFrame` too — hazards and
+pickups — which is the entire reason the fire animates.
+
+A `fieldClips` group packs a directory of frames with the **singles pivot**,
+which is what makes frame 0 land exactly where the still did. Frame 0 IS that
+still: the endpoint keeps its input as frame 0, so the loop and its own fallback
+cannot disagree.
+
+`tools/draw-world.ts` mirrors all of it, because a screenshot taken by a
+different program from the one being reviewed is not evidence. One trap found
+doing that: its `drawFrameT` turned frames about their CENTRE, which is right for
+the carried weapons it was written for and would have floated every swaying plant
+by half its own height. It takes an anchor now.
+
+Three guards in `tests/content.test.ts`, each broken on purpose to confirm it
+fails: frame 0 must share the still's pivot, every sway prefix must match real
+art, and amplitudes stay inside a breeze.
+
+## The real spend: twelve enemies with no combat clips
+
+This is what the audit turned up, and it is what the closing account is for.
+
+| sheet | missing |
+|---|---|
+| `farmhandBlight`, `acidZombie`, `maskedSprayer`, `bloatedFarmhand`, `maskedHauler` | attack, walkHurt |
+| `baseTech`, `baseGuard`, `baseOperator`, `baseHazmat`, `baseBreacher` | attack, hit, death, walkHurt |
+| `duster` (a BOSS), `duckFlight` | attack, hit, death — objects, not characters, still open |
+
+The five underground humanoids have **only idle and walk**. They walk into the
+lab and cannot swing, flinch or fall over. The renderer degrades a missing clip
+to the next one down by design, which is exactly why nobody noticed.
+
+All ten humanoids are live characters on the `mannequin` skeleton, whose template
+library holds the poses those clips want: `cross-punch`, `taking-punch`,
+`falling-back-death`, `sad-walk`, plus `throw-object` for the sprayer and
+`pushing` for the shield breacher. 29 clips x 4 directions = **116 generations**
+against a 5000 allowance, billed to that allowance and not to credits — measured
+unmoved at $8.5184 either side.
+
+`npm run charanim -- <jobs.json>` submits them in bulk and backs off on the
+account's ten-job ceiling.
+
+### Three things that cost time here
+
+**The endpoint is `POST /v2/animate-character`.** The obvious guess,
+`/v2/characters/{id}/animations`, EXISTS and answers OPTIONS with `allow:
+DELETE` — so a POST to it returns **405, not 404**, which reads as a bad body on
+a good endpoint and sends you debugging the wrong file. `/v2/openapi.json` is
+readable with the same key and settles the path and the request shape in one
+call. Ask the API rather than guessing at it.
+
+**The template list is per SKELETON, not global.** The OpenAPI description
+advertises `attack`; `attack` is invalid for `mannequin`, and the 422 names the
+real list. Ask the character what it supports before writing a job file.
+
+**A character is `423 Locked` for download while ANY of its jobs is pending**, so
+clips cannot be judged as they land one at a time. A character's whole batch has
+to finish first.
+
+## Where this stops, and exactly how to land it
+
+The 116 generations are **in flight server-side** and complete whether or not
+anyone is watching. They are not yet downloaded, cut or wired, which is a debt
+against this repo's rule that whatever you generate, you wire. Landing them is
+mechanical and needs no new tooling:
+
+```bash
+npm run character -- <character-id> <name>
+```
+
+per character — 423 until that character's jobs finish. It already scans EVERY
+animation in a download rather than just `walk`, cuts each clip on its own shared
+baseline, and **prints the manifest block with frame counts read off the
+strips**. Paste that block into the sheet's `clips` in `art/sprites.json`, run
+`npm run atlas`, then `npm run shot -- 600 out.png 4242 hand --hit` to look at a
+recoil. The ten ids sit in `art/charanim-combat.json` beside the clip each was
+asked for.
+
+`farmhandBlight` is the exception and wants care: that sheet is GENERATED by
+`npm run recolour` from the delivered `farmhand/` beside it, so its new clips
+must be cut into `farmhand/` and then recoloured — not written to
+`farmhandBlight/` directly.
+
+**Judge before wiring.** Template mode is skeleton-based and should hold identity
+better than the text endpoint above, but that is an expectation and not a
+measurement. If a clip drifts, `mode: "skeleton-v3"` is the documented upgrade —
+it moves the character instead of redrawing it, at 2-4 generations per direction
+instead of 1.
+
+## Still open, and unchanged by this session
+
+- **Session 24's balance question is untouched.** `idle-greedy` clears on every
+  class but the Widow, and the fix is a design decision rather than a dial.
+  Nothing in the sim moved this session.
+- **5 of 6 elements still resolve to `arrowImpact`.** Only fire has its own
+  impact, so a build decision the design calls "visible everywhere" is invisible
+  at the moment it lands. Four impact FX would close it and the recipe is
+  `pixellabFx`: generate a still, animate it, add a clip entry.
+- **Companions, destructibles and more enemy types** are all still on the
+  backlog, and all want NEW subjects — the spend that does not survive the
+  account closing, so they rank below finishing the derivations above.
+- `docs/BACKLOG.md` now carries a checked status table at the top. Both of its
+  P0s and two of its P1s were already done, and the prose had never been updated.
+
+---
+
 # Session 24 — the second playtest, and the fork stays in her hands
 
 ## What the owner reported (The Widow, on the live site, 2026-09-05)

@@ -6,6 +6,27 @@ they were said. The measured generation costs behind the art estimates are in
 
 ---
 
+## STATUS, checked against the code on 2026-09-18 (session 25)
+
+**Most of what follows is done, and the text below was not updated when it was.**
+This repo's own rule is that a document saying something is missing is not
+evidence that it is, so the list was re-checked item by item against `src/`
+rather than against the prose. Kept rather than deleted, because the reasoning
+in each entry is still worth reading — but read this table first.
+
+| item | state |
+|---|---|
+| **P0 white flash** | **DONE.** `Enemy.flashLock` is a real refractory (`entities.ts`), armed with the flash in `world.ts` and counted down beside it. A separate `hitT` drives a recoil CLIP, which is the "art, cheap" half of the entry below, and session 24 wired the bots that proved it. |
+| **P0 pool starvation** | **DONE.** `tuning.json` now reads particles 2400 (was 900), damageNumbers 256 (was 64), hazards 192 (was 64), props 320 (was 120). |
+| **P0 `hp -0/140`** | **DONE.** `hud.ts` clamps with `Math.ceil(Math.max(0, p.hp))`. |
+| **P1 Homestead has no way back** | **DONE.** `homestead.ts` builds a back control that "means two different things depending on" where you are, and says so. |
+| **P1 harvest feedback** | **OPEN.** Nothing in `src/` floats a "you picked up N of X" readout. Still the best small feel win on this list. |
+| **P1 UI overlap** | **Unverified.** The weapon RING it describes no longer exists — weapons are carried on the body since session 22 — so at minimum the entry needs re-observing before it is worked. |
+| **P2 bring the map alive** | **PARTLY DONE, and the estimate below is wrong.** See session 25 in NOTES.md. `animate-with-text-v3` regenerates its subject every frame: it is good for emitters (flame, glow, gas) and unusable on textured masses, which morph or come back recoloured. 12 of 42 clips were usable. Sway is done in code instead — `tuning.json` -> `sway` — which is free and cannot morph the thing it moves. The "~$1.20 for 50 loops" line below should not be used to plan with. |
+| **P2 element variants** | **The bug named below is still live.** 5 of 6 elements still resolve to `arrowImpact` (only fire differs), so an element pick is invisible on impact. |
+
+---
+
 ## P0 — The white flash makes the game unreadable
 
 **This is not polish. It is the single worst thing on screen right now.**
