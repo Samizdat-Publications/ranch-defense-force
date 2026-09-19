@@ -1,6 +1,150 @@
 {
- "taken": "2026-09-19T03:01:03.464Z",
+ "taken": "2026-09-19T06:08:48.661Z",
  "objects": [
+  {
+   "id": "7523e311-fd49-44a3-8f77-81d36927e09a",
+   "name": "a burst of chalky bone-white p",
+   "state_name": "base",
+   "prompt": "a burst of chalky bone-white powder dust exploding outward from a point, a dry white cloud with the faintest cold green tint at its edges, pale and powdery not wet, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:11:59.157923+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/7523e311-fd49-44a3-8f77-81d36927e09a/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "ef6a6240-a9e8-4b42-8236-84f590732e25",
+   "name": "a burst of chalky bone-white p",
+   "state_name": "base",
+   "prompt": "a burst of chalky bone-white powder dust exploding outward from a point, a dry white cloud with the faintest cold green tint at its edges, pale and powdery not wet, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:11:58.424003+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/ef6a6240-a9e8-4b42-8236-84f590732e25/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "41697242-a868-4c09-9f5c-d52c74bdd65d",
+   "name": "a puff of chalky pale green qu",
+   "state_name": "base",
+   "prompt": "a puff of chalky pale green quicklime powder bursting outward from a point, a dusty cloud with a bright core, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:10:42.156405+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/41697242-a868-4c09-9f5c-d52c74bdd65d/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "87fd2567-710a-4e65-a455-f20f8e632a40",
+   "name": "a puff of chalky pale green qu",
+   "state_name": "base",
+   "prompt": "a puff of chalky pale green quicklime powder bursting outward from a point, a dusty cloud with a bright core, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:10:41.969504+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/87fd2567-710a-4e65-a455-f20f8e632a40/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "ea4ac837-fe0f-4ae5-8bbe-a96e98fc864e",
+   "name": "a burst of hard white crystall",
+   "state_name": "base",
+   "prompt": "a burst of hard white crystalline salt grains scattering outward from a point, a bright white core and sharp grains flying out, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:10:41.758572+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/ea4ac837-fe0f-4ae5-8bbe-a96e98fc864e/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "54d76864-ad10-4068-9ac2-107f34c54bcc",
+   "name": "a burst of hard white crystall",
+   "state_name": "base",
+   "prompt": "a burst of hard white crystalline salt grains scattering outward from a point, a bright white core and sharp grains flying out, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:10:41.712823+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/54d76864-ad10-4068-9ac2-107f34c54bcc/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "536bb919-912c-4429-bccd-a9bf6786205b",
+   "name": "a burst of sickly yellow-green",
+   "state_name": "base",
+   "prompt": "a burst of sickly yellow-green acid splashing outward from a point, corrosive droplets flying out and a bright caustic core, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:09:39.496225+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/536bb919-912c-4429-bccd-a9bf6786205b/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "6a2951cf-465d-4ef7-aa79-5cfbe0b5d317",
+   "name": "a burst of pale ice-blue frost",
+   "state_name": "base",
+   "prompt": "a burst of pale ice-blue frost shards bursting outward from a point, sharp crystal splinters and a cold white core, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:09:39.301131+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/6a2951cf-465d-4ef7-aa79-5cfbe0b5d317/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
+  {
+   "id": "a31211ed-08e6-496c-9b14-f68c6e9f4d18",
+   "name": "a burst of pale ice-blue frost",
+   "state_name": "base",
+   "prompt": "a burst of pale ice-blue frost shards bursting outward from a point, sharp crystal splinters and a cold white core, flat side view, no ground, no shadow, no background, transparent background, pixel art impact effect",
+   "size": {
+    "width": 64,
+    "height": 64
+   },
+   "directions": 1,
+   "created_at": "2026-09-19T04:09:39.277400+00:00",
+   "view": "low top-down",
+   "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/a31211ed-08e6-496c-9b14-f68c6e9f4d18/rotations/unknown.png",
+   "tags": [],
+   "status": "completed"
+  },
   {
    "id": "ee9859f9-4a9f-476e-acb0-dcb6d8be6f26",
    "name": "a hay pitchfork lying level, w",
@@ -13458,8 +13602,9 @@
    "view": "low top-down",
    "preview_url": "https://backblaze.pixellab.ai/file/pixellab-characters/objects/4a5269b2-dd4d-4492-bec0-6fff2b814649/cf057828-0f18-41bd-80ac-3b890a52345e/rotations/south.png",
    "tags": [
-    "rdf-surplus",
-    "ledger-another-roll-of-duster"
+    "rdf-wired",
+    "wired-enemy-duster",
+    "ledger-s25-claimed-surplus-8dir-duster-boss"
    ],
    "status": "completed"
   },
@@ -20148,7 +20293,7 @@
    "directions": 8,
    "created_at": "2026-08-30T21:15:43.782154+00:00",
    "updated_at": "2026-08-30T21:17:51.509440+00:00",
-   "animation_count": 4,
+   "animation_count": 20,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20171,7 +20316,7 @@
    "directions": 8,
    "created_at": "2026-08-30T21:15:42.119891+00:00",
    "updated_at": "2026-08-30T21:17:21.267326+00:00",
-   "animation_count": 4,
+   "animation_count": 20,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20194,7 +20339,7 @@
    "directions": 8,
    "created_at": "2026-08-30T20:49:26.730085+00:00",
    "updated_at": "2026-08-30T20:50:49.079230+00:00",
-   "animation_count": 4,
+   "animation_count": 20,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20217,7 +20362,7 @@
    "directions": 8,
    "created_at": "2026-08-30T20:49:16.980968+00:00",
    "updated_at": "2026-08-30T20:50:38.361196+00:00",
-   "animation_count": 4,
+   "animation_count": 20,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20240,7 +20385,7 @@
    "directions": 8,
    "created_at": "2026-08-30T20:49:14.941495+00:00",
    "updated_at": "2026-08-30T20:51:17.464274+00:00",
-   "animation_count": 4,
+   "animation_count": 20,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20493,7 +20638,7 @@
    "directions": 8,
    "created_at": "2026-08-18T03:35:41.827440+00:00",
    "updated_at": "2026-08-18T03:37:57.142334+00:00",
-   "animation_count": 16,
+   "animation_count": 24,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20516,7 +20661,7 @@
    "directions": 8,
    "created_at": "2026-08-18T03:35:39.236711+00:00",
    "updated_at": "2026-08-18T03:38:03.742866+00:00",
-   "animation_count": 16,
+   "animation_count": 24,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20539,7 +20684,7 @@
    "directions": 8,
    "created_at": "2026-08-18T03:35:23.585301+00:00",
    "updated_at": "2026-08-18T03:37:58.083285+00:00",
-   "animation_count": 16,
+   "animation_count": 24,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20562,7 +20707,7 @@
    "directions": 8,
    "created_at": "2026-08-18T03:35:20.975458+00:00",
    "updated_at": "2026-08-18T03:37:47.250620+00:00",
-   "animation_count": 16,
+   "animation_count": 24,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",
@@ -20585,7 +20730,7 @@
    "directions": 8,
    "created_at": "2026-08-18T02:46:49.911418+00:00",
    "updated_at": "2026-08-18T02:49:35.541793+00:00",
-   "animation_count": 16,
+   "animation_count": 24,
    "template_id": "mannequin",
    "view": "low top-down",
    "status": "completed",

@@ -1,203 +1,140 @@
-# Next session — finish retiring LimeZu, then play and tune TOGETHER
+# Next session — the account is closing; finish the derivations, then play
 
-> **Maps (section 2) were built in session 16.** Five of them, in
-> `src/content/maps.json`, changing ground, node and enemy mix, arena shape and
-> hazards. Section 2 below is kept as the record of what was asked for, with
-> what actually happened marked inline. Read the Session 16 entry in NOTES.md
-> before touching any of it — particularly the two measurements that cost real
-> time: arena AREA is a stealth difficulty knob, and hazard density is
-> `life / everySeconds` and not `maxLive`.
+> Rewritten 2026-09-19 (session 25). The version before this one said *"PixelLab
+> is gone. The subscription was cancelled with the balance spent to exactly 0
+> and the API key is dead."* That was written in session 15 and had been wrong
+> for nine sessions — the account is live, paid, and the key resolves from
+> `.mcp.json` with no env var. It also listed the yard scene, the crops, the
+> weapons and the `duster` boss as outstanding art; every one of those had
+> already been done. **Check the code before believing a document in this repo,
+> including this one.**
 
-**This is the owner's own order, in their words:**
+## The clock, and what it actually costs you to ignore it
 
-> *"Do finish retiringn lime zu > more maps > then we cna play and tune again
-> since i just got done playing"*
+The owner said on 2026-09-18 that he is keeping PixelLab for **one more month**
+and does not know the cut-off: *"once its cut off its cut off and i dont know
+when it cuts off."*
 
-They have played the built game and it held up — *"I plaed it and it was
-great."* Two things came out of that playtest and both are carried below.
+State at the end of session 25: Tier 2, **~4870 generations** left this cycle,
+**$8.52** credits, allowance resets 2026-10-14. Generations are abundant.
+Credits barely move, because template animations and map-objects bill the
+monthly allowance and not the USD pot — measured either side, repeatedly.
 
-**Two facts that change what this session is.**
+**What dies is not the art. It is the IDS.** Downloaded PNGs are ours forever
+and committed. But `animate_character`, `animate_object`, `create_object_state`
+and style-chaining all take an id that lives on PixelLab's servers. When the
+account lapses you cannot derive a new animation, rotation or state from a
+subject already paid for — you would start it again from nothing.
 
-1. **PixelLab is gone.** The subscription was cancelled with the balance spent
-   to exactly 0 and the API key is dead. Nothing can be regenerated. Every art
-   task below is *picking and wiring* from candidates already on disk. If a
-   candidate set has no good option, the answer is a stand-in and a note — not a
-   generation.
-2. **The art is already made.** Session 15 generated 247 images covering
-   essentially everything LimeZu still supplied. Read
-   **`assets/pixellab/SESSION15.md`** before touching any of it; it names the
-   duds, the de-carded picks, and the two sprites whose size changed.
+So the priority order is not "what art is missing". It is:
 
----
+1. **Derivations off ids we already own** — new clips on existing characters and
+   objects. This is the only work that becomes impossible.
+2. **Claiming and downloading anything unclaimed.** `status: review` and the
+   `rdf-surplus` tag both mean "bought, never picked up". Claiming is free.
+3. **New subjects.** Last, because they are the spend that does not survive.
 
-## 1. Finish retiring LimeZu
+## 1. Finish the enemy roster — two sheets left
 
-The exact remaining inventory is the second table in `HANDOFF.md` under *"What
-is generated vs what is still LimeZu"*. Work it top-down; the yard scene is the
-biggest surface and the first thing anyone sees.
+Session 25 took enemy clip coverage from 10 of 22 sheets to 20 of 22 by
+generating `attack`, `hit`, `death` and `walkHurt` on the ten humanoids that
+were short. What remains:
 
-### The rule that has cost this project time three times
+| sheet | state |
+|---|---|
+| `duckFlight` | idle + walk only, and still **LimeZu's `Duck_Brown_32x32`**. The last pack sheet any enemy uses. |
+| `duster` | now generated and 8-directional with a real death, but no `attack`. Arguably correct — nobody is driving it — decide rather than default. |
 
-**Two art groups writing the same frame key: the later pass silently wins.**
-Remove the old manifest entry, never leave it alongside. There is no error, no
-warning, and the symptom is that the game draws the old sprite while the new art
-packs perfectly. It has been caught only by taking a screenshot.
+`duckFlight` is the one to finish. It is a bird, so it is an **object**, not a
+character: `POST /v2/objects/{id}/animations`. Grep
+`docs/PIXELLAB_INVENTORY.md` for duck first — session 25 found a complete
+8-direction boss sitting unclaimed under `rdf-surplus`, and that is the second
+time this repo has found finished work it had forgotten buying.
 
-The matching trap: **the frame key for an enemy is its TYPE ID**, not the
-`sheet` field — `sheet` is read by nothing. Renaming `sheet` is a silent no-op.
+## 2. The endpoints, so you do not rediscover them
 
-### Order, and what each one needs
+Both were found by reading `/v2/openapi.json`, which is fetchable with the same
+key. **Ask the API rather than guessing at it.**
 
-1. **The yard scene** (`scene` + `sceneStrips`, 25 sprites). Candidates in
-   `assets/pixellab/yard/` with the four hero buildings de-carded into
-   `yard_picked/`, and the five livestock in `field/scene_*`.
-   **`scene` is packed `noTrim` and that is load-bearing** — Design's scene
-   coordinates are the top-left of the sprite's FULL box, so a trimmed frame
-   lands at the right place and the wrong offset, silently, on every prop.
-   **`barn` is now 400×224 (was 480) and `silo` 224×400 (was 448)** — the API
-   caps at 400px. Both want a coordinate nudge in `src/ui/scene.ts`, not a
-   rescale. **Integer zoom only.**
-   The farmers (`scene.farmerIdle`, `scene.farmer2Idle`) need no generation —
-   the generated characters in `assets/pixellab/character/` are exactly this.
-2. **Field crops** (`singles`, 10). `field/crop_*`. Blighted variants now exist
-   for corn, grain, pumpkin, cabbage and tomato that never did before — prefer
-   `field2/` over `field/` where both have the same name. These feed straight
-   into the ground's existing blight bands: a blighted map should swap the crop
-   art, not remove the crop.
-3. **The eight weapon sprites** (`weapons`). `field/weapon_*`. These are what
-   the player sees ringed around them, so judge them in a run, not on a sheet.
-4. **The `duster` boss** (wave 25). `assets/pixellab/duster/` has 22 candidates
-   across four facings. **The model ignored the requested facing about half the
-   time — pick four that actually face four different ways rather than trusting
-   the filename.** It patrols a fixed pattern and does not chase, so four
-   facings is the whole rig it needs. The owner has said a boss may be
-   *"slightly bigger than would be standard"*.
-5. **The stragglers.** `duckFlight` (`field/duck_*`, four facings),
-   `pickup.heal` (`field/pickup_heal_*` — candidate 0 is a grey square),
-   `gasMaskIcon` (`field/icon_gasmask_*` — candidate 2 is a grey square).
-6. **`public/ui/panel.png`.** The LimeZu Modern UI pack is the last thing
-   outside the atlas still coming from a purchased pack. **Only
-   `field2/ui_panel_1.png` has a real frame**; every other candidate is blank
-   parchment. It is a nine-slice, so it wants `noTrim`.
-7. **`terrainSource` needs no art at all.** 29 Wang sets are already packed.
-   Retiring it is a wiring job and it belongs to the maps work below.
+| subject | endpoint |
+|---|---|
+| character (humanoid, has a skeleton) | `POST /v2/animate-character` |
+| object (animal, machine, prop) | `POST /v2/objects/{object_id}/animations` |
 
-**Verify by looking.** `npm run atlas` then `npm run contact -- <sheet> <clip>`
-pulls frames back OUT of the packed atlas, which proves manifest entry, packer,
-frame key and direction list together. A sheet can be perfect on disk and still
-be drawn wrong because its key is not the one the renderer asks for. Then
-`npm run shot` for a real run.
+They are mirror images of each other and the wrong one 404s or 405s. In
+particular `POST /v2/characters/{id}/animations` **exists** and answers OPTIONS
+with `allow: DELETE`, so using it returns 405 — which reads as a bad request
+body on a good endpoint and will send you debugging the wrong file.
 
----
+`npm run charanim -- <jobs.json>` wraps the character side, backs off on the
+ten-job concurrency ceiling, and `--list` prices a run for free.
 
-## 2. Maps — DONE (session 16)
+Three more things that cost session 25 time:
 
-Built. Five maps in `src/content/maps.json`: the Home Field (the old game,
-unchanged, weighted 2x and kept as the control), the Salt Flats, the Scrapyard,
-the Burn and the Bone Orchard. All four axes move. The map choice is the first
-draw off the run RNG, as required below, and two tests pin it there.
+- **The template list is per SKELETON.** The OpenAPI description advertises
+  `attack`; `attack` is invalid on `mannequin`, and the 422 names the real list.
+- **A character or object is `423 Locked` for download while ANY of its jobs is
+  pending.** You cannot judge clips as they land one at a time.
+- **Per-direction size drift.** Two directions of the duster's death came back
+  96x96 against the object's 113x113 because they were generated when the object
+  was smaller. The packer catches it and refuses. Do not pad or scale — 113/96
+  is not an integer and the boss would visibly shrink when it faced west.
+  Regenerate that direction with `replace_existing: true`.
 
-Three things below turned out differently and are worth reading before
-extending it:
+## 3. What a generated loop is good for
 
-- **Arena size is not a free axis.** Varying area along with shape inverted The
-  Kid's class identity in `run.test.ts` — a velocity-damage class deals nothing
-  on a field big enough to run into empty ground. Shape is the feature; area is
-  held near the Home Field's 3.84M px² on every map but the Scrapyard.
-- **`maxLive` is not hazard density.** It is `life / everySeconds`. The first
-  pass ran at 1-3 live hazards against an intended 9-14, and they were on
-  screen 0% of the time. They now spawn in a ring around the player rather than
-  anywhere on the arena, which is what makes them learnable.
-- **`tuning.json`'s `terrain` block is gone**, moved into the maps. Both the
-  renderer and `tools/draw-world.ts` read `world.map.terrain` now.
+Session 25 bought 42 clips through `/animate-with-text-v3` and wired twelve.
+**The endpoint regenerates its subject on every frame.** It is good when a rigid
+body carries a small bright emitter and the emitter is what changes — crystal
+glow, flame, gas, an electric arc. It is unusable on a large textured mass: the
+regeneration noise exceeds the motion, boulders morph into different stones, and
+it recolours (a rusty burn barrel came back teal, a hay bale sage) or removes
+content (a water trough drained).
 
-What was originally asked for, kept for the record:
+**Sway, bob and rock are geometry, not art.** They are done in code now —
+`tuning.json` -> `sway`, a rotation about the sprite's bottom-centre draw origin
+so a plant pivots at its roots. Free, deterministic, cannot morph.
 
-The owner wants a map to change **all four** of: ground and tileset, node and
-enemy mix, arena size and shape, and hazards.
+## 4. Then play and tune — still the owner's call, still untouched
 
-Most of the machinery exists. `tuning.json`'s `terrain` block already treats the
-ground set as content and already carries per-blight-band sets. 29 Wang tilesets
-are packed. Hazards have 64 pool slots in the sim and gas is already wired.
-Session 15 generated `field/hazard_{gas,mud,fire}` and four biome nodes
-(`node_saltrock`, `node_scrapheap`, `node_boneheap`, `node_ashstump`) for
-exactly this.
+**Nothing in the sim has moved since session 23.** Session 24 measured the
+problem precisely and deliberately stopped, and session 25 was an art session.
+The question is unchanged and it is a design decision, not a dial:
 
-**The one hard constraint: the map choice must be the FIRST draw off the seeded
-RNG.** Insert it anywhere else and every existing seed stops replaying.
-`run.test.ts` has a "replays a whole run identically from its seed" case that
-must keep passing. The owner does not care about preserving old seeds, so this
-is a freedom — but the test still has to pass, and the ordering still has to be
-deliberate rather than accidental.
+> A player who stands still and takes weapons and merges clears the game on
+> every class but the Widow. `idle-greedy` on all six classes: hand 18/24, kid
+> 12, widow 9, vet 16, agronomist 20, drifter 14.
 
-A map descriptor wants: tileset, ground bake, node mix, enemy weighting, arena
-size, hazard flavour. `waves.json` owns arena width/height today, so arena size
-moving into the map descriptor is a content-shape change, not just an addition.
+Read the end of the session 24 entry in NOTES.md before touching a number. Its
+measured conclusion is that every lever on the hp/xp curve moves WHEN a run ends
+and none of them touches "untouched through wave 10", because what produces that
+is arrival shape and not arrival count. Its three candidates, in its own order of
+preference:
 
----
+1. **Weapon slots that open over the run** — three at the start, one more at each
+   shop. A greedy picker cannot then have six weapons by wave 4, and it touches
+   nothing else.
+2. `weaponOfferWeight` down from 6.
+3. `xp.exponent` 1.85 -> 2.0 as the fallback.
 
-## 3. Play and tune — THIS IS THE NEXT SESSION, AND IT IS A JOINT ONE
-
-Session 16 deliberately stopped short of this. It made three tuning passes to
-get the new maps into a survivable band against the unchanged Home Field, and
-that is all — bringing new content up to the existing bar, not tuning the game.
-The list below is untouched, and NOTES.md adds two map-specific items to it
-(ambient hazards measure as a net *help* to a kiting bot; the Bone Orchard may
-simply be the easy map).
-
-
-
-**Carry the owner's note verbatim:**
-
-> *"Needs more enemies per wave to balance but I spawned 200+ enemies a few
-> times and it all worked great I didnt ge tto test all the models fromthe
-> dropdown yet though."*
-
-Three things follow from that one sentence:
-
-- **Performance is not the constraint.** 200+ live enemies ran fine.
-  `pressureCeiling: 380` in `waves.json` is a design choice to revisit, not a
-  frame-rate limit.
-- **Density is the ask**, and it is the top balance item.
-- **The class dropdown is untested.** Six classes ship and only some have been
-  played. Play all six before tuning anything, or you will tune against one.
-
-**Do this first, before changing a single number:** `threatBudget` is hardcoded
-in `src/sim/formulas.ts` as `30 + 22*wave + 1.4*wave*wave`, while `waves.json`
-carries `threatBudget.formula` as a string that **nothing reads**. The content
-file describes the curve; the code is the truth. Read those three coefficients
-from `waves.json` and the rest of the session becomes editing content instead of
-editing code — which CLAUDE.md requires anyway. `waveScalar` has the identical
-split.
-
-**The known trap, from session 12:** raising the budget OR the spawn rate both
-fail `run.test.ts` on the identical budget, because density and player power are
-coupled. More enemies that are individually weaker across `enemies.json` is the
-shape of the fix, not a bigger number in one place.
-
-Also parked for that session: base move speed 160, crop density and feed value,
-damage-% items vs *"merging IS the offensive game"*, late shops thinning to
-items only, elites being spawn-time only, and global hitstop.
-
----
+`npm run probe -- 24 idle-greedy` is the measurement. The owner's rule is to
+tune from his play and not from the bots, so bring him numbers rather than a
+changed game.
 
 ## Verification, every time
 
 ```bash
 npm run atlas      # and READ THE PRINTED DIMENSIONS, not just the exit code
-npm test           # 154 tests, incl. the headless full run and the seed replay
+npm test           # 271 tests
 npm run typecheck  # game and tools have separate tsconfigs
-npm run shot       # a real run, rendered headlessly, no browser
+npm run shot -- 600 out.png 4242 hand --hit   # a real run, headless; --hit forces recoils
+npm run contact -- <sheet> <clip>             # pull frames back OUT of the packed atlas
 ```
 
-The atlas is 2048 wide because at 1024 the animals forced a `1024×16384` page —
-the area was fine, the dimension was past many GPUs' max texture size. If a
-change pushes the height back toward 16384, that is the signal.
+`npm run contact` is the one that proves the whole chain — manifest entry,
+packer, frame key and direction list together. A sheet can be perfect on disk
+and still be drawn wrong because its key is not the one the renderer asks for.
 
-**The browser pane only composites when the window is focused**;
+**The browser pane only composites when the window is focused**, so
 `requestAnimationFrame` never fires otherwise and screenshots time out. Use
-`npm run shot`.
-
-**Stand any new creature next to the player before accepting it.** The first
-generated farmhand was better pixel art than LimeZu's and unusable, because its
-proportions belonged to a different game.
+`npm run shot` for the field and `npm run scene` for the title screens.
