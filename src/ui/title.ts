@@ -84,10 +84,14 @@ export class TitleScreen {
         el('span', { text: 'The Homestead' }),
         el('span', { class: 'title-home-acres', text: `${this.acres} acres` }),
       ]),
-      el('div', { class: 'title-seed' }, [
-        el('span', { class: 'title-seed-label', text: 'SEED' }),
-        this.seedInput,
-      ]),
+      // A seed is for replaying a run, not something a first-time player
+      // needs on the front page: `?seed` or `?dev` shows it.
+      /[?&](seed|dev)/.test(location.search)
+        ? el('div', { class: 'title-seed' }, [
+          el('span', { class: 'title-seed-label', text: 'SEED' }),
+          this.seedInput,
+        ])
+        : null,
     ])
 
     const playing = el('div', { class: 'title-playing' }, [

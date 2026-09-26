@@ -227,7 +227,9 @@ export class Hud {
     if (wave !== this.lastWave) {
       const count = WAVES.waveCount as number
       const boss = (WAVES.bossWaves as Record<string, string>)[String(wave)]
-      this.waveN.textContent = wave >= count && boss ? 'THE DUSTER' : `WAVE ${Math.min(wave, count - 1)} / ${count - 1}`
+      // The boss's name is on its plate under the bar; saying it here as well
+      // made three of it on one screen (critic round 5).
+      this.waveN.textContent = wave >= count && boss ? 'LAST LIGHT' : `WAVE ${Math.min(wave, count - 1)} / ${count - 1}`
       this.lastWave = wave
       // The wave card: drops in, holds, lifts away. Restarted by re-adding the class.
       const bossName = boss ? ENEMIES[boss]?.name : undefined

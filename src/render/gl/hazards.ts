@@ -64,8 +64,10 @@ void main() {
   float r = max(4.0, vPos.z);
   int kind = int(vPos.w + 0.5);
   float seed = vFx.y;
-  float wob = texture(uNoise, (w + seed * 97.0) / 26.0).r;
-  float edge = r * (0.92 + 0.08 * (wob - 0.5) * 2.0);
+  // A slow wobble, not a fast one: at /26 the edge of a big pool was a
+  // saw-tooth of single pixels and read as a rendering fault.
+  float wob = texture(uNoise, (w + seed * 97.0) / 64.0).r;
+  float edge = r * (0.94 + 0.06 * (wob - 0.5) * 2.0);
   float d = length(q);
   if (d > edge) discard;
   float fade = vFx.x;
@@ -82,7 +84,7 @@ void main() {
     bool lip = d > edge - 2.5;
     c = vec4(0.09, 0.07, 0.05, 0.36);
     if (sheen > 0.7) c = vec4(0.3, 0.27, 0.23, 0.5);
-    if (lip) c = q.y < 0.0 ? vec4(0.44, 0.38, 0.3, 0.8) : vec4(0.04, 0.03, 0.02, 0.8);
+    if (lip && q.y < -r * 0.2) c = vec4(0.44, 0.38, 0.3, 0.7);
   } else if (kind == 1) {
     if (g > 0.18 && !rim) discard;
     c = rim ? vec4(0.92, 0.78, 0.42, 0.55) : vec4(0.86, 0.7, 0.36, 0.9);

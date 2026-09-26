@@ -430,7 +430,7 @@ export class GLRenderer {
     cp.time = w.elapsed
     cp.originX = this.vx
     cp.originY = this.vy
-    cp.clouds = 0.75 * (1 - day.night)
+    cp.clouds = 0.45 * (1 - day.night)
     // Lightning lights the whole field for a moment: you see what is out there.
     const bolt = this.holdCamera ? 0 : lightning(w.elapsed, day.t)
     if (bolt > 0) {
@@ -1168,7 +1168,7 @@ export class GLRenderer {
       const y = e.py + (e.y - e.py) * alpha
       const dx = Math.cos(e.facing)
       const dy = Math.sin(e.facing)
-      L.cone(x + dx * 60, y - 20 + dy * 30, 260, 1, 0.9, 0.7, 0.12 + 0.55 * night, dx, dy, 0.9, 0.8, 1)
+      L.cone(x + dx * 60, y - 20 + dy * 30, 170, 1, 0.82, 0.55, 0.08 + 0.32 * night, dx, dy, 0.88, 0.8, 1)
       L.point(x, y - 30, 90, 1, 0.6, 0.3, 0.2 + 0.4 * night)
     }
   }
@@ -1285,9 +1285,16 @@ export class GLRenderer {
   private drawTelegraphs(): void {
     const s = this.dev.shapes
     const c = COL.telegraph
+    // A faint fill with a hard pixel edge: where the danger ends is the
+    // information. A flat filled wedge read as debug geometry.
     for (const t of this.world.telegraphs) {
       const half = ((t.spread / 2) * Math.PI) / 180
-      s.wedge(t.x, t.y, t.range, t.range, t.angle - half, t.angle + half, c[0], c[1], c[2], c[3])
+      const a0 = t.angle - half
+      const a1 = t.angle + half
+      s.wedge(t.x, t.y, t.range, t.range, a0, a1, c[0], c[1], c[2], c[3] * 0.45)
+      s.arc(t.x, t.y, t.range - 1, a0, a1, 2, c[0], c[1], c[2], Math.min(1, c[3] * 2.2))
+      s.line(t.x, t.y, t.x + Math.cos(a0) * t.range, t.y + Math.sin(a0) * t.range, 1, c[0], c[1], c[2], Math.min(1, c[3] * 1.6))
+      s.line(t.x, t.y, t.x + Math.cos(a1) * t.range, t.y + Math.sin(a1) * t.range, 1, c[0], c[1], c[2], Math.min(1, c[3] * 1.6))
     }
   }
 
@@ -1383,8 +1390,10 @@ export class GLRenderer {
       const settle = g.magnetised ? 1 : 1 - Math.min(0.45, Math.max(0, g.bob - 8) / 12 * 0.45)
       if (f) {
         const xp = g.kind === 'xp'
+        // Seeds sit back after dark: the eye should find the threats first.
+        const dim = xp ? 1 - 0.4 * this.day.night : 1
         this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, settle, 0, NO_OUTLINE,
-          xp ? XP_TINT[0] : 1, xp ? XP_TINT[1] : 1, xp ? XP_TINT[2] : 1)
+          xp ? XP_TINT[0] * dim : 1, xp ? XP_TINT[1] * dim : 1, xp ? XP_TINT[2] * dim : 1)
       } else {
         const c = g.kind === 'xp' ? COL.xp : COL.feed
         const s = g.kind === 'xp' ? 5 : 7
@@ -1526,9 +1535,12 @@ export class GLRenderer {
     const ol = COL.outlineText
     for (let i = 0; i < w.damageNumbers.live; i++) {
       const d = w.damageNumbers.items[i]
+      // Tick damage (a 1 or a 2 from a cloud, a pool, a rider) is real but not
+      // worth reading, and fifty of them stacked into '1111' smears.
+      if (!d.crit && d.value < 3) continue
       const t = d.life / d.maxLife
       const a = Math.min(1, t * 1.6)
-      const glyphs = d.crit ? this.dev.glyphsBig : this.dev.glyphs
+      const glyphs = d.crit || d.value >= 40 ? this.dev.glyphsBig : this.dev.glyphs
       const c = d.crit ? COL.crit : COL.number
       let v = Math.max(0, Math.round(d.value))
       let n = 0
@@ -1540,8 +1552,10 @@ export class GLRenderer {
       for (let k = n - 1; k >= 0; k--) {
         const g = glyphs.get(DIGIT_CHARS[this.digits[k]])
         if (!g) continue
+        // Self-lit: a number is information, not part of the scene, and the
+        // night had been greying them into the ground.
         batch.push(x, top, 0, 0, g.w, g.h, g.x, g.y, PAGE_GLYPH, 0, 1, 1,
-          c[0], c[1], c[2], a, 0, 0, ol[0], ol[1], ol[2], a)
+          c[0], c[1], c[2], a, 0, 0.8, ol[0], ol[1], ol[2], a)
         x += g.w + 1
       }
     }

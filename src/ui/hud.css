@@ -147,8 +147,8 @@
   text-shadow: 0 2px 0 #000;
 }
 .hud-wave-line { display: flex; gap: calc(10 * var(--u)); align-items: baseline; }
-.hud-wave-n { font-size: calc(12 * var(--u)); letter-spacing: 0.1em; color: #c9b890; }
-.hud-wave-left { font-size: calc(12 * var(--u)); color: #e8d6ae; }
+.hud-wave-n { font-size: calc(15 * var(--u)); letter-spacing: 0.08em; color: #d8c79c; }
+.hud-wave-left { font-size: calc(15 * var(--u)); color: #f0dfb6; }
 .hud-wave-track {
   width: 100%; height: calc(3 * var(--u));
   background: rgba(246, 230, 194, 0.12);
@@ -216,11 +216,11 @@
     conic-gradient(#e0a02e var(--p), rgba(246, 230, 194, 0.14) var(--p));
 }
 .hud-ability-name {
-  font-size: calc(12 * var(--u)); letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--muted);
+  font-size: calc(14 * var(--u)); letter-spacing: 0.08em; text-transform: uppercase;
+  color: #d8c79c;
 }
 .hud-ability-key {
-  font-size: calc(11 * var(--u)); letter-spacing: 0.14em;
+  font-size: calc(13 * var(--u)); letter-spacing: 0.1em;
   color: #16110b; background: #b9a47a; padding: 0 calc(5 * var(--u));
 }
 .hud-ability.ready { border-color: #c98c2a; }
@@ -278,7 +278,7 @@
 }
 .hud-load-stacks {
   position: absolute; right: calc(2 * var(--u)); bottom: calc(1 * var(--u));
-  font-size: calc(8 * var(--u)); color: #f2d9a8; text-shadow: 0 1px 0 #000;
+  font-size: calc(11 * var(--u)); color: #f2d9a8; text-shadow: 0 1px 0 #000, 1px 0 0 #000;
 }
 
 /* --- the wave card: drops in under the dial, holds, lifts away --- */
@@ -312,12 +312,12 @@
 
 .hud-banner-hint {
   margin-top: calc(6 * var(--u));
-  font-family: var(--label); font-size: calc(12 * var(--u)); letter-spacing: 0.08em;
+  font-family: var(--label); font-size: calc(14 * var(--u)); letter-spacing: 0.06em;
   color: #e8d6ae; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
 }
 .hud-banner-hint:empty { display: none; }
 .hud-banner-hint kbd {
-  font-family: var(--label); font-size: calc(11 * var(--u));
+  font-family: var(--label); font-size: calc(13 * var(--u));
   padding: 0 calc(5 * var(--u)); margin: 0 calc(2 * var(--u));
   color: #16110b; background: #d9c7a2; border-bottom: calc(2 * var(--u)) solid #8a7c62;
 }

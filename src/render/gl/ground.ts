@@ -142,7 +142,7 @@ void main() {
   } else if (t == 1) {
     c = tile(3, p);
   } else {
-    float d = (hash(floor(w)) - 0.5) * 0.08;
+    float d = (n(w, 31.0) - 0.5) * 0.08;
     c = gp + d > 0.64 ? tile(1, p) : (gp + d < 0.3 ? tile(2, p) : tile(0, p));
   }
 

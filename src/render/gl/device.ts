@@ -150,6 +150,9 @@ void main() {
   // made of the same size pixels as everything under it.
   shade = floor(shade * 3.0 + hash(floor(wp)) * 0.9) / 3.0 * uClouds;
   vec3 illum = uAmbient * (1.0 - sh.g * 0.55) + uSun * (1.0 - max(sh.r, sh.g)) * (1.0 - shade * 0.6) + light;
+  // A knee above 1: the lantern pools warm instead of bleaching whoever holds
+  // it into a pale blob (critic round 5). Colour is kept, only excess eased.
+  illum = illum / (1.0 + max(illum - 1.0, 0.0) * 0.9);
   vec3 col = albedo * illum + emis * uEmissiveGain + bloom * uBloomGain + uFlash;
   col *= uExposure;
   // A soft shoulder above 0.75 so a lantern or a muzzle flash never clips flat.

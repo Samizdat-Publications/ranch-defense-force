@@ -66,8 +66,9 @@
         "interiorScenery": 0.35,
         "ground": {
           "grassA": "wang.dirt_to_grass_plain.1111",
-          "grassB": "wang.lush_overgrown_to_cold_grey.0000",
-          "grassC": "wang.grass_to_soil.0000",
+          "grassB": "wang.bare_brown_to_short_green.1111",
+          "grassC": "wang.grass_to_gravel_v2.0000",
+          "_grassNote": "Flat tones, on purpose (critic rounds 3-4, 'blotchy camouflage'). grass_to_soil and lush_overgrown_to_cold_grey carry a speckle pattern every few pixels; the shader's own tufts, flowers and stepped light give the texture, and three busy tiles under them read as camo.",
           "dirt": "wang.short_mown_to_shallow_muddy.1111",
           "tilled": "wang.dark_tilled_to_lush_overgrown.0000",
           "yard": "wang.dirt_to_grass_plain.0000",

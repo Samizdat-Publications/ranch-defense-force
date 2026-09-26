@@ -168,7 +168,9 @@ async function untilBoss(page: Page): Promise<void> {
     if (await page.evaluate('window.rdf.bossUp()')) break
     await ff(page, 0.5, true)
   }
-  await ff(page, 3, true)
+  // Long enough to be past its entrance, short enough that a strong build
+  // has not already killed it (a 3 s wait photographed an empty field).
+  await ff(page, 1.2, true)
 }
 
 /** Photograph the run at a representative health (see `rdf.stageHp`). */

@@ -1,6 +1,7 @@
 {
  "render": {
-  "viewHeight": 540,
+  "viewHeight": 450,
+  "_viewHeightNote": "540 until v2 critic round 4. Four reviewers in a row could not read the fight: a 32x64 rig drew about 40 px tall on a 1600x900 screen. 450 is exactly 2x at 900p (2.4x at 1080p) and every sprite, number and outline is a fifth bigger. The arena did not change; you see less of it at once.",
   "_viewNote": "Height of the world view in art pixels on every screen. The world draws at art resolution into a target this tall and is scaled to the window, so every sprite shares one pixel density (docs/V2.md D2).",
   "enemyPallor": 0.55,
   "eyeGlowDay": 0.45,

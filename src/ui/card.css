@@ -101,8 +101,8 @@
   justify-content: space-between;
   gap: 6px;
   font-family: var(--label);
-  font-size: 12px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink-band);
   border-bottom: 2px solid var(--paper-edge);
