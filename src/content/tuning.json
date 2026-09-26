@@ -5,11 +5,15 @@
   "enemyPallor": 0.55,
   "eyeGlowDay": 0.45,
   "_curseNote": "How cursed the enemy cast looks, all of it render-side. enemyPallor pushes every non-boss enemy toward a cold drained grey-green (0 = the art as drawn, 1 = fully drained); the eyes are exempt and brightened instead. eyeGlowDay is the least the eyes glow in daylight; at night they glow at the night's full strength. Critic round 2: 'enemies look like ordinary farmhands'.",
-  "xpTint": [0.5, 0.95, 2.9],
+  "xpTint": [
+   0.62,
+   0.92,
+   2.1
+  ],
   "_xpTintNote": "Multiplied into the green seed sprite to turn it a cold cyan: the one hue nothing else on the field uses (ground, gas and acid are all olive to lime). Channels above 1 are the point, a multiply cannot otherwise move a hue.",
-  "stainKeep": 18,
+  "stainKeep": 30,
   "stainWeather": 0.86,
-  "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20."
+  "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20, and round 3 then found 'almost no visible gore'. One in thirty, as a 5-8 px splat: few marks, each one a kill you can see."
  },
  "daylight": {
   "_note": "THE LONG DAY (docs/V2.md D4). A run is one day: t is run progress, 0 = the first second of wave 1, 1 = the end of the last wave. Each stop sets the sky (ambient), the sun or moon (colour x sunI), where it stands (az: compass degrees, 90 east, 180 south, 270 west; el: degrees above the horizon, which sets shadow length), shadow strength, and the grade. Stops are smoothstepped between. Around sunset the shadows fade to nothing and come back as faint moon shadows from the other side, so the switch is never seen. Purely visual: the sim never reads this.",
@@ -20,51 +24,51 @@
    {
     "t": 0,
     "ambient": [
-     0.46,
-     0.41,
-     0.5
-    ],
-    "sun": [
-     1,
-     0.6,
-     0.46
-    ],
-    "sunI": 0.72,
-    "az": 72,
-    "el": 3,
-    "shadow": 0.45,
-    "exposure": 1,
-    "saturation": 0.96,
-    "contrast": 1.03,
-    "tint": [
-     1.05,
-     0.95,
-     0.96
-    ],
-    "vignette": 0.38,
-    "lantern": 0.35,
-    "night": 0.25,
-    "fog": 0.42
-   },
-   {
-    "t": 0.08,
-    "ambient": [
-     0.49,
-     0.47,
+     0.36,
+     0.4,
      0.54
     ],
     "sun": [
      1,
-     0.76,
-     0.58
+     0.66,
+     0.42
     ],
-    "sunI": 0.68,
+    "sunI": 0.86,
+    "az": 72,
+    "el": 3,
+    "shadow": 0.45,
+    "exposure": 1,
+    "saturation": 1.04,
+    "contrast": 1.1,
+    "tint": [
+     1.02,
+     0.97,
+     1
+    ],
+    "vignette": 0.38,
+    "lantern": 0.35,
+    "night": 0.25,
+    "fog": 0.3
+   },
+   {
+    "t": 0.08,
+    "ambient": [
+     0.44,
+     0.47,
+     0.56
+    ],
+    "sun": [
+     1,
+     0.8,
+     0.6
+    ],
+    "sunI": 0.76,
     "az": 88,
     "el": 12,
     "shadow": 0.5,
     "exposure": 1,
-    "saturation": 0.98,
-    "contrast": 1.02,
+    "saturation": 1.03,
+    "contrast": 1.07,
     "tint": [
      1.03,
      0.98,
@@ -73,7 +77,7 @@
     "vignette": 0.3,
     "lantern": 0.1,
     "night": 0.05,
-    "fog": 0.22
+    "fog": 0.16
    },
    {
     "t": 0.2,
@@ -418,7 +422,8 @@
    "Rain on the tin roof. Thunder over Canton.",
    "The last of them. Hold the field.",
    "Nobody is driving it."
-  ]
+  ],
+  "_dawnNote": "Dawn retuned in v2 critic round 3 (\"flat sepia mud\"): the old first stop lit a purple-pink ambient with a pink sun through 0.42 of pale mist, so shade and light were the same beige. Now the shade is cool blue and the low sun warm gold-rose, which is where morning gets its contrast, and the mist is thinner."
  },
  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
  "player": {

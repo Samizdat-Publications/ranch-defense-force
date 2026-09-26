@@ -63,18 +63,18 @@ export class ResultsScreen {
     //
     // A stackable item is one row per pickup in `p.items`: four Blood Meals
     // taken is four entries, not one entry counted four times, so a chip
-    // per entry read as "Blood Meal" four times over. Grouped by the label
-    // itself (not the id) so a boosted copy, which already prints its own
-    // " 2x" suffix, keeps its own count rather than blending into the plain
-    // copies. A `Map` preserves the order each label was first seen.
+    // per entry read as "Blood Meal" four times over. Grouped by name, with
+    // boosted copies counted inside the same chip: a separate "Chalk Line 2x"
+    // chip beside "Chalk Line x4" read as a duplicate (critic round 3). A
+    // `Map` preserves the order each name was first seen.
     const counts = new Map<string, number>()
     for (const w of p.weapons) {
       const label = `${WEAPONS[w.id]?.name ?? w.id} T${w.tier}`
       counts.set(label, (counts.get(label) ?? 0) + 1)
     }
     for (const it of p.items) {
-      const label = `${ITEMS[it.id]?.name ?? it.id}${it.boosted ? ' 2x' : ''}`
-      counts.set(label, (counts.get(label) ?? 0) + 1)
+      const label = ITEMS[it.id]?.name ?? it.id
+      counts.set(label, (counts.get(label) ?? 0) + (it.boosted ? 2 : 1))
     }
     const chips = el('div', { class: 'psheet-chips' })
     for (const [label, n] of counts) {
@@ -107,7 +107,7 @@ export class ResultsScreen {
           // The lose screen's copy already carries its own weight ("The
           // hands got you"); the win screen had nothing above the headline
           // saying so before the ribbon does, so it gets the eyebrow.
-          cleared ? el('div', { class: 'results-eyebrow', text: 'The light held' }) : null,
+          cleared ? el('div', { class: 'results-eyebrow', text: 'Dawn to dark' }) : null,
           el('h1', {
             class: 'results-title',
             text: cleared ? 'The light goes' : 'You stopped',

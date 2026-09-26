@@ -146,7 +146,8 @@ void main() {
     // Drained and cold, lifted a little so a body reads against warm ground;
     // the eyes keep their colour, which is the point of them.
     float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
-    vec3 pale = vec3(l) * vec3(0.92, 1.04, 0.96) * 1.1 + vec3(0.02, 0.04, 0.03);
+    // Bruised lilac-grey: the complement of every green the field is made of.
+    vec3 pale = vec3(l) * vec3(1.02, 0.9, 1.1) * 1.16 + vec3(0.04, 0.02, 0.05);
     c.rgb = mix(c.rgb, pale, curse * (1.0 - eye));
     c.rgb = mix(c.rgb, vec3(1.0, 0.86, 0.36), eye * curse * 0.6);
   }

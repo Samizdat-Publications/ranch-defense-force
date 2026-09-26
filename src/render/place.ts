@@ -125,7 +125,14 @@ export function bakeLayout(world: World, cfg: PlaceConfig): Layout {
         const py = y * SCALE - M
         const dx = Math.max(r.x - px, 0, px - (r.x + r.w))
         const dy = Math.max(r.y - py, 0, py - (r.y + r.h))
-        splat(c, x, y, smooth(Math.hypot(dx, dy), 0))
+        // SIGNED distance: negative inside, so the interior reaches 1. The
+        // unsigned one left every tilled plot and yard at exactly 0.5 all the
+        // way through, and the edge noise then flipped half of it back to
+        // grass: a camouflage rectangle with ruler-straight sides (critic
+        // round 3 read it as a masking bug, which it was).
+        const inside = Math.min(px - r.x, r.x + r.w - px, py - r.y, r.y + r.h - py)
+        const d = inside > 0 ? -inside : Math.hypot(dx, dy)
+        splat(c, x, y, smooth(d, 0))
       }
     }
   }

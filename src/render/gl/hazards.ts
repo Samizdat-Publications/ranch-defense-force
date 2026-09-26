@@ -76,10 +76,13 @@ void main() {
   float g = hash(w + seed);
 
   if (kind == 0) {
+    // Tar: near-black and glossy, a lit lip along the top edge, slow sheen.
+    // The old translucent brown read as a shadow with no caster.
     float sheen = texture(uNoise, (w + vec2(uTime * 2.0, 0.0)) / 18.0).r;
-    c = vec4(0.20, 0.14, 0.08, 0.46);
-    if (sheen > 0.7) c = vec4(0.42, 0.34, 0.22, 0.5);
-    if (rim) c = vec4(0.12, 0.08, 0.05, 0.7);
+    bool lip = d > edge - 2.5;
+    c = vec4(0.09, 0.07, 0.05, 0.36);
+    if (sheen > 0.7) c = vec4(0.3, 0.27, 0.23, 0.5);
+    if (lip) c = q.y < 0.0 ? vec4(0.44, 0.38, 0.3, 0.8) : vec4(0.04, 0.03, 0.02, 0.8);
   } else if (kind == 1) {
     if (g > 0.18 && !rim) discard;
     c = rim ? vec4(0.92, 0.78, 0.42, 0.55) : vec4(0.86, 0.7, 0.36, 0.9);

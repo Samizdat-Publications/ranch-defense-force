@@ -53,12 +53,14 @@
 .hud-hp {
   position: relative;
   width: calc(230 * var(--u)); height: calc(20 * var(--u));
-  background: #231a10;
+  background: #1f0d0a;
   border: calc(2 * var(--u)) solid #120d08;
   overflow: hidden;
 }
 .hud-hp-chase, .hud-hp-fill { position: absolute; left: 0; top: 0; bottom: 0; }
-.hud-hp-chase { background: #efe2c4; transition: width 0.55s ease-in 0.12s; }
+/* The chase is the hit you just took, draining after it. Cream read as
+   'full' and swallowed the white numbers (critic round 3); a dim ember does not. */
+.hud-hp-chase { background: #7a3322; transition: width 0.55s ease-in 0.12s; }
 .hud-hp-fill {
   background: linear-gradient(180deg, #d0463a 0%, #a3281f 55%, #7f1c15 100%);
   transition: width 0.08s linear;
@@ -67,8 +69,8 @@
 @keyframes hud-hp-pulse { 50% { filter: brightness(1.45); } }
 .hud-hp-text {
   position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: calc(12 * var(--u)); letter-spacing: 0.06em;
-  color: #fff4dc; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
+  font-size: calc(13 * var(--u)); letter-spacing: 0.06em;
+  color: #fff4dc; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000, 0 0 calc(4 * var(--u)) #000;
 }
 
 .hud-xp-row { display: flex; align-items: center; gap: calc(6 * var(--u)); }
@@ -286,6 +288,10 @@
   display: flex; flex-direction: column; align-items: center; gap: calc(6 * var(--u));
   opacity: 0; pointer-events: none;
   text-align: center; white-space: nowrap;
+  /* A band of dusk behind the card, so it never prints straight over the
+     player or a crowd. */
+  padding: calc(14 * var(--u)) calc(90 * var(--u)) calc(16 * var(--u));
+  background: linear-gradient(90deg, rgba(12, 9, 6, 0) 0%, rgba(12, 9, 6, 0.74) 20%, rgba(12, 9, 6, 0.74) 80%, rgba(12, 9, 6, 0) 100%);
 }
 .hud-banner.show { animation: hud-banner 3.6s var(--ease-out) both; }
 .hud-banner-wave {

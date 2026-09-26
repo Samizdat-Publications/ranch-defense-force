@@ -158,7 +158,7 @@ export class Diorama {
       // Along the farmstead, coop to bunkhouse and back, buildings whole.
       // Barn to farmhouse, buildings standing in the upper half and the yard
       // below them, where the signs stand.
-      const hx = 1290 + Math.sin(t * 0.03) * 380
+      const hx = 1290 + Math.sin(t * 0.03) * 200
       r.holdCamera = { x: Math.round(hx - vw / 2), y: Math.round(-40 - vh * 0.52) }
     } else {
       const cx = 1180 + Math.sin(t * 0.045) * 190

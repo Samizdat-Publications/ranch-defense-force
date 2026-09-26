@@ -23,8 +23,11 @@ export default defineConfig(({ command }) => ({
     port: 5173,
     // The photo tour starts its own server with RDF_NO_HMR set: without it, any
     // file saved elsewhere while a tour runs hot-reloads the page mid-scenario.
+    // Watching stays ON: with no HMR socket nothing reloads an open page, and a
+    // server that stops watching keeps serving the code it first transformed,
+    // so the next page load photographs stale code (this cost a round in v2).
     hmr: process.env.RDF_NO_HMR ? false : undefined,
-    watch: process.env.RDF_NO_HMR ? null : { ignored: AGENT_DIRS },
+    watch: { ignored: AGENT_DIRS },
   },
   test: {
     exclude: [...configDefaults.exclude, ...AGENT_DIRS],

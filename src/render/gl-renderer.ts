@@ -481,9 +481,9 @@ export class GLRenderer {
       // (a body, a longer smear, a few flecks) rather than a pixel of static.
       if (((h >> 12) % STAIN_KEEP) !== 0) continue
       const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
-      const a = 0.4 + ((h >> 3) & 3) * 0.06
-      const w0 = 3 + ((h >> 5) & 1)
-      const h0 = 2 + ((h >> 6) & 1)
+      const a = 0.5 + ((h >> 3) & 3) * 0.06
+      const w0 = 5 + ((h >> 5) & 3)
+      const h0 = 3 + ((h >> 6) & 1)
       batch.push(x - 1, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
       batch.push(x, y - 1, 0, 0, w0 - 2, h0 + 2, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
       const sx = ((h >> 7) & 1) ? 1 : -1
@@ -1168,7 +1168,7 @@ export class GLRenderer {
       const y = e.py + (e.y - e.py) * alpha
       const dx = Math.cos(e.facing)
       const dy = Math.sin(e.facing)
-      L.cone(x + dx * 30, y - 20 + dy * 16, 300, 1, 0.94, 0.78, 0.25 + 1.1 * night, dx, dy, 0.94, 0.8, 1)
+      L.cone(x + dx * 60, y - 20 + dy * 30, 260, 1, 0.9, 0.7, 0.12 + 0.55 * night, dx, dy, 0.9, 0.8, 1)
       L.point(x, y - 30, 90, 1, 0.6, 0.3, 0.2 + 0.4 * night)
     }
   }
@@ -1224,7 +1224,10 @@ export class GLRenderer {
       if (fi >= len) fi = len - 1
       const frame = strip[fi]
       if (!frame) continue
-      this.spr(frame, e.x, e.y, 0, 0, e.rotation, e.scale, e.scale, 1, 0)
+      // Never a fractional upscale: 1.2x doubles every fifth pixel and the
+      // effect reads at another pixel density from everything around it.
+      const s = e.scale >= 1.75 ? 2 : Math.min(1, e.scale)
+      this.spr(frame, e.x, e.y, 0, 0, e.rotation, s, s, 1, 0)
     }
   }
 
@@ -1374,9 +1377,13 @@ export class GLRenderer {
       const f = g.kind === 'gear' && g.itemId
         ? atlas?.get(itemCardSprite(g.itemId)) ?? atlas?.get('pickup.feed')
         : this.frames ? this.propFrame(this.frames.named.get('pickup', g.kind), g.x, g.y) : null
+      // Loot left lying settles into the ground: full strength for its first
+      // eight seconds, then down to 55% over twelve more, so a field of old
+      // drops stops shouting over the fight. `bob` only runs while it lies.
+      const settle = g.magnetised ? 1 : 1 - Math.min(0.45, Math.max(0, g.bob - 8) / 12 * 0.45)
       if (f) {
         const xp = g.kind === 'xp'
-        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, 1, 0, NO_OUTLINE,
+        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, settle, 0, NO_OUTLINE,
           xp ? XP_TINT[0] : 1, xp ? XP_TINT[1] : 1, xp ? XP_TINT[2] : 1)
       } else {
         const c = g.kind === 'xp' ? COL.xp : COL.feed

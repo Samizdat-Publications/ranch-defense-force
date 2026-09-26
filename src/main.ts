@@ -623,7 +623,13 @@ function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
 
   const pilot = new Autopilot()
   const steps = Math.max(0, Math.round(seconds * 60))
+  // Blood that lands while nothing draws would all be stamped by the next
+  // frame at once, with none of the weathering play gives it: a photograph of
+  // a whole run's gore on one ground. Keep what the last fifteen seconds left.
+  const bloodFrom = steps - 15 * 60
+  let bloodMark = 0
   for (let i = 0; i < steps && !w.over; i++) {
+    if (i === bloodFrom) bloodMark = w.stains.length
     // Invulnerable only catches the fall: the hp a photo shows is a real one.
     if (opts.invulnerable && w.player.hp < w.player.stats.maxHp * 0.35) w.player.hp = w.player.stats.maxHp * 0.55
 
@@ -647,6 +653,8 @@ function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
     }
   }
 
+  if (bloodMark > 0) w.stains.splice(0, bloodMark)
+
   return {
     wave: w.spawner.wave,
     hp: Math.round(w.player.hp),
@@ -668,6 +676,9 @@ function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
 function renderNow(): void {
   if (state === 'menu' || state === 'homestead') { diorama?.draw(0); return }
   if (!renderer || !world) return
+  // A fast-forward steps the sim without drawing, so the camera is still
+  // wherever the last real frame left it. Put it on the player, as play would.
+  if (heldForTour && !(renderer instanceof GLRenderer && renderer.holdCamera)) renderer.camera.snapTo(world.player.x, world.player.y)
   renderer.draw(1, shakeRand)
   hud?.setVisible(state === 'playing' || state === 'levelup' || state === 'paused')
   hud?.setCovered(state === 'levelup' || state === 'paused')
@@ -724,8 +735,8 @@ Object.assign(window as unknown as Record<string, unknown>, {
       const p = world.player
       const cam = renderer.camera
       renderer.holdCamera = {
-        x: Math.round((b.x + p.x) / 2 - cam.viewW / 2),
-        y: Math.round((b.y + p.y) / 2 - cam.viewH / 2),
+        x: Math.round(b.x * 0.62 + p.x * 0.38 - cam.viewW / 2),
+        y: Math.round(b.y * 0.62 + p.y * 0.38 - cam.viewH / 2),
       }
       return true
     },

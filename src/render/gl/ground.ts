@@ -83,12 +83,14 @@ int terrainAt(vec2 w, out float grassPick) {
   float fine = n(w, 23.0);
   float grain = hash(floor(w));
   grassPick = big * 0.75 + mid * 0.25;
-  float jitter = (mid - 0.5) * 0.22 + (fine - 0.5) * 0.16 + (grain - 0.5) * 0.07;
+  // No per-pixel grain in the edge: it frayed every boundary into speckle,
+  // which read as a masking bug (critic round 3). Edges wobble, they do not fizz.
+  float jitter = (mid - 0.5) * 0.22 + (fine - 0.5) * 0.16 + (grain - 0.5) * 0.0;
   if (L.b + jitter * 0.6 > 0.5) return 4;
   if (L.a + jitter > 0.5) return 3;
   if (L.g + ((mid - 0.5) * 0.22 + (fine - 0.5) * 0.08) * 0.7 > 0.5) return 2;
   // Worn patches in open field too, not only where the layout draws a path.
-  float wear = L.r + max(0.0, mid - 0.74) * 2.2;
+  float wear = L.r + max(0.0, mid - 0.8) * 2.2;
   if (wear + jitter > 0.5) return 1;
   return 0;
 }
@@ -127,7 +129,16 @@ void main() {
   } else if (t == 3) {
     c = tile(5, p);
   } else if (t == 2) {
-    c = tile(4, p);
+    // Ploughed ground: furrows across the plot, seven pixels apart, from a
+    // soil ramp. The tile only adds grain. The wang tiles for tilled soil
+    // either carry transparent holes or read as camouflage at this scale.
+    float row = mod(w.y, 7.0);
+    vec3 ridge = vec3(0.40, 0.29, 0.18);
+    vec3 s = row < 1.0 ? ridge * 1.18 : (row < 3.0 ? ridge : (row < 5.0 ? ridge * 0.8 : ridge * 0.56));
+    float grit = dot(tile(4, p).rgb, vec3(0.333));
+    s *= 0.86 + grit * 0.32;
+    if (row >= 1.0 && row < 3.0 && hash(floor(w / vec2(4.0, 1.0)) + 5.0) > 0.9) s *= 0.78;
+    c = vec4(s, 1.0);
   } else if (t == 1) {
     c = tile(3, p);
   } else {
@@ -188,7 +199,7 @@ void main() {
   // The ground sits back: a touch darker and less saturated than the art
   // that stands on it, so the cast reads against it at any hour.
   float luma = dot(c.rgb, vec3(0.299, 0.587, 0.114));
-  c.rgb = mix(vec3(luma), c.rgb, 0.82) * 0.9;
+  c.rgb = mix(vec3(luma), c.rgb, 0.88) * 0.9;
   oColor = vec4(c.rgb, 1.0);
   oEmissive = vec4(0.0);
 }`
