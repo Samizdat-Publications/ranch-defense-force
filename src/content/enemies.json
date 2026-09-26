@@ -493,7 +493,8 @@
     "behaviour": "duster",
     "knockbackImmune": true,
     "boss": true,
-    "drawScale": 1,
+    "drawScale": 2,
+    "_drawScaleNote": "Drawn at 2x since v2 critic round 2: at 1x the final boss read smaller than the Prize Bull (97px at 2x) and much like the farm's own tractor. Render only; the hitbox is `radius`.",
     "animFrameScale": 0.45,
     "special": {
       "_note": "Phase 2 starts below phase2BelowPct. gasEvery is how often it drops a strip; the strip is a real gas hazard and hurts you exactly like a Bloated Farmhand cloud.",

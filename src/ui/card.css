@@ -337,8 +337,12 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--label);
-  font-size: 9px;
-  letter-spacing: 0.18em;
+  /* Was 9px: the "LOT 44" / stack line this carries is unscaled by any
+     stage transform (shop and level-up draw `.pcard` at native size), so
+     9px was 9px on every screen. 12px with a tighter tracking keeps the
+     stamped-line look at a size that reads. */
+  font-size: 12px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-label);
 }

@@ -190,10 +190,18 @@
   color: var(--ink);
 }
 
+/*
+   Was 7.5px. The Homestead's stage is scaled by `--scene` the same way the
+   title screen's is (about 0.83 at a 1600x900 viewport), so this subtitle
+   under the sign name landed on screen at roughly 6px, effectively unread.
+   15px clears 12px effective at that scale; the tracking comes down a
+   little so the wider count strings ("BUY NOW · FROM 40 ACRES") still sit
+   comfortably in the sign.
+*/
 .phome-sign-count {
   font-family: var(--label);
-  font-size: 7.5px;
-  letter-spacing: 0.1em;
+  font-size: 15px;
+  letter-spacing: 0.06em;
   color: #6b5840;
   margin-top: 4px;
 }
@@ -304,7 +312,12 @@
 }
 .phome-sign-price.is-open { color: #2f5d1f; background: rgba(63, 104, 39, 0.16); }
 
-/* Over the live farm: no painted barn, a dusk wash so the signs read. */
+/* Over the live farm: no painted barn, a dusk wash so the signs read. The
+   painted scene's ground panel (::after) goes too, or it hides the farm's
+   lower half. */
+.phome.is-live::after { display: none; }
+/* `.screen` blurs whatever is behind it; here that is the scene itself. */
+.phome.is-live { backdrop-filter: none; }
 .phome.is-live {
   background:
     linear-gradient(180deg, rgba(10, 8, 6, 0.7) 0%, rgba(10, 8, 6, 0.15) 22%, rgba(10, 8, 6, 0) 45%),

@@ -37,6 +37,24 @@
   animation: psheet-in 420ms var(--ease-out) both;
 }
 
+/*
+   The sheet is printed matter; the default scrollbar is a browser-chrome
+   grey stripe that belongs to no surface in this design. Both properties
+   are needed: `scrollbar-color` is Firefox's whole API, the `::-webkit-*`
+   pseudo-elements are Chrome/Edge/Safari's, and neither reads the other.
+*/
+.psheet {
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-flat) var(--wood-dark);
+}
+.psheet::-webkit-scrollbar { width: 10px; }
+.psheet::-webkit-scrollbar-track { background: var(--wood-dark); }
+.psheet::-webkit-scrollbar-thumb {
+  background: var(--paper-flat);
+  border: 2px solid var(--wood-dark);
+}
+.psheet::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
 @keyframes psheet-in {
   from { opacity: 0; transform: translateY(26px); }
   to { opacity: 1; transform: none; }
@@ -81,8 +99,11 @@
 
 .psheet-hint {
   font-family: var(--label);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  /* Was 11px, unscaled: pause and results are plain centred overlays, not
+     stage-transformed, so 11px was the whole story. 13px with a touch less
+     tracking keeps it reading as a small aside rather than a heading. */
+  font-size: 13px;
+  letter-spacing: 0.1em;
   color: var(--ink-label);
   text-transform: uppercase;
   white-space: nowrap;
@@ -155,6 +176,13 @@
   display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;
   max-height: 168px; overflow-y: auto; overflow-x: hidden;
   padding-right: 4px; scrollbar-width: thin;
+  scrollbar-color: var(--paper-flat) var(--wood-dark);
+}
+.psheet-chips::-webkit-scrollbar { width: 8px; }
+.psheet-chips::-webkit-scrollbar-track { background: var(--wood-dark); }
+.psheet-chips::-webkit-scrollbar-thumb {
+  background: var(--paper-flat);
+  border: 1px solid var(--wood-dark);
 }
 
 .psheet-chip {
@@ -274,7 +302,16 @@
   background: rgba(10, 8, 6, 0.72);
   z-index: 6;
   pointer-events: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-flat) var(--wood-dark);
 }
+.results-wrap::-webkit-scrollbar { width: 10px; }
+.results-wrap::-webkit-scrollbar-track { background: var(--wood-dark); }
+.results-wrap::-webkit-scrollbar-thumb {
+  background: var(--paper-flat);
+  border: 2px solid var(--wood-dark);
+}
+.results-wrap::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
 /*
    THE RESULTS SCREEN OWNS ITS OWN SCROLLING, so the generic `.screen-inner`
@@ -296,6 +333,7 @@
 }
 
 .results {
+  position: relative;
   width: min(1080px, 94vw);
   padding: 3vh 0;
   animation: psheet-in 480ms var(--ease-out) both;
@@ -318,6 +356,83 @@
   font-family: var(--body);
   margin: 6px 0 0;
 }
+
+/*
+   Win vs lose (screenshot critic): the two used to render almost
+   identically, same dark field and copy weight, so nothing on the screen
+   itself said which one you were looking at without reading the words.
+*/
+.results-eyebrow {
+  font-family: var(--label);
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+/* A stamped ribbon, reusing the acres stamp's own arrival beat rather than
+   inventing a second one. */
+.results-ribbon {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 6px 26px;
+  font-family: var(--label);
+  font-size: 15px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #2b1d08;
+  background: var(--gold-brand);
+  border-top: 2px solid var(--paper-edge-gold);
+  border-bottom: 2px solid var(--paper-edge-gold);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  transform: rotate(-2deg);
+  animation: stamp-in 460ms cubic-bezier(0.2, 1.5, 0.4, 1) both 260ms;
+}
+
+/* Dawn gold: a warm glow bled in from the top of the panel, behind
+   everything, plus a gold headline so the win reads as good news the
+   instant the screen appears rather than a beat later, off the acres
+   stamp alone. */
+.results.is-win::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -36px;
+  width: 90%;
+  max-width: 960px;
+  height: 160px;
+  margin-left: -45%;
+  background: radial-gradient(closest-side, rgba(224, 160, 46, 0.3), rgba(224, 160, 46, 0) 72%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.results.is-win .results-title {
+  color: var(--gold);
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.5), 0 0 30px rgba(224, 160, 46, 0.45);
+}
+
+/* Loss: the same dark stock, with the one accent colour in the game
+   pulled toward the desaturated brick red `--cost` already uses for
+   danger, instead of sharing the win's gold. */
+.results.is-lose::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  width: 90%;
+  max-width: 940px;
+  height: 120px;
+  margin-left: -45%;
+  background: radial-gradient(closest-side, rgba(142, 50, 41, 0.22), rgba(142, 50, 41, 0) 72%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.results.is-lose .results-title { color: #d9c7ba; }
+.results.is-lose .psheet { border-color: var(--cost); }
+.results.is-lose .psheet-hint { color: var(--cost); }
 
 .results-grid {
   display: grid;

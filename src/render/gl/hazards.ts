@@ -87,15 +87,17 @@ void main() {
     float swirl = texture(uNoise, (w + vec2(uTime * 5.0, uTime * 3.0)) / 34.0).r
                 * 0.6 + texture(uNoise, (w - vec2(uTime * 4.0, 0.0)) / 13.0).r * 0.4;
     float band = floor(swirl * 4.0) / 4.0;
-    c = vec4(mix(vec3(0.55, 0.62, 0.22), vec3(0.86, 0.92, 0.46), band), 0.18 + band * 0.22);
-    if (rim) c = vec4(0.9, 0.96, 0.55, 0.75 * pulse);
-    glow = 0.04;
+    // Murk, not neon: a gas you can see the ground through, with a rim that
+    // says where it stops. Round 2 found the old one the brightest thing on screen.
+    c = vec4(mix(vec3(0.42, 0.46, 0.2), vec3(0.66, 0.7, 0.36), band), 0.12 + band * 0.16);
+    if (rim) c = vec4(0.72, 0.78, 0.42, 0.55 * pulse);
+    glow = 0.02;
   } else if (kind == 3) {
-    c = vec4(0.36, 0.72, 0.16, 0.66);
+    c = vec4(0.28, 0.5, 0.13, 0.44);
     float bub = hash(floor(w / 3.0) + floor(uTime * 3.0) * 7.0 + seed);
-    if (bub > 0.94) c.rgb = vec3(0.78, 1.0, 0.5);
-    if (rim) c = vec4(0.7, 1.0, 0.42, 0.9 * pulse);
-    glow = 0.35;
+    if (bub > 0.95) c = vec4(0.6, 0.84, 0.34, 0.7);
+    if (rim) c = vec4(0.5, 0.76, 0.28, 0.75 * pulse);
+    glow = 0.12;
   } else {
     c = vec4(0.12, 0.07, 0.05, 0.55);
     float ember = hash(w + floor(uTime * 8.0) * 3.1 + seed);

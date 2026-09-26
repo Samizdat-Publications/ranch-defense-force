@@ -28,6 +28,15 @@ const MAX_WEIGHED = 80
 const STRAFE_RATE = 0.6
 /** How far from an arena edge the pull-back starts. */
 const EDGE_MARGIN = 160
+/** Nothing inside this radius means it is safe to go shopping for pickups. */
+const GREED_SAFE = 150
+/** How hard a pickup pulls, against 1 for "away from the crowd". A person
+ *  playing walks into their gems; a bot that never does leaves the field a
+ *  carpet of them, and the photographs show a game nobody plays. */
+const GREED_PULL = 1.4
+/** A gentle pull toward the middle of the arena, so kiting circles the field
+ *  rather than pinning itself against a fence (and the camera with it). */
+const CENTRE_PULL = 0.35
 
 export class Autopilot {
   private strafePhase = 0
@@ -79,6 +88,40 @@ export class Autopilot {
         const strafe = Math.sin(this.strafePhase)
         moveX = awayX + strafeX * strafe * 0.6
         moveY = awayY + strafeY * strafe * 0.6
+      }
+    }
+
+    // Greed: walk to the nearest pickup when nothing is about to land a hit.
+    let nearest = Infinity
+    for (let i = 0; i < n; i++) {
+      const e = world.enemies.items[i]
+      const d = Math.hypot(e.x - p.x, e.y - p.y)
+      if (d < nearest) nearest = d
+    }
+    if (nearest > GREED_SAFE && world.pickups.live > 0) {
+      let best = -1
+      let bestD = Infinity
+      for (let i = 0; i < world.pickups.live; i++) {
+        const g = world.pickups.items[i]
+        const d = Math.hypot(g.x - p.x, g.y - p.y)
+        if (d < bestD) { bestD = d; best = i }
+      }
+      if (best >= 0) {
+        const g = world.pickups.items[best]
+        const d = bestD || 1
+        const k = GREED_PULL * Math.min(1, (nearest - GREED_SAFE) / GREED_SAFE)
+        moveX += ((g.x - p.x) / d) * k
+        moveY += ((g.y - p.y) / d) * k
+      }
+    }
+    {
+      const dx = world.arenaW / 2 - p.x
+      const dy = world.arenaH / 2 - p.y
+      const d = Math.hypot(dx, dy)
+      if (d > 1) {
+        const k = CENTRE_PULL * Math.min(1, d / (Math.min(world.arenaW, world.arenaH) * 0.5))
+        moveX += (dx / d) * k
+        moveY += (dy / d) * k
       }
     }
 

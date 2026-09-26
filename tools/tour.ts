@@ -171,6 +171,11 @@ async function untilBoss(page: Page): Promise<void> {
   await ff(page, 3, true)
 }
 
+/** Photograph the run at a representative health (see `rdf.stageHp`). */
+async function stageHp(page: Page, frac: number): Promise<void> {
+  await page.evaluate(`window.rdf.stageHp(${frac})`)
+}
+
 /** Freeze the loop, draw one frame synchronously, and save it. */
 async function freezeAndShoot(page: Page, file: string): Promise<void> {
   await page.evaluate('window.rdf.hold(true); window.rdf.renderNow();')
@@ -232,7 +237,9 @@ const SCENARIOS: Scenario[] = [
     file: '05-run-mid.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      return ff(page, waveStart(7) + 30)
+      const s = await ff(page, waveStart(7) + 30)
+      await stageHp(page, 0.78)
+      return s
     },
   },
   {
@@ -244,6 +251,7 @@ const SCENARIOS: Scenario[] = [
       // its first ever wave-12 crowd is least likely to survive on its own.
       const s = await ff(page, waveStart(FIRST_BOSS_WAVE) - 1, true)
       await untilBoss(page)
+      await stageHp(page, 0.64)
       await page.evaluate('window.rdf.frameBoss()')
       return s
     },
@@ -253,7 +261,9 @@ const SCENARIOS: Scenario[] = [
     file: '07-run-late.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      return ff(page, waveStart(17) + 32, true)
+      const s = await ff(page, waveStart(17) + 32, true)
+      await stageHp(page, 0.52)
+      return s
     },
   },
   {
@@ -261,7 +271,9 @@ const SCENARIOS: Scenario[] = [
     file: '08-run-night.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      return ff(page, waveStart(22) + 32, true)
+      const s = await ff(page, waveStart(22) + 32, true)
+      await stageHp(page, 0.41)
+      return s
     },
   },
   {
@@ -271,6 +283,7 @@ const SCENARIOS: Scenario[] = [
       await page.evaluate(startRunJs())
       const s = await ff(page, waveStart(FINAL_BOSS_WAVE) - 1, true)
       await untilBoss(page)
+      await stageHp(page, 0.33)
       await page.evaluate('window.rdf.frameBoss()')
       return s
     },

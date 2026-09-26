@@ -114,24 +114,41 @@ void main() {
   // player stays findable inside a crowd.
   bool outlineOnly = vTint.a < 0.0;
   if (outlineOnly && c.a >= 0.02) discard;
+  // Outline alpha above 1 carries the curse: how far toward a cold corpse
+  // pallor the sprite is pushed (enemies). The outline itself caps at 1.
+  float curse = clamp(vOutline.a - 1.0, 0.0, 1.0);
+  float outlineA = min(vOutline.a, 1.0);
   if (c.a < 0.02) {
-    if (vOutline.a <= 0.0) discard;
+    if (outlineA <= 0.0) discard;
     float n = fetch(t + ivec2(1, 0)).a + fetch(t - ivec2(1, 0)).a
             + fetch(t + ivec2(0, 1)).a + fetch(t - ivec2(0, 1)).a;
     if (n < 0.5) discard;
-    c = vec4(vOutline.rgb, vOutline.a * (outlineOnly ? 1.0 : vTint.a));
+    c = vec4(vOutline.rgb, outlineA * (outlineOnly ? 1.0 : vTint.a));
     oColor = vec4(c.rgb * c.a, c.a);
-    oEmissive = vec4(0.0);
+    // A cursed thing after dark keeps a faint moonlit rim of its own, so the
+    // crowd past the lantern is a crowd and not an empty field.
+    float rim = curse > 0.0 ? max(0.0, -vFx.y - 0.5) : 0.0;
+    oEmissive = vec4(c.rgb * c.a * rim, c.a * rim);
     return;
   }
   // A negative emissive means: only the eyes glow. Bright yellow or red
   // pixels on a creature are its eyes, and they are what you see of it in
   // the dark before the lantern reaches it.
   float em = vFx.y;
+  float eye = 0.0;
   if (em < 0.0) {
     float yellow = (c.r > 0.72 && c.g > 0.6 && c.b < 0.45 && (c.r + c.g) * 0.5 - c.b > 0.38) ? 1.0 : 0.0;
     float red = (c.r > 0.72 && c.g < 0.3 && c.b < 0.3) ? 1.0 : 0.0;
-    em = max(yellow, red) * -em;
+    eye = max(yellow, red);
+    em = eye * -em;
+  }
+  if (curse > 0.0) {
+    // Drained and cold, lifted a little so a body reads against warm ground;
+    // the eyes keep their colour, which is the point of them.
+    float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
+    vec3 pale = vec3(l) * vec3(0.92, 1.04, 0.96) * 1.1 + vec3(0.02, 0.04, 0.03);
+    c.rgb = mix(c.rgb, pale, curse * (1.0 - eye));
+    c.rgb = mix(c.rgb, vec3(1.0, 0.86, 0.36), eye * curse * 0.6);
   }
   c.rgb = mix(c.rgb, vec3(1.0, 0.96, 0.88), vFx.x);
   c *= vTint;

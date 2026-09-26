@@ -434,6 +434,7 @@ const loop = new Loop(
       renderer.draw(alpha, shakeRand)
       // A screen that owns the view (shop, results) gets it without the HUD over it.
       hud?.setVisible(state === 'playing' || state === 'levelup' || state === 'paused')
+  hud?.setCovered(state === 'levelup' || state === 'paused')
       hud?.update(world)
       dev.update(loop, world, renderer)
     }
@@ -669,6 +670,7 @@ function renderNow(): void {
   if (!renderer || !world) return
   renderer.draw(1, shakeRand)
   hud?.setVisible(state === 'playing' || state === 'levelup' || state === 'paused')
+  hud?.setCovered(state === 'levelup' || state === 'paused')
   hud?.update(world)
 }
 
@@ -728,6 +730,15 @@ Object.assign(window as unknown as Record<string, unknown>, {
       return true
     },
     bossUp: (): boolean => !!world?.findBoss(),
+    /**
+     * Tour only: set the player's health to a fraction of max for the photo.
+     * The bot kites better than a person plays, so a fast-forwarded run is
+     * always at full health, and a photograph of a fight with nothing at
+     * stake misrepresents the game as badly as one lit at the wrong hour.
+     */
+    stageHp: (frac: number): void => {
+      if (world) world.player.hp = Math.max(1, Math.round(world.player.stats.maxHp * frac))
+    },
     renderNow,
   },
 })

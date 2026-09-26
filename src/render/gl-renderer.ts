@@ -45,6 +45,12 @@ const INJURED_BELOW = (TUNING.combat.injuredBelowPct as number) / 100
 const RENDER = (TUNING as unknown as { render?: Record<string, number> }).render ?? {}
 /** Height of the world view in art pixels, whatever the window size. */
 const VIEW_H = RENDER.viewHeight ?? 540
+const RENDER_ANY = (TUNING as unknown as { render?: Record<string, unknown> }).render ?? {}
+const PALLOR = RENDER.enemyPallor ?? 0
+const EYE_DAY = RENDER.eyeGlowDay ?? 0
+const XP_TINT = (RENDER_ANY.xpTint as number[] | undefined) ?? [1, 1, 1]
+const STAIN_KEEP = Math.max(1, Math.round(RENDER.stainKeep ?? 3))
+const STAIN_WEATHER = RENDER.stainWeather ?? 0.94
 
 const JAB = TUNING.fx.jab as {
   tines: number; tineSpacing: number; lengthFraction: number
@@ -158,6 +164,8 @@ export class GLRenderer {
   holdCamera: { x: number; y: number } | null = null
   dayOverride: number | null = null
   hidePlayer = false
+  /** Pins how far the blight has come in (0..1), whatever the hour; null follows the day. */
+  blightOverride: number | null = null
   /** World view height in art pixels; the diorama shoots closer than the game. */
   viewHeight = VIEW_H
   /** Added to the whole frame (lightning). */
@@ -172,6 +180,9 @@ export class GLRenderer {
   private readonly cp = newCompositeParams()
   /** Enemy outline this frame: dark by day, moonlight by night. */
   private readonly enemyOutline: RGBA = [0, 0, 0, 0]
+  /** The same outline, alpha 1 + pallor: the sprite shader reads the excess as the curse. */
+  private readonly cursedOutline: RGBA = [0, 0, 0, 0]
+  private readonly cursedElite: RGBA = [0, 0, 0, 0]
   private readonly fogRgb = [0, 0, 0]
   private readonly decals: Target
   private scenery: Placed[] = []
@@ -329,7 +340,13 @@ export class GLRenderer {
     const day = evaluateDay(this.dayOverride ?? dayProgress(w), this.day)
     const moon = COL.outlineMoon
     const dark = COL.outlineEnemy
-    for (let c = 0; c < 4; c++) this.enemyOutline[c] = dark[c] + (moon[c] - dark[c]) * day.night
+    for (let c = 0; c < 4; c++) {
+      this.enemyOutline[c] = dark[c] + (moon[c] - dark[c]) * day.night
+      this.cursedOutline[c] = this.enemyOutline[c]
+      this.cursedElite[c] = COL.outlineElite[c]
+    }
+    this.cursedOutline[3] = 1 + PALLOR
+    this.cursedElite[3] = 1 + PALLOR
 
     this.flushStains()
 
@@ -342,8 +359,9 @@ export class GLRenderer {
     if (this.place && this.tiles && this.layout) {
       const L = this.layout
       const blight = Math.min(1, Math.max(0, (day.t - 0.35) / 0.65))
+      const turned = this.blightOverride ?? blight * blight * (3 - 2 * blight)
       dev.ground.draw(dev.atlasTexture, dev.noise, this.tiles, L.x, L.y, L.worldW, L.worldH,
-        w.arenaW, w.arenaH, blight * blight * (3 - 2 * blight), w.elapsed,
+        w.arenaW, w.arenaH, turned, w.elapsed,
         this.vx, this.vy, this.tw, this.th)
     } else if (this.terrainTex) {
       dev.texQuad(this.terrainTex, 0, 0, w.arenaW, w.arenaH, 0, 0, 1, 1, this.vx, this.vy, this.tw, this.th)
@@ -371,6 +389,8 @@ export class GLRenderer {
     this.drawJabs()
     this.flushShapes()
     this.sortAndDraw(day.shadowX, day.shadowY, day.shadowAlpha)
+    this.drawDusterPlume(alpha)
+    this.flushShapes()
 
     this.drawEffects(false)
     this.drawPickups(alpha)
@@ -446,7 +466,7 @@ export class GLRenderer {
     const clock = Math.floor(this.world.elapsed / 2)
     if (clock !== this.lastWeather) {
       this.lastWeather = clock
-      this.dev.weatherDecals(0.94)
+      this.dev.weatherDecals(STAIN_WEATHER)
     }
     const s = this.world.stains
     if (s.length === 0) return
@@ -457,15 +477,19 @@ export class GLRenderer {
       const col = s[i + 2]
       const acid = ((col >> 8) & 255) > ((col >> 16) & 255)
       const h = ((x * 73856093) ^ (y * 19349663)) >>> 0
-      // Two drops in three soak in without a mark.
-      if (((h >> 12) % 3) !== 0) continue
+      // Most drops soak in without a mark; the ones that land make a splat
+      // (a body, a longer smear, a few flecks) rather than a pixel of static.
+      if (((h >> 12) % STAIN_KEEP) !== 0) continue
       const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
-      const a = 0.42 + ((h >> 3) & 3) * 0.07
-      const w0 = 2 + ((h >> 5) & 1)
+      const a = 0.4 + ((h >> 3) & 3) * 0.06
+      const w0 = 3 + ((h >> 5) & 1)
       const h0 = 2 + ((h >> 6) & 1)
-      batch.push(x, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
-      if ((h >> 7) & 1) batch.push(x + 1 + ((h >> 8) & 1), y + h0, 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
-      if ((h >> 9) & 1) batch.push(x - 1, y + ((h >> 10) & 1), 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.8, 0, 0, 0, 0, 0, 0)
+      batch.push(x - 1, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
+      batch.push(x, y - 1, 0, 0, w0 - 2, h0 + 2, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
+      const sx = ((h >> 7) & 1) ? 1 : -1
+      batch.push(x + sx * (w0 + 1), y + ((h >> 8) & 1), 0, 0, 2, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.85, 0, 0, 0, 0, 0, 0)
+      if ((h >> 9) & 1) batch.push(x - sx * 3, y + h0 + 1, 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.8, 0, 0, 0, 0, 0, 0)
+      if ((h >> 10) & 1) batch.push(x + sx * 2, y - 3, 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.7, 0, 0, 0, 0, 0, 0)
     }
     s.length = 0
     this.decals.bind()
@@ -749,12 +773,13 @@ export class GLRenderer {
       it.colour = e.elite ? COL.enemyElite : COL.enemy
       it.w = e.radius * 2
       it.h = e.radius * 2
-      it.outline = e.elite ? COL.outlineElite : this.enemyOutline
+      const bossDef = ENEMIES[e.typeId] as { drawScale?: number; deathSeconds?: number; boss?: boolean } | undefined
+      // The cast is cursed; a boss is a thing in its own right and keeps its colours.
+      it.outline = bossDef?.boss ? this.enemyOutline : e.elite ? this.cursedElite : this.cursedOutline
       it.caster = true
       it.contact = true
-      it.emissive = -this.day.night
+      it.emissive = -Math.max(EYE_DAY, this.day.night)
 
-      const bossDef = ENEMIES[e.typeId] as { drawScale?: number; deathSeconds?: number } | undefined
       const bossScale = Math.round(bossDef?.drawScale ?? 1)
       if (bossScale > 1 || e.typeId === 'duster') it.flash *= 0.4
       const scale = (e.elite ? 1.5 : 1) * bossScale
@@ -1126,14 +1151,14 @@ export class GLRenderer {
       }
     }
 
-    const gem = 0.03 + 0.28 * night
+    const gem = 0.02 + 0.1 * night
     for (let i = 0; i < w.pickups.live; i++) {
       const g = w.pickups.items[i]
       if (g.kind !== 'xp') continue
       const x = g.px + (g.x - g.px) * alpha
       const y = g.py + (g.y - g.py) * alpha
       if (x < left || x > right || y < top || y > bottom) continue
-      L.point(x, y, 18, 0.45, 1, 0.6, gem)
+      L.point(x, y, 14, 0.4, 0.9, 1, gem)
     }
 
     for (let i = 0; i < w.enemies.live; i++) {
@@ -1145,6 +1170,36 @@ export class GLRenderer {
       const dy = Math.sin(e.facing)
       L.cone(x + dx * 30, y - 20 + dy * 16, 300, 1, 0.94, 0.78, 0.25 + 1.1 * night, dx, dy, 0.94, 0.8, 1)
       L.point(x, y - 30, 90, 1, 0.6, 0.3, 0.2 + 0.4 * night)
+    }
+  }
+
+  /**
+   * The Duster trails its spray: a drift of sour yellow-green puffs off the
+   * boom behind it, so the thing reads as a crop-dusting rig and not the farm's
+   * tractor, and you can see which way it is heading from its wake. Pure
+   * function of the boss's position, heading and the sim clock.
+   */
+  private drawDusterPlume(alpha: number): void {
+    const w = this.world
+    const S = this.dev.shapes
+    for (let i = 0; i < w.enemies.live; i++) {
+      const e = w.enemies.items[i]
+      if (e.typeId !== 'duster' || e.dying > 0) continue
+      const x = e.px + (e.x - e.px) * alpha
+      const y = e.py + (e.y - e.py) * alpha
+      const bx = -Math.cos(e.facing)
+      const by = -Math.sin(e.facing)
+      const t = w.elapsed
+      const drift = (t * 26) % 18
+      for (let k = 0; k < 9; k++) {
+        const d = 58 + k * 18 + drift
+        const side = Math.sin(k * 1.9 + t * 1.3) * (4 + k * 2.4)
+        const px = x + bx * d - by * side
+        const py = y - 18 + by * d * 0.7 + bx * side - k * 2
+        const fade = 1 - (k + drift / 18) / 9
+        S.disc(Math.round(px), Math.round(py), 7 + k * 2.4, 0.64, 0.66, 0.32, 0.2 * fade)
+        S.disc(Math.round(px + 2), Math.round(py - 2), 4 + k * 1.6, 0.8, 0.82, 0.46, 0.12 * fade)
+      }
     }
   }
 
@@ -1320,7 +1375,9 @@ export class GLRenderer {
         ? atlas?.get(itemCardSprite(g.itemId)) ?? atlas?.get('pickup.feed')
         : this.frames ? this.propFrame(this.frames.named.get('pickup', g.kind), g.x, g.y) : null
       if (f) {
-        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, 1, 0)
+        const xp = g.kind === 'xp'
+        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, 1, 0, NO_OUTLINE,
+          xp ? XP_TINT[0] : 1, xp ? XP_TINT[1] : 1, xp ? XP_TINT[2] : 1)
       } else {
         const c = g.kind === 'xp' ? COL.xp : COL.feed
         const s = g.kind === 'xp' ? 5 : 7

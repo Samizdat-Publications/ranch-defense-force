@@ -83,6 +83,7 @@ export class Hud {
   private readonly banner: HTMLElement
   private readonly bannerWave: HTMLElement
   private readonly bannerLine: HTMLElement
+  private readonly bannerHint: HTMLElement
 
   private lastHp = -1
   private lastHpText = ''
@@ -132,7 +133,8 @@ export class Hud {
 
     this.bannerWave = el('div', { class: 'hud-banner-wave' })
     this.bannerLine = el('div', { class: 'hud-banner-line' })
-    this.banner = el('div', { class: 'hud-banner' }, [this.bannerWave, this.bannerLine])
+    this.bannerHint = el('div', { class: 'hud-banner-hint' })
+    this.banner = el('div', { class: 'hud-banner' }, [this.bannerWave, this.bannerLine, this.bannerHint])
 
     this.root = el('div', { class: 'hud' }, [
       this.banner,
@@ -231,6 +233,15 @@ export class Hud {
       const bossName = boss ? ENEMIES[boss]?.name : undefined
       this.bannerWave.textContent = bossName ? bossName : `Wave ${Math.min(wave, count - 1)}`
       this.bannerLine.textContent = announceFor(wave)
+      // The first wave also says how to play: the only teaching the game needs.
+      clear(this.bannerHint)
+      if (wave === 1) {
+        this.bannerHint.append(
+          el('kbd', { text: 'WASD' }), el('span', { text: ' move \u00b7 your weapons fire on their own \u00b7 ' }),
+          el('kbd', { text: 'SPACE' }), el('span', { text: ` ${p.def.ability.name} \u00b7 ` }),
+          el('kbd', { text: 'ESC' }), el('span', { text: ' pause' }),
+        )
+      }
       this.banner.classList.remove('show')
       // Only for a wave that arrived in play: a jump (a new run, a tour
       // fast-forward) should not leave a card hanging over the field.
@@ -339,6 +350,11 @@ export class Hud {
   }
 
   private shown = true
+
+  /** A sheet is open over the field: the wave card steps back so the two never overlap. */
+  setCovered(on: boolean): void {
+    this.root.classList.toggle('is-covered', on)
+  }
 
   setVisible(v: boolean): void {
     if (v === this.shown) return

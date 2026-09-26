@@ -3,7 +3,9 @@
 Handed to a fresh subagent with the tour screenshots after every milestone.
 The reviewer sees ONLY this brief and the images: never the code, the notes,
 or the plan. Keep the pitch and the rubric identical from round to round so
-the scores are comparable.
+the scores are comparable. (One factual edit, round 3: "green gems" became
+"seeds" when the XP pickup was re-tinted cyan; the pitch must not describe
+a colour the game no longer uses.)
 
 ---
 
@@ -21,7 +23,7 @@ livestock into cursed, shambling things. The tagline is "Work the field
 until the light goes." A run is one day: it starts at dawn and the light
 fails wave by wave until the last waves are fought at night by lantern
 light. You move with WASD; your weapons (farm tools and guns) fire on their
-own; you collect green gems (experience) and feed (money); you pick upgrade
+own; you collect seeds (experience) and feed (money); you pick upgrade
 cards when you level up and buy from a shop between waves; you survive 24
 waves and then a final boss, the Duster, an unmanned rusted crop-dusting
 machine. Tone: cute, with real stakes and pixel gore; rural gothic. The goal

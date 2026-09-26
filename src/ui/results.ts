@@ -60,20 +60,30 @@ export class ResultsScreen {
     }
 
     // Chips, not a comma list: the build is the thing you want to read back.
-    const chips = el('div', { class: 'psheet-chips' })
+    //
+    // A stackable item is one row per pickup in `p.items`: four Blood Meals
+    // taken is four entries, not one entry counted four times, so a chip
+    // per entry read as "Blood Meal" four times over. Grouped by the label
+    // itself (not the id) so a boosted copy, which already prints its own
+    // " 2x" suffix, keeps its own count rather than blending into the plain
+    // copies. A `Map` preserves the order each label was first seen.
+    const counts = new Map<string, number>()
     for (const w of p.weapons) {
-      chips.append(el('span', {
-        class: 'psheet-chip',
-        text: `${WEAPONS[w.id]?.name ?? w.id} T${w.tier}`,
-      }))
+      const label = `${WEAPONS[w.id]?.name ?? w.id} T${w.tier}`
+      counts.set(label, (counts.get(label) ?? 0) + 1)
     }
     for (const it of p.items) {
+      const label = `${ITEMS[it.id]?.name ?? it.id}${it.boosted ? ' 2x' : ''}`
+      counts.set(label, (counts.get(label) ?? 0) + 1)
+    }
+    const chips = el('div', { class: 'psheet-chips' })
+    for (const [label, n] of counts) {
       chips.append(el('span', {
         class: 'psheet-chip',
-        text: `${ITEMS[it.id]?.name ?? it.id}${it.boosted ? ' 2x' : ''}`,
+        text: n > 1 ? `${label} ×${n}` : label,
       }))
     }
-    if (!p.weapons.length && !p.items.length) {
+    if (!counts.size) {
       chips.append(el('span', { class: 'psheet-chip', text: 'nothing' }))
     }
 
@@ -86,9 +96,18 @@ export class ResultsScreen {
       ? `${parts.join(' and ')}${world.tier > 1 ? `, at Tier ${world.tier}` : ''}.`
       : 'Nothing banked. Clear a wave to earn.'
 
+    // Win and lose shared one look before this: same dark field, same copy
+    // weight, the only difference a couple of words. The root carries which
+    // one it is so the panel can read like the outcome it is: a warm dawn-
+    // gold treatment and a stamped ribbon for clearing the field, the same
+    // dark stock with a desaturated red accent for losing it.
     this.inner.replaceChildren(
-      el('div', { class: 'results' }, [
+      el('div', { class: `results${cleared ? ' is-win' : ' is-lose'}` }, [
         el('div', { class: 'results-head' }, [
+          // The lose screen's copy already carries its own weight ("The
+          // hands got you"); the win screen had nothing above the headline
+          // saying so before the ribbon does, so it gets the eyebrow.
+          cleared ? el('div', { class: 'results-eyebrow', text: 'The light held' }) : null,
           el('h1', {
             class: 'results-title',
             text: cleared ? 'The light goes' : 'You stopped',
@@ -99,6 +118,7 @@ export class ResultsScreen {
               ? 'You worked the field until the light went.'
               : 'The hands got you. They were people on Tuesday.',
           }),
+          cleared ? el('div', { class: 'results-ribbon', text: 'Survived' }) : null,
         ]),
         el('div', { class: 'results-grid' }, [
           el('div', { class: 'psheet' }, [

@@ -130,6 +130,20 @@
 .title-rail .hero.is-selected { transform: translateY(-18px); }
 .title-rail .hero.is-selected:hover { transform: translateY(-24px); }
 
+/*
+   `.hero-bar-label` (BODY/SPEED/REACH) is home-ui.css's, at 6.5px, and
+   `.title-rail` is the only place this card is ever drawn. The stage it
+   sits on is scaled down by `--scene` (about 0.83 at a 1600x900 viewport),
+   so that 6.5px lands on screen at roughly 5.4px: the smallest, least
+   readable text in the game. Overridden here rather than in home-ui.css,
+   because every other measurement on this card is correct at the stage's
+   own scale; only this one label needed to break from it. The bar's label
+   column widens to match, so the bigger word does not run into the meter
+   beside it.
+*/
+.title-rail .hero-bar { grid-template-columns: 56px 1fr; }
+.title-rail .hero-bar-label { font-size: 15px; letter-spacing: 0.03em; }
+
 .title-foot {
   position: absolute; left: 0; right: 0; bottom: 0; height: 36px;
   display: flex; align-items: center; justify-content: space-between; padding: 0 30px;

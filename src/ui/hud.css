@@ -169,8 +169,11 @@
   background: linear-gradient(180deg, #d85a3a, #92301e 60%, #6d2014);
 }
 .hud-boss-name {
-  font-family: var(--display); font-size: calc(16 * var(--u));
-  color: #f2d9a8; text-shadow: 0 2px 0 #000; letter-spacing: 0.04em;
+  font-family: var(--display); font-size: calc(18 * var(--u));
+  color: #f6e3b8; text-shadow: 0 2px 0 #000; letter-spacing: 0.06em;
+  padding: calc(2 * var(--u)) calc(14 * var(--u));
+  background: var(--plate); border: calc(2 * var(--u)) solid var(--plate-rule);
+  box-shadow: var(--plate-shadow);
 }
 
 /* --- feed, top-right --- */
@@ -300,3 +303,20 @@
   78% { opacity: 1; transform: translate(-50%, 0); }
   100% { opacity: 0; transform: translate(-50%, calc(-10 * var(--u))); }
 }
+
+.hud-banner-hint {
+  margin-top: calc(6 * var(--u));
+  font-family: var(--label); font-size: calc(12 * var(--u)); letter-spacing: 0.08em;
+  color: #e8d6ae; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+}
+.hud-banner-hint:empty { display: none; }
+.hud-banner-hint kbd {
+  font-family: var(--label); font-size: calc(11 * var(--u));
+  padding: 0 calc(5 * var(--u)); margin: 0 calc(2 * var(--u));
+  color: #16110b; background: #d9c7a2; border-bottom: calc(2 * var(--u)) solid #8a7c62;
+}
+/* The first wave's card holds longer: it is also the only instruction. */
+.hud-banner.show:has(.hud-banner-hint:not(:empty)) { animation-duration: 6.5s; }
+
+/* A sheet is open over the field (pause, level-up): the wave card gives way. */
+.is-covered .hud-banner { visibility: hidden; }

@@ -72,9 +72,10 @@
           "tilled": "wang.dark_tilled_to_lush_overgrown.0000",
           "yard": "wang.dirt_to_grass_plain.0000",
           "water": "wang.lush_overgrown_to_stagnant_black.1111",
-          "withered": "wang.ash_to_dyinggrass_v2.1111",
-          "rot": "wang.grass_to_rot.1111",
-          "ash": "wang.grass_to_greybrown.1111"
+          "withered": "wang.grass_to_witheredgrass.1111",
+          "rot": "wang.grass_to_olivegrey.1111",
+          "ash": "wang.grass_to_ash.1111",
+          "_blightNote": "Picked off a contact sheet of every wang tile (critic round 2). grass_to_rot and grass_to_greybrown both carry hard horizontal bands that repeat every tile, and under a sundown grade they read as rust-coloured static across the whole field. These three are organic mottles: dry gold, dead beige-grey, grey-green ash."
         },
         "paths": [
           {
@@ -313,7 +314,7 @@
             "y": -18
           },
           {
-            "sprite": "ranch.tractorRed",
+            "sprite": "ranch.squareBales",
             "x": 2080,
             "y": -26
           },
@@ -4035,7 +4036,7 @@
   "_overheadNote": "The overhead layer: art that hangs from a ceiling and draws OVER everything, including the player. Absent means a map has none, which every surface map is. It is the thing that makes a space read as enclosed rather than as a dark field -- a top-down game has no other way to say 'there is something above you', because every other sprite y-sorts against the ground. IT FADES WHEN THE PLAYER IS UNDER IT, to `minAlpha` within `fadeRadius`. Without that, a stalactite that covers the player is not atmosphere, it is an occluder in a game where you must see what is about to hit you -- and in a bullet-heaven the answer is never 'the player should move'. `minAlpha` is the number to raise if anything is ever lost under it. Placement is RENDER-SIDE and seeded off its own stream, the same rule as the scenery band and the decals: nothing decorative may move a tile, a decal or a spawn.",
   "_dressingNote": "Scenery and decals used to be TWO HARDCODED FARM LISTS inside the renderer, which is how the first bunker preview came out with pumpkins, a tree and farm rocks lying on a concrete floor. Fog, overhead art, breakable skins and the ground were already per-map; the dressing was the one layer that was not, so every new biome inherited a barnyard. It is data now. `defaultDressing` is what a map gets when it says nothing -- the farm set, so the five surface maps are unchanged to the pixel -- and a map's own `dressing` block REPLACES it wholesale rather than merging, because a bunker wants none of the farm and a merge would have meant listing ten exclusions to drop ten props. An empty array is a legal answer and means bare ground.",
   "_twoMoreNote": "`ranch.gateClosed` and `ranch.coopBroken` joined the list on 2026-09-04, both from the ledger's open queue and both by the rule above rather than around it. The closed gate is a second SKIN of a fixture the list already carries -- the same argument that put a galvanised trough beside a wooden one in breakables.json -- and a run of fence reading closed in one place and open in another is worth a line. The wrecked coop is the one that needed a tool fixed first: it came back on an opaque white card with a black rule drawn down two sides, and `npm run decard` matched only the CORNER colour, so it cut the white, left the rule, and reported a content box exactly the size of the canvas. decard now floods every colour the border ring is substantially made of, and the coop cuts to 76x87 -- a fixture, three-quarter view, the size of the hay wagon. No generation.",
-  "_generatedDressingNote": "The seven `ranch.*` entries were packed in the atlas and drawn by NOTHING until the 2026-09-03 inventory audit -- generated for the title screen, and nobody ever asked whether they also belonged on the field. They do. Measured rather than judged: hayWagon is 87x81 of content and tractorRed 85x87, against prop.scarecrow 69x88 and prop.plough 60x47, in the same three-quarter view, and the farm they were drawn for is the farm this is. Every one is a FIXTURE, which is the rule this list obeys and the reason two of their sheet-mates are not here: `ranch.waterTrough` and `ranch.roundBaleRotted` are container-shaped and went into breakables.json as variants instead. An unbreakable trough standing beside a breakable one is the one thing no amount of feedback recovers from.",
+  "_generatedDressingNote": "The seven `ranch.*` entries were packed in the atlas and drawn by NOTHING until the 2026-09-03 inventory audit -- generated for the title screen, and nobody ever asked whether they also belonged on the field. They do. Measured rather than judged: hayWagon is 87x81 of content and tractorRed 85x87, against prop.scarecrow 69x88 and prop.plough 60x47, in the same three-quarter view, and the farm they were drawn for is the farm this is. Every one is a FIXTURE, which is the rule this list obeys and the reason two of their sheet-mates are not here: `ranch.waterTrough` and `ranch.roundBaleRotted` are container-shaped and went into breakables.json as variants instead. An unbreakable trough standing beside a breakable one is the one thing no amount of feedback recovers from. v2 took `ranch.tractorRed` back OFF the field (critic round 2): the final boss is a rusted tractor, and a tractor parked in the field read as the boss, or the boss as furniture.",
   "_fenceRailNote": "`ranch.fenceRail` joined on the scene-pass audit, by the same rule as `_generatedDressingNote` above: a fixture generated for the title screen and never asked whether it also belonged on the field. It is a standalone post-and-rail section, `prop.fenceRail`'s sheet-mate rather than a duplicate of `ranch.fenceRun`/`fenceBroken`/`fenceCornerPost` -- those are a run, a break and a corner; this is the plain span between them. No generation.",
   "defaultDressing": {
     "scenery": [
@@ -4050,7 +4051,6 @@
       "prop.fenceRail",
       "prop.gate",
       "ranch.hayWagon",
-      "ranch.tractorRed",
       "ranch.gateOpen",
       "ranch.fenceRun",
       "ranch.fenceBroken",

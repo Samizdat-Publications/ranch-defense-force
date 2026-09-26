@@ -89,6 +89,7 @@ export class Diorama {
     r.dayOverride = SUNDOWN
     r.camera.margin = 600
     r.viewHeight = 380
+    r.blightOverride = this.mode === 'homestead' ? 0 : 0.12
     return r
   }
 
@@ -122,6 +123,8 @@ export class Diorama {
 
   setMode(mode: 'title' | 'homestead'): void {
     this.mode = mode
+    // Between runs the farm is at rest; at the title the rot is only at the fence.
+    this.renderer.blightOverride = mode === 'homestead' ? 0 : 0.12
   }
 
   /** Bring the chosen class to the front of the group. */
@@ -153,8 +156,10 @@ export class Diorama {
     // A slow drift along the farmstead, barn to farmhouse and back.
     if (this.mode === 'homestead') {
       // Along the farmstead, coop to bunkhouse and back, buildings whole.
-      const hx = 1300 + Math.sin(t * 0.03) * 620
-      r.holdCamera = { x: Math.round(hx - vw / 2), y: Math.round(-40 - vh * 0.74) }
+      // Barn to farmhouse, buildings standing in the upper half and the yard
+      // below them, where the signs stand.
+      const hx = 1290 + Math.sin(t * 0.03) * 380
+      r.holdCamera = { x: Math.round(hx - vw / 2), y: Math.round(-40 - vh * 0.52) }
     } else {
       const cx = 1180 + Math.sin(t * 0.045) * 190
       r.holdCamera = { x: Math.round(cx - vw / 2), y: Math.round(-8 - vh * 0.62) }

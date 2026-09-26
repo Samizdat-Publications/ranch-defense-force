@@ -1,7 +1,15 @@
 {
  "render": {
   "viewHeight": 540,
-  "_viewNote": "Height of the world view in art pixels on every screen. The world draws at art resolution into a target this tall and is scaled to the window, so every sprite shares one pixel density (docs/V2.md D2)."
+  "_viewNote": "Height of the world view in art pixels on every screen. The world draws at art resolution into a target this tall and is scaled to the window, so every sprite shares one pixel density (docs/V2.md D2).",
+  "enemyPallor": 0.55,
+  "eyeGlowDay": 0.45,
+  "_curseNote": "How cursed the enemy cast looks, all of it render-side. enemyPallor pushes every non-boss enemy toward a cold drained grey-green (0 = the art as drawn, 1 = fully drained); the eyes are exempt and brightened instead. eyeGlowDay is the least the eyes glow in daylight; at night they glow at the night's full strength. Critic round 2: 'enemies look like ordinary farmhands'.",
+  "xpTint": [0.5, 0.95, 2.9],
+  "_xpTintNote": "Multiplied into the green seed sprite to turn it a cold cyan: the one hue nothing else on the field uses (ground, gas and acid are all olive to lime). Channels above 1 are the point, a multiply cannot otherwise move a hue.",
+  "stainKeep": 18,
+  "stainWeather": 0.86,
+  "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20."
  },
  "daylight": {
   "_note": "THE LONG DAY (docs/V2.md D4). A run is one day: t is run progress, 0 = the first second of wave 1, 1 = the end of the last wave. Each stop sets the sky (ambient), the sun or moon (colour x sunI), where it stands (az: compass degrees, 90 east, 180 south, 270 west; el: degrees above the horizon, which sets shadow length), shadow strength, and the grade. Stops are smoothstepped between. Around sunset the shadows fade to nothing and come back as faint moon shadows from the other side, so the switch is never seen. Purely visual: the sim never reads this.",
