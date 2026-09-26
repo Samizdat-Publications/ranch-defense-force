@@ -7,10 +7,12 @@
  * skip/spawn controls. Toggle with F1 (backtick also works).
  */
 import type { Loop } from '../core/loop'
-import type { Renderer } from '../render/renderer'
 import type { World } from '../sim/world'
 import { ENEMY_IDS } from '../content'
 import { el } from './dom'
+
+/** Anything that reports its draw calls. */
+interface Renderer { drawCalls: number }
 
 const GRAPH_W = 140
 const GRAPH_H = 34
@@ -35,7 +37,13 @@ export class DevOverlay {
      spawn menu sitting over the title screen. F1 (or backtick) still brings it
      up, so nothing is lost and nothing has to be rebuilt to get it.
   */
-  private visible = import.meta.env.DEV
+  /**
+   * `?tour` (tools/tour.ts) hides this regardless of DEV, so a fast-forwarded
+   * screenshot never shows the frame-time graph or the spawn menu, and the
+   * home screen's dev state picker, which is CSS-gated on the same
+   * `data-dev` attribute this class writes below, stays off too.
+   */
+  private visible = import.meta.env.DEV && !new URLSearchParams(location.search).has('tour')
   private frame = 0
 
   constructor(

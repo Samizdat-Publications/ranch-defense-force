@@ -1,319 +1,277 @@
 /* ===================================================================
-   THE HUD — Paper & Pin
+   THE HUD — Paper & Pin, v2
    ===================================================================
-   Supersedes the `.hud-*` rules in style.css. Imported last so it
-   wins without those having to be deleted first; when the old block
-   goes, nothing here changes.
+   Everything on the edges (docs/V2.md D6). The middle and the bottom
+   centre belong to the fight.
 
-   The centre ~70% stays clear — things are trying to kill you there.
-   Everything is pinned to a rail:
-
-     top-left      HP bar + armour pips
-     top-centre    wave clock, boss bar pinned beneath it
+     top-left      status tag: portrait, HP + chaser, level on XP, armour
+     top-centre    the day dial: sun or moon on its arc, clock, wave
      top-right     feed
-     bottom-left   ability plate, gold, pulsing when ready
-     bottom-centre weapon ring
-     bottom edge   XP strip, full width
+     bottom-left   the class ability, radial cooldown
+     bottom-right  the carried kit: weapon tiles, tier pips, cooldown wipes
 
-   Three things earned their place in the old HUD and are kept: the HP
-   chaser, the scaleY cooldown wipe, and gold-means-you-can-act. Only
-   their surfaces change.
+   Plates are dark ink with a warm rule, not paper: the HUD sits over a
+   field that goes from noon to full dark, and paper would glare at night.
+   Sizes follow the viewport height so the HUD keeps its proportion on
+   any screen.
    =================================================================== */
 
-.hud { position: absolute; inset: 0; pointer-events: none; }
+.hud {
+  position: absolute; inset: 0; pointer-events: none;
+  /* --s is set from JS on resize: viewport height / 900, clamped. */
+  --s: 1;
+  --u: calc(var(--s) * 1px);
+  --plate: rgba(16, 13, 10, 0.78);
+  --plate-rule: #5a4730;
+  --plate-shadow: 0 calc(3 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+  font-family: var(--label);
+  color: var(--cream);
+}
 
-/* --- HP, top-left --- */
+.hud-status, .hud-day, .hud-feed, .hud-ability, .hud-kit {
+  position: absolute;
+}
+
+/* --- status tag, top-left --- */
+.hud-status {
+  left: calc(18 * var(--u)); top: calc(16 * var(--u));
+  display: flex; align-items: stretch; gap: calc(8 * var(--u));
+  padding: calc(6 * var(--u));
+  background: var(--plate);
+  border: calc(2 * var(--u)) solid var(--plate-rule);
+  box-shadow: var(--plate-shadow);
+}
+.hud-portrait {
+  width: calc(52 * var(--u)); height: calc(52 * var(--u));
+  background: var(--window); box-shadow: var(--window-in);
+  border: calc(2 * var(--u)) solid #2a2016;
+  display: grid; place-items: center; overflow: hidden;
+}
+.hud-portrait > * { transform: scale(var(--s)); }
+.hud-status-bars { display: flex; flex-direction: column; justify-content: center; gap: calc(5 * var(--u)); }
+
 .hud-hp {
-  position: absolute;
-  left: 26px; top: 22px;
-  width: min(420px, 34vw);
-  height: 40px;
-  background: #2a2114;
-  border: 3px solid var(--paper-edge);
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45);
+  position: relative;
+  width: calc(230 * var(--u)); height: calc(20 * var(--u));
+  background: #231a10;
+  border: calc(2 * var(--u)) solid #120d08;
   overflow: hidden;
 }
-
-/*
-   The chaser: a pale band that drains BEHIND the red, a beat late, so a
-   big hit reads as an amount rather than a jump. Best thing in the old
-   HUD and it survives untouched apart from its colour.
-*/
-.hud-hp-chase {
-  position: absolute;
-  inset: 0;
-  background: #b9a887;
-  transition: width 620ms cubic-bezier(0.16, 1, 0.3, 1) 180ms;
-}
-
+.hud-hp-chase, .hud-hp-fill { position: absolute; left: 0; top: 0; bottom: 0; }
+.hud-hp-chase { background: #efe2c4; transition: width 0.55s ease-in 0.12s; }
 .hud-hp-fill {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #9e3b2f, #7a2820);
-  transition: width 120ms linear;
+  background: linear-gradient(180deg, #d0463a 0%, #a3281f 55%, #7f1c15 100%);
+  transition: width 0.08s linear;
 }
-
+.hud-hp.low .hud-hp-fill { animation: hud-hp-pulse 0.9s ease-in-out infinite; }
+@keyframes hud-hp-pulse { 50% { filter: brightness(1.45); } }
 .hud-hp-text {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: var(--label);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: var(--cream);
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.75);
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: calc(11 * var(--u)); letter-spacing: 0.08em;
+  color: #fff4dc; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
 }
 
-/* Armour, as the same diamond the rarity plate uses for a pip. */
-.hud-armour {
-  position: absolute;
-  left: 30px; top: 68px;
-  display: flex;
-  gap: 5px;
-}
-
-.hud-armour-pip {
-  width: 7px; height: 7px;
-  transform: rotate(45deg);
-  background: #c9b998;
-  border: 1px solid #40311f;
-}
-
-/* --- wave clock, top-centre --- */
-.hud-wave {
-  position: absolute;
-  left: 50%; top: 18px;
-  transform: translateX(-50%);
+.hud-xp-row { display: flex; align-items: center; gap: calc(6 * var(--u)); }
+.hud-level {
+  min-width: calc(38 * var(--u));
+  font-size: calc(11 * var(--u)); font-weight: 700; letter-spacing: 0.06em;
+  color: #16110b; background: var(--gold-brand);
+  border: calc(1 * var(--u)) solid var(--gold-edge);
+  padding: calc(2 * var(--u)) calc(5 * var(--u));
   text-align: center;
 }
-
-.hud-wave-n {
-  font-family: var(--display);
-  font-size: 26px;
-  color: var(--cream);
-  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.6);
-}
-
-.hud-wave-timer {
-  font-family: var(--label);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  color: var(--muted-2);
-  margin-top: 2px;
-}
-
-/* The boss bar stays at the TOP rather than floating over the boss. A bar
-   over an enemy that crosses the arena spends the fight behind him, which
-   is exactly when you need to read it. */
-.hud-boss {
-  position: absolute;
-  left: 50%; top: 74px;
-  transform: translateX(-50%);
-  width: min(560px, 46vw);
-  height: 18px;
-  background: #2a2114;
-  border: 3px solid var(--paper-edge);
+.hud-xp {
+  position: relative; flex: 1;
+  height: calc(8 * var(--u));
+  background: #16211f; border: calc(1 * var(--u)) solid #0a0f0e;
   overflow: hidden;
 }
-
-.hud-boss-fill {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #b0402f, #7a2820);
-  transition: width 140ms linear;
+.hud-xp-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: linear-gradient(180deg, #9af0e4, #4fc0b3 60%, #2f8f86);
+  transition: width 0.15s linear;
 }
 
-.hud-boss-name {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: var(--label);
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  color: var(--cream);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+.hud-armour { display: flex; gap: calc(3 * var(--u)); min-height: calc(7 * var(--u)); }
+.hud-armour-pip {
+  width: calc(7 * var(--u)); height: calc(7 * var(--u));
+  background: #b9c3c9; transform: rotate(45deg) scale(0.8);
+  box-shadow: 0 0 0 calc(1 * var(--u)) #2a3136;
 }
 
-/* --- feed, top-right, on paper --- */
-.hud-feed {
-  position: absolute;
-  right: 26px; top: 22px;
-  min-width: 96px;
-  padding: 8px 14px;
-  text-align: center;
-  background: var(--paper);
-  border: 3px solid var(--paper-edge);
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+/* --- the day, top-centre --- */
+.hud-day {
+  left: 50%; top: calc(10 * var(--u));
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center;
+}
+.hud-dial {
+  --sky: #8fb3c9;
+  position: relative;
+  width: calc(110 * var(--u)); height: calc(44 * var(--u));
+  overflow: hidden;
+  margin-bottom: calc(-6 * var(--u));
+}
+.hud-dial-arc {
+  position: absolute; left: calc(8 * var(--u)); right: calc(8 * var(--u)); top: calc(8 * var(--u));
+  height: calc(76 * var(--u));
+  border-radius: 50%;
+  border: calc(2 * var(--u)) dashed rgba(246, 230, 194, 0.35);
+  background: radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--sky) 45%, transparent) 0%, transparent 70%);
+}
+.hud-sun {
+  position: absolute; left: 50%; top: calc(40 * var(--u));
+  width: calc(14 * var(--u)); height: calc(14 * var(--u));
+  margin: calc(-7 * var(--u)) 0 0 calc(-7 * var(--u));
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fff3c4, #f4b93e 60%, #d9772a);
+  box-shadow: 0 0 calc(10 * var(--u)) rgba(255, 190, 80, 0.8);
+}
+.hud-sun.moon {
+  background: radial-gradient(circle at 60% 40%, #f4f1e4, #c9cbd6 60%, #8e93a8);
+  box-shadow: 0 0 calc(10 * var(--u)) rgba(190, 205, 255, 0.6);
+}
+.hud-day-text {
+  display: flex; flex-direction: column; align-items: center; gap: calc(3 * var(--u));
+  padding: calc(5 * var(--u)) calc(12 * var(--u)) calc(6 * var(--u));
+  background: var(--plate); border: calc(2 * var(--u)) solid var(--plate-rule);
+  box-shadow: var(--plate-shadow);
+  min-width: calc(170 * var(--u));
+}
+.hud-clock {
   font-family: var(--display);
-  font-size: 24px;
-  color: var(--ink);
+  font-size: calc(19 * var(--u)); line-height: 1;
+  color: #f7e3b0; letter-spacing: 0.02em;
+  text-shadow: 0 2px 0 #000;
+}
+.hud-wave-line { display: flex; gap: calc(10 * var(--u)); align-items: baseline; }
+.hud-wave-n { font-size: calc(10 * var(--u)); letter-spacing: 0.14em; color: var(--muted); }
+.hud-wave-left { font-size: calc(10 * var(--u)); color: #d9c7a2; }
+.hud-wave-track {
+  width: 100%; height: calc(3 * var(--u));
+  background: rgba(246, 230, 194, 0.12);
+}
+.hud-wave-fill { height: 100%; background: #d9a441; transform-origin: left center; }
+
+.hud-boss {
+  margin-top: calc(8 * var(--u));
+  width: calc(460 * var(--u));
+  display: flex; flex-direction: column; align-items: center; gap: calc(3 * var(--u));
+}
+.hud-boss-track {
+  width: 100%; height: calc(14 * var(--u));
+  background: #1b0f0c; border: calc(2 * var(--u)) solid #0c0605;
+  box-shadow: var(--plate-shadow);
+  overflow: hidden;
+}
+.hud-boss-fill {
+  height: 100%; transform-origin: left center;
+  background: linear-gradient(180deg, #d85a3a, #92301e 60%, #6d2014);
+}
+.hud-boss-name {
+  font-family: var(--display); font-size: calc(16 * var(--u));
+  color: #f2d9a8; text-shadow: 0 2px 0 #000; letter-spacing: 0.04em;
 }
 
-.hud-feed::after {
-  content: 'FEED';
-  display: block;
-  font-family: var(--label);
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  color: var(--ink-label);
-  margin-top: 2px;
+/* --- feed, top-right --- */
+.hud-feed {
+  right: calc(18 * var(--u)); top: calc(16 * var(--u));
+  display: flex; align-items: center; gap: calc(8 * var(--u));
+  padding: calc(6 * var(--u)) calc(12 * var(--u)) calc(6 * var(--u)) calc(8 * var(--u));
+  background: var(--plate); border: calc(2 * var(--u)) solid var(--plate-rule);
+  box-shadow: var(--plate-shadow);
+}
+.hud-feed-icon {
+  width: calc(18 * var(--u)); height: calc(18 * var(--u));
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fbe29a, #d9a441 55%, #8f6420);
+  box-shadow: inset 0 0 0 calc(2 * var(--u)) #6b4a12;
+}
+.hud-feed-n {
+  font-family: var(--display); font-size: calc(22 * var(--u)); line-height: 1;
+  color: #f7e3b0; text-shadow: 0 2px 0 #000;
+  min-width: calc(30 * var(--u)); text-align: right;
 }
 
 /* --- ability, bottom-left --- */
 .hud-ability {
-  position: absolute;
-  left: 26px; bottom: 58px;
-  padding: 11px 18px;
-  background: linear-gradient(180deg, #5d4b33, #3f3121);
-  border: 3px solid #2b241a;
-  box-shadow: 0 4px 0 #2b241a;
-  font-family: var(--label);
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  color: var(--muted-2);
-  text-transform: uppercase;
+  left: calc(18 * var(--u)); bottom: calc(18 * var(--u));
+  width: calc(128 * var(--u));
+  display: flex; flex-direction: column; align-items: center; gap: calc(3 * var(--u));
+  padding: calc(8 * var(--u)) calc(6 * var(--u)) calc(6 * var(--u));
+  background: var(--plate); border: calc(2 * var(--u)) solid var(--plate-rule);
+  box-shadow: var(--plate-shadow);
 }
-
-/* Gold means you can act on it — the one rule kept from the old palette. */
-.hud-ability.ready {
-  background: var(--gold-btn);
-  border-color: var(--gold-edge);
-  box-shadow: 0 4px 0 var(--gold-edge);
-  color: #2b1d08;
-  animation: ability-ready 1.6s ease-in-out infinite;
+.hud-ability-ring {
+  --p: 360deg;
+  width: calc(40 * var(--u)); height: calc(40 * var(--u));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #1a140e 0 52%, transparent 53%),
+    conic-gradient(#e0a02e var(--p), rgba(246, 230, 194, 0.14) var(--p));
 }
-
-@keyframes ability-ready {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.16); }
+.hud-ability-name {
+  font-size: calc(10 * var(--u)); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted);
 }
-
-/* --- weapon ring, bottom-centre, with the active Load riding beside it --- */
-.hud-weapon-row {
-  position: absolute;
-  left: 50%; bottom: 58px;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
+.hud-ability-key {
+  font-size: calc(9 * var(--u)); letter-spacing: 0.14em;
+  color: #16110b; background: #b9a47a; padding: 0 calc(5 * var(--u));
 }
+.hud-ability.ready { border-color: #c98c2a; }
+.hud-ability.ready .hud-ability-name { color: #f7e3b0; }
+.hud-ability.ready .hud-ability-key { background: var(--gold-brand); }
+.hud-ability.ready .hud-ability-ring { animation: hud-ready 1.4s ease-in-out infinite; }
+.hud-ability.active .hud-ability-ring {
+  background: radial-gradient(circle, #1a140e 0 52%, transparent 53%), conic-gradient(#f7e3b0 360deg, transparent 0);
+}
+@keyframes hud-ready { 50% { filter: brightness(1.35); } }
 
+/* --- the kit, bottom-right --- */
+.hud-kit {
+  right: calc(18 * var(--u)); bottom: calc(18 * var(--u));
+  display: flex; align-items: flex-end; gap: calc(6 * var(--u));
+}
 .hud-weapons {
-  display: flex;
-  gap: 8px;
+  display: grid; grid-template-columns: repeat(3, calc(44 * var(--u)));
+  gap: calc(4 * var(--u));
+  padding: calc(6 * var(--u));
+  background: var(--plate); border: calc(2 * var(--u)) solid var(--plate-rule);
+  box-shadow: var(--plate-shadow);
+  direction: rtl;
 }
-
-/*
-   The Load slot borrows `.hud-slot`'s whole anatomy (art window, stamped
-   name, tier-style chip for the stack count) so it reads as the same kind of
-   object a weapon slot is, set apart only by the accent border that names
-   what it is: the one choice that touches every weapon on the ring beside it.
-   Hidden outright at `element: 'none'` rather than shown empty — an empty
-   Load slot asks a question a run that never bought one should never be asked.
-*/
-.hud-load {
-  border-color: var(--gold);
-  margin-left: 6px;
-}
-
-/*
-   A slot is a small seed packet: an art window over a stamped name, the same
-   anatomy as `.pcard` at HUD scale. §12 asks for 128px slots; six of them plus
-   gaps is 808px, which sits inside the bottom edge without touching the ability
-   plate on the left or the XP strip below.
-
-   Paper is painted as colour + dots + gradient in ONE declaration, the same way
-   `.pcard` does it. A `background:` shorthand here would put the gradient in the
-   image slot and reset the colour to transparent — see `--paper-dots`.
-*/
+.hud-weapons:empty { display: none; }
 .hud-slot {
-  position: relative;
-  width: 128px;
+  position: relative; direction: ltr;
+  width: calc(44 * var(--u)); height: calc(44 * var(--u));
+  background: var(--window); box-shadow: var(--window-in);
+  border: calc(1 * var(--u)) solid #120d08;
   overflow: hidden;
-  text-align: center;
-  background-color: var(--paper-flat);
-  background-image: var(--paper-dots), var(--paper);
-  background-size: 4px 4px, 100% 100%;
-  border: 3px solid var(--paper-edge);
-  font-family: var(--label);
-  font-size: 7.5px;
-  letter-spacing: 0.06em;
-  line-height: 1.4;
-  color: var(--ink-band);
-  text-transform: uppercase;
 }
-
-/* The art window: the same dark recess the level-up card uses, so a weapon
-   looks like the same object in the shop, on the card and in the HUD. */
-.hud-slot-art {
-  height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--window);
-  box-shadow: var(--window-in);
-  border-bottom: 2px solid var(--paper-edge);
-}
-
-.hud-slot-art-fallback {
-  color: var(--cream-2);
-  font-size: 7px;
-  padding: 0 4px;
-}
-
-.hud-slot-name {
-  display: block;
-  padding: 5px 4px;
-  color: var(--ink-band);
-}
-
-/* The cooldown wipe: scaleY on a pseudo-element, no layout, already wired. */
+.hud-slot.tier-2 { border-color: #5e8a3c; }
+.hud-slot.tier-3 { border-color: #3f7cc0; }
+.hud-slot.tier-4 { border-color: #d6a33a; }
+.hud-slot-art { position: absolute; inset: 0; display: grid; place-items: center; }
+.hud-slot-art > * { transform: scale(var(--s)); }
+.hud-slot-art-fallback { font-size: calc(9 * var(--u)); color: var(--muted); }
 .hud-slot-cd {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 100%;
-  background: rgba(20, 16, 10, 0.55);
-  transform-origin: bottom;
-  transform: scaleY(0);
-  pointer-events: none;
+  position: absolute; left: 0; right: 0; bottom: 0; top: 0;
+  background: rgba(0, 0, 0, 0.55);
+  transform-origin: bottom center; transform: scaleY(0);
 }
-
-.hud-slot-tier {
-  position: absolute;
-  top: 2px; right: 4px;
-  font-family: var(--label);
-  font-size: 8px;
-  color: var(--cream-2);
-  background: #5d4b33;
-  border: 1px solid #2b241a;
-  padding: 0 3px;
+.hud-slot-pips {
+  position: absolute; left: calc(3 * var(--u)); bottom: calc(3 * var(--u));
+  display: flex; gap: calc(2 * var(--u));
 }
-
-/* --- XP strip, bottom edge, full width --- */
-.hud-xp {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 34px;
-  background: #1a150d;
-  border-top: 3px solid var(--paper-edge);
-  overflow: hidden;
+.hud-slot-pips i {
+  width: calc(4 * var(--u)); height: calc(4 * var(--u));
+  background: #f2d9a8; box-shadow: 0 0 0 calc(1 * var(--u)) #1a120a;
 }
-
-.hud-xp-fill {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  background: linear-gradient(180deg, #7fb35a, #6a9848);
-  transition: width 200ms linear;
+.hud-load {
+  width: calc(44 * var(--u)); height: calc(44 * var(--u));
+  border: calc(2 * var(--u)) solid #7b4fb3;
 }
-
-.hud-level {
-  position: absolute;
-  left: 14px; bottom: 8px;
-  font-family: var(--label);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  color: var(--cream);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+.hud-load-stacks {
+  position: absolute; right: calc(2 * var(--u)); bottom: calc(1 * var(--u));
+  font-size: calc(8 * var(--u)); color: #f2d9a8; text-shadow: 0 1px 0 #000;
 }

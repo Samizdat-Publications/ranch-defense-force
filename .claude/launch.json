@@ -3,11 +3,10 @@
   "configurations": [
     {
       "name": "rdf-dev",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "node",
       "runtimeArgs": [
-        "run",
-        "dev",
-        "--",
+        "C:/Users/stewa/Documents/Claude/Ranch Defense Force/node_modules/vite/bin/vite.js",
+        "C:/Users/stewa/Documents/Claude/Ranch Defense Force",
         "--port",
         "5180",
         "--strictPort"

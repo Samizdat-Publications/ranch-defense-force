@@ -1,4 +1,389 @@
 {
+ "render": {
+  "viewHeight": 540,
+  "_viewNote": "Height of the world view in art pixels on every screen. The world draws at art resolution into a target this tall and is scaled to the window, so every sprite shares one pixel density (docs/V2.md D2)."
+ },
+ "daylight": {
+  "_note": "THE LONG DAY (docs/V2.md D4). A run is one day: t is run progress, 0 = the first second of wave 1, 1 = the end of the last wave. Each stop sets the sky (ambient), the sun or moon (colour x sunI), where it stands (az: compass degrees, 90 east, 180 south, 270 west; el: degrees above the horizon, which sets shadow length), shadow strength, and the grade. Stops are smoothstepped between. Around sunset the shadows fade to nothing and come back as faint moon shadows from the other side, so the switch is never seen. Purely visual: the sim never reads this.",
+  "clockStart": 6.5,
+  "clockEnd": 22.5,
+  "maxShadowLength": 2.2,
+  "stops": [
+   {
+    "t": 0,
+    "ambient": [
+     0.44,
+     0.47,
+     0.62
+    ],
+    "sun": [
+     1,
+     0.7,
+     0.52
+    ],
+    "sunI": 0.55,
+    "az": 72,
+    "el": 3,
+    "shadow": 0.45,
+    "exposure": 1,
+    "saturation": 0.82,
+    "contrast": 1,
+    "tint": [
+     1,
+     0.97,
+     1.02
+    ],
+    "vignette": 0.38,
+    "lantern": 0.35,
+    "night": 0.25,
+    "fog": 0.42
+   },
+   {
+    "t": 0.08,
+    "ambient": [
+     0.48,
+     0.51,
+     0.62
+    ],
+    "sun": [
+     1,
+     0.82,
+     0.64
+    ],
+    "sunI": 0.62,
+    "az": 88,
+    "el": 12,
+    "shadow": 0.5,
+    "exposure": 1,
+    "saturation": 0.92,
+    "contrast": 1.02,
+    "tint": [
+     1,
+     0.99,
+     1
+    ],
+    "vignette": 0.3,
+    "lantern": 0.1,
+    "night": 0.05,
+    "fog": 0.22
+   },
+   {
+    "t": 0.2,
+    "ambient": [
+     0.5,
+     0.53,
+     0.6
+    ],
+    "sun": [
+     1,
+     0.93,
+     0.82
+    ],
+    "sunI": 0.62,
+    "az": 125,
+    "el": 38,
+    "shadow": 0.52,
+    "exposure": 1,
+    "saturation": 1,
+    "contrast": 1.04,
+    "tint": [
+     1,
+     1,
+     1
+    ],
+    "vignette": 0.25,
+    "lantern": 0,
+    "night": 0,
+    "fog": 0.06
+   },
+   {
+    "t": 0.36,
+    "ambient": [
+     0.52,
+     0.54,
+     0.58
+    ],
+    "sun": [
+     1,
+     0.98,
+     0.93
+    ],
+    "sunI": 0.6,
+    "az": 180,
+    "el": 60,
+    "shadow": 0.5,
+    "exposure": 1,
+    "saturation": 1.02,
+    "contrast": 1.05,
+    "tint": [
+     1,
+     1,
+     0.99
+    ],
+    "vignette": 0.22,
+    "lantern": 0,
+    "night": 0,
+    "fog": 0
+   },
+   {
+    "t": 0.55,
+    "ambient": [
+     0.5,
+     0.51,
+     0.55
+    ],
+    "sun": [
+     1,
+     0.92,
+     0.78
+    ],
+    "sunI": 0.62,
+    "az": 235,
+    "el": 36,
+    "shadow": 0.52,
+    "exposure": 1,
+    "saturation": 1.04,
+    "contrast": 1.05,
+    "tint": [
+     1.01,
+     1,
+     0.97
+    ],
+    "vignette": 0.25,
+    "lantern": 0,
+    "night": 0,
+    "fog": 0
+   },
+   {
+    "t": 0.68,
+    "ambient": [
+     0.46,
+     0.43,
+     0.46
+    ],
+    "sun": [
+     1,
+     0.8,
+     0.58
+    ],
+    "sunI": 0.66,
+    "az": 262,
+    "el": 16,
+    "shadow": 0.55,
+    "exposure": 1,
+    "saturation": 1.04,
+    "contrast": 1.06,
+    "tint": [
+     1.02,
+     0.99,
+     0.95
+    ],
+    "vignette": 0.3,
+    "lantern": 0,
+    "night": 0,
+    "fog": 0.02
+   },
+   {
+    "t": 0.76,
+    "ambient": [
+     0.42,
+     0.37,
+     0.42
+    ],
+    "sun": [
+     1,
+     0.68,
+     0.44
+    ],
+    "sunI": 0.68,
+    "az": 278,
+    "el": 6,
+    "shadow": 0.55,
+    "exposure": 1,
+    "saturation": 1.06,
+    "contrast": 1.07,
+    "tint": [
+     1.03,
+     0.97,
+     0.92
+    ],
+    "vignette": 0.36,
+    "lantern": 0.15,
+    "night": 0.1,
+    "fog": 0.06
+   },
+   {
+    "t": 0.82,
+    "ambient": [
+     0.32,
+     0.27,
+     0.36
+    ],
+    "sun": [
+     0.95,
+     0.46,
+     0.32
+    ],
+    "sunI": 0.5,
+    "az": 288,
+    "el": 1.5,
+    "shadow": 0.35,
+    "exposure": 1,
+    "saturation": 1,
+    "contrast": 1.06,
+    "tint": [
+     1.02,
+     0.93,
+     0.95
+    ],
+    "vignette": 0.42,
+    "lantern": 0.45,
+    "night": 0.35,
+    "fog": 0.12
+   },
+   {
+    "t": 0.855,
+    "ambient": [
+     0.2,
+     0.19,
+     0.32
+    ],
+    "sun": [
+     0.6,
+     0.3,
+     0.4
+    ],
+    "sunI": 0.1,
+    "az": 292,
+    "el": 1,
+    "shadow": 0,
+    "exposure": 1.02,
+    "saturation": 0.9,
+    "contrast": 1.07,
+    "tint": [
+     0.98,
+     0.94,
+     1.02
+    ],
+    "vignette": 0.46,
+    "lantern": 0.8,
+    "night": 0.6,
+    "fog": 0.18
+   },
+   {
+    "t": 0.86,
+    "ambient": [
+     0.19,
+     0.19,
+     0.32
+    ],
+    "sun": [
+     0.55,
+     0.66,
+     1
+    ],
+    "sunI": 0.1,
+    "az": 120,
+    "el": 30,
+    "shadow": 0,
+    "exposure": 1.02,
+    "saturation": 0.88,
+    "contrast": 1.07,
+    "tint": [
+     0.97,
+     0.95,
+     1.03
+    ],
+    "vignette": 0.46,
+    "lantern": 0.82,
+    "night": 0.62,
+    "fog": 0.18
+   },
+   {
+    "t": 0.9,
+    "ambient": [
+     0.15,
+     0.17,
+     0.29
+    ],
+    "sun": [
+     0.55,
+     0.66,
+     1
+    ],
+    "sunI": 0.16,
+    "az": 130,
+    "el": 32,
+    "shadow": 0.3,
+    "exposure": 1.05,
+    "saturation": 0.72,
+    "contrast": 1.08,
+    "tint": [
+     0.92,
+     0.97,
+     1.08
+    ],
+    "vignette": 0.5,
+    "lantern": 1,
+    "night": 0.9,
+    "fog": 0.25
+   },
+   {
+    "t": 1,
+    "ambient": [
+     0.12,
+     0.14,
+     0.25
+    ],
+    "sun": [
+     0.55,
+     0.66,
+     1
+    ],
+    "sunI": 0.14,
+    "az": 150,
+    "el": 36,
+    "shadow": 0.3,
+    "exposure": 1.08,
+    "saturation": 0.62,
+    "contrast": 1.1,
+    "tint": [
+     0.9,
+     0.96,
+     1.1
+    ],
+    "vignette": 0.55,
+    "lantern": 1,
+    "night": 1,
+    "fog": 0.32
+   }
+  ],
+  "lanternRadius": 170,
+  "lanternColour": [
+   1,
+   0.78,
+   0.46
+  ],
+  "lanternIntensity": 1.15,
+  "personalLight": 0.18,
+  "fogDay": [
+   0.86,
+   0.88,
+   0.92
+  ],
+  "fogNight": [
+   0.52,
+   0.58,
+   0.72
+  ],
+  "fogScale": 260,
+  "fogDrift": 0.006,
+  "shadowSkew": 0.75,
+  "shadowRise": 0.2,
+  "shadowRisePerLength": 0.14,
+  "shadowRiseMax": 0.5,
+  "contactShadow": 0.42
+ },
  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
  "player": {
   "baseMoveSpeed": 160,

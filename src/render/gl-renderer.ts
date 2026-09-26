@@ -1,0 +1,1273 @@
+/**
+ * The field renderer, on WebGL2.
+ *
+ * Same job as the Canvas 2D renderer it replaces and the same order of layers:
+ * ground, stains, fog, hazards, telegraphs, ground effects, then every sprite
+ * y-sorted in one pass, then effects, pickups, particles, ceiling and damage
+ * numbers. The difference is where it draws: into an art-resolution target
+ * that the device scales to the screen (see `gl/device.ts`), through batches
+ * that cost one draw call per layer rather than one per sprite.
+ *
+ * Frame choice (which clip, which direction, which frame) is unchanged from
+ * v1 and still reads only public world state. Sim and render stay apart.
+ */
+import type { World } from '../sim/world'
+import { Camera } from './camera'
+import {
+  CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
+  isHeldSlot, carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf,
+  itemCardSprite, projectileScaleFor, swingStyleOf, thrustPhase, type CarrySlot,
+} from '../content'
+import type { Atlas, AtlasFrame } from '../core/atlas'
+import { GLDevice, newCompositeParams } from './gl/device'
+import { dayProgress, evaluateDay, newDayState } from './daylight'
+import { bakeLayout, buildBackdrop, groundTiles, placeOf, type Layout, type PlaceConfig } from './place'
+import { Target, parseColour, textureFrom } from './gl/glutil'
+import { PAGE_GLYPH, PAGE_SOLID } from './gl/sprites'
+import { HAZARD_KIND } from './gl/hazards'
+import {
+  bakeTerrain, buildOverhead, buildScenery, cropSprite, groundSetFor, type Placed,
+} from './bake'
+
+type RGBA = [number, number, number, number]
+
+const BUCKET = 8
+const PIXELS_PER_WALK_FRAME = 11
+const HARVEST_TOOLS = ['pickaxe', 'axe'] as const
+const PROJECTILE_SCALE = 0.55
+const PROJECTILE_FPS = 15
+const PROP_FPS = 8
+/** How far a hit flash whitens a sprite. Full white read as a missing texture. */
+const HIT_FLASH = 0.6
+const INJURED_BELOW = (TUNING.combat.injuredBelowPct as number) / 100
+
+const RENDER = (TUNING as unknown as { render?: Record<string, number> }).render ?? {}
+/** Height of the world view in art pixels, whatever the window size. */
+const VIEW_H = RENDER.viewHeight ?? 540
+
+const JAB = TUNING.fx.jab as {
+  tines: number; tineSpacing: number; lengthFraction: number
+  lineWidth: number; colour: string; alpha: number; forwardBias: number
+}
+const JAB_RGB = JAB.colour.split(',').map((n) => parseFloat(n) / 255)
+
+const DAY = (TUNING as unknown as { daylight: {
+  lanternRadius: number; lanternColour: number[]; lanternIntensity: number; personalLight: number
+  contactShadow: number
+  fogDay: number[]; fogNight: number[]; fogScale: number; fogDrift: number
+} }).daylight
+
+const SWAY = TUNING.sway as unknown as {
+  rate: number; gustRate: number; phaseScale: number; byPrefix: Record<string, number>
+}
+const SWAY_PREFIXES: [string, number][] = Object.entries(SWAY?.byPrefix ?? {})
+
+const COL = {
+  void: parseColour('#171a1d'),
+  enemy: parseColour('#7a6a86'),
+  enemyElite: parseColour('#d8b23c'),
+  projectile: parseColour('#cfe0a0'),
+  melee: parseColour('#f2ead2'),
+  xp: parseColour('#5fd0c6'),
+  feed: parseColour('#e0b040'),
+  crop: parseColour('#8fbf5a'),
+  breakable: parseColour('#c9a97a'),
+  player: parseColour('#e8d6a8'),
+  hazardSlow: parseColour('rgba(94, 74, 46, 0.55)'),
+  hazardSlowRim: parseColour('rgba(140, 112, 70, 0.75)'),
+  hazardLure: parseColour('rgba(214, 176, 84, 0.35)'),
+  hazardLureRim: parseColour('rgba(236, 206, 128, 0.7)'),
+  hazardGas: parseColour('rgba(196, 214, 108, 0.34)'),
+  hazardGasRim: parseColour('rgba(226, 240, 150, 0.85)'),
+  hazardAcid: parseColour('rgba(150, 226, 74, 0.40)'),
+  hazardAcidRim: parseColour('rgba(198, 250, 120, 0.9)'),
+  hazardBurn: parseColour('rgba(226, 122, 46, 0.34)'),
+  hazardBurnRim: parseColour('rgba(255, 176, 84, 0.9)'),
+  telegraph: parseColour('rgba(220, 90, 90, 0.28)'),
+  blood: parseColour('#a02c2c'),
+  outlineEnemy: parseColour('rgba(18, 14, 12, 0.8)'),
+  outlineMoon: parseColour('rgba(120, 138, 182, 0.75)'),
+  outlineElite: parseColour('#f0d060'),
+  outlineText: parseColour('#1a1410'),
+  outlinePlayer: parseColour('rgba(255, 232, 168, 0.9)'),
+  acid: parseColour('#5c8f2a'),
+  bloodDark: parseColour('#6e1d1d'),
+  crit: parseColour('#ffd452'),
+  number: parseColour('#f4efe2'),
+}
+const NO_OUTLINE: RGBA = [0, 0, 0, 0]
+
+interface DrawItem {
+  x: number
+  y: number
+  /** Drawn this many pixels higher than it sorts (carried gear). */
+  liftY: number
+  frame: AtlasFrame | null
+  colour: RGBA
+  w: number
+  h: number
+  flash: boolean
+  scaleX: number
+  scaleY: number
+  rotation: number
+  outline: RGBA
+  alpha: number
+  pivotX: number
+  pivotY: number
+  /** Throws a sun shadow. */
+  caster: boolean
+  /** Gets a soft contact shadow at its feet (actors, not buildings or fences). */
+  contact: boolean
+  /** Glows in the dark and feeds the bloom, 0..1. */
+  emissive: number
+}
+
+export class GLRenderer {
+  readonly camera: Camera
+  drawCalls = 0
+
+  private readonly dev: GLDevice
+  private terrainTex: WebGLTexture | null = null
+  private bakedSet = ''
+  private readonly day = newDayState()
+  private readonly cp = newCompositeParams()
+  /** Enemy outline this frame: dark by day, moonlight by night. */
+  private readonly enemyOutline: RGBA = [0, 0, 0, 0]
+  private readonly fogRgb = [0, 0, 0]
+  private readonly decals: Target
+  private scenery: Placed[] = []
+  /** The map as a place: ground layout, textures and what stands outside the fence. */
+  private place: PlaceConfig | null = null
+  private layout: Layout | null = null
+  private tiles: Float32Array | null = null
+  private backdrop: Placed[] = []
+  private overhead: Placed[] = []
+
+  private readonly arcs: { x: number; y: number; radius: number; angle: number; aura: boolean }[] = []
+  private readonly jabs: { x: number; y: number; radius: number; angle: number; t: number }[] = []
+  private readonly carrySlots: (CarrySlot | null)[] = [null, null, null, null, null, null, null, null]
+
+  private readonly items: DrawItem[] = []
+  private itemCount = 0
+  private readonly bucketCounts: Int32Array
+  private readonly bucketStart: Int32Array
+  private readonly bucketCursor: Int32Array
+  private order: Int32Array
+  private readonly bucketRows: number
+  /** World y that maps to bucket 0: the top of the margin the camera can see. */
+  private readonly bucketOffset: number
+  private readonly digits = new Int8Array(12)
+  /** The player's frame this draw, for the outline drawn over everything. */
+  private playerFrame: AtlasFrame | null = null
+  private playerX = 0
+  private playerY = 0
+
+  /** Camera origin of the frame being drawn, in world pixels (integer), and the target size. */
+  private vx = 0
+  private vy = 0
+  private tw = 1
+  private th = 1
+
+  constructor(
+    canvas: HTMLCanvasElement,
+    private readonly world: World,
+    private readonly atlas: Atlas | null,
+  ) {
+    this.dev = GLDevice.for(canvas)
+    if (atlas) this.dev.useAtlas(atlas)
+    this.camera = new Camera(this.dev.viewW, this.dev.viewH, world.arenaW, world.arenaH)
+
+    this.decals = this.dev.decals(world.arenaW, world.arenaH)
+
+    this.buildPlace()
+    const cap = TUNING.pools.enemies + TUNING.pools.projectiles + TUNING.pools.props
+      + this.scenery.length + this.backdrop.length + 64
+    for (let i = 0; i < cap; i++) this.items.push(this.blankItem())
+    this.bucketOffset = this.place?.margin ?? 0
+    this.bucketRows = Math.ceil((world.arenaH + this.bucketOffset * 2) / BUCKET) + 2
+    this.bucketCounts = new Int32Array(this.bucketRows)
+    this.bucketStart = new Int32Array(this.bucketRows + 1)
+    this.bucketCursor = new Int32Array(this.bucketRows)
+    this.order = new Int32Array(cap)
+
+    this.bake(groundSetFor(world.map.terrain, world.spawner.wave))
+    this.overhead = buildOverhead(world, atlas)
+  }
+
+  private blankItem(): DrawItem {
+    return {
+      x: 0, y: 0, liftY: 0, frame: null, colour: COL.void, w: 0, h: 0, flash: false,
+      scaleX: 1, scaleY: 1, rotation: 0, outline: NO_OUTLINE, alpha: 1, pivotX: 0, pivotY: 0,
+      caster: false, contact: false, emissive: 0,
+    }
+  }
+
+  /** Scenery, and on a map with a `place` block the ground layout and the backdrop. */
+  private buildPlace(): void {
+    const world = this.world
+    this.place = placeOf(world)
+    this.scenery = buildScenery(world, this.atlas)
+    this.backdrop = []
+    this.layout = null
+    this.tiles = null
+    this.camera.margin = 0
+    const place = this.place
+    if (!place) return
+    this.camera.margin = place.margin
+    const keep = place.interiorScenery ?? 1
+    if (keep < 1) this.scenery = this.scenery.filter((_, i) => (i * 0.618034) % 1 < keep)
+    this.layout = bakeLayout(world, place)
+    this.dev.ground.setLayout(this.layout.data, this.layout.w, this.layout.h)
+    if (this.atlas) {
+      this.tiles = groundTiles(this.atlas, place)
+      this.backdrop = buildBackdrop(world, this.atlas, place)
+    }
+  }
+
+  private bake(groundSet: string): void {
+    const dev = this.dev
+    const gl = dev.gl
+    this.bakedSet = groundSet
+    // A place draws its ground per pixel; only the older maps bake tiles.
+    if (this.place && this.tiles) return
+    const ground = bakeTerrain(this.world, this.atlas, groundSet)
+    this.terrainTex = textureFrom(gl, ground, gl.NEAREST, gl.CLAMP_TO_EDGE, dev.sharedTexture('terrain'))
+    dev.setSharedTexture('terrain', this.terrainTex)
+  }
+
+  onMapChanged(): void {
+    this.buildPlace()
+    this.overhead = buildOverhead(this.world, this.atlas)
+    this.bake(groundSetFor(this.world.map.terrain, this.world.spawner.wave))
+  }
+
+  resize(w: number, h: number): void {
+    this.dev.resize(w, h, VIEW_H)
+    this.camera.resize(this.dev.viewW, this.dev.viewH)
+  }
+
+  draw(alpha: number, rand: () => number): void {
+    const w = this.world
+    const p = w.player
+    const dev = this.dev
+    dev.sprites.draws = 0
+    dev.shapes.draws = 0
+
+    const want = groundSetFor(w.map.terrain, w.spawner.wave)
+    if (want !== this.bakedSet) this.bake(want)
+
+    const pxi = p.px + (p.x - p.px) * alpha
+    const pyi = p.py + (p.y - p.py) * alpha
+    this.camera.update(pxi, pyi, p.vx, p.vy, w.paused ? 0 : w.shake, rand)
+    const ox = this.camera.offsetX
+    const oy = this.camera.offsetY
+    const fx = Math.floor(ox)
+    const fy = Math.floor(oy)
+    this.vx = fx - 1
+    this.vy = fy - 1
+    this.tw = dev.world.w
+    this.th = dev.world.h
+
+    const day = evaluateDay(dayProgress(w), this.day)
+    const moon = COL.outlineMoon
+    const dark = COL.outlineEnemy
+    for (let c = 0; c < 4; c++) this.enemyOutline[c] = dark[c] + (moon[c] - dark[c]) * day.night
+
+    this.flushStains()
+
+    const v = COL.void
+    dev.beginWorld(v[0], v[1], v[2])
+    dev.bindSpriteTextures()
+
+    // Ground layers: they take shadow, and they do not count as standing sprites.
+    dev.groundBlend()
+    if (this.place && this.tiles && this.layout) {
+      const L = this.layout
+      const blight = Math.min(1, Math.max(0, (day.t - 0.35) / 0.65))
+      dev.ground.draw(dev.atlasTexture, dev.noise, this.tiles, L.x, L.y, L.worldW, L.worldH,
+        w.arenaW, w.arenaH, blight * blight * (3 - 2 * blight), w.elapsed,
+        this.vx, this.vy, this.tw, this.th)
+    } else if (this.terrainTex) {
+      dev.texQuad(this.terrainTex, 0, 0, w.arenaW, w.arenaH, 0, 0, 1, 1, this.vx, this.vy, this.tw, this.th)
+    }
+    // The decal target was drawn with GL's y-up rows, so its v runs the other way.
+    dev.texQuad(this.decals.tex, 0, 0, w.arenaW, w.arenaH, 0, 1, 1, 0, this.vx, this.vy, this.tw, this.th)
+    this.drawFog(day.fog, day.night)
+    dev.bindSpriteTextures()
+    this.drawArenaBurn()
+    this.drawHazards()
+    this.drawTelegraphs()
+    this.flushShapes()
+    this.drawEffects(true)
+    this.flushSprites()
+    this.drawPlayerMark(pxi, pyi)
+
+    // Standing things.
+    dev.spriteBlend()
+    this.itemCount = 0
+    this.arcs.length = 0
+    this.jabs.length = 0
+    this.collectSprites(alpha)
+    this.drawArcs()
+    this.drawJabs()
+    this.flushShapes()
+    this.sortAndDraw(day.shadowX, day.shadowY, day.shadowAlpha)
+
+    this.drawEffects(false)
+    this.drawPickups(alpha)
+    this.drawParticles()
+    this.drawOverhead(pxi, pyi)
+    // The player's outline, over everything: findable in any crowd.
+    if (this.playerFrame) {
+      this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, false, COL.outlinePlayer)
+    }
+    this.drawDamageNumbers()
+    this.flushSprites()
+
+    dev.beginLights()
+    this.collectLights(pxi, pyi, alpha)
+    dev.lights.flush(this.vx, this.vy, this.tw, this.th, dev.lightOut)
+
+    const cp = this.cp
+    for (let c = 0; c < 3; c++) {
+      cp.ambient[c] = day.ambient[c]
+      cp.sun[c] = day.sun[c]
+      cp.tint[c] = day.tint[c]
+      cp.flash[c] = 0
+    }
+    cp.exposure = day.exposure
+    cp.saturation = day.saturation
+    cp.contrast = day.contrast
+    cp.vignette = day.vignette
+    cp.emissiveGain = 0.35 + 0.65 * day.night
+    cp.bloomGain = 0.45 + 0.55 * day.night
+    cp.time = w.elapsed
+    const hpFrac = p.stats.maxHp > 0 ? p.hp / p.stats.maxHp : 1
+    cp.hurt = Math.min(1, p.invuln * 0.9) * 0.3
+      + (hpFrac < 0.3 && p.alive ? (0.3 - hpFrac) * (0.6 + 0.4 * Math.sin(w.elapsed * 5)) : 0)
+    dev.present(ox - fx, oy - fy, cp)
+    this.drawCalls = dev.sprites.draws + dev.shapes.draws + 4
+  }
+
+  private flushSprites(): void {
+    this.dev.sprites.flush(this.vx, this.vy, this.tw, this.th)
+  }
+
+  private flushShapes(): void {
+    this.dev.shapes.flush(this.vx, this.vy, this.tw, this.th)
+  }
+
+  /**
+   * New blood, stamped permanently into the decal target. Each drop lands as a
+   * small clump in one of two reds (or acid green), shaped by a hash of where
+   * it fell, so a kill leaves a splat rather than a sprinkle of single pixels.
+   */
+  private flushStains(): void {
+    const s = this.world.stains
+    if (s.length === 0) return
+    const batch = this.dev.sprites
+    for (let i = 0; i < s.length; i += 3) {
+      const x = Math.round(s[i])
+      const y = Math.round(s[i + 1])
+      const col = s[i + 2]
+      const acid = ((col >> 8) & 255) > ((col >> 16) & 255)
+      const h = ((x * 73856093) ^ (y * 19349663)) >>> 0
+      const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
+      const a = 0.55 + ((h >> 3) & 3) * 0.08
+      const w0 = 2 + ((h >> 5) & 1)
+      const h0 = 2 + ((h >> 6) & 1)
+      batch.push(x, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
+      if ((h >> 7) & 1) batch.push(x + 1 + ((h >> 8) & 1), y + h0, 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
+      if ((h >> 9) & 1) batch.push(x - 1, y + ((h >> 10) & 1), 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.8, 0, 0, 0, 0, 0, 0)
+    }
+    s.length = 0
+    this.decals.bind()
+    this.dev.bindSpriteTextures()
+    batch.flush(0, 0, this.decals.w, this.decals.h)
+  }
+
+  /**
+   * Ground fog: the map's own plus the day's (mist at dawn, murk after dark).
+   * On the ground layer, so it lies under everything that stands.
+   */
+  private drawFog(dayFog: number, night: number): void {
+    const cfg = this.world.map.fog
+    const density = Math.max(dayFog, cfg?.alpha ?? 0) * 0.6
+    if (density <= 0.001) return
+    const c = this.fogRgb
+    for (let i = 0; i < 3; i++) c[i] = DAY.fogDay[i] + (DAY.fogNight[i] - DAY.fogDay[i]) * night
+    const t = this.world.elapsed * DAY.fogDrift
+    this.dev.fogQuad(this.vx, this.vy, this.tw, this.th, c[0], c[1], c[2], density, t, t * 0.35, DAY.fogScale)
+  }
+
+  /** Queue one atlas frame. `ox/oy` add to the frame's own offset. */
+  private spr(
+    f: AtlasFrame, x: number, y: number, ox: number, oy: number,
+    rot: number, sx: number, sy: number, a: number, flash: boolean,
+    outline: RGBA = NO_OUTLINE, r = 1, g = 1, b = 1, emissive = 0, caster = false, lift = 0,
+  ): void {
+    this.dev.sprites.push(
+      x, y, f.ox + ox, f.oy + oy, f.w, f.h, f.x, f.y, f.page,
+      rot, sx, sy, r, g, b, a, flash ? HIT_FLASH : 0, emissive,
+      outline[0], outline[1], outline[2], outline[3], caster ? 1 : 0, lift,
+    )
+  }
+
+  private push(): DrawItem | null {
+    if (this.itemCount >= this.items.length) return null
+    const it = this.items[this.itemCount++]
+    it.frame = null
+    it.flash = false
+    it.liftY = 0
+    it.scaleX = 1
+    it.scaleY = 1
+    it.rotation = 0
+    it.outline = NO_OUTLINE
+    it.alpha = 1
+    it.pivotX = 0
+    it.pivotY = 0
+    it.w = 0
+    it.h = 0
+    it.caster = false
+    it.contact = false
+    it.emissive = 0
+    return it
+  }
+
+  // ---------------------------------------------------------------- frames
+
+  private humanoidFrame(sheet: string, facing: number, travelled: number, moving: boolean): AtlasFrame | undefined {
+    const atlas = this.atlas
+    if (!atlas) return undefined
+    const dir = atlas.directionFor(sheet, facing)
+    if (!moving) return atlas.get(`${sheet}.idle.${dir}.0`)
+    const len = atlas.clipLength(sheet, 'walk')
+    const scale = (ENEMIES[sheet] as { animFrameScale?: number } | undefined)?.animFrameScale ?? 1
+    const f = Math.floor(travelled / (PIXELS_PER_WALK_FRAME / scale)) % len
+    return atlas.get(`${sheet}.walk.${dir}.${f}`)
+  }
+
+  private hitFrame(sheet: string, facing: number, remaining: number): AtlasFrame | undefined {
+    const atlas = this.atlas
+    const len = atlas?.clipLengths[sheet]?.hit
+    if (!atlas || !len) return undefined
+    const dir = atlas.directionFor(sheet, facing)
+    const total = TUNING.combat.hitClipSeconds as number
+    const t = Math.min(1, Math.max(0, 1 - remaining / total))
+    return atlas.get(`${sheet}.hit.${dir}.${Math.min(len - 1, Math.floor(t * len))}`)
+  }
+
+  private hurtWalkFrame(sheet: string, facing: number, travelled: number): AtlasFrame | undefined {
+    const atlas = this.atlas
+    const len = atlas?.clipLengths[sheet]?.walkHurt
+    if (!atlas || !len) return undefined
+    const dir = atlas.directionFor(sheet, facing)
+    return atlas.get(`${sheet}.walkHurt.${dir}.${Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len}`)
+  }
+
+  private attackFrame(sheet: string, facing: number, elapsed: number): AtlasFrame | undefined {
+    const atlas = this.atlas
+    const len = atlas?.clipLengths[sheet]?.attack
+    if (!atlas || !len) return undefined
+    const dir = atlas.directionFor(sheet, facing)
+    const total = TUNING.combat.attackClipSeconds as number
+    const f = Math.min(len - 1, Math.max(0, Math.floor((elapsed / total) * len)))
+    return atlas.get(`${sheet}.attack.${dir}.${f}`)
+  }
+
+  private deathFrame(sheet: string, facing: number, progress: number): AtlasFrame | undefined {
+    const atlas = this.atlas
+    const len = atlas?.clipLengths[sheet]?.death
+    if (!atlas || !len) return undefined
+    const dir = atlas.directionFor(sheet, facing)
+    return atlas.get(`${sheet}.death.${dir}.${Math.min(len - 1, Math.max(0, Math.floor(progress * len)))}`)
+  }
+
+  private swayOf(sprite: string, x: number, y: number): number {
+    if (SWAY_PREFIXES.length === 0) return 0
+    let amp = 0
+    for (let i = 0; i < SWAY_PREFIXES.length; i++) {
+      if (sprite.startsWith(SWAY_PREFIXES[i][0])) { amp = SWAY_PREFIXES[i][1]; break }
+    }
+    if (amp === 0) return 0
+    const t = this.world.elapsed
+    const phase = (x + y) * SWAY.phaseScale
+    const gust = 0.65 + 0.35 * Math.sin(t * SWAY.gustRate + phase * 0.3)
+    return Math.sin(t * SWAY.rate + phase) * amp * gust
+  }
+
+  private propFrame(sprite: string, x: number, y: number): AtlasFrame | null {
+    const atlas = this.atlas
+    if (!atlas) return null
+    const len = atlas.clipLength(sprite, 'play')
+    if (len <= 1) return atlas.get(sprite) ?? null
+    const phase = ((x * 0.7 + y * 1.3) | 0)
+    const f = (((this.world.elapsed * PROP_FPS) | 0) + phase) % len
+    return atlas.get(`${sprite}.${f}`) ?? atlas.get(sprite) ?? null
+  }
+
+  private swingFrame(p: { weaponId: string; angle: number }): AtlasFrame | undefined {
+    const atlas = this.atlas
+    if (!atlas) return undefined
+    const clip = (WEAPONS[p.weaponId] as { swingClip?: string } | undefined)?.swingClip
+    if (!clip) return undefined
+    const len = atlas.clipLength(clip, 'play')
+    if (len <= 0) return undefined
+    const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + ((p.angle * 4) | 0)) % len
+    return atlas.get(`${clip}.${f}`) ?? atlas.get(`${clip}.0`)
+  }
+
+  private projectileFrame(p: { weaponId: string; behaviour: string; type: string; x: number }): AtlasFrame | undefined {
+    const atlas = this.atlas
+    if (!atlas) return undefined
+    if (p.behaviour === 'minionHunt') {
+      const minion = (ITEMS[p.weaponId] as { minionSprite?: string } | undefined)?.minionSprite
+      if (minion) {
+        const f = atlas.get(minion)
+        if (f) return f
+      }
+      return atlas.get('feralDog.idle.down.0') ?? atlas.get('feralDog.walk.down.0')
+    }
+    if (p.type === 'placeable') {
+      const sprite = (ITEMS[p.weaponId] as { cardSprite?: string } | undefined)?.cardSprite
+      const f = sprite ? atlas.get(sprite) : undefined
+      if (f) return f
+    }
+    const def = WEAPONS[p.weaponId] as { projectileClip?: string; shardClip?: string; sprite?: string } | undefined
+    const element = this.world.player.element
+    const base = p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'drumGun'
+      ? def.shardClip
+      : def?.projectileClip
+    const tinted = base && element !== 'none' ? `${base}.${element}` : undefined
+    const clipName = (tinted && atlas.clipLength(tinted, 'play') ? tinted : base)
+    if (clipName) {
+      const len = atlas.clipLength(clipName, 'play')
+      if (len > 0) {
+        const phase = (p.x * 0.35) | 0
+        const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + phase) % len
+        const frame = atlas.get(`${clipName}.${f}`)
+        if (frame) return frame
+      }
+    }
+    return atlas.get(`weapon.${p.weaponId}`) ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
+  }
+
+  // ---------------------------------------------------------------- collection
+
+  private collectSprites(alpha: number): void {
+    const w = this.world
+    const cam = this.camera
+    const left = cam.x - 64
+    const right = cam.x + cam.viewW + 64
+    const top = cam.y - 96
+    const bottom = cam.y + cam.viewH + 64
+
+    if (w.exit) {
+      const e = w.exit
+      const f = this.atlas?.get(e.frame)
+      const it = f ? this.push() : null
+      if (it && f) {
+        it.x = e.x
+        it.y = e.y
+        it.frame = f
+      }
+    }
+
+    for (let i = 0; i < this.backdrop.length; i++) {
+      const sc = this.backdrop[i]
+      const f = sc.frame
+      if (sc.x + f.ox + f.w < left || sc.x + f.ox > right || sc.y < top || sc.y + f.oy > bottom) continue
+      const it = this.push()
+      if (!it) break
+      it.x = sc.x
+      it.y = sc.y
+      it.frame = f
+      it.caster = true
+    }
+
+    for (let i = 0; i < this.scenery.length; i++) {
+      const sc = this.scenery[i]
+      if (sc.x < left || sc.x > right || sc.y < top || sc.y > bottom) continue
+      const it = this.push()
+      if (!it) break
+      it.x = sc.x
+      it.y = sc.y
+      it.frame = sc.frame
+      it.caster = true
+    }
+
+    const wave = w.spawner.wave
+    for (let i = 0; i < w.props.live; i++) {
+      const c = w.props.items[i]
+      if (c.x < left || c.x > right || c.y < top || c.y > bottom) continue
+      const it = this.push()
+      if (!it) break
+      it.x = c.x
+      it.y = c.y
+      it.frame = this.propFrame(cropSprite(this.atlas, w.map.terrain, c.sprite, wave), c.x, c.y)
+      it.flash = c.flash > 0
+      it.colour = COL.crop
+      it.caster = true
+      it.contact = true
+      it.w = c.radius * 2
+      it.h = c.radius * 2
+      if (c.dying > 0) {
+        const t = c.dying / TUNING.combat.deathSpinSeconds
+        it.scaleX = t
+        it.scaleY = t
+        it.rotation = (1 - t) * 3
+      } else if (c.working > 0) {
+        it.x += Math.sin(w.elapsed * 42 + c.x) * 1.2
+        it.scaleY = 1 + Math.sin(w.elapsed * 30 + c.y) * 0.05
+      } else {
+        it.rotation = this.swayOf(c.sprite, c.x, c.y)
+      }
+    }
+
+    for (let i = 0; i < w.breakables.live; i++) {
+      const b = w.breakables.items[i]
+      if (b.x < left || b.x > right || b.y < top || b.y > bottom) continue
+      const it = this.push()
+      if (!it) break
+      it.x = b.x
+      it.y = b.y
+      it.frame = this.propFrame(b.sprite, b.x, b.y)
+      it.flash = b.flash > 0
+      it.colour = COL.breakable
+      it.caster = true
+      it.contact = true
+      it.w = b.radius * 2
+      it.h = b.radius * 2
+      if (b.dying > 0) {
+        const t = b.dying / TUNING.combat.deathSpinSeconds
+        it.scaleX = t
+        it.scaleY = t
+        it.rotation = (1 - t) * 3
+      }
+    }
+
+    for (let i = 0; i < w.enemies.live; i++) {
+      const e = w.enemies.items[i]
+      const x = e.px + (e.x - e.px) * alpha
+      const y = e.py + (e.y - e.py) * alpha
+      if (x < left || x > right || y < top || y > bottom) continue
+      const it = this.push()
+      if (!it) break
+
+      const moving = e.stun <= 0 && e.dying <= 0 && (e.vx !== 0 || e.vy !== 0)
+      const hurt = e.maxHp > 0 && e.hp / e.maxHp < INJURED_BELOW
+      const frame = (e.dying <= 0 && e.hitT > 0 ? this.hitFrame(e.sheetId, e.facing, e.hitT) : undefined)
+        ?? (e.attackT > 0 && e.dying <= 0 ? this.attackFrame(e.sheetId, e.facing, e.attackT) : undefined)
+        ?? (moving && hurt ? this.hurtWalkFrame(e.sheetId, e.facing, e.travelled) : undefined)
+        ?? this.humanoidFrame(e.sheetId, e.facing, e.travelled, moving)
+
+      it.x = x
+      it.y = y
+      it.frame = frame ?? null
+      it.flash = e.flash > 0
+      it.colour = e.elite ? COL.enemyElite : COL.enemy
+      it.w = e.radius * 2
+      it.h = e.radius * 2
+      it.outline = e.elite ? COL.outlineElite : this.enemyOutline
+      it.caster = true
+      it.contact = true
+      it.emissive = -this.day.night
+
+      const bossDef = ENEMIES[e.typeId] as { drawScale?: number; deathSeconds?: number } | undefined
+      const bossScale = Math.round(bossDef?.drawScale ?? 1)
+      const scale = (e.elite ? 1.5 : 1) * bossScale
+      it.scaleX = scale
+      it.scaleY = scale
+
+      if (e.dying > 0) {
+        const total = bossDef?.deathSeconds ?? TUNING.combat.deathSpinSeconds
+        const t = e.dying / total
+        const dead = this.deathFrame(e.sheetId, e.facing, 1 - t)
+        it.outline = NO_OUTLINE
+        if (dead) {
+          it.frame = dead
+        } else {
+          it.scaleX = scale * t
+          it.scaleY = scale * t
+          it.rotation = (1 - t) * 6
+        }
+      } else if (!frame) {
+        const bob = Math.sin(e.travelled * 0.16) * 1.5
+        it.y += bob
+        it.rotation = Math.cos(e.travelled * 0.16) * 0.09 * (moving ? 1 : 0)
+        const squash = 1 + Math.sin(e.travelled * 0.16) * 0.06
+        it.scaleY = scale * squash
+        it.scaleX = scale * (2 - squash)
+      }
+    }
+
+    for (let i = 0; i < w.projectiles.live; i++) {
+      const p = w.projectiles.items[i]
+      const x = p.attached ? p.x : p.px + (p.x - p.px) * alpha
+      const y = p.attached ? p.y : p.py + (p.y - p.py) * alpha
+      if (x < left || x > right || y < top || y > bottom) continue
+
+      const isArea = p.behaviour === 'arcSwing' || p.type === 'aura'
+      if (isArea && p.type !== 'aura' && swingStyleOf(p.weaponId) === 'thrust') {
+        this.jabs.push({ x, y, radius: p.radius, angle: p.angle, t: thrustPhase(p.hitStamp, w.tick) })
+        continue
+      }
+      const swing = isArea && p.type !== 'aura' ? this.swingFrame(p) : undefined
+      if (isArea && !swing) {
+        this.arcs.push({ x, y, radius: p.radius, angle: p.angle, aura: p.type === 'aura' })
+        continue
+      }
+
+      const it = this.push()
+      if (!it) break
+      const frame = swing ?? this.projectileFrame(p)
+      it.x = x
+      it.y = y
+      it.frame = frame ?? null
+      it.colour = p.type === 'melee' || p.type === 'orbit' ? COL.melee : COL.projectile
+      it.emissive = p.type === 'melee' || p.type === 'orbit' || p.behaviour === 'minionHunt' || p.type === 'placeable' ? 0 : 0.85
+      it.caster = p.behaviour === 'minionHunt' || p.type === 'placeable'
+      it.w = p.radius * 2
+      it.h = p.radius * 2
+      if (p.type === 'orbit') it.rotation = p.angle + w.elapsed * 6
+      else if (p.behaviour === 'arcLob' || p.behaviour === 'bounceSplit') it.rotation = w.elapsed * 7 + p.t1
+      else if (p.vx !== 0 || p.vy !== 0) it.rotation = Math.atan2(p.vy, p.vx)
+      else it.rotation = p.angle
+      if (swing) {
+        it.scaleX = (p.radius * 2) / Math.max(8, swing.w)
+        it.scaleY = it.scaleX
+      } else {
+        it.scaleX = frame ? PROJECTILE_SCALE * projectileScaleFor(p.weaponId) : 1
+        it.scaleY = it.scaleX
+      }
+    }
+
+    assignCarrySlots(w.player.weapons, this.carrySlots, w.player.classId)
+    this.collectCarried(true)
+    this.collectHarvestTools(true)
+
+    const p = w.player
+    const it = this.push()
+    if (it) {
+      const moving = p.vx !== 0 || p.vy !== 0
+      const frame = this.humanoidFrame(p.classId, p.facing, p.travelled, moving)
+      it.x = p.px + (p.x - p.px) * alpha
+      it.y = p.py + (p.y - p.py) * alpha
+      it.frame = frame ?? null
+      this.playerFrame = p.alive ? frame ?? null : null
+      this.playerX = it.x
+      this.playerY = it.y
+      it.colour = COL.player
+      it.caster = true
+      it.contact = true
+      it.w = p.radius * 2
+      it.h = p.radius * 2 + 6
+      if (p.invuln > 0 && Math.floor(p.anim * 20) % 2 === 0) it.alpha = 0.45
+    }
+
+    this.collectCarried(false)
+    this.collectHarvestTools(false)
+  }
+
+  private collectCarried(behind: boolean): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const w = this.world
+    const p = w.player
+    const cfg = TUNING.fx
+    const dir = atlas.directionFor(p.classId, p.facing)
+    const bootY = CARRY.bootOffsetY
+
+    for (let i = 0; i < p.weapons.length; i++) {
+      const slot = p.weapons[i]
+      const anchorSlot = this.carrySlots[i]
+      if (!anchorSlot) continue
+      const a = carryAnchorOf(anchorSlot, dir, p.classId)
+      if (!a || a.behind !== behind) continue
+      const carryKey = carrySpriteOf(slot.id)
+      const def = WEAPONS[slot.id] as { tierSprites?: string[]; sprite?: string } | undefined
+      const tierKey = def?.tierSprites?.[Math.min(slot.tier, 4) - 1]
+      const frame = (carryKey ? atlas.get(carryKey) : undefined)
+        ?? (tierKey ? atlas.get(tierKey) : undefined)
+        ?? atlas.get(`weapon.${slot.id}.t${Math.min(slot.tier, 4)}`)
+        ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
+        ?? atlas.get(`weapon.${slot.id}`)
+      if (!frame) continue
+      const it = this.push()
+      if (!it) return
+
+      const fresh = p.weaponFlash.get(slot.id) ?? 0
+      const lift = fresh > 0 ? Math.sin(fresh * 12) * CARRY.freshLiftPixels : 0
+      const held = isHeldSlot(anchorSlot)
+      const kick = held && slot.recoil > 0 ? (slot.recoil / cfg.weaponRecoilSeconds) * cfg.weaponRecoilPixels : 0
+      const lunge = held ? carryThrustOf(slot.id) * thrustPhase(slot.firedAt, w.tick) : 0
+      const along = lunge - kick
+
+      it.x = p.x + a.dx + Math.cos(slot.aimAngle) * along
+      it.y = p.y
+      it.liftY = -(bootY + a.dy) + lift - Math.sin(slot.aimAngle) * along
+      it.frame = frame
+      it.colour = COL.melee
+      it.caster = true
+      it.w = 10
+      it.h = 10
+      it.pivotX = -(frame.ox + frame.w * carryPivotOf(slot.id))
+      it.pivotY = -(frame.oy + frame.h / 2)
+      const aims = held && carryAimsOf(slot.id)
+      const facingLeft = aims ? Math.abs(slot.aimAngle) > Math.PI / 2 : a.flip
+      it.rotation = aims
+        ? (facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle)
+        : (a.angle + carryAngleOf(slot.id)) * (a.flip ? -1 : 1)
+      const fit = Math.min(1, carryHeightOf(slot.id) / Math.max(1, Math.max(frame.w, frame.h)))
+        * (fresh > 0 ? CARRY.freshScale : 1)
+      it.scaleX = fit * (facingLeft ? -1 : 1)
+      it.scaleY = fit
+    }
+  }
+
+  private collectHarvestTools(behind: boolean): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const w = this.world
+    const p = w.player
+    const dir = atlas.directionFor(p.classId, p.facing)
+    const bootY = CARRY.bootOffsetY
+    let working = false
+    for (let i = 0; i < w.props.live; i++) {
+      if (w.props.items[i].working > 0) { working = true; break }
+    }
+    for (let k = 0; k < HARVEST_TOOLS.length; k++) {
+      const toolId = HARVEST_TOOLS[k]
+      const a = carryAnchorOf(k === 0 ? 'beltR' : 'beltL', dir, p.classId)
+      if (!a || a.behind !== behind) continue
+      const tiers = NODES.tools[toolId]?.tiers
+      if (!Array.isArray(tiers) || tiers.length === 0) continue
+      const tier = tiers[Math.min(k === 0 ? p.pickaxeTier : p.axeTier, tiers.length - 1)]
+      const frame = atlas.get(`tool.${toolId}.${tier.id}`)
+      if (!frame) continue
+      const it = this.push()
+      if (!it) return
+      const swing = working ? Math.sin(w.elapsed * 24 + k) * 0.5 : 0
+      it.x = p.x + a.dx
+      it.y = p.y
+      it.liftY = -(bootY + a.dy)
+      it.frame = frame
+      it.colour = COL.melee
+      it.caster = true
+      it.w = 8
+      it.h = 8
+      it.rotation = a.angle + (a.flip ? -swing : swing)
+      it.pivotX = -(frame.ox + frame.w / 2)
+      it.pivotY = -(frame.oy + frame.h / 2)
+      it.scaleX = TUNING.fx.harvestToolScale * (a.flip ? -1 : 1)
+      it.scaleY = TUNING.fx.harvestToolScale
+    }
+  }
+
+  // ---------------------------------------------------------------- passes
+
+  /**
+   * Counting sort into 8 px y-bands, then the lot uploaded once and drawn
+   * twice: as sun shadows into the shadow mask, then in colour.
+   */
+  private sortAndDraw(sunX: number, sunY: number, shadowAlpha: number): void {
+    const n = this.itemCount
+    if (n === 0) return
+    if (this.order.length < n) this.order = new Int32Array(n * 2)
+    this.bucketCounts.fill(0)
+    const rows = this.bucketRows
+    const off = this.bucketOffset
+    for (let i = 0; i < n; i++) {
+      let b = ((this.items[i].y + off) / BUCKET) | 0
+      if (b < 0) b = 0
+      else if (b >= rows) b = rows - 1
+      this.bucketCounts[b]++
+    }
+    let running = 0
+    for (let b = 0; b < rows; b++) {
+      this.bucketStart[b] = running
+      this.bucketCursor[b] = running
+      running += this.bucketCounts[b]
+    }
+    for (let i = 0; i < n; i++) {
+      let b = ((this.items[i].y + off) / BUCKET) | 0
+      if (b < 0) b = 0
+      else if (b >= rows) b = rows - 1
+      this.order[this.bucketCursor[b]++] = i
+    }
+
+    const batch = this.dev.sprites
+    for (let k = 0; k < n; k++) {
+      const it = this.items[this.order[k]]
+      const f = it.frame
+      const y = it.y - it.liftY
+      if (f) {
+        this.spr(f, it.x, y, it.pivotX, it.pivotY, it.rotation, it.scaleX, it.scaleY, it.alpha, it.flash,
+          it.outline, 1, 1, 1, it.emissive, it.caster, it.liftY)
+      } else {
+        const c = it.colour
+        const fl = it.flash ? HIT_FLASH : 0
+        batch.push(it.x, y, -it.w / 2, -it.h / 2, it.w, it.h, 0, 0, PAGE_SOLID,
+          it.rotation, it.scaleX, it.scaleY, c[0], c[1], c[2], it.alpha * c[3], fl, 0,
+          it.outline[0], it.outline[1], it.outline[2], it.outline[3], it.caster ? 1 : 0, it.liftY)
+      }
+    }
+    const dev = this.dev
+    batch.upload()
+    dev.beginShadows()
+    if (shadowAlpha > 0.01) batch.drawUploaded(this.vx, this.vy, this.tw, this.th, 1, sunX, sunY, shadowAlpha)
+    // Contact shadows: a soft pool under everything that stands, whatever
+    // the sun is doing, so nothing floats. The green channel of the mask.
+    const shapes = dev.shapes
+    const cs = DAY.contactShadow
+    for (let k = 0; k < n; k++) {
+      const it = this.items[k]
+      if (!it.contact) continue
+      const fw = it.frame ? it.frame.w * Math.abs(it.scaleX) : it.w
+      const rx = Math.max(5, Math.min(40, fw * 0.36))
+      shapes.wedge(it.x, it.y - 1, rx, rx * 0.38, 0, Math.PI * 2, 0, 1, 0, cs * it.alpha)
+    }
+    this.flushShapes()
+    dev.endShadows()
+    dev.world.bind()
+    batch.drawUploaded(this.vx, this.vy, this.tw, this.th, 0)
+    batch.count = 0
+  }
+
+  /**
+   * Every light this frame: the lantern (which matters more as the day goes),
+   * muzzle flashes, rounds in flight, fires and blasts, harmful ground, gems,
+   * and the Duster's lamps. Brighter at night, faint by day, never zero, so a
+   * shot still reads as a hot thing in daylight.
+   */
+  private collectLights(px: number, py: number, alpha: number): void {
+    const w = this.world
+    const day = this.day
+    const L = this.dev.lights
+    const night = day.night
+    const t = w.elapsed
+    const p = w.player
+    const cam = this.camera
+    const left = cam.x - 80
+    const right = cam.x + cam.viewW + 80
+    const top = cam.y - 80
+    const bottom = cam.y + cam.viewH + 80
+    const lc = DAY.lanternColour
+
+    if (p.alive) {
+      const flicker = 1 + 0.035 * Math.sin(t * 13.1) + 0.025 * Math.sin(t * 7.3 + 1.7)
+      const li = DAY.lanternIntensity * day.lantern * flicker
+      L.point(px, py - 18, DAY.lanternRadius * (0.75 + 0.25 * day.lantern), lc[0], lc[1], lc[2], li, 0.78)
+      L.point(px, py - 20, 56, lc[0], lc[1], lc[2], DAY.personalLight * (0.3 + 0.7 * night), 0.9)
+      for (let i = 0; i < p.weapons.length; i++) {
+        const slot = p.weapons[i]
+        const age = w.tick - slot.firedAt
+        if (age < 0 || age > 4) continue
+        const k = 1 - age / 5
+        L.point(px + Math.cos(slot.aimAngle) * 16, py - 24 + Math.sin(slot.aimAngle) * 10, 64,
+          1, 0.82, 0.5, (0.25 + 0.9 * night) * k, 0.85)
+      }
+    }
+
+    const shot = 0.1 + 0.5 * night
+    let budget = 360
+    for (let i = 0; i < w.projectiles.live && budget > 0; i++) {
+      const q = w.projectiles.items[i]
+      if (q.type === 'melee' || q.type === 'orbit' || q.type === 'aura' || q.type === 'placeable') continue
+      if (q.behaviour === 'arcSwing' || q.behaviour === 'minionHunt') continue
+      const x = q.px + (q.x - q.px) * alpha
+      const y = q.py + (q.y - q.py) * alpha
+      if (x < left || x > right || y < top || y > bottom) continue
+      const el = w.player.element
+      if (el === 'fire') L.point(x, y, 30, 1, 0.5, 0.18, shot * 1.2)
+      else if (el === 'ice') L.point(x, y, 30, 0.5, 0.78, 1, shot * 1.2)
+      else if (el === 'acid') L.point(x, y, 30, 0.55, 1, 0.3, shot * 1.2)
+      else if (el === 'shock') L.point(x, y, 30, 0.62, 0.7, 1, shot * 1.3)
+      else L.point(x, y, 24, 1, 0.84, 0.56, shot)
+      budget--
+    }
+
+    for (let i = 0; i < w.effects.live; i++) {
+      const e = w.effects.items[i]
+      if (e.under) continue
+      if (e.x < left || e.x > right || e.y < top || e.y > bottom) continue
+      const k = Math.max(0, e.life / e.maxLife)
+      L.point(e.x, e.y, 44 * Math.max(0.6, e.scale), 1, 0.62, 0.32, (0.2 + 0.7 * night) * k)
+    }
+
+    for (let i = 0; i < w.hazards.live; i++) {
+      const h = w.hazards.items[i]
+      if (h.x < left - h.radius || h.x > right + h.radius || h.y < top - h.radius || h.y > bottom + h.radius) continue
+      const fade = h.life < 0.5 ? Math.max(0, h.life / 0.5) : 1
+      if (h.kind === 'damage') {
+        const fl = 0.85 + 0.15 * Math.sin(t * 17 + h.x)
+        L.point(h.x, h.y, h.radius * 1.6, 1, 0.52, 0.2, (0.25 + 0.7 * night) * fl * fade)
+      } else if (h.kind === 'gas') {
+        L.point(h.x, h.y, h.radius * 1.3, 0.72, 0.92, 0.3, (0.04 + 0.28 * night) * fade)
+      } else if (h.kind === 'acid') {
+        L.point(h.x, h.y, h.radius * 1.3, 0.5, 1, 0.3, (0.05 + 0.3 * night) * fade)
+      }
+    }
+
+    const gem = 0.03 + 0.28 * night
+    for (let i = 0; i < w.pickups.live; i++) {
+      const g = w.pickups.items[i]
+      if (g.kind !== 'xp') continue
+      const x = g.px + (g.x - g.px) * alpha
+      const y = g.py + (g.y - g.py) * alpha
+      if (x < left || x > right || y < top || y > bottom) continue
+      L.point(x, y, 18, 0.45, 1, 0.6, gem)
+    }
+
+    for (let i = 0; i < w.enemies.live; i++) {
+      const e = w.enemies.items[i]
+      if (e.typeId !== 'duster' || e.dying > 0) continue
+      const x = e.px + (e.x - e.px) * alpha
+      const y = e.py + (e.y - e.py) * alpha
+      const dx = Math.cos(e.facing)
+      const dy = Math.sin(e.facing)
+      L.cone(x + dx * 30, y - 20 + dy * 16, 300, 1, 0.94, 0.78, 0.25 + 1.1 * night, dx, dy, 0.94, 0.8, 1)
+      L.point(x, y - 30, 90, 1, 0.6, 0.3, 0.2 + 0.4 * night)
+    }
+  }
+
+  private drawEffects(under: boolean): void {
+    const atlas = this.atlas
+    if (!atlas) return
+    const w = this.world
+    const cam = this.camera
+    const left = cam.x - 96
+    const right = cam.x + cam.viewW + 96
+    const top = cam.y - 96
+    const bottom = cam.y + cam.viewH + 96
+    for (let i = 0; i < w.effects.live; i++) {
+      const e = w.effects.items[i]
+      if (e.under !== under) continue
+      if (e.x < left || e.x > right || e.y < top || e.y > bottom) continue
+      let name = `fx.${e.clip}`
+      if (!atlas.has(`${name}.0`)) {
+        const dot = name.lastIndexOf('.')
+        if (dot > 0) name = name.slice(0, dot)
+      }
+      const len = atlas.clipLength(name, 'play')
+      const t = 1 - e.life / e.maxLife
+      let fi = (t * len) | 0
+      if (fi >= len) fi = len - 1
+      const frame = atlas.get(`${name}.${fi}`)
+      if (!frame) continue
+      this.spr(frame, e.x, e.y, 0, 0, e.rotation, e.scale, e.scale, 1, false)
+    }
+  }
+
+  private drawArenaBurn(): void {
+    const w = this.world
+    const i = w.arenaBurnInset
+    if (i <= 0) return
+    const s = this.dev.shapes
+    const pulse = 0.72 + Math.sin(w.elapsed * 2.6) * 0.16
+    const a = 0.55 * pulse
+    s.rect(0, 0, w.arenaW, i, 150 / 255, 46 / 255, 28 / 255, a)
+    s.rect(0, w.arenaH - i, w.arenaW, i, 150 / 255, 46 / 255, 28 / 255, a)
+    s.rect(0, i, i, w.arenaH - i * 2, 150 / 255, 46 / 255, 28 / 255, a)
+    s.rect(w.arenaW - i, i, i, w.arenaH - i * 2, 150 / 255, 46 / 255, 28 / 255, a)
+    const la = 0.95 * pulse
+    s.rect(i, i - 1, w.arenaW - i * 2, 3, 1, 176 / 255, 84 / 255, la)
+    s.rect(i, w.arenaH - i - 2, w.arenaW - i * 2, 3, 1, 176 / 255, 84 / 255, la)
+    s.rect(i - 1, i, 3, w.arenaH - i * 2, 1, 176 / 255, 84 / 255, la)
+    s.rect(w.arenaW - i - 2, i, 3, w.arenaH - i * 2, 1, 176 / 255, 84 / 255, la)
+  }
+
+  /**
+   * Hazards: every fill, then every hazard's own art, then every rim. Three
+   * flushes for all of them rather than three per hazard.
+   */
+  /**
+   * Hazards: every puddle and cloud in one instanced pass (gl/hazards.ts),
+   * then any map hazard's own art on top of its puddle.
+   */
+  private drawHazards(): void {
+    const w = this.world
+    const hz = this.dev.hazards
+    const cam = this.camera
+    for (let i = 0; i < w.hazards.live; i++) {
+      const h = w.hazards.items[i]
+      if (h.x + h.radius < cam.x - 8 || h.x - h.radius > cam.x + cam.viewW + 8) continue
+      if (h.y + h.radius < cam.y - 8 || h.y - h.radius > cam.y + cam.viewH + 8) continue
+      const fade = h.life < 0.5 ? Math.max(0, h.life / 0.5) : 1
+      hz.push(h.x, h.y, h.radius, HAZARD_KIND[h.kind] ?? 0, fade, (i * 0.618) % 1)
+    }
+    this.flushShapes()
+    hz.flush(this.dev.noise, w.elapsed, this.vx, this.vy, this.tw, this.th)
+    for (let i = 0; i < w.hazards.live; i++) {
+      const h = w.hazards.items[i]
+      if (!h.sprite) continue
+      const f = this.propFrame(h.sprite, h.x, h.y)
+      if (!f) continue
+      const fade = h.life < 0.5 ? Math.max(0, h.life / 0.5) : 1
+      this.dev.sprites.push(Math.round(h.x - f.w / 2), Math.round(h.y - f.h / 2), 0, 0, f.w, f.h, f.x, f.y, f.page,
+        0, 1, 1, 1, 1, 1, fade, 0, 0, 0, 0, 0, 0)
+    }
+    this.flushSprites()
+  }
+
+  private drawTelegraphs(): void {
+    const s = this.dev.shapes
+    const c = COL.telegraph
+    for (const t of this.world.telegraphs) {
+      const half = ((t.spread / 2) * Math.PI) / 180
+      s.wedge(t.x, t.y, t.range, t.range, t.angle - half, t.angle + half, c[0], c[1], c[2], c[3])
+    }
+  }
+
+  private drawPlayerMark(x: number, y: number): void {
+    const p = this.world.player
+    if (!p.alive) return
+    const m = TUNING.playerMark
+    const cy = y + m.footOffsetY
+    const s = this.dev.shapes
+    const rc = parseColourCached(m.ringColour)
+    s.ellipseRing(x, cy, m.ringRadiusX, m.ringRadiusY, m.ringWidth, rc[0], rc[1], rc[2], rc[3] * m.ringAlpha)
+    this.flushShapes()
+  }
+
+  private drawArcs(): void {
+    const s = this.dev.shapes
+    for (const a of this.arcs) {
+      if (a.aura) {
+        s.ring(a.x, a.y, a.radius * 0.9, 3, 150 / 255, 205 / 255, 225 / 255, 0.5)
+      } else {
+        const half = 0.85
+        s.wedge(a.x, a.y, a.radius, a.radius, a.angle - half, a.angle + half, 242 / 255, 234 / 255, 210 / 255, 0.3)
+        s.arc(a.x, a.y, a.radius, a.angle - half, a.angle + half, 2, 1, 250 / 255, 235 / 255, 0.75)
+      }
+    }
+  }
+
+  private drawJabs(): void {
+    if (this.jabs.length === 0) return
+    const j = JAB
+    const pl = this.world.player
+    const dir = this.atlas?.directionFor(pl.classId, pl.facing) ?? 'down'
+    const hand = carryAnchorOf('hand', dir, pl.classId)
+    const lift = -(CARRY.bootOffsetY + (hand?.dy ?? 0))
+    const s = this.dev.shapes
+    for (const a of this.jabs) {
+      const cx = a.x
+      const cy = a.y - lift
+      const cos = Math.cos(a.angle)
+      const sin = Math.sin(a.angle)
+      const half = (a.radius * j.lengthFraction) / 2
+      const mid = (j.tines - 1) / 2
+      const c = a.radius * j.forwardBias
+      for (let t = 0; t < j.tines; t++) {
+        const off = (t - mid) * j.tineSpacing
+        const x0 = cx + cos * (c - half) - sin * off
+        const y0 = cy + sin * (c - half) + cos * off
+        const x1 = cx + cos * (c + half) - sin * off
+        const y1 = cy + sin * (c + half) + cos * off
+        s.line(x0, y0, x1, y1, j.lineWidth, JAB_RGB[0], JAB_RGB[1], JAB_RGB[2], j.alpha * a.t)
+      }
+    }
+  }
+
+  private drawPickups(alpha: number): void {
+    const w = this.world
+    const atlas = this.atlas
+    const batch = this.dev.sprites
+    for (let i = 0; i < w.pickups.live; i++) {
+      const g = w.pickups.items[i]
+      const x = g.px + (g.x - g.px) * alpha
+      const y = g.py + (g.y - g.py) * alpha
+      const bob = g.magnetised ? 0 : Math.sin(g.bob * 4) * 1.5
+      const f = g.kind === 'gear' && g.itemId
+        ? atlas?.get(itemCardSprite(g.itemId)) ?? atlas?.get('pickup.feed')
+        : this.propFrame(`pickup.${g.kind}`, g.x, g.y)
+      if (f) {
+        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, 1, false)
+      } else {
+        const c = g.kind === 'xp' ? COL.xp : COL.feed
+        const s = g.kind === 'xp' ? 5 : 7
+        batch.push(Math.round(x), Math.round(y + bob), -s / 2, -s / 2, s, s, 0, 0, PAGE_SOLID,
+          0, 1, 1, c[0], c[1], c[2], 1, 0, 0, 0, 0, 0, 0)
+      }
+    }
+  }
+
+  private drawParticles(): void {
+    const w = this.world
+    const batch = this.dev.sprites
+    for (let i = 0; i < w.particles.live; i++) {
+      const p = w.particles.items[i]
+      const c = p.colour
+      const a = Math.min(1, p.life / p.maxLife)
+      batch.push(p.x, p.y, 0, 0, p.size, p.size, 0, 0, PAGE_SOLID, 0, 1, 1,
+        ((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, a, 0, 0, 0, 0, 0, 0)
+    }
+  }
+
+  private drawOverhead(px: number, py: number): void {
+    const cfg = this.world.map.overhead
+    if (!cfg || !this.overhead.length) return
+    const cam = this.camera
+    const pad = 96
+    const left = cam.x - pad
+    const top = cam.y - pad
+    const right = cam.x + cam.viewW + pad
+    const bottom = cam.y + cam.viewH + pad
+    const r2 = cfg.fadeRadius * cfg.fadeRadius
+    for (const o of this.overhead) {
+      if (o.x < left || o.x > right || o.y < top || o.y > bottom) continue
+      const dx = o.x - px
+      const dy = o.y - py
+      const d2 = dx * dx + dy * dy
+      let a = cfg.alpha
+      if (d2 < r2) {
+        const t = Math.sqrt(d2) / cfg.fadeRadius
+        const e = t * t * (3 - 2 * t)
+        a = cfg.minAlpha + (cfg.alpha - cfg.minAlpha) * e
+      }
+      if (a <= 0.01) continue
+      this.spr(o.frame, o.x, o.y, 0, 0, 0, 1, 1, a, false)
+    }
+  }
+
+  /** Damage numbers from the glyph texture: white or gold, with a dark outline from the shader. */
+  private drawDamageNumbers(): void {
+    const w = this.world
+    const batch = this.dev.sprites
+    const ol = COL.outlineText
+    for (let i = 0; i < w.damageNumbers.live; i++) {
+      const d = w.damageNumbers.items[i]
+      const t = d.life / d.maxLife
+      const a = Math.min(1, t * 1.6)
+      const glyphs = d.crit ? this.dev.glyphsBig : this.dev.glyphs
+      const c = d.crit ? COL.crit : COL.number
+      let v = Math.max(0, Math.round(d.value))
+      let n = 0
+      do { this.digits[n++] = v % 10; v = (v / 10) | 0 } while (v > 0 && n < this.digits.length)
+      let width = 0
+      for (let k = 0; k < n; k++) width += (glyphs.get(DIGIT_CHARS[this.digits[k]])?.w ?? 5) + 1
+      let x = Math.round(d.x - width / 2)
+      const top = Math.round(d.y - (d.crit ? 14 : 8))
+      for (let k = n - 1; k >= 0; k--) {
+        const g = glyphs.get(DIGIT_CHARS[this.digits[k]])
+        if (!g) continue
+        batch.push(x, top, 0, 0, g.w, g.h, g.x, g.y, PAGE_GLYPH, 0, 1, 1,
+          c[0], c[1], c[2], a, 0, 0, ol[0], ol[1], ol[2], a)
+        x += g.w + 1
+      }
+    }
+  }
+}
+
+const DIGIT_CHARS = '0123456789'
+
+const colourCache = new Map<string, RGBA>()
+function parseColourCached(css: string): RGBA {
+  let c = colourCache.get(css)
+  if (!c) {
+    c = parseColour(css)
+    colourCache.set(css, c)
+  }
+  return c
+}

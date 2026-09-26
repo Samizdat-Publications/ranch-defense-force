@@ -1,12 +1,12 @@
 {
-  "_note": "Where a run happens. A map changes all four of the things the owner asked for: the ground and its tileset, the node and enemy mix, the arena's size and shape, and the hazards standing on it. Everything here is content \u2014 adding a sixth map is this file plus nothing.",
-  "_rngNote": "THE MAP IS THE FIRST DRAW OFF THE RUN'S SEEDED RNG. World's constructor picks it immediately after `new Rng(seed)` and before anything else touches the stream. That position is load-bearing and must not move: insert the choice anywhere later and every draw after it shifts, so every existing seed replays as a different run. It is first rather than last because it is the only decision the whole rest of the run is conditioned on \u2014 arena size feeds the spatial grid, which is built before the field is scattered.",
-  "_areaConfoundNote": "Arena AREA is held near the Home Field's 3.84M on every map except the Scrapyard, which is small on purpose. Shape is the feature; area is a confound. The first pass varied both, and the two largest maps (theBurn at 4.75M, boneOrchard at 4.32M) measurably inverted The Kid's class identity in run.test.ts \u2014 a class whose damage scales with velocity needs enemies to run PAST, and on a big enough field a kiting bot just runs into empty ground and deals nothing. Holding area roughly constant keeps five genuinely different shapes without turning arena size into a stealth difficulty knob.",
-  "_shapeNote": "'Shape' here means the rectangle's proportions, not a non-rectangular arena. A 3200x1200 flat and a 1600x2600 corridor play very differently \u2014 sightlines, how far a kite can run before a wall, how much of the field the camera holds \u2014 and they cost nothing in the collision or clamping code, which stays a rectangle. A genuinely non-rectangular arena would touch the spatial grid, the edge spawner and the player clamp; it is not what this is.",
+  "_note": "Where a run happens. A map changes all four of the things the owner asked for: the ground and its tileset, the node and enemy mix, the arena's size and shape, and the hazards standing on it. Everything here is content — adding a sixth map is this file plus nothing.",
+  "_rngNote": "THE MAP IS THE FIRST DRAW OFF THE RUN'S SEEDED RNG. World's constructor picks it immediately after `new Rng(seed)` and before anything else touches the stream. That position is load-bearing and must not move: insert the choice anywhere later and every draw after it shifts, so every existing seed replays as a different run. It is first rather than last because it is the only decision the whole rest of the run is conditioned on — arena size feeds the spatial grid, which is built before the field is scattered.",
+  "_areaConfoundNote": "Arena AREA is held near the Home Field's 3.84M on every map except the Scrapyard, which is small on purpose. Shape is the feature; area is a confound. The first pass varied both, and the two largest maps (theBurn at 4.75M, boneOrchard at 4.32M) measurably inverted The Kid's class identity in run.test.ts — a class whose damage scales with velocity needs enemies to run PAST, and on a big enough field a kiting bot just runs into empty ground and deals nothing. Holding area roughly constant keeps five genuinely different shapes without turning arena size into a stealth difficulty knob.",
+  "_shapeNote": "'Shape' here means the rectangle's proportions, not a non-rectangular arena. A 3200x1200 flat and a 1600x2600 corridor play very differently — sightlines, how far a kite can run before a wall, how much of the field the camera holds — and they cost nothing in the collision or clamping code, which stays a rectangle. A genuinely non-rectangular arena would touch the spatial grid, the edge spawner and the player clamp; it is not what this is.",
   "_areaNote": "Node counts are per-map rather than scaled from area, because density is the design lever and area is only one input to it. The Scrapyard is the smallest arena AND the sparsest field: cramped and stripped, nowhere to run and little to harvest. The Bone Orchard is the largest AND the densest, which is what makes it the map you go to for feed.",
-  "_densityNote": "HOW MANY are standing at once is `life / everySeconds`, NOT `maxLive`. The first pass set maxLive to 9-14 and everySeconds to 5-13 and got one to three live hazards, because one spawn per interval that lives `life` seconds settles at that ratio long before it reaches any cap. maxLive is a safety cap, not a target. Every map below now sets `everySeconds` to about `life / (intended live count)` so the two numbers agree, and maxLive sits a little above the equilibrium to absorb the jitter. Change `life` and you have changed the density \u2014 come back and change `everySeconds` with it.",
+  "_densityNote": "HOW MANY are standing at once is `life / everySeconds`, NOT `maxLive`. The first pass set maxLive to 9-14 and everySeconds to 5-13 and got one to three live hazards, because one spawn per interval that lives `life` seconds settles at that ratio long before it reaches any cap. maxLive is a safety cap, not a target. Every map below now sets `everySeconds` to about `life / (intended live count)` so the two numbers agree, and maxLive sits a little above the equilibrium to absorb the jitter. Change `life` and you have changed the density — come back and change `everySeconds` with it.",
   "_groundStockNote": "Nineteen unwired Wang sets -- the session 17 ten (soil_to_pasture, pasture_to_{hardpan,bog,ashfall,scree,saltcrust}, earth_to_pasture_plain, pasture_to_{withered,rot,ash}_plain) plus nine later alternates of already-wired transitions -- were RETIRED in the scene-pass audit rather than wired blind. Session 17's own finding is why: the first family was generated at 'highly detailed' with decorative nouns and at 32px that becomes a REPEATING MOTIF -- the pasture read as polka dots, the hardpan as red brickwork, enemies invisible against it -- and even the better second family 'still carries a faint repeat that dirt_to_grass_plain does not'. That is a combat-readability call that needs a human watching two hundred enemies move across it, which this pass could not do, so the files were deleted from `assets/tilesets/` rather than left as a permanent packed-unused line nobody owns. RULE FOR NEXT TIME: for ground, ask for less -- and playtest before wiring, not after.",
-  "_hazardNote": "Ambient hazards belong to the map, not the wave. They damage ENEMIES as well as the player (`dps` and `playerDps` are separate), so a burning patch is a tool as much as a tax \u2014 the fight becomes about where you stand, which is the whole reason a map should own hazards. The Home Field has none on purpose: it is the baseline the game has always played as, and it stays exactly that.",
+  "_hazardNote": "Ambient hazards belong to the map, not the wave. They damage ENEMIES as well as the player (`dps` and `playerDps` are separate), so a burning patch is a tool as much as a tax — the fight becomes about where you stand, which is the whole reason a map should own hazards. The Home Field has none on purpose: it is the baseline the game has always played as, and it stays exactly that.",
   "maps": {
     "homeField": {
       "name": "The Home Field",
@@ -58,7 +58,407 @@
         "alpha": 0.1,
         "tint": "#cfd8d0",
         "drift": 5,
-        "scale": 1.0
+        "scale": 1
+      },
+      "place": {
+        "_note": "The Home Field as a place (src/render/place.ts). The arena is the fenced field; the farmstead stands outside it to the north, corn runs down both sides, and the crop duster lies where it came down, south of the road. The camera may look margin px past the fence. Nothing out there collides: nothing in the fight can reach it.",
+        "margin": 200,
+        "interiorScenery": 0.35,
+        "ground": {
+          "grassA": "wang.dirt_to_grass_plain.1111",
+          "grassB": "wang.lush_overgrown_to_cold_grey.0000",
+          "grassC": "wang.grass_to_soil.0000",
+          "dirt": "wang.short_mown_to_shallow_muddy.1111",
+          "tilled": "wang.dark_tilled_to_lush_overgrown.0000",
+          "yard": "wang.grass_to_gravel_v2.1111",
+          "water": "wang.lush_overgrown_to_stagnant_black.1111",
+          "withered": "wang.ash_to_dyinggrass_v2.1111",
+          "rot": "wang.grass_to_rot.1111",
+          "ash": "wang.grass_to_deadground.1111"
+        },
+        "paths": [
+          {
+            "width": 46,
+            "points": [
+              [
+                1232,
+                -210
+              ],
+              [
+                1228,
+                -20
+              ],
+              [
+                1250,
+                180
+              ],
+              [
+                1190,
+                420
+              ],
+              [
+                1230,
+                640
+              ],
+              [
+                1205,
+                800
+              ],
+              [
+                1160,
+                1020
+              ],
+              [
+                1210,
+                1260
+              ],
+              [
+                1190,
+                1460
+              ],
+              [
+                1200,
+                1640
+              ],
+              [
+                1210,
+                1690
+              ]
+            ]
+          },
+          {
+            "width": 38,
+            "points": [
+              [
+                -200,
+                770
+              ],
+              [
+                180,
+                760
+              ],
+              [
+                520,
+                800
+              ],
+              [
+                860,
+                780
+              ],
+              [
+                1205,
+                800
+              ],
+              [
+                1560,
+                850
+              ],
+              [
+                1900,
+                820
+              ],
+              [
+                2250,
+                860
+              ],
+              [
+                2600,
+                850
+              ]
+            ]
+          },
+          {
+            "width": 54,
+            "points": [
+              [
+                -200,
+                1720
+              ],
+              [
+                400,
+                1705
+              ],
+              [
+                900,
+                1715
+              ],
+              [
+                1400,
+                1700
+              ],
+              [
+                2000,
+                1712
+              ],
+              [
+                2600,
+                1705
+              ]
+            ]
+          },
+          {
+            "width": 30,
+            "points": [
+              [
+                1560,
+                850
+              ],
+              [
+                1640,
+                640
+              ],
+              [
+                1760,
+                470
+              ],
+              [
+                1930,
+                330
+              ]
+            ]
+          }
+        ],
+        "tilled": [
+          {
+            "x": 170,
+            "y": 1010,
+            "w": 560,
+            "h": 420
+          },
+          {
+            "x": 1720,
+            "y": 220,
+            "w": 470,
+            "h": 250
+          },
+          {
+            "x": 1800,
+            "y": 1130,
+            "w": 380,
+            "h": 300
+          }
+        ],
+        "yard": [
+          {
+            "x": 240,
+            "y": -200,
+            "w": 1880,
+            "h": 170
+          },
+          {
+            "x": 1100,
+            "y": -40,
+            "w": 260,
+            "h": 60
+          }
+        ],
+        "water": [
+          {
+            "x": 2470,
+            "y": 1790,
+            "rx": 150,
+            "ry": 62
+          },
+          {
+            "x": -90,
+            "y": -120,
+            "rx": 70,
+            "ry": 36
+          }
+        ],
+        "landmarks": [
+          {
+            "sprite": "scene.treeOak",
+            "x": 110,
+            "y": -70
+          },
+          {
+            "sprite": "ranch.coop",
+            "x": 360,
+            "y": -44
+          },
+          {
+            "sprite": "ranch.hayWagon",
+            "x": 560,
+            "y": -24
+          },
+          {
+            "sprite": "ranch.barn",
+            "x": 790,
+            "y": -38
+          },
+          {
+            "sprite": "ranch.silo",
+            "x": 1068,
+            "y": -58
+          },
+          {
+            "sprite": "ranch.well",
+            "x": 1400,
+            "y": -22
+          },
+          {
+            "sprite": "ranch.windmill",
+            "x": 1530,
+            "y": -62
+          },
+          {
+            "sprite": "ranch.farmhouse",
+            "x": 1790,
+            "y": -44
+          },
+          {
+            "sprite": "ranch.doghouse",
+            "x": 1965,
+            "y": -18
+          },
+          {
+            "sprite": "ranch.tractorRed",
+            "x": 2080,
+            "y": -26
+          },
+          {
+            "sprite": "ranch.bunkhouse",
+            "x": 2240,
+            "y": -58
+          },
+          {
+            "sprite": "scene.treeOak",
+            "x": 2420,
+            "y": -80
+          },
+          {
+            "sprite": "prop.hayBale",
+            "x": 470,
+            "y": 1668
+          },
+          {
+            "sprite": "scene.hay",
+            "x": 540,
+            "y": 1690
+          },
+          {
+            "sprite": "prop.hayBale",
+            "x": 610,
+            "y": 1664
+          },
+          {
+            "sprite": "prop.scarecrowRotted",
+            "x": 880,
+            "y": 1660
+          },
+          {
+            "sprite": "ranch.stockTank",
+            "x": 250,
+            "y": 1790
+          },
+          {
+            "sprite": "ranch.biplane",
+            "x": 1640,
+            "y": 1800
+          },
+          {
+            "sprite": "prop.burnBarrel",
+            "x": 1560,
+            "y": 1770
+          },
+          {
+            "sprite": "decal.scorch",
+            "x": 1620,
+            "y": 1790
+          },
+          {
+            "sprite": "scene.oak",
+            "x": 1320,
+            "y": 1790
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 1040,
+            "y": 1810
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 2330,
+            "y": 1800
+          },
+          {
+            "sprite": "node.reeds",
+            "x": 2600,
+            "y": 1770
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 2560,
+            "y": 1840
+          },
+          {
+            "sprite": "scene.treeOak",
+            "x": -130,
+            "y": 1830
+          },
+          {
+            "sprite": "scene.treeOak",
+            "x": 2560,
+            "y": 1620
+          }
+        ],
+        "rows": [
+          {
+            "sprites": [
+              "scene.cropRowCorn",
+              "scene.cropRowCornRot"
+            ],
+            "alt": 0.12,
+            "x0": -186,
+            "x1": -40,
+            "y0": 40,
+            "y1": 1560,
+            "dx": 42,
+            "dy": 30,
+            "jitter": 3
+          },
+          {
+            "sprites": [
+              "scene.cropRowCorn",
+              "scene.cropRowCornRot"
+            ],
+            "alt": 0.12,
+            "x0": 2440,
+            "x1": 2590,
+            "y0": 40,
+            "y1": 1560,
+            "dx": 42,
+            "dy": 30,
+            "jitter": 3
+          },
+          {
+            "sprites": [
+              "scene.cropRowWheat",
+              "scene.cropRowWheatRot"
+            ],
+            "alt": 0.1,
+            "x0": 30,
+            "x1": 420,
+            "y0": 1760,
+            "y1": 1810,
+            "dx": 38,
+            "dy": 26,
+            "jitter": 2
+          }
+        ],
+        "fence": {
+          "run": "ranch.fenceRun",
+          "broken": "ranch.fenceBroken",
+          "post": "ranch.fenceCornerPost",
+          "gate": "ranch.gateOpen",
+          "gates": [
+            1232,
+            1200
+          ],
+          "pitch": 128,
+          "sidePitch": 64
+        }
       }
     },
     "saltFlats": {
@@ -108,7 +508,7 @@
           "node.saltRock": 34
         }
       },
-      "_biasNote": "Open ground with long sightlines rewards speed and punishes anything that lumbers. The fast roster gets commoner and the two slowest heavies get rarer \u2014 a maskedHauler crossing 3200px of flat is a slow-motion telegraph rather than a threat.",
+      "_biasNote": "Open ground with long sightlines rewards speed and punishes anything that lumbers. The fast roster gets commoner and the two slowest heavies get rarer — a maskedHauler crossing 3200px of flat is a slow-motion telegraph rather than a threat.",
       "_tuningNote": "First pass was a 3200x1200 flat with rooster and duckFlight at 1.8, which measured 40% cleared against the Home Field's 55% over 60 headless runs. Two compounding costs: the longest walk in the game between anything worth killing, and a roster stripped of the slow things a kiting bot farms. Pulled in to 2900x1300 and the multipliers toward 1. Still the widest arena and still the fast map.",
       "enemyBias": {
         "rooster": 1.5,
@@ -118,7 +518,7 @@
         "sickHog": 0.8
       },
       "hazards": {
-        "_note": "Salt pans vent. Small, frequent, short-lived, and they expand \u2014 you get pushed off ground rather than denied it outright.",
+        "_note": "Salt pans vent. Small, frequent, short-lived, and they expand — you get pushed off ground rather than denied it outright.",
         "kind": "gas",
         "sprite": "hazard.gas",
         "fromWave": 3,
@@ -188,9 +588,9 @@
           "node.scrapHeap": 40
         }
       },
-      "_biasNote": "The smallest arena in the game, so the roster goes heavy. There is nowhere to kite a maskedHauler to, which is the point \u2014 this is the map where you have to kill the thing in front of you. Fliers get rare because a lane needs somewhere to go.",
+      "_biasNote": "The smallest arena in the game, so the roster goes heavy. There is nowhere to kite a maskedHauler to, which is the point — this is the map where you have to kill the thing in front of you. Fliers get rare because a lane needs somewhere to go.",
       "enemyBias": {
-        "maskedHauler": 2.0,
+        "maskedHauler": 2,
         "sickHog": 1.7,
         "blownSheep": 1.6,
         "bloatedFarmhand": 1.3,
@@ -198,7 +598,7 @@
         "rooster": 0.6
       },
       "hazards": {
-        "_note": "Oil sumps. Big, long-lived, and they slow rather than burn \u2014 the damage is that you are still standing there when the next group arrives.",
+        "_note": "Oil sumps. Big, long-lived, and they slow rather than burn — the damage is that you are still standing there when the next group arrives.",
         "kind": "slow",
         "sprite": "hazard.mud",
         "fromWave": 2,
@@ -268,8 +668,8 @@
           "node.ashStump": 46
         }
       },
-      "_biasNote": "Burnt ground grows the things that thrive on rot. The acid and spray roster gets commoner, and plain farmhand chaff gets rarer \u2014 this map is about hazards you can be pushed into, so the enemies that push are the ones worth having.",
-      "_tuningNote": "First pass was acidZombie 2.0 / bloatedFarmhand 1.8 / maskedSprayer 1.6 / farmhand 0.7 in a 1600x2600 arena, which measured 21% cleared against the Home Field's 32% over the headless bot \u2014 the only map in the set below baseline. Stripping the cheap chaff out of the roster and replacing it with 40hp acid in the narrowest arena in the game compounded: nothing to kill quickly, nowhere to go. Widened to 1900 and the multipliers pulled toward 1. This wants a human playtest, not more bot passes; see NOTES.md.",
+      "_biasNote": "Burnt ground grows the things that thrive on rot. The acid and spray roster gets commoner, and plain farmhand chaff gets rarer — this map is about hazards you can be pushed into, so the enemies that push are the ones worth having.",
+      "_tuningNote": "First pass was acidZombie 2.0 / bloatedFarmhand 1.8 / maskedSprayer 1.6 / farmhand 0.7 in a 1600x2600 arena, which measured 21% cleared against the Home Field's 32% over the headless bot — the only map in the set below baseline. Stripping the cheap chaff out of the roster and replacing it with 40hp acid in the narrowest arena in the game compounded: nothing to kill quickly, nowhere to go. Widened to 1900 and the multipliers pulled toward 1. This wants a human playtest, not more bot passes; see NOTES.md.",
       "enemyBias": {
         "acidZombie": 1.5,
         "bloatedFarmhand": 1.35,
@@ -277,7 +677,7 @@
         "farmhand": 0.9
       },
       "hazards": {
-        "_note": "Live fire. Small, hot and it hurts enemies more than it hurts you \u2014 the tall arena means you are usually able to choose which side of one to be on.",
+        "_note": "Live fire. Small, hot and it hurts enemies more than it hurts you — the tall arena means you are usually able to choose which side of one to be on.",
         "kind": "damage",
         "sprite": "hazard.fire",
         "fromWave": 2,
@@ -347,8 +747,8 @@
           "node.boneHeap": 26
         }
       },
-      "_biasNote": "Bone meal makes things grow, which is why this is the feed map. What it grows is the shambling half of the roster \u2014 nothing fast, everything that used to be a person.",
-      "_tuningNote": "First pass was a 2600x1900 field with the fast half of the roster cut to 0.6-0.7, which measured 29% cleared against the Home Field's 55% over 60 headless runs \u2014 the worst map in the set. The biggest arena and the slowest enemies is a bad pair: the field never comes to you, so the run under-levels and arrives at wave 20 three tiers short. Pulled in to 2400x1800 and the multipliers toward 1.",
+      "_biasNote": "Bone meal makes things grow, which is why this is the feed map. What it grows is the shambling half of the roster — nothing fast, everything that used to be a person.",
+      "_tuningNote": "First pass was a 2600x1900 field with the fast half of the roster cut to 0.6-0.7, which measured 29% cleared against the Home Field's 55% over 60 headless runs — the worst map in the set. The biggest arena and the slowest enemies is a bad pair: the field never comes to you, so the run under-levels and arrives at wave 20 three tiers short. Pulled in to 2400x1800 and the multipliers toward 1.",
       "enemyBias": {
         "farmhand": 1.3,
         "acidZombie": 1.2,
@@ -358,7 +758,7 @@
         "duckFlight": 0.8
       },
       "hazards": {
-        "_note": "Grave damp. Rare, wide and slow \u2014 barely lethal on its own, but it sits on the ground you wanted to harvest.",
+        "_note": "Grave damp. Rare, wide and slow — barely lethal on its own, but it sits on the ground you wanted to harvest.",
         "kind": "gas",
         "sprite": "hazard.gas",
         "fromWave": 5,
@@ -413,15 +813,36 @@
         "soilSet": "dark_brown_to_short_green",
         "soilEdgeCols": 4,
         "blight": [
-          { "fromWave": 8, "groundSet": "short_mown_to_shallow_muddy" },
-          { "fromWave": 14, "groundSet": "lush_overgrown_to_stagnant_black" },
-          { "fromWave": 20, "groundSet": "grass_to_deadground" }
+          {
+            "fromWave": 8,
+            "groundSet": "short_mown_to_shallow_muddy"
+          },
+          {
+            "fromWave": 14,
+            "groundSet": "lush_overgrown_to_stagnant_black"
+          },
+          {
+            "fromWave": 20,
+            "groundSet": "grass_to_deadground"
+          }
         ]
       },
       "nodes": {
-        "initial": { "rock": 18, "tree": 20, "crop": 46 },
-        "max": { "rock": 30, "tree": 30, "crop": 66 },
-        "regrowPerWave": { "rock": 2, "tree": 3, "crop": 7 },
+        "initial": {
+          "rock": 18,
+          "tree": 20,
+          "crop": 46
+        },
+        "max": {
+          "rock": 30,
+          "tree": 30,
+          "crop": 66
+        },
+        "regrowPerWave": {
+          "rock": 2,
+          "tree": 3,
+          "crop": 7
+        },
         "_variantNote": "Cattails and reeds are the whole point -- they are weight-0 crop variants in nodes.json and this is the first map to raise them. Wet ground grows reeds and not much else, so they take most of the crop pool here.",
         "variantWeights": {
           "node.cattails": 26,
@@ -482,9 +903,9 @@
         "acidZombie": 1.5,
         "maskedSprayer": 1.4,
         "baseGuard": 1.3,
-        "baseOperator": 1.0,
+        "baseOperator": 1,
         "bloatedFarmhand": 1.2,
-        "maskedHauler": 1.0,
+        "maskedHauler": 1,
         "baseHazmat": 1.1,
         "rooster": 0,
         "infectedHen": 0,
@@ -595,7 +1016,7 @@
       "_biasNote": "The base roster. Zeroing the farm animals alone would leave six enemies across twenty-five waves with holes at 2, 3, 5, 8, 9, 10, 13, 16 and 19 -- which is the whole reason the base cast was generated. A cursed pony three floors under a missile silo is the sort of thing that makes a place read as randomly generated rather than built."
     },
     "theLift": {
-      "name": "Sub-Level 2 \u2014 Lift Head",
+      "name": "Sub-Level 2 — Lift Head",
       "_note": "The second base level, and the proof that descending works: it shares theVault's arena EXACTLY, because `World.descendTo` refuses a map that would change it. The spatial grid, the camera and every canvas the renderer bakes are sized from the arena once, at construction, so levels of one facility share a footprint and a descent costs a re-bake instead of a rewrite. Rooms in one building; it costs the design nothing.",
       "weight": 0,
       "arena": {

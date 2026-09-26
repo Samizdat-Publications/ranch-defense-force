@@ -15,6 +15,7 @@ import { Rng, seedFromString } from './core/rng'
 import { World } from './sim/world'
 import { OfferPool, applySwap, type Offer } from './sim/offers'
 import { Renderer } from './render/renderer'
+import { GLRenderer } from './render/gl-renderer'
 import { Atlas } from './core/atlas'
 import { Hud } from './ui/hud'
 import { LevelUpScreen } from './ui/levelup'
@@ -30,6 +31,8 @@ import { load as loadSave, save as writeSave, type Save } from './sim/save'
 import {
   metaStats, unlockedWeapons, unlockedItems, bankRun, unlockedClasses, bunkhouseOffers,
 } from './sim/meta'
+import { STEP } from './core/step'
+import { Autopilot, pickGreedy } from './dev/autopilot'
 
 type State = 'menu' | 'playing' | 'levelup' | 'shop' | 'results' | 'paused' | 'homestead'
 
@@ -47,7 +50,12 @@ const input = new Input()
 input.attach()
 
 let world: World | null = null
-let renderer: Renderer | null = null
+/** `?r=2d` keeps the v1 Canvas 2D renderer for side-by-side comparison. */
+const USE_2D = new URLSearchParams(location.search).get('r') === '2d'
+let renderer: Renderer | GLRenderer | null = null
+function makeRenderer(w: World, a: Atlas | null): Renderer | GLRenderer {
+  return USE_2D ? new Renderer(canvas, w, a) : new GLRenderer(canvas, w, a)
+}
 /** Null until the atlas resolves, and stays null if it fails — the game then
  *  renders the M0-M3 coloured squares rather than not rendering at all. */
 let atlas: Atlas | null = null
@@ -57,6 +65,13 @@ let state: State = 'menu'
 /** Level-ups can arrive several at once from one gem; queue them. */
 let pendingLevelUps = 0
 let currentClassId = 'hand'
+/**
+ * Set by `rdf.hold()`, for the photo tour (tools/tour.ts): while true the loop
+ * still draws every frame but stops calling `world.step`, so a screenshot
+ * taken after `rdf.fastForward` shows exactly the state fast-forwarding left
+ * behind rather than one more tick of drift from a stray rAF.
+ */
+let heldForTour = false
 /** The Homestead save, held in memory and written back on every change. */
 let profile: Save = loadSave()
 /** County Fair tier for the next run. */
@@ -130,7 +145,7 @@ function startRun(classId: string, seedText: string): void {
   }, currentTier)
   offers = new OfferPool(world.rng)
   offers.setUnlocked([...unlockedWeapons(profile), ...unlockedItems(profile)])
-  renderer = new Renderer(canvas, world, atlas)
+  renderer = makeRenderer(world, atlas)
   hud = new Hud(uiRoot)
   resize()
   renderer.camera.snapTo(world.player.x, world.player.y)
@@ -338,7 +353,7 @@ const loop = new Loop(
       levelUp.handleDigit(input.digitPressed)
     }
 
-    if (world && state === 'playing') {
+    if (world && state === 'playing' && !heldForTour) {
       world.step(dt, input.moveX, input.moveY, input.abilityPressed)
       openLevelUpIfPending()
     }
@@ -455,7 +470,7 @@ Atlas.load(import.meta.env.BASE_URL)
     if (world) {
       // A run already started against no atlas: rebuild the renderer so it
       // picks up the art rather than staying square for the rest of the run.
-      renderer = new Renderer(canvas, world, atlas)
+      renderer = makeRenderer(world, atlas)
       resize()
       renderer.camera.snapTo(world.player.x, world.player.y)
     }
@@ -463,6 +478,112 @@ Atlas.load(import.meta.env.BASE_URL)
   .catch((err) => {
     console.warn('atlas unavailable, falling back to coloured squares:', err)
   })
+
+/**
+ * The tour's own `onWaveComplete` (`tools/tour.ts`, via `rdf.fastForward`
+ * below). Mirrors `queueShop`'s real rules, the arena clears and the shop's
+ * interest and purchases apply, without ever building the shop's DOM screen,
+ * so a fast-forwarded run can cross a dozen shops with none of them visible
+ * for a screenshot to catch mid-open. Compared by reference in `fastForward`
+ * so patching a world's events is a one-time, idempotent thing.
+ */
+function tourWaveComplete(wave: number): void {
+  if (!world) return
+  if ((WAVES.shopAfterWaves as number[]).includes(wave)) resolveShopHeadless(world)
+  if (wave >= WAVES.waveCount) finishRun(true)
+}
+
+/**
+ * One shop visit, bought greedily off the same `OfferPool` everything else in
+ * this file uses. See `tourWaveComplete` above for why this exists instead of
+ * calling `queueShop`.
+ */
+function resolveShopHeadless(w: World): void {
+  if (!offers) return
+  for (let i = w.enemies.live - 1; i >= 0; i--) w.enemies.free(i)
+  offers.beginShopVisit()
+  w.player.feed += w.interestFor(w.player.feed)
+  // Bounded well past anything a greedy bot could afford in one visit, so a
+  // content bug (a free card, say) cannot turn this into an infinite loop.
+  for (let i = 0; i < 10; i++) {
+    const board = offers.draw(w.player, 4, w.elapsed, w.player.stats.luck, 'shop')
+      .filter((o) => w.player.feed >= o.cost)
+    const chosen = pickGreedy(board)
+    if (!chosen) break
+    w.player.feed -= chosen.cost
+    applyOffer(chosen)
+  }
+}
+
+/**
+ * Step the sim at 1/60s using `Autopilot` (`src/dev/autopilot.ts`), for
+ * `tools/tour.ts`. Every choice, weapons, items, shop buys, runs through this
+ * file's own `applyOffer`, so the build a screenshot shows is exactly what a
+ * real run would carry. Level-ups resolve immediately off the greedy picker
+ * and shops off `resolveShopHeadless`, both without opening their DOM
+ * screens; `rdf.openLevelUp`/`rdf.openShop` exist for a scenario that wants
+ * the real screen instead.
+ *
+ * `opts.invulnerable` restores full hp before and after every tick, undoing
+ * `world.over` too if one tick's damage still overwhelmed it, so a late-game
+ * scenario is reachable without depending on how well the bot plays.
+ */
+function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
+  wave: number; hp: number; maxHp: number; level: number; kills: number
+  liveEnemies: number; weapons: string[]; over: boolean; invulnerableUsed: boolean
+} {
+  const w = world
+  if (!w || !offers) throw new Error('rdf.fastForward: no run in progress -- call rdf.startRun first')
+  if (w.events.onWaveComplete !== tourWaveComplete) w.events.onWaveComplete = tourWaveComplete
+
+  const pilot = new Autopilot()
+  const steps = Math.max(0, Math.round(seconds * 60))
+  for (let i = 0; i < steps && !w.over; i++) {
+    if (opts.invulnerable) w.player.hp = w.player.stats.maxHp
+
+    const input = pilot.step(w)
+    w.step(STEP, input.moveX, input.moveY, input.ability)
+
+    if (opts.invulnerable && w.over) {
+      // A single tick outran the reset above (several contact hits landing
+      // together, say). Revive rather than let `over` freeze every step
+      // after it, which would silently strand the run short of its target.
+      w.player.hp = w.player.stats.maxHp
+      w.over = false
+    }
+
+    while (pendingLevelUps > 0) {
+      pendingLevelUps--
+      const count = w.player.stats.luck >= 40 ? WAVES.xp.cardsAtHighLuck : WAVES.xp.cardsPerLevel
+      const board = offers.draw(w.player, count, w.elapsed, w.player.stats.luck, 'levelup')
+      const chosen = pickGreedy(board)
+      if (chosen) applyOffer(chosen)
+    }
+  }
+
+  return {
+    wave: w.spawner.wave,
+    hp: Math.round(w.player.hp),
+    maxHp: Math.round(w.player.stats.maxHp),
+    level: w.player.level,
+    kills: w.kills,
+    liveEnemies: w.enemies.live,
+    weapons: w.player.weapons.map((s) => s.id),
+    over: w.over,
+    invulnerableUsed: opts.invulnerable === true,
+  }
+}
+
+/**
+ * Draw one frame off the current world/renderer, synchronously, so a
+ * screenshot taken right after does not wait for (or depend on) a
+ * requestAnimationFrame a hidden or headless pane may never fire.
+ */
+function renderNow(): void {
+  if (!renderer || !world) return
+  renderer.draw(1, shakeRand)
+  hud?.update(world)
+}
 
 // Expose for console poking during development. Not referenced by the game.
 // `openLevelUp`/`openShop` exist so the card screens can be inspected without
@@ -481,6 +602,7 @@ Object.assign(window as unknown as Record<string, unknown>, {
     get profile() { return profile },
     startRun,
     openHomestead,
+    finishRun,
     // The screens themselves, so a UI change can be driven without waiting for
     // a rAF-driven game loop that a headless pane may never run.
     screens: { levelUp, shop, results, menu, pause, homestead },
@@ -500,5 +622,11 @@ Object.assign(window as unknown as Record<string, unknown>, {
         () => finishRun(false),
       )
     },
+    // The photo tour's own three (tools/tour.ts): fast-forward the sim with a
+    // bot pilot, freeze the loop's own stepping while it draws, and force one
+    // synchronous frame so a screenshot never depends on rAF.
+    fastForward,
+    hold: (on: boolean) => { heldForTour = on },
+    renderNow,
   },
 })

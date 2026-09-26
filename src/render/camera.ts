@@ -14,6 +14,8 @@ export class Camera {
   /** Shake offset, recomputed each frame from trauma. */
   shakeX = 0
   shakeY = 0
+  /** How far past the arena edge the view may go, to show what stands outside the fence. */
+  margin = 0
 
   constructor(
     public viewW: number,
@@ -64,11 +66,12 @@ export class Camera {
   }
 
   private clamp(): void {
-    const maxX = Math.max(0, this.arenaW - this.viewW)
-    const maxY = Math.max(0, this.arenaH - this.viewH)
-    if (this.x < 0) this.x = 0
+    const m = this.margin
+    const maxX = Math.max(-m, this.arenaW - this.viewW + m)
+    const maxY = Math.max(-m, this.arenaH - this.viewH + m)
+    if (this.x < -m) this.x = -m
     else if (this.x > maxX) this.x = maxX
-    if (this.y < 0) this.y = 0
+    if (this.y < -m) this.y = -m
     else if (this.y > maxY) this.y = maxY
   }
 
