@@ -112,7 +112,7 @@ export class HomesteadScreen {
         else { this.where = null; this.render() }
       },
     })
-    const out = el('button', { text: 'HEAD OUT →', onClick: () => this.onLeave?.() })
+    const out = el('button', { class: 'phome-headout', text: 'HEAD OUT →', onClick: () => this.onLeave?.() })
     const foot = el('div', { class: 'phome-foot' }, [
       back, this.footNote, el('span', { text: 'ART BY LIMEZU · LIMEZU.ITCH.IO' }), out,
     ])

@@ -762,6 +762,19 @@ export class GLDevice {
     const d = img.data
     for (let i = 3; i < d.length; i += 4) d[i] = d[i] >= 110 ? 255 : 0
     g.putImageData(img, 0, 0)
+    // Trim each glyph to its ink: the font's advance is wider than its
+    // pixels, and a number drawn from advances read as "8 5", not "85".
+    for (const [map] of rows) {
+      for (const gl of map.values()) {
+        let right = -1
+        for (let x = gl.x; x < gl.x + gl.w + 2 && x < c.width; x++) {
+          for (let y = gl.y; y < gl.y + gl.h && y < c.height; y++) {
+            if (d[(y * c.width + x) * 4 + 3]) { right = x; break }
+          }
+        }
+        if (right >= gl.x) gl.w = right - gl.x + 1
+      }
+    }
 
     const gl = this.gl
     const tex = gl.createTexture()

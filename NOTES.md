@@ -51,7 +51,9 @@ The v1 state is tagged `v1-final`.
 
 ## What the critic rounds changed (2026-09-26)
 
-Scores 4 (v1) -> 5 -> 6 -> 5 -> 5 -> 6. Each row in docs/V2.md. The fixes that
+Scores 4 (v1), then 5, 6, 5, 5, 6, 5, 5, 5, 5 across nine rounds of fresh
+reviewers: the menus settled at near-commercial early and the in-run frames
+climbed from a flat field to a place. Each row in docs/V2.md. The fixes that
 mattered most, in the order they were found:
 
 - **The layout mask bug.** `bakeLayout` rasterised rectangles with an
@@ -76,6 +78,16 @@ mattered most, in the order they were found:
   fill with a hard edge; hit sparks warmed off pure white.
 - **The Homestead** had an opaque painted-ground panel and a generic screen
   blur over the live farm. Both gone.
+- **Rounds 6-9.** Night is near-dark outside the lantern (the pale blue
+  fog was the "wash"); every dirt, soil and yard patch has a ragged grass lip
+  (`gl/ground.ts`), which is what made the ground read as authored rather
+  than pasted; the Home Field is four worked fields with headlands, not a
+  lawn; tar is a glossy slick; the tour bot holds a fighting distance so the
+  crowd stays in frame; locked heroes are silhouettes; the Homestead has a
+  real "Head out" button. The damage-number glyphs are trimmed to their ink.
+- **The label font is Pixelify Sans** (OFL, self-hosted in `public/fonts/`
+  with its licence). Silkscreen is an 8 px grid font and at label sizes its
+  C closed into an O. Silkscreen stays for the in-world damage digits.
 
 ## The self-test loop
 

@@ -736,7 +736,9 @@ Object.assign(window as unknown as Record<string, unknown>, {
       const cam = renderer.camera
       renderer.holdCamera = {
         x: Math.round(b.x * 0.62 + p.x * 0.38 - cam.viewW / 2),
-        y: Math.round(b.y * 0.62 + p.y * 0.38 - cam.viewH / 2),
+        // A sprite stands up from its feet: aim at the middle of a big one,
+        // or its top sits under the health bar.
+        y: Math.round(b.y * 0.62 + p.y * 0.38 - cam.viewH / 2 - 70),
       }
       return true
     },
@@ -747,9 +749,10 @@ Object.assign(window as unknown as Record<string, unknown>, {
      * kills it in seconds, so waiting for it to come in photographs either its
      * back at the fence or an empty field. Staged like the hour and the health.
      */
-    stageBoss: (): void => {
+    stageBoss: (hpFrac?: number): void => {
       const b = world?.findBoss()
       if (!b || !world) return
+      if (hpFrac !== undefined) b.hp = Math.max(1, b.maxHp * hpFrac)
       const m = 260
       // Beside the player, not above: the top third of the screen is where
       // the boss card and the health bar sit.

@@ -171,8 +171,21 @@ async function untilBoss(page: Page): Promise<void> {
   // Long enough to be past its entrance, short enough that a strong build
   // has not already killed it (a 3 s wait photographed an empty field).
   await ff(page, 1.2, true)
-  // Then stand it inside the fence, facing the player (see rdf.stageBoss).
-  await page.evaluate('window.rdf.stageBoss()')
+  // Then stand it inside the fence, facing the player (see rdf.stageBoss),
+  // and let its intro card clear before the shutter: the card is drawn
+  // across the top third, and a 2x boss reaches up into it. Its health is
+  // topped up first so a strong build has not killed it by then.
+  // In short steps, topping it up each time: the bull has a fraction of
+  // the Duster's health and a late build kills it inside one long wait.
+  for (let i = 0; i < 5; i++) {
+    await page.evaluate('window.rdf.stageBoss(0.9)')
+    await ff(page, 0.52, true)
+  }
+  await page.evaluate('window.rdf.stageBoss(0.62)')
+  // The card animates in real time, and a fast-forward takes almost none:
+  // hold the sim and let the card finish before the shutter.
+  await page.evaluate('window.rdf.hold(true)')
+  await page.waitForTimeout(3800)
 }
 
 /** Photograph the run at a representative health (see `rdf.stageHp`). */

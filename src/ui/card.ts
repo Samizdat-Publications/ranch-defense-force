@@ -231,7 +231,10 @@ const ART_WINDOW_H = 126
 function artZoom(name: string): number {
   const f = frameOf(name)
   if (!f) return 2
-  return f.w * 2 <= ART_WINDOW_W && f.h * 2 <= ART_WINDOW_H ? 2 : 1
+  // The largest whole scale that keeps the art inside ~80% of the window,
+  // so a 20 px icon is not a speck beside one that fills its frame.
+  const fit = Math.min((ART_WINDOW_W * 0.8) / f.w, (ART_WINDOW_H * 0.8) / f.h)
+  return Math.max(1, Math.min(4, Math.floor(fit)))
 }
 
 /** "3/5" -> "3 of 5"; "4/4 · LAST" -> "4 of 4 · LAST". "ONE ONLY" is untouched. */

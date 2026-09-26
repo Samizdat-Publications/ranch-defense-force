@@ -38,8 +38,9 @@ const HARVEST_TOOLS = ['pickaxe', 'axe'] as const
 const PROJECTILE_SCALE = 0.55
 const PROJECTILE_FPS = 15
 const PROP_FPS = 8
-/** How far a hit flash whitens a sprite. Full white read as a missing texture. */
-const HIT_FLASH = 0.6
+/** How far a hit flash whitens a sprite. Full white read as a missing texture,
+ *  and at 0.6 an enemy under steady fire still lost all its shading. */
+const HIT_FLASH = 0.38
 const INJURED_BELOW = (TUNING.combat.injuredBelowPct as number) / 100
 
 const RENDER = (TUNING as unknown as { render?: Record<string, number> }).render ?? {}
@@ -184,6 +185,9 @@ export class GLRenderer {
   /** The same outline, alpha 1 + pallor: the sprite shader reads the excess as the curse. */
   private readonly cursedOutline: RGBA = [0, 0, 0, 0]
   private readonly cursedElite: RGBA = [0, 0, 0, 0]
+  /** A boss: the day's outline with a trace of curse, which buys it the
+   *  moonlit rim and self-light after dark without draining its colours. */
+  private readonly bossOutline: RGBA = [0, 0, 0, 0]
   private readonly fogRgb = [0, 0, 0]
   private readonly decals: Target
   private scenery: Placed[] = []
@@ -352,6 +356,8 @@ export class GLRenderer {
       this.cursedElite[c] = COL.outlineElite[c]
     }
     this.cursedOutline[3] = 1 + PALLOR
+    for (let c = 0; c < 4; c++) this.bossOutline[c] = this.enemyOutline[c]
+    this.bossOutline[3] = 1.1
     this.cursedElite[3] = 1 + PALLOR
 
     this.flushStains()
@@ -781,12 +787,11 @@ export class GLRenderer {
       it.h = e.radius * 2
       const bossDef = ENEMIES[e.typeId] as { drawScale?: number; deathSeconds?: number; boss?: boolean } | undefined
       // The cast is cursed; a boss is a thing in its own right and keeps its colours.
-      it.outline = bossDef?.boss ? this.enemyOutline : e.elite ? this.cursedElite : this.cursedOutline
+      it.outline = bossDef?.boss ? this.bossOutline : e.elite ? this.cursedElite : this.cursedOutline
       it.caster = true
       it.contact = true
-      // A boss at 2x doubles every lamp pixel, and its bloom became a white
-      // blob over the machine; half strength keeps the lamps and the shape.
-      it.emissive = -Math.max(EYE_DAY, this.day.night) * (bossDef?.boss ? 0.5 : 1)
+      // Eyes (and a boss's lamps) glow at every hour, fully after dark.
+      it.emissive = -Math.max(EYE_DAY, this.day.night)
 
       const bossScale = Math.round(bossDef?.drawScale ?? 1)
       if (bossScale > 1 || e.typeId === 'duster') it.flash *= 0.4
@@ -840,7 +845,7 @@ export class GLRenderer {
       it.y = y
       it.frame = frame ?? null
       it.colour = p.type === 'melee' || p.type === 'orbit' ? COL.melee : COL.projectile
-      it.emissive = p.type === 'melee' || p.type === 'orbit' || p.behaviour === 'minionHunt' || p.type === 'placeable' ? 0 : 0.6
+      it.emissive = p.type === 'melee' || p.type === 'orbit' || p.behaviour === 'minionHunt' || p.type === 'placeable' ? 0 : 0.3
       it.caster = p.behaviour === 'minionHunt' || p.type === 'placeable'
       it.w = p.radius * 2
       it.h = p.radius * 2
@@ -1176,7 +1181,9 @@ export class GLRenderer {
       const y = e.py + (e.y - e.py) * alpha
       const dx = Math.cos(e.facing)
       const dy = Math.sin(e.facing)
-      L.cone(x + dx * 60, y - 20 + dy * 30, 170, 1, 0.82, 0.55, 0.08 + 0.32 * night, dx, dy, 0.88, 0.8, 1)
+      // A pool of lamp light on the ground ahead of it; the cone it replaced
+      // drew a hard-edged trapezoid that read as a rendering fault.
+      L.point(x + dx * 90, y - 10 + dy * 50, 120, 1, 0.82, 0.55, 0.1 + 0.4 * night, 0.85)
       L.point(x, y - 30, 90, 1, 0.6, 0.3, 0.2 + 0.4 * night)
     }
   }

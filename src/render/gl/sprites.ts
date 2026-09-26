@@ -127,7 +127,9 @@ void main() {
     oColor = vec4(c.rgb * c.a, c.a);
     // A cursed thing after dark keeps a faint moonlit rim of its own, so the
     // crowd past the lantern is a crowd and not an empty field.
-    float rim = curse > 0.0 ? max(0.0, -vFx.y - 0.5) * 1.8 : 0.0;
+    // Scaled by the curse, so a boss (a trace of it) gets a faint rim and a
+    // 2x sprite does not wear a neon border.
+    float rim = max(0.0, -vFx.y - 0.5) * 1.8 * min(1.0, curse / 0.3);
     oEmissive = vec4(c.rgb * c.a * rim, c.a * rim);
     return;
   }
@@ -156,7 +158,7 @@ void main() {
   oColor = vec4(c.rgb * c.a, c.a);
   // After dark a cursed body gives off a little of its own pallor, so the
   // crowd past the lantern keeps a value gap against the ground.
-  float body = curse > 0.0 ? max(0.0, -vFx.y - 0.5) * 0.34 : 0.0;
+  float body = max(0.0, -vFx.y - 0.5) * 0.34 * min(1.0, curse / 0.3);
   em = max(em, body * (1.0 - eye));
   oEmissive = vec4(c.rgb * c.a * em, c.a * em);
 }`

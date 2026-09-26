@@ -133,7 +133,7 @@ void main() {
     // soil ramp. The tile only adds grain. The wang tiles for tilled soil
     // either carry transparent holes or read as camouflage at this scale.
     float row = mod(w.y, 7.0);
-    vec3 ridge = vec3(0.47, 0.35, 0.22);
+    vec3 ridge = vec3(0.53, 0.4, 0.26);
     vec3 s = row < 1.0 ? ridge * 1.18 : (row < 3.0 ? ridge : (row < 5.0 ? ridge * 0.8 : ridge * 0.56));
     float grit = dot(tile(4, p).rgb, vec3(0.333));
     s *= 0.86 + grit * 0.32;

@@ -31,10 +31,21 @@ npm run dev
 | Pause | Esc |
 | Title screen | arrows choose a class, Enter starts, H opens the Homestead |
 
-Weapons fire on their own. Collect the green gems to level up and pick a card;
+Weapons fire on their own. Collect the seeds to level up and pick a card;
 feed buys from the shop after waves 5, 10, 15, 20 and 24. Six classes, each on
 a different axis (the Hand anchors, the Kid runs, and so on); four unlock at
 the Homestead with the acres a run pays out.
+
+## Screens
+
+| | |
+|---|---|
+| ![The title: the farm at sundown, live](screenshots/final/01-title.png) | ![The Homestead, between runs](screenshots/final/02-homestead.png) |
+| ![Midday on the Home Field](screenshots/final/05-run-mid.png) | ![The Prize Bull](screenshots/final/06-boss-bull.png) |
+| ![Wave 22, by lantern light](screenshots/final/08-run-night.png) | ![The Duster](screenshots/final/09-boss-final.png) |
+
+Taken by the photo tour (`npm run tour`), which plays the game with a bot
+and stages the hour, the player's health and the boss's position; see NOTES.
 
 ## How it looks the way it does
 

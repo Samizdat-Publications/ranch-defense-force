@@ -220,25 +220,12 @@
             ]
           }
         ],
+        "_tilledNote": "Four worked fields, one to a quadrant, with grass headlands between them and the lanes: the run happens ON the field the title sells. Until critic round 8 there were three small plots and the rest was lawn ('a flat olive lawn crossed by straight dirt paths'). Ground only; nothing here is read by the sim.",
         "tilled": [
-          {
-            "x": 170,
-            "y": 1010,
-            "w": 560,
-            "h": 420
-          },
-          {
-            "x": 1720,
-            "y": 220,
-            "w": 470,
-            "h": 250
-          },
-          {
-            "x": 1800,
-            "y": 1130,
-            "w": 380,
-            "h": 300
-          }
+          { "x": 150, "y": 120, "w": 900, "h": 560 },
+          { "x": 1720, "y": 200, "w": 500, "h": 260 },
+          { "x": 150, "y": 900, "w": 920, "h": 560 },
+          { "x": 1340, "y": 960, "w": 880, "h": 520 }
         ],
         "yard": [
           {
