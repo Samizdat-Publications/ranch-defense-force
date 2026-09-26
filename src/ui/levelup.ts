@@ -47,9 +47,9 @@ export class LevelUpScreen {
       onClick: () => this.reroll(),
     })
 
-    this.root = el('div', { class: 'screen' }, [
+    this.root = el('div', { class: 'screen levelup' }, [
       el('div', { class: 'screen-inner' }, [
-        el('h1', { text: 'LEVEL UP' }),
+        el('h1', { text: 'Level up' }),
         this.subtitle,
         this.cardsEl,
         el('div', { class: 'actions' }, [this.rerollBtn]),

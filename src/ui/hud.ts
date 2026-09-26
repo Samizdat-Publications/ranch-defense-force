@@ -35,7 +35,16 @@ export function loadItemFor(element: string): string | null {
   return null
 }
 
-const DAY = (TUNING as unknown as { daylight: { clockStart: number; clockEnd: number } }).daylight
+const DAY = (TUNING as unknown as {
+  daylight: { clockStart: number; clockEnd: number; announce: { t: number; text: string }[] }
+}).daylight
+
+/** The line for a wave starting at run progress `t`: the last one at or before it. */
+function announceFor(t: number): string {
+  let line = ''
+  for (const a of DAY.announce ?? []) if (a.t <= t + 1e-6) line = a.text
+  return line
+}
 
 /** "4:12 PM" for a fractional hour. */
 function clockText(hour: number): string {
@@ -72,6 +81,9 @@ export class Hud {
   private readonly bossBar: HTMLElement
   private readonly bossFill: HTMLElement
   private readonly bossName: HTMLElement
+  private readonly banner: HTMLElement
+  private readonly bannerWave: HTMLElement
+  private readonly bannerLine: HTMLElement
 
   private lastHp = -1
   private lastHpText = ''
@@ -118,7 +130,12 @@ export class Hud {
     this.bossBar = el('div', { class: 'hud-boss' }, [el('div', { class: 'hud-boss-track' }, [this.bossFill]), this.bossName])
     this.bossBar.style.display = 'none'
 
+    this.bannerWave = el('div', { class: 'hud-banner-wave' })
+    this.bannerLine = el('div', { class: 'hud-banner-line' })
+    this.banner = el('div', { class: 'hud-banner' }, [this.bannerWave, this.bannerLine])
+
     this.root = el('div', { class: 'hud' }, [
+      this.banner,
       el('div', { class: 'hud-status' }, [
         this.portrait,
         el('div', { class: 'hud-status-bars' }, [
@@ -207,8 +224,16 @@ export class Hud {
     const wave = world.spawner.wave
     if (wave !== this.lastWave) {
       const count = WAVES.waveCount as number
-      this.waveN.textContent = wave > count ? 'THE DUSTER' : `WAVE ${wave} / ${count}`
+      const boss = (WAVES.bossWaves as Record<string, string>)[String(wave)]
+      this.waveN.textContent = wave >= count && boss ? 'THE DUSTER' : `WAVE ${Math.min(wave, count - 1)} / ${count - 1}`
       this.lastWave = wave
+      // The wave card: drops in, holds, lifts away. Restarted by re-adding the class.
+      const bossName = boss ? ENEMIES[boss]?.name : undefined
+      this.bannerWave.textContent = bossName ? bossName : `Wave ${Math.min(wave, count - 1)}`
+      this.bannerLine.textContent = bossName && wave >= count ? 'Nobody is driving it.' : announceFor(dayProgress(world))
+      this.banner.classList.remove('show')
+      void this.banner.offsetWidth
+      this.banner.classList.add('show')
     }
     const left = `${Math.max(0, Math.ceil(world.spawner.waveRemaining))}s`
     if (left !== this.lastLeft) {
@@ -308,7 +333,11 @@ export class Hud {
     }
   }
 
+  private shown = true
+
   setVisible(v: boolean): void {
+    if (v === this.shown) return
+    this.shown = v
     this.root.style.display = v ? '' : 'none'
   }
 

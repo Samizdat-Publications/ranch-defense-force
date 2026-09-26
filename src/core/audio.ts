@@ -70,6 +70,11 @@ export class Audio {
   }
 
   /** Call from any user gesture. Safe to call repeatedly. */
+  /** For the synthesised ambience: the context, the effects bus and the noise loop. */
+  get context(): AudioContext | null { return this.ctx }
+  get effectsBus(): GainNode | null { return this.sfxBus }
+  get noiseBuffer(): AudioBuffer | null { return this.noise }
+
   unlock(): void {
     if (this.ctx) {
       if (this.ctx.state === 'suspended') void this.ctx.resume()

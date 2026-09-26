@@ -16,17 +16,18 @@ import { Camera } from './camera'
 import {
   CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
   isHeldSlot, carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf,
-  itemCardSprite, projectileScaleFor, swingStyleOf, thrustPhase, type CarrySlot,
+  itemCardSprite, mapIsBlighted, projectileScaleFor, swingStyleOf, thrustPhase, type CarrySlot,
 } from '../content'
 import type { Atlas, AtlasFrame } from '../core/atlas'
 import { GLDevice, newCompositeParams } from './gl/device'
-import { dayProgress, evaluateDay, newDayState } from './daylight'
+import { dayProgress, evaluateDay, lightning, newDayState, rainAt } from './daylight'
 import { bakeLayout, buildBackdrop, groundTiles, placeOf, type Layout, type PlaceConfig } from './place'
 import { Target, parseColour, textureFrom } from './gl/glutil'
 import { PAGE_GLYPH, PAGE_SOLID } from './gl/sprites'
 import { HAZARD_KIND } from './gl/hazards'
+import { FrameCache } from './frames'
 import {
-  bakeTerrain, buildOverhead, buildScenery, cropSprite, groundSetFor, type Placed,
+  bakeTerrain, buildOverhead, buildScenery, groundSetFor, type Placed,
 } from './bake'
 
 type RGBA = [number, number, number, number]
@@ -84,14 +85,14 @@ const COL = {
   hazardBurn: parseColour('rgba(226, 122, 46, 0.34)'),
   hazardBurnRim: parseColour('rgba(255, 176, 84, 0.9)'),
   telegraph: parseColour('rgba(220, 90, 90, 0.28)'),
-  blood: parseColour('#a02c2c'),
+  blood: parseColour('#8a2626'),
   outlineEnemy: parseColour('rgba(18, 14, 12, 0.8)'),
   outlineMoon: parseColour('rgba(120, 138, 182, 0.75)'),
   outlineElite: parseColour('#f0d060'),
   outlineText: parseColour('#1a1410'),
   outlinePlayer: parseColour('rgba(255, 232, 168, 0.9)'),
   acid: parseColour('#5c8f2a'),
-  bloodDark: parseColour('#6e1d1d'),
+  bloodDark: parseColour('#5e1a1a'),
   crit: parseColour('#ffd452'),
   number: parseColour('#f4efe2'),
 }
@@ -122,11 +123,48 @@ interface DrawItem {
   emissive: number
 }
 
+/** Something drawn that the sim does not own: the title screen's cast, fireflies. */
+export interface DrawExtra {
+  frame: AtlasFrame | null
+  x: number
+  y: number
+  /** For a frameless extra: a solid quad this size, in this colour. */
+  w: number
+  h: number
+  colour: RGBA
+  flipX: boolean
+  alpha: number
+  emissive: number
+  casts: boolean
+}
+
+/** A light the sim does not own. */
+export interface LightExtra {
+  x: number; y: number; radius: number; r: number; g: number; b: number; intensity: number; squash: number
+}
+
 export class GLRenderer {
   readonly camera: Camera
   drawCalls = 0
 
+  /*
+     Title-screen hooks. A diorama is a world that is never stepped, dressed
+     with actors, held at one time of day and shot from a camera that moves on
+     its own. None of these are touched during a run.
+  */
+  extras: DrawExtra[] = []
+  extraLights: LightExtra[] = []
+  holdCamera: { x: number; y: number } | null = null
+  dayOverride: number | null = null
+  hidePlayer = false
+  /** World view height in art pixels; the diorama shoots closer than the game. */
+  viewHeight = VIEW_H
+  /** Added to the whole frame (lightning). */
+  readonly flash: [number, number, number] = [0, 0, 0]
+
   private readonly dev: GLDevice
+  /** String-free frame lookups; null until the atlas is here. */
+  private readonly frames: FrameCache | null
   private terrainTex: WebGLTexture | null = null
   private bakedSet = ''
   private readonly day = newDayState()
@@ -157,6 +195,8 @@ export class GLRenderer {
   /** World y that maps to bucket 0: the top of the margin the camera can see. */
   private readonly bucketOffset: number
   private readonly digits = new Int8Array(12)
+  private lastWeather = -1
+  private lastDraw = 0
   /** The player's frame this draw, for the outline drawn over everything. */
   private playerFrame: AtlasFrame | null = null
   private playerX = 0
@@ -174,6 +214,7 @@ export class GLRenderer {
     private readonly atlas: Atlas | null,
   ) {
     this.dev = GLDevice.for(canvas)
+    this.frames = atlas ? new FrameCache(atlas) : null
     if (atlas) this.dev.useAtlas(atlas)
     this.camera = new Camera(this.dev.viewW, this.dev.viewH, world.arenaW, world.arenaH)
 
@@ -242,7 +283,7 @@ export class GLRenderer {
   }
 
   resize(w: number, h: number): void {
-    this.dev.resize(w, h, VIEW_H)
+    this.dev.resize(w, h, this.viewHeight)
     this.camera.resize(this.dev.viewW, this.dev.viewH)
   }
 
@@ -258,7 +299,17 @@ export class GLRenderer {
 
     const pxi = p.px + (p.x - p.px) * alpha
     const pyi = p.py + (p.y - p.py) * alpha
-    this.camera.update(pxi, pyi, p.vx, p.vy, w.paused ? 0 : w.shake, rand)
+    if (this.holdCamera) {
+      this.camera.x = this.holdCamera.x
+      this.camera.y = this.holdCamera.y
+      this.camera.shakeX = 0
+      this.camera.shakeY = 0
+    } else {
+      const now = performance.now()
+      const dt = this.lastDraw ? (now - this.lastDraw) / 1000 : 1 / 60
+      this.lastDraw = now
+      this.camera.update(pxi, pyi, p.vx, p.vy, w.paused ? 0 : w.shake, rand, dt)
+    }
     const ox = this.camera.offsetX
     const oy = this.camera.offsetY
     const fx = Math.floor(ox)
@@ -268,7 +319,7 @@ export class GLRenderer {
     this.tw = dev.world.w
     this.th = dev.world.h
 
-    const day = evaluateDay(dayProgress(w), this.day)
+    const day = evaluateDay(this.dayOverride ?? dayProgress(w), this.day)
     const moon = COL.outlineMoon
     const dark = COL.outlineEnemy
     for (let c = 0; c < 4; c++) this.enemyOutline[c] = dark[c] + (moon[c] - dark[c]) * day.night
@@ -321,6 +372,7 @@ export class GLRenderer {
     if (this.playerFrame) {
       this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, false, COL.outlinePlayer)
     }
+    if (!this.holdCamera) this.drawRain(rainAt(day.t))
     this.drawDamageNumbers()
     this.flushSprites()
 
@@ -333,7 +385,7 @@ export class GLRenderer {
       cp.ambient[c] = day.ambient[c]
       cp.sun[c] = day.sun[c]
       cp.tint[c] = day.tint[c]
-      cp.flash[c] = 0
+      cp.flash[c] = this.flash[c]
     }
     cp.exposure = day.exposure
     cp.saturation = day.saturation
@@ -342,6 +394,19 @@ export class GLRenderer {
     cp.emissiveGain = 0.35 + 0.65 * day.night
     cp.bloomGain = 0.45 + 0.55 * day.night
     cp.time = w.elapsed
+    cp.originX = this.vx
+    cp.originY = this.vy
+    cp.clouds = 0.75 * (1 - day.night)
+    // Lightning lights the whole field for a moment: you see what is out there.
+    const bolt = this.holdCamera ? 0 : lightning(w.elapsed, day.t)
+    if (bolt > 0) {
+      cp.ambient[0] += bolt * 0.75
+      cp.ambient[1] += bolt * 0.8
+      cp.ambient[2] += bolt * 0.95
+      cp.flash[0] += bolt * 0.05
+      cp.flash[1] += bolt * 0.06
+      cp.flash[2] += bolt * 0.08
+    }
     const hpFrac = p.stats.maxHp > 0 ? p.hp / p.stats.maxHp : 1
     cp.hurt = Math.min(1, p.invuln * 0.9) * 0.3
       + (hpFrac < 0.3 && p.alive ? (0.3 - hpFrac) * (0.6 + 0.4 * Math.sin(w.elapsed * 5)) : 0)
@@ -363,6 +428,12 @@ export class GLRenderer {
    * it fell, so a kill leaves a splat rather than a sprinkle of single pixels.
    */
   private flushStains(): void {
+    // Weather the old stains on a slow clock, whether or not new ones landed.
+    const clock = Math.floor(this.world.elapsed / 2)
+    if (clock !== this.lastWeather) {
+      this.lastWeather = clock
+      this.dev.weatherDecals(0.94)
+    }
     const s = this.world.stains
     if (s.length === 0) return
     const batch = this.dev.sprites
@@ -372,8 +443,10 @@ export class GLRenderer {
       const col = s[i + 2]
       const acid = ((col >> 8) & 255) > ((col >> 16) & 255)
       const h = ((x * 73856093) ^ (y * 19349663)) >>> 0
+      // Half the drops soak in without a mark.
+      if ((h >> 12) & 1) continue
       const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
-      const a = 0.55 + ((h >> 3) & 3) * 0.08
+      const a = 0.42 + ((h >> 3) & 3) * 0.07
       const w0 = 2 + ((h >> 5) & 1)
       const h0 = 2 + ((h >> 6) & 1)
       batch.push(x, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
@@ -437,50 +510,44 @@ export class GLRenderer {
   // ---------------------------------------------------------------- frames
 
   private humanoidFrame(sheet: string, facing: number, travelled: number, moving: boolean): AtlasFrame | undefined {
-    const atlas = this.atlas
-    if (!atlas) return undefined
-    const dir = atlas.directionFor(sheet, facing)
-    if (!moving) return atlas.get(`${sheet}.idle.${dir}.0`)
-    const len = atlas.clipLength(sheet, 'walk')
+    const fc = this.frames
+    if (!fc) return undefined
+    if (!moving) return fc.frame(sheet, 'idle', facing, 0)
+    const len = fc.clip(sheet, 'walk').len
+    if (len === 0) return fc.frame(sheet, 'idle', facing, 0)
     const scale = (ENEMIES[sheet] as { animFrameScale?: number } | undefined)?.animFrameScale ?? 1
-    const f = Math.floor(travelled / (PIXELS_PER_WALK_FRAME / scale)) % len
-    return atlas.get(`${sheet}.walk.${dir}.${f}`)
+    return fc.frame(sheet, 'walk', facing, Math.floor(travelled / (PIXELS_PER_WALK_FRAME / scale)) % len)
   }
 
   private hitFrame(sheet: string, facing: number, remaining: number): AtlasFrame | undefined {
-    const atlas = this.atlas
-    const len = atlas?.clipLengths[sheet]?.hit
-    if (!atlas || !len) return undefined
-    const dir = atlas.directionFor(sheet, facing)
+    const fc = this.frames
+    const len = fc ? fc.clip(sheet, 'hit').len : 0
+    if (!fc || !len) return undefined
     const total = TUNING.combat.hitClipSeconds as number
     const t = Math.min(1, Math.max(0, 1 - remaining / total))
-    return atlas.get(`${sheet}.hit.${dir}.${Math.min(len - 1, Math.floor(t * len))}`)
+    return fc.frame(sheet, 'hit', facing, Math.floor(t * len))
   }
 
   private hurtWalkFrame(sheet: string, facing: number, travelled: number): AtlasFrame | undefined {
-    const atlas = this.atlas
-    const len = atlas?.clipLengths[sheet]?.walkHurt
-    if (!atlas || !len) return undefined
-    const dir = atlas.directionFor(sheet, facing)
-    return atlas.get(`${sheet}.walkHurt.${dir}.${Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len}`)
+    const fc = this.frames
+    const len = fc ? fc.clip(sheet, 'walkHurt').len : 0
+    if (!fc || !len) return undefined
+    return fc.frame(sheet, 'walkHurt', facing, Math.floor(travelled / PIXELS_PER_WALK_FRAME) % len)
   }
 
   private attackFrame(sheet: string, facing: number, elapsed: number): AtlasFrame | undefined {
-    const atlas = this.atlas
-    const len = atlas?.clipLengths[sheet]?.attack
-    if (!atlas || !len) return undefined
-    const dir = atlas.directionFor(sheet, facing)
+    const fc = this.frames
+    const len = fc ? fc.clip(sheet, 'attack').len : 0
+    if (!fc || !len) return undefined
     const total = TUNING.combat.attackClipSeconds as number
-    const f = Math.min(len - 1, Math.max(0, Math.floor((elapsed / total) * len)))
-    return atlas.get(`${sheet}.attack.${dir}.${f}`)
+    return fc.frame(sheet, 'attack', facing, Math.floor((elapsed / total) * len))
   }
 
   private deathFrame(sheet: string, facing: number, progress: number): AtlasFrame | undefined {
-    const atlas = this.atlas
-    const len = atlas?.clipLengths[sheet]?.death
-    if (!atlas || !len) return undefined
-    const dir = atlas.directionFor(sheet, facing)
-    return atlas.get(`${sheet}.death.${dir}.${Math.min(len - 1, Math.max(0, Math.floor(progress * len)))}`)
+    const fc = this.frames
+    const len = fc ? fc.clip(sheet, 'death').len : 0
+    if (!fc || !len) return undefined
+    return fc.frame(sheet, 'death', facing, Math.floor(progress * len))
   }
 
   private swayOf(sprite: string, x: number, y: number): number {
@@ -497,24 +564,24 @@ export class GLRenderer {
   }
 
   private propFrame(sprite: string, x: number, y: number): AtlasFrame | null {
-    const atlas = this.atlas
-    if (!atlas) return null
-    const len = atlas.clipLength(sprite, 'play')
-    if (len <= 1) return atlas.get(sprite) ?? null
+    const fc = this.frames
+    if (!fc) return null
+    const strip = fc.strip(sprite)
+    if (strip.length <= 1) return fc.single(sprite) ?? strip[0] ?? null
     const phase = ((x * 0.7 + y * 1.3) | 0)
-    const f = (((this.world.elapsed * PROP_FPS) | 0) + phase) % len
-    return atlas.get(`${sprite}.${f}`) ?? atlas.get(sprite) ?? null
+    const f = (((this.world.elapsed * PROP_FPS) | 0) + phase) % strip.length
+    return strip[f] ?? fc.single(sprite)
   }
 
   private swingFrame(p: { weaponId: string; angle: number }): AtlasFrame | undefined {
-    const atlas = this.atlas
-    if (!atlas) return undefined
+    const fc = this.frames
+    if (!fc) return undefined
     const clip = (WEAPONS[p.weaponId] as { swingClip?: string } | undefined)?.swingClip
     if (!clip) return undefined
-    const len = atlas.clipLength(clip, 'play')
-    if (len <= 0) return undefined
-    const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + ((p.angle * 4) | 0)) % len
-    return atlas.get(`${clip}.${f}`) ?? atlas.get(`${clip}.0`)
+    const strip = fc.strip(clip)
+    if (strip.length === 0) return undefined
+    const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + ((p.angle * 4) | 0)) % strip.length
+    return strip[f] ?? strip[0]
   }
 
   private projectileFrame(p: { weaponId: string; behaviour: string; type: string; x: number }): AtlasFrame | undefined {
@@ -538,18 +605,18 @@ export class GLRenderer {
     const base = p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'drumGun'
       ? def.shardClip
       : def?.projectileClip
-    const tinted = base && element !== 'none' ? `${base}.${element}` : undefined
-    const clipName = (tinted && atlas.clipLength(tinted, 'play') ? tinted : base)
-    if (clipName) {
-      const len = atlas.clipLength(clipName, 'play')
-      if (len > 0) {
+    const fc = this.frames
+    if (base && fc) {
+      const strip = fc.tinted.get(base, element)
+      if (strip.length > 0) {
         const phase = (p.x * 0.35) | 0
-        const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + phase) % len
-        const frame = atlas.get(`${clipName}.${f}`)
+        const f = (((this.world.elapsed * PROJECTILE_FPS) | 0) + phase) % strip.length
+        const frame = strip[f]
         if (frame) return frame
       }
     }
-    return atlas.get(`weapon.${p.weaponId}`) ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
+    return (fc?.single(fc.named.get('weapon', p.weaponId)) ?? undefined)
+      ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
   }
 
   // ---------------------------------------------------------------- collection
@@ -596,7 +663,7 @@ export class GLRenderer {
       it.caster = true
     }
 
-    const wave = w.spawner.wave
+    const blighted = mapIsBlighted(w.map.terrain, w.spawner.wave)
     for (let i = 0; i < w.props.live; i++) {
       const c = w.props.items[i]
       if (c.x < left || c.x > right || c.y < top || c.y > bottom) continue
@@ -604,7 +671,7 @@ export class GLRenderer {
       if (!it) break
       it.x = c.x
       it.y = c.y
-      it.frame = this.propFrame(cropSprite(this.atlas, w.map.terrain, c.sprite, wave), c.x, c.y)
+      it.frame = this.propFrame(blighted && this.frames && c.sprite.startsWith('crop.') ? this.frames.blighted(c.sprite) : c.sprite, c.x, c.y)
       it.flash = c.flash > 0
       it.colour = COL.crop
       it.caster = true
@@ -742,6 +809,25 @@ export class GLRenderer {
       }
     }
 
+    for (let i = 0; i < this.extras.length; i++) {
+      const e = this.extras[i]
+      const it = this.push()
+      if (!it) break
+      it.x = e.x
+      it.y = e.y
+      it.frame = e.frame
+      it.w = e.w
+      it.h = e.h
+      it.colour = e.colour
+      it.scaleX = e.flipX ? -1 : 1
+      it.alpha = e.alpha
+      it.emissive = e.emissive
+      it.caster = e.casts
+      it.contact = e.casts
+    }
+
+    this.playerFrame = null
+    if (this.hidePlayer) return
     assignCarrySlots(w.player.weapons, this.carrySlots, w.player.classId)
     this.collectCarried(true)
     this.collectHarvestTools(true)
@@ -789,9 +875,9 @@ export class GLRenderer {
       const tierKey = def?.tierSprites?.[Math.min(slot.tier, 4) - 1]
       const frame = (carryKey ? atlas.get(carryKey) : undefined)
         ?? (tierKey ? atlas.get(tierKey) : undefined)
-        ?? atlas.get(`weapon.${slot.id}.t${Math.min(slot.tier, 4)}`)
+        ?? (this.frames?.weaponTier.get(slot.id, Math.min(slot.tier, 4)) ?? undefined)
         ?? (def?.sprite ? atlas.get(def.sprite) : undefined)
-        ?? atlas.get(`weapon.${slot.id}`)
+        ?? (this.frames?.single(this.frames.named.get('weapon', slot.id)) ?? undefined)
       if (!frame) continue
       const it = this.push()
       if (!it) return
@@ -843,7 +929,7 @@ export class GLRenderer {
       const tiers = NODES.tools[toolId]?.tiers
       if (!Array.isArray(tiers) || tiers.length === 0) continue
       const tier = tiers[Math.min(k === 0 ? p.pickaxeTier : p.axeTier, tiers.length - 1)]
-      const frame = atlas.get(`tool.${toolId}.${tier.id}`)
+      const frame = this.frames?.tool.get(toolId, tier.id)
       if (!frame) continue
       const it = this.push()
       if (!it) return
@@ -954,7 +1040,12 @@ export class GLRenderer {
     const bottom = cam.y + cam.viewH + 80
     const lc = DAY.lanternColour
 
-    if (p.alive) {
+    for (let i = 0; i < this.extraLights.length; i++) {
+      const e = this.extraLights[i]
+      L.point(e.x, e.y, e.radius, e.r, e.g, e.b, e.intensity, e.squash)
+    }
+
+    if (p.alive && !this.hidePlayer) {
       const flicker = 1 + 0.035 * Math.sin(t * 13.1) + 0.025 * Math.sin(t * 7.3 + 1.7)
       const li = DAY.lanternIntensity * day.lantern * flicker
       L.point(px, py - 18, DAY.lanternRadius * (0.75 + 0.25 * day.lantern), lc[0], lc[1], lc[2], li, 0.78)
@@ -1003,7 +1094,7 @@ export class GLRenderer {
         const fl = 0.85 + 0.15 * Math.sin(t * 17 + h.x)
         L.point(h.x, h.y, h.radius * 1.6, 1, 0.52, 0.2, (0.25 + 0.7 * night) * fl * fade)
       } else if (h.kind === 'gas') {
-        L.point(h.x, h.y, h.radius * 1.3, 0.72, 0.92, 0.3, (0.04 + 0.28 * night) * fade)
+        L.point(h.x, h.y, h.radius * 1.2, 0.72, 0.92, 0.3, (0.03 + 0.14 * night) * fade)
       } else if (h.kind === 'acid') {
         L.point(h.x, h.y, h.radius * 1.3, 0.5, 1, 0.3, (0.05 + 0.3 * night) * fade)
       }
@@ -1044,16 +1135,13 @@ export class GLRenderer {
       const e = w.effects.items[i]
       if (e.under !== under) continue
       if (e.x < left || e.x > right || e.y < top || e.y > bottom) continue
-      let name = `fx.${e.clip}`
-      if (!atlas.has(`${name}.0`)) {
-        const dot = name.lastIndexOf('.')
-        if (dot > 0) name = name.slice(0, dot)
-      }
-      const len = atlas.clipLength(name, 'play')
+      const strip = this.frames?.fx(e.clip)
+      if (!strip || strip.length === 0) continue
+      const len = strip.length
       const t = 1 - e.life / e.maxLife
       let fi = (t * len) | 0
       if (fi >= len) fi = len - 1
-      const frame = atlas.get(`${name}.${fi}`)
+      const frame = strip[fi]
       if (!frame) continue
       this.spr(frame, e.x, e.y, 0, 0, e.rotation, e.scale, e.scale, 1, false)
     }
@@ -1121,7 +1209,7 @@ export class GLRenderer {
 
   private drawPlayerMark(x: number, y: number): void {
     const p = this.world.player
-    if (!p.alive) return
+    if (!p.alive || this.hidePlayer) return
     const m = TUNING.playerMark
     const cy = y + m.footOffsetY
     const s = this.dev.shapes
@@ -1181,7 +1269,7 @@ export class GLRenderer {
       const bob = g.magnetised ? 0 : Math.sin(g.bob * 4) * 1.5
       const f = g.kind === 'gear' && g.itemId
         ? atlas?.get(itemCardSprite(g.itemId)) ?? atlas?.get('pickup.feed')
-        : this.propFrame(`pickup.${g.kind}`, g.x, g.y)
+        : this.frames ? this.propFrame(this.frames.named.get('pickup', g.kind), g.x, g.y) : null
       if (f) {
         this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, 1, false)
       } else {
@@ -1231,6 +1319,38 @@ export class GLRenderer {
     }
   }
 
+  /**
+   * Rain over the view: thin streaks falling on a slant, placed by hash so
+   * nothing is stored, and the odd splash on the ground. Faintly emissive so it
+   * still reads in the dark.
+   */
+  private drawRain(amount: number): void {
+    if (amount <= 0.01) return
+    const batch = this.dev.sprites
+    const t = this.world.elapsed
+    const n = Math.floor(340 * amount)
+    const W = this.tw
+    const H = this.th
+    for (let i = 0; i < n; i++) {
+      const hx = fract(Math.sin(i * 78.233) * 43758.5453)
+      const hy = fract(Math.sin(i * 12.989) * 24634.6345)
+      const speed = 420 + hx * 180
+      const x = this.vx + mod(hx * W + t * speed * 0.28, W)
+      const y = this.vy + mod(hy * H + t * speed, H)
+      batch.push(Math.round(x), Math.round(y), 0, 0, 1, 5, 0, 0, PAGE_SOLID,
+        -0.27, 1, 1, 0.72, 0.8, 0.92, 0.32 * amount, 0, 0.18, 0, 0, 0, 0)
+      if (i % 5 === 0) {
+        const life = mod(t * 3 + hx * 7, 1)
+        if (life < 0.18) {
+          const sx = this.vx + hy * W
+          const sy = this.vy + hx * H
+          batch.push(Math.round(sx), Math.round(sy), 0, 0, 2, 1, 0, 0, PAGE_SOLID,
+            0, 1, 1, 0.8, 0.86, 0.95, 0.45 * amount * (1 - life / 0.18), 0, 0.2, 0, 0, 0, 0)
+        }
+      }
+    }
+  }
+
   /** Damage numbers from the glyph texture: white or gold, with a dark outline from the shader. */
   private drawDamageNumbers(): void {
     const w = this.world
@@ -1261,6 +1381,9 @@ export class GLRenderer {
 }
 
 const DIGIT_CHARS = '0123456789'
+
+function fract(x: number): number { return x - Math.floor(x) }
+function mod(a: number, b: number): number { return ((a % b) + b) % b }
 
 const colourCache = new Map<string, RGBA>()
 function parseColourCached(css: string): RGBA {

@@ -382,7 +382,66 @@
   "shadowRise": 0.2,
   "shadowRisePerLength": 0.14,
   "shadowRiseMax": 0.5,
-  "contactShadow": 0.42
+  "contactShadow": 0.42,
+  "announce": [
+   {
+    "t": 0,
+    "text": "First light. Something is moving in the corn."
+   },
+   {
+    "t": 0.06,
+    "text": "The dew burns off. They do not."
+   },
+   {
+    "t": 0.14,
+    "text": "Mid-morning. The radio says nothing about it."
+   },
+   {
+    "t": 0.24,
+    "text": "Late morning. More of them than yesterday."
+   },
+   {
+    "t": 0.32,
+    "text": "High noon. No shade anywhere."
+   },
+   {
+    "t": 0.4,
+    "text": "Early afternoon. The stock has turned too."
+   },
+   {
+    "t": 0.5,
+    "text": "The afternoon drags. So do they."
+   },
+   {
+    "t": 0.58,
+    "text": "The shadows start to lengthen."
+   },
+   {
+    "t": 0.66,
+    "text": "Late afternoon. The light goes gold."
+   },
+   {
+    "t": 0.74,
+    "text": "Golden hour. Everything is on fire and nothing is."
+   },
+   {
+    "t": 0.8,
+    "text": "Sundown. Light the lantern."
+   },
+   {
+    "t": 0.86,
+    "text": "The light is going."
+   },
+   {
+    "t": 0.92,
+    "text": "Full dark. Watch for their eyes."
+   },
+   {
+    "t": 0.97,
+    "text": "Something is running the pattern in the far field."
+   }
+  ],
+  "_announceNote": "One line per wave start, chosen by time of day: the last entry whose t is at or before the wave start. The HUD shows it under the wave number for a few seconds."
  },
  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
  "player": {

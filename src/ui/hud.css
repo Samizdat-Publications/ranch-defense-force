@@ -275,3 +275,28 @@
   position: absolute; right: calc(2 * var(--u)); bottom: calc(1 * var(--u));
   font-size: calc(8 * var(--u)); color: #f2d9a8; text-shadow: 0 1px 0 #000;
 }
+
+/* --- the wave card: drops in under the dial, holds, lifts away --- */
+.hud-banner {
+  position: absolute; left: 50%; top: calc(128 * var(--u));
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: calc(6 * var(--u));
+  opacity: 0; pointer-events: none;
+  text-align: center; white-space: nowrap;
+}
+.hud-banner.show { animation: hud-banner 3.6s var(--ease-out) both; }
+.hud-banner-wave {
+  font-family: var(--display); font-size: calc(46 * var(--u)); line-height: 1;
+  color: #fbecc8;
+  text-shadow: 0 calc(3 * var(--u)) 0 #6b3a1c, 0 calc(8 * var(--u)) calc(20 * var(--u)) rgba(0, 0, 0, 0.8);
+}
+.hud-banner-line {
+  font-family: var(--body); font-style: italic; font-size: calc(17 * var(--u));
+  color: #f2e2c8; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+}
+@keyframes hud-banner {
+  0% { opacity: 0; transform: translate(-50%, calc(-14 * var(--u))); }
+  12% { opacity: 1; transform: translate(-50%, 0); }
+  78% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, calc(-10 * var(--u))); }
+}

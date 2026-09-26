@@ -39,7 +39,10 @@ export class Camera {
    * `trauma` is 0..1 from the world; shake is trauma squared so small hits are
    * barely felt and a bull charge is unmistakable.
    */
-  update(targetX: number, targetY: number, velX: number, velY: number, trauma: number, rand: () => number): void {
+  update(
+    targetX: number, targetY: number, velX: number, velY: number, trauma: number, rand: () => number,
+    dt = 1 / 60,
+  ): void {
     const leadScale = C.leadDistance
     const speed = Math.hypot(velX, velY)
     const leadX = speed > 1 ? (velX / speed) * leadScale : 0
@@ -55,8 +58,10 @@ export class Camera {
       // Only chase the part of the offset outside the dead zone, so the camera
       // sits still for small movements instead of creeping.
       const excess = (dist - C.deadZoneRadius) / dist
-      this.x += dx * excess * C.lerp
-      this.y += dy * excess * C.lerp
+      // The same catch-up per second at any refresh rate: C.lerp is per 60 Hz frame.
+      const k = 1 - Math.pow(1 - C.lerp, Math.min(0.1, dt) * 60)
+      this.x += dx * excess * k
+      this.y += dy * excess * k
     }
     this.clamp()
 

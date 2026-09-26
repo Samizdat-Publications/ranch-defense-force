@@ -65,7 +65,7 @@ void main() {
   int kind = int(vPos.w + 0.5);
   float seed = vFx.y;
   float wob = texture(uNoise, (w + seed * 97.0) / 26.0).r;
-  float edge = r * (0.9 + 0.14 * (wob - 0.5) * 2.0);
+  float edge = r * (0.92 + 0.08 * (wob - 0.5) * 2.0);
   float d = length(q);
   if (d > edge) discard;
   float fade = vFx.x;
@@ -77,9 +77,9 @@ void main() {
 
   if (kind == 0) {
     float sheen = texture(uNoise, (w + vec2(uTime * 2.0, 0.0)) / 18.0).r;
-    c = vec4(0.10, 0.08, 0.06, 0.82);
-    if (sheen > 0.68) c.rgb = vec3(0.26, 0.22, 0.17);
-    if (rim) c = vec4(0.05, 0.04, 0.03, 0.9);
+    c = vec4(0.20, 0.14, 0.08, 0.46);
+    if (sheen > 0.7) c = vec4(0.42, 0.34, 0.22, 0.5);
+    if (rim) c = vec4(0.12, 0.08, 0.05, 0.7);
   } else if (kind == 1) {
     if (g > 0.18 && !rim) discard;
     c = rim ? vec4(0.92, 0.78, 0.42, 0.55) : vec4(0.86, 0.7, 0.36, 0.9);
@@ -89,13 +89,13 @@ void main() {
     float band = floor(swirl * 4.0) / 4.0;
     c = vec4(mix(vec3(0.55, 0.62, 0.22), vec3(0.86, 0.92, 0.46), band), 0.18 + band * 0.22);
     if (rim) c = vec4(0.9, 0.96, 0.55, 0.75 * pulse);
-    glow = 0.35;
+    glow = 0.12;
   } else if (kind == 3) {
     c = vec4(0.36, 0.72, 0.16, 0.66);
     float bub = hash(floor(w / 3.0) + floor(uTime * 3.0) * 7.0 + seed);
     if (bub > 0.94) c.rgb = vec3(0.78, 1.0, 0.5);
     if (rim) c = vec4(0.7, 1.0, 0.42, 0.9 * pulse);
-    glow = 0.6;
+    glow = 0.35;
   } else {
     c = vec4(0.12, 0.07, 0.05, 0.55);
     float ember = hash(w + floor(uTime * 8.0) * 3.1 + seed);

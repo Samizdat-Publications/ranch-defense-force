@@ -187,9 +187,9 @@ const SCENARIOS: Scenario[] = [
     name: 'title',
     file: '01-title.png',
     run: async (page) => {
-      // The atlas is already loaded (`waitReady`); just let the home screen's
-      // own sequence settle on its opening "calm" beat before the shutter.
-      await page.waitForTimeout(500)
+      // The title is a live diorama at sundown; give it a few seconds to fade
+      // its type in and settle the camera before the shutter.
+      await page.waitForTimeout(3500)
       return null
     },
   },
@@ -343,6 +343,8 @@ interface ReportEntry {
 }
 
 async function main(): Promise<void> {
+  // Our own server never hot-reloads; see vite.config.ts.
+  process.env.RDF_NO_HMR = '1'
   let vite: Awaited<ReturnType<typeof startVite>> | null = null
   let url = explicitUrl
   if (!url) {
@@ -354,6 +356,14 @@ async function main(): Promise<void> {
   const tourUrl = url.includes('?') ? `${url}&tour=1` : `${url}?tour=1`
 
   const { browser, headless } = await launchForTour()
+  // Warm the dev server: its first page load compiles every module and can
+  // take well over a minute cold, which used to time out the first scenario.
+  {
+    const warm = await browser.newPage()
+    await warm.goto(tourUrl, { waitUntil: 'domcontentloaded', timeout: 300_000 }).catch(() => {})
+    await warm.waitForFunction('window.rdf && window.rdf.atlas != null', null, { timeout: 300_000 }).catch(() => {})
+    await warm.close()
+  }
   console.log(`chromium: ${headless ? 'headless (SwiftShader)' : 'headed (installed Chrome)'}, url ${tourUrl}`)
 
   const report: ReportEntry[] = []
@@ -376,7 +386,7 @@ async function main(): Promise<void> {
 
       let summary: unknown = null
       try {
-        await page.goto(tourUrl, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+        await page.goto(tourUrl, { waitUntil: 'domcontentloaded', timeout: 180_000 })
         await waitReady(page)
         summary = await scenario.run(page)
         await freezeAndShoot(page, scenario.file)

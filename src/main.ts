@@ -21,7 +21,10 @@ import { Hud } from './ui/hud'
 import { LevelUpScreen } from './ui/levelup'
 import { ShopScreen } from './ui/shop'
 import { ResultsScreen } from './ui/results'
-import { MenuScreen } from './ui/menu'
+import { TitleScreen } from './ui/title'
+import { Diorama } from './render/diorama'
+import { Ambience } from './core/ambience'
+import { dayProgress, lightning } from './render/daylight'
 import { PauseScreen } from './ui/pause'
 import { HomesteadScreen } from './ui/homestead'
 import { DevOverlay } from './ui/dev'
@@ -46,12 +49,16 @@ for (const ev of ['pointerdown', 'keydown']) {
   window.addEventListener(ev, () => audio.unlock(), { once: false })
 }
 
+const ambience = new Ambience(() => audio.context, () => audio.effectsBus, () => audio.noiseBuffer)
+
 const input = new Input()
 input.attach()
 
 let world: World | null = null
 /** `?r=2d` keeps the v1 Canvas 2D renderer for side-by-side comparison. */
 const USE_2D = new URLSearchParams(location.search).get('r') === '2d'
+/** Dev only: `?map=saltFlats` starts every run on that map (the RNG still draws, see maps.json _rngNote). */
+const FORCE_MAP = import.meta.env.DEV ? new URLSearchParams(location.search).get('map') ?? undefined : undefined
 let renderer: Renderer | GLRenderer | null = null
 function makeRenderer(w: World, a: Atlas | null): Renderer | GLRenderer {
   return USE_2D ? new Renderer(canvas, w, a) : new GLRenderer(canvas, w, a)
@@ -84,7 +91,14 @@ const shakeRand = (): number => shakeRng.next()
 const levelUp = new LevelUpScreen(uiRoot)
 const shop = new ShopScreen(uiRoot)
 const results = new ResultsScreen(uiRoot)
-const menu = new MenuScreen(uiRoot, (classId, seed) => startRun(classId, seed), () => openHomestead())
+const menu = new TitleScreen(
+  uiRoot,
+  (classId, seed) => startRun(classId, seed),
+  () => openHomestead(),
+  (classId) => diorama?.select(classId),
+)
+/** The live farm behind the title. Built once the atlas is here; WebGL only. */
+let diorama: Diorama | null = null
 const pause = new PauseScreen(uiRoot)
 const homestead = new HomesteadScreen(uiRoot)
 
@@ -125,6 +139,24 @@ function resize(): void {
   canvas.style.width = `${cssW}px`
   canvas.style.height = `${cssH}px`
   renderer?.resize(w, h)
+  if (state === 'menu') diorama?.resize(w, h)
+}
+
+/**
+ * Back to the title. The diorama's renderer is rebuilt because a run on
+ * another map replaced the shared ground layout and stained the decal target.
+ */
+function openTitle(): void {
+  state = 'menu'
+  hud?.destroy()
+  hud = null
+  menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
+  menu.open()
+  if (diorama && atlas) {
+    diorama.rebuild(atlas)
+    diorama.select(menu.selectedClass)
+  }
+  resize()
 }
 window.addEventListener('resize', resize)
 
@@ -142,7 +174,7 @@ function startRun(classId: string, seedText: string): void {
     armor: m.armor,
     harvestPct: m.harvestPct,
     luck: m.luck,
-  }, currentTier)
+  }, currentTier, FORCE_MAP)
   offers = new OfferPool(world.rng)
   offers.setUnlocked([...unlockedWeapons(profile), ...unlockedItems(profile)])
   renderer = makeRenderer(world, atlas)
@@ -216,10 +248,8 @@ function openHomestead(): void {
     (t) => { currentTier = t },
     () => {
       homestead.close()
-      state = 'menu'
       // A class bought in the Bunkhouse must be pickable the moment you leave it.
-      menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
-      menu.open()
+      openTitle()
     },
   )
 }
@@ -298,9 +328,7 @@ function finishRun(cleared: boolean): void {
     earned,
     () => startRun(currentClassId, ''),
     () => {
-      state = 'menu'
-      menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
-      menu.open()
+      openTitle()
     },
     () => openHomestead(),
   )
@@ -322,6 +350,8 @@ function openLevelUpIfPending(): void {
   })
 }
 
+let lastFrameAt = 0
+let lastBolt = 0
 const loop = new Loop(
   (dt) => {
     input.sample()
@@ -359,8 +389,21 @@ const loop = new Loop(
     }
   },
   (alpha) => {
-    if (renderer && world) {
+    const now = performance.now()
+    const dt = Math.min(0.1, lastFrameAt ? (now - lastFrameAt) / 1000 : 0)
+    lastFrameAt = now
+    const dayT = state === 'menu' || !world ? 0.795 : dayProgress(world)
+    ambience.update(dayT, state === 'menu' || state === 'playing' || state === 'levelup')
+    // Thunder follows the flash the renderer draws from the same function.
+    const bolt = world && state === 'playing' ? lightning(world.elapsed, dayT) : 0
+    if (bolt > 0 && lastBolt === 0) ambience.thunder(0.6 + (world ? world.elapsed % 1.3 : 0))
+    lastBolt = bolt
+    if (state === 'menu') {
+      diorama?.draw(dt)
+    } else if (renderer && world) {
       renderer.draw(alpha, shakeRand)
+      // A screen that owns the view (shop, results) gets it without the HUD over it.
+      hud?.setVisible(state === 'playing' || state === 'levelup' || state === 'paused')
       hud?.update(world)
       dev.update(loop, world, renderer)
     }
@@ -445,8 +488,7 @@ installRarityTheme(RARITY)
 resize()
 // The boot menu must reflect the save too, or the very first screen of a
 // session hands out every paid class for free.
-menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
-menu.open()
+openTitle()
 loop.start()
 
 // The atlas loads in the background. The menu is up while it does, and a
@@ -465,6 +507,11 @@ Atlas.load(import.meta.env.BASE_URL)
     // up empty and its class cards came up as text. Anything that draws sprites
     // has to be rebuilt once the art is actually here.
     menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
+    if (!USE_2D) {
+      diorama = new Diorama(canvas, a)
+      diorama.select(menu.selectedClass)
+      resize()
+    }
     // The Homestead mounts the same yard, and it was built at module load too.
     homestead.refreshScene()
     if (world) {
@@ -580,8 +627,10 @@ function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
  * requestAnimationFrame a hidden or headless pane may never fire.
  */
 function renderNow(): void {
+  if (state === 'menu') { diorama?.draw(0); return }
   if (!renderer || !world) return
   renderer.draw(1, shakeRand)
+  hud?.setVisible(state === 'playing' || state === 'levelup' || state === 'paused')
   hud?.update(world)
 }
 

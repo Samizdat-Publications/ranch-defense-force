@@ -78,6 +78,31 @@ export function setDayOverride(t: number | null): void {
   override = t
 }
 
+/**
+ * Lightning after dark, as a pure function of time so the sound and the
+ * picture agree without talking to each other. Returns the flash strength
+ * 0..1 (two strokes a few tenths apart) and is 0 by day. Strikes come every
+ * 17 to 29 seconds, chosen by a hash of the strike's index.
+ */
+export function lightning(elapsed: number, dayT: number): number {
+  const storm = Math.min(1, Math.max(0, (dayT - 0.84) / 0.04))
+  if (storm <= 0) return 0
+  const period = 23
+  const k = Math.floor(elapsed / period)
+  const h = Math.sin(k * 12.9898) * 43758.5453
+  const offset = (h - Math.floor(h)) * 12
+  const since = elapsed - k * period - offset
+  if (since < 0 || since > 0.9) return 0
+  const a = Math.max(0, 1 - since / 0.2)
+  const b = Math.max(0, 1 - Math.abs(since - 0.38) / 0.1) * 0.6
+  return Math.min(1, a + b) * storm
+}
+
+/** How hard it is raining, 0..1: a storm comes in with the dark. */
+export function rainAt(dayT: number): number {
+  return Math.min(1, Math.max(0, (dayT - 0.85) / 0.05))
+}
+
 /** How far through the run this world is, 0..1. */
 export function dayProgress(world: World): number {
   if (override !== null) return override

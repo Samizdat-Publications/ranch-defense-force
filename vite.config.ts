@@ -21,7 +21,10 @@ export default defineConfig(({ command }) => ({
   },
   server: {
     port: 5173,
-    watch: { ignored: AGENT_DIRS },
+    // The photo tour starts its own server with RDF_NO_HMR set: without it, any
+    // file saved elsewhere while a tour runs hot-reloads the page mid-scenario.
+    hmr: process.env.RDF_NO_HMR ? false : undefined,
+    watch: process.env.RDF_NO_HMR ? null : { ignored: AGENT_DIRS },
   },
   test: {
     exclude: [...configDefaults.exclude, ...AGENT_DIRS],

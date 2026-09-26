@@ -55,12 +55,18 @@ export interface CompositeParams {
   /** Red at the screen edge when the player is hurt, 0..1. */
   hurt: number
   time: number
+  /** Top-left of the world target, in world pixels: clouds are fixed to the ground. */
+  originX: number
+  originY: number
+  /** How much drifting cloud shade falls on the sunlit ground, 0..1. */
+  clouds: number
 }
 
 export function newCompositeParams(): CompositeParams {
   return {
     ambient: [1, 1, 1], sun: [0, 0, 0], exposure: 1, saturation: 1, contrast: 1, tint: [1, 1, 1],
     vignette: 0, emissiveGain: 0.5, bloomGain: 0.6, flash: [0, 0, 0], hurt: 0, time: 0,
+    originX: 0, originY: 0, clouds: 0,
   }
 }
 
@@ -83,6 +89,9 @@ uniform sampler2D uEmissive;
 uniform sampler2D uLight;
 uniform sampler2D uShadow;
 uniform sampler2D uBloom;
+uniform sampler2D uNoise;
+uniform vec2 uOrigin;
+uniform float uClouds;
 uniform vec2 uWorldSize;
 uniform vec2 uOutSize;
 uniform float uScale;
@@ -131,7 +140,13 @@ void main() {
   vec2 sh = texture(uShadow, uvL).rg * (1.0 - world.a);
   vec3 bloom = texture(uBloom, uvL).rgb;
 
-  vec3 illum = uAmbient * (1.0 - sh.g * 0.55) + uSun * (1.0 - max(sh.r, sh.g)) + light;
+  // Cloud shadows drift over the field: big soft shapes that only ever take
+  // the sun, so they are gone the moment the sun is.
+  vec2 wp = uOrigin + texel;
+  float cloud = texture(uNoise, wp / 1100.0 + vec2(uTime * 0.004, uTime * 0.0015)).r * 0.7
+              + texture(uNoise, wp / 430.0 + vec2(uTime * 0.007, 0.0)).r * 0.3;
+  float shade = smoothstep(0.5, 0.66, cloud) * uClouds;
+  vec3 illum = uAmbient * (1.0 - sh.g * 0.55) + uSun * (1.0 - max(sh.r, sh.g)) * (1.0 - shade * 0.6) + light;
   vec3 col = albedo * illum + emis * uEmissiveGain + bloom * uBloomGain + uFlash;
   col *= uExposure;
   // A soft shoulder above 0.75 so a lantern or a muzzle flash never clips flat.
@@ -427,6 +442,34 @@ export class GLDevice {
     return this.decalTarget
   }
 
+  /**
+   * Let old stains weather: multiply the decal target by `keep`. Called every
+   * couple of seconds, so a patch you fought on stays dark for a minute or so
+   * and the whole field never turns into one red carpet.
+   */
+  weatherDecals(keep: number): void {
+    const t = this.decalTarget
+    if (!t) return
+    const gl = this.gl
+    t.bind()
+    gl.useProgram(this.texquad)
+    gl.blendColor(0, 0, 0, keep)
+    gl.blendFunc(gl.ZERO, gl.CONSTANT_ALPHA)
+    const u = this.texquadU
+    gl.uniform4f(u.get('uRect'), 0, 0, t.w, t.h)
+    gl.uniform4f(u.get('uUv'), 0, 0, 1, 1)
+    gl.uniform2f(u.get('uView'), 0, 0)
+    gl.uniform2f(u.get('uTarget'), t.w, t.h)
+    gl.uniform4f(u.get('uTint'), 0, 0, 0, 0)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.noiseTex)
+    gl.uniform1i(u.get('uTex'), 0)
+    gl.bindVertexArray(this.quadVao)
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+    gl.bindVertexArray(null)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+  }
+
   /** A texture slot that survives across runs, so re-baking reuses the allocation. */
   sharedTexture(name: string): WebGLTexture | undefined {
     return this.shared.get(name)
@@ -604,6 +647,7 @@ export class GLDevice {
     bind(2, this.light.tex, 'uLight')
     bind(3, this.shadow.tex, 'uShadow')
     bind(4, this.bloom[0].tex, 'uBloom')
+    bind(5, this.noiseTex, 'uNoise')
     gl.activeTexture(gl.TEXTURE0)
     gl.uniform2f(u.get('uWorldSize'), this.world.w, this.world.h)
     gl.uniform2f(u.get('uOutSize'), this.canvas.width, this.canvas.height)
@@ -622,6 +666,8 @@ export class GLDevice {
     gl.uniform3f(u.get('uFlash'), p.flash[0], p.flash[1], p.flash[2])
     gl.uniform1f(u.get('uHurt'), p.hurt)
     gl.uniform1f(u.get('uTime'), p.time)
+    gl.uniform2f(u.get('uOrigin'), p.originX, p.originY)
+    gl.uniform1f(u.get('uClouds'), p.clouds)
     this.fullscreen()
     gl.enable(gl.BLEND)
   }

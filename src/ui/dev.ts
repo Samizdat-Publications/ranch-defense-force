@@ -43,7 +43,8 @@ export class DevOverlay {
    * home screen's dev state picker, which is CSS-gated on the same
    * `data-dev` attribute this class writes below, stays off too.
    */
-  private visible = import.meta.env.DEV && !new URLSearchParams(location.search).has('tour')
+  /** Opt-in: `?dev` in the URL, or F1. Screenshots and players see the game, not the gauges. */
+  private visible = import.meta.env.DEV && new URLSearchParams(location.search).has('dev')
   private frame = 0
 
   constructor(
