@@ -12,26 +12,26 @@
    {
     "t": 0,
     "ambient": [
-     0.44,
-     0.47,
-     0.62
+     0.46,
+     0.41,
+     0.5
     ],
     "sun": [
      1,
-     0.7,
-     0.52
+     0.6,
+     0.46
     ],
-    "sunI": 0.55,
+    "sunI": 0.72,
     "az": 72,
     "el": 3,
     "shadow": 0.45,
     "exposure": 1,
-    "saturation": 0.82,
-    "contrast": 1,
+    "saturation": 0.96,
+    "contrast": 1.03,
     "tint": [
-     1,
-     0.97,
-     1.02
+     1.05,
+     0.95,
+     0.96
     ],
     "vignette": 0.38,
     "lantern": 0.35,
@@ -41,26 +41,26 @@
    {
     "t": 0.08,
     "ambient": [
-     0.48,
-     0.51,
-     0.62
+     0.49,
+     0.47,
+     0.54
     ],
     "sun": [
      1,
-     0.82,
-     0.64
+     0.76,
+     0.58
     ],
-    "sunI": 0.62,
+    "sunI": 0.68,
     "az": 88,
     "el": 12,
     "shadow": 0.5,
     "exposure": 1,
-    "saturation": 0.92,
+    "saturation": 0.98,
     "contrast": 1.02,
     "tint": [
-     1,
-     0.99,
-     1
+     1.03,
+     0.98,
+     0.97
     ],
     "vignette": 0.3,
     "lantern": 0.1,
@@ -383,65 +383,34 @@
   "shadowRisePerLength": 0.14,
   "shadowRiseMax": 0.5,
   "contactShadow": 0.42,
+  "_announceNote": "One line per wave, shown under the wave number as it starts (index 0 is wave 1). Wave 25 is the Duster. Written to the clock: wave 1 is about half six in the morning, the last wave ends about half ten at night.",
   "announce": [
-   {
-    "t": 0,
-    "text": "First light. Something is moving in the corn."
-   },
-   {
-    "t": 0.06,
-    "text": "The dew burns off. They do not."
-   },
-   {
-    "t": 0.14,
-    "text": "Mid-morning. The radio says nothing about it."
-   },
-   {
-    "t": 0.24,
-    "text": "Late morning. More of them than yesterday."
-   },
-   {
-    "t": 0.32,
-    "text": "High noon. No shade anywhere."
-   },
-   {
-    "t": 0.4,
-    "text": "Early afternoon. The stock has turned too."
-   },
-   {
-    "t": 0.5,
-    "text": "The afternoon drags. So do they."
-   },
-   {
-    "t": 0.58,
-    "text": "The shadows start to lengthen."
-   },
-   {
-    "t": 0.66,
-    "text": "Late afternoon. The light goes gold."
-   },
-   {
-    "t": 0.74,
-    "text": "Golden hour. Everything is on fire and nothing is."
-   },
-   {
-    "t": 0.8,
-    "text": "Sundown. Light the lantern."
-   },
-   {
-    "t": 0.86,
-    "text": "The light is going."
-   },
-   {
-    "t": 0.92,
-    "text": "Full dark. Watch for their eyes."
-   },
-   {
-    "t": 0.97,
-    "text": "Something is running the pattern in the far field."
-   }
-  ],
-  "_announceNote": "One line per wave start, chosen by time of day: the last entry whose t is at or before the wave start. The HUD shows it under the wave number for a few seconds."
+   "First light. Something is moving in the corn.",
+   "The dew burns off. They do not.",
+   "The rooster will not stop. Neither will they.",
+   "Breakfast is still on the table. Leave it.",
+   "The radio says nothing about any of this.",
+   "More of them than yesterday. Nobody counted yesterday.",
+   "Late morning. The stock has turned too.",
+   "Mrs. Whitacre’s hens. Do not look at their eyes.",
+   "High noon. No shade anywhere.",
+   "The dinner bell rings on its own. Nobody comes in.",
+   "The wind comes round from where the duster went down.",
+   "Two blue ribbons at the county fair. Nine hundred pounds.",
+   "The afternoon drags. So do they.",
+   "Heat comes off the field like a stove.",
+   "The shadows start to lengthen.",
+   "Somewhere out on the road a truck horn, stuck on.",
+   "Late afternoon. The light goes gold.",
+   "He came back. Of course he came back.",
+   "Golden hour. Everything is on fire and nothing is.",
+   "Sundown. Light the lantern.",
+   "The light is going.",
+   "Full dark. Watch for their eyes.",
+   "Rain on the tin roof. Thunder over Canton.",
+   "The last of them. Hold the field.",
+   "Nobody is driving it."
+  ]
  },
  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
  "player": {

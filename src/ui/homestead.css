@@ -63,7 +63,7 @@
 
 .phome-eyebrow {
   font-family: var(--label);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.3em;
   color: #eec583;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
@@ -102,7 +102,7 @@
 
 .phome-acres-unit {
   font-family: var(--label);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.16em;
   line-height: 1.5;
   color: #6b5840;
@@ -278,7 +278,7 @@
   padding: 0 20px;
   background: rgba(10, 9, 8, 0.8);
   font-family: var(--label);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   color: #8a7c62;
 }
@@ -294,3 +294,12 @@
 }
 
 .phome-foot button:hover { filter: brightness(1.25); }
+
+/* What the building sells from, on the sign itself. */
+.phome-sign-price {
+  margin-top: 8px; padding: 5px 8px;
+  font-family: var(--label); font-size: 12px; letter-spacing: 0.12em;
+  color: #5c4a33; background: rgba(64, 49, 31, 0.12);
+  border-top: 2px dashed rgba(64, 49, 31, 0.35);
+}
+.phome-sign-price.is-open { color: #2f5d1f; background: rgba(63, 104, 39, 0.16); }

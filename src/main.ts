@@ -586,7 +586,8 @@ function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
   const pilot = new Autopilot()
   const steps = Math.max(0, Math.round(seconds * 60))
   for (let i = 0; i < steps && !w.over; i++) {
-    if (opts.invulnerable) w.player.hp = w.player.stats.maxHp
+    // Invulnerable only catches the fall: the hp a photo shows is a real one.
+    if (opts.invulnerable && w.player.hp < w.player.stats.maxHp * 0.35) w.player.hp = w.player.stats.maxHp * 0.55
 
     const input = pilot.step(w)
     w.step(STEP, input.moveX, input.moveY, input.ability)
@@ -595,7 +596,7 @@ function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
       // A single tick outran the reset above (several contact hits landing
       // together, say). Revive rather than let `over` freeze every step
       // after it, which would silently strand the run short of its target.
-      w.player.hp = w.player.stats.maxHp
+      w.player.hp = w.player.stats.maxHp * 0.55
       w.over = false
     }
 
@@ -676,6 +677,20 @@ Object.assign(window as unknown as Record<string, unknown>, {
     // synchronous frame so a screenshot never depends on rAF.
     fastForward,
     hold: (on: boolean) => { heldForTour = on },
+    /** Tour only: frame the boss and the player together, if a boss is up. */
+    frameBoss: (): boolean => {
+      if (!world || !(renderer instanceof GLRenderer)) return false
+      const b = world.findBoss()
+      if (!b) return false
+      const p = world.player
+      const cam = renderer.camera
+      renderer.holdCamera = {
+        x: Math.round((b.x + p.x) / 2 - cam.viewW / 2),
+        y: Math.round((b.y + p.y) / 2 - cam.viewH / 2),
+      }
+      return true
+    },
+    bossUp: (): boolean => !!world?.findBoss(),
     renderNow,
   },
 })

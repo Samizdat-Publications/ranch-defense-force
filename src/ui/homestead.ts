@@ -223,6 +223,7 @@ export class HomesteadScreen {
           ]),
         ]),
         el('div', { class: 'phome-sign-blurb', text: b.blurb }),
+        el('div', { class: `phome-sign-price${state.open ? ' is-open' : ''}`, text: state.price }),
       ])
 
       const sign = el('button', {
@@ -242,23 +243,28 @@ export class HomesteadScreen {
   }
 
   /** What a building has in it, and whether any of it is affordable today. */
-  private buildingState(s: Save, id: Building): { count: string; open: boolean } {
+  private buildingState(s: Save, id: Building): { count: string; open: boolean; price: string } {
+    const cheapest = (costs: number[]): string => {
+      if (!costs.length) return 'NOTHING LEFT TO BUY'
+      const c = Math.min(...costs)
+      return s.acres >= c ? `BUY NOW · FROM ${c} ACRES` : `FROM ${c} ACRES`
+    }
     if (id === 'catalog') {
       const offers = catalogOffers(s)
       return {
         count: offers.length ? `${offers.length} STILL LOCKED` : 'ALL YOURS',
         open: offers.some((o) => s.acres >= o.cost),
+        price: cheapest(offers.map((o) => o.cost)),
       }
     }
     if (id === 'feed') {
       const ranks = (META as unknown as { feedStore: { ranks: number } }).feedStore.ranks
       const held = FEED_TRACKS.reduce((n, t) => n + (s.feedStoreRanks[t] ?? 0), 0)
+      const costs = FEED_TRACKS.map((t) => feedStoreCost(s, t)).filter((c): c is number => c !== null)
       return {
         count: `${held} / ${FEED_TRACKS.length * ranks} RANKS`,
-        open: FEED_TRACKS.some((t) => {
-          const c = feedStoreCost(s, t)
-          return c !== null && s.acres >= c
-        }),
+        open: costs.some((c) => s.acres >= c),
+        price: cheapest(costs),
       }
     }
     if (id === 'bunkhouse') {
@@ -267,11 +273,16 @@ export class HomesteadScreen {
       return {
         count: `${hired} HIRED · ${offers.length} TO HIRE`,
         open: offers.some((o) => s.acres >= o.cost),
+        price: cheapest(offers.map((o) => o.cost)),
       }
     }
     const max = maxTier(s)
     // The Fair costs nothing, so "open" means there is a harder tier to pick.
-    return { count: `TIER ${this.tier} OF ${max}`, open: max > this.tier }
+    return {
+      count: `TIER ${this.tier} OF ${max}`,
+      open: max > this.tier,
+      price: max > this.tier ? 'A HARDER TIER IS OPEN' : 'KILL THE DUSTER TO OPEN THE NEXT',
+    }
   }
 
   /**

@@ -162,6 +162,15 @@ async function ff(page: Page, seconds: number, invulnerable = false): Promise<un
   return page.evaluate(`window.rdf.fastForward(${seconds}, ${JSON.stringify({ invulnerable })})`)
 }
 
+/** Step half a second at a time until a boss is on the field, then three seconds more. */
+async function untilBoss(page: Page): Promise<void> {
+  for (let i = 0; i < 60; i++) {
+    if (await page.evaluate('window.rdf.bossUp()')) break
+    await ff(page, 0.5, true)
+  }
+  await ff(page, 3, true)
+}
+
 /** Freeze the loop, draw one frame synchronously, and save it. */
 async function freezeAndShoot(page: Page, file: string): Promise<void> {
   await page.evaluate('window.rdf.hold(true); window.rdf.renderNow();')
@@ -233,7 +242,10 @@ const SCENARIOS: Scenario[] = [
       await page.evaluate(startRunJs())
       // Invulnerable: a boss fight is exactly where an autopilot bot playing
       // its first ever wave-12 crowd is least likely to survive on its own.
-      return ff(page, waveStart(FIRST_BOSS_WAVE) + 8, true)
+      const s = await ff(page, waveStart(FIRST_BOSS_WAVE) - 1, true)
+      await untilBoss(page)
+      await page.evaluate('window.rdf.frameBoss()')
+      return s
     },
   },
   {
@@ -257,7 +269,10 @@ const SCENARIOS: Scenario[] = [
     file: '09-boss-final.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      return ff(page, waveStart(FINAL_BOSS_WAVE) + 8, true)
+      const s = await ff(page, waveStart(FINAL_BOSS_WAVE) - 1, true)
+      await untilBoss(page)
+      await page.evaluate('window.rdf.frameBoss()')
+      return s
     },
   },
   {
@@ -325,7 +340,10 @@ const SCENARIOS: Scenario[] = [
     run: async (page) => {
       await page.evaluate(startRunJs())
       const summary = await ff(page, waveStart(WAVE_COUNT) + 10, true)
-      await page.waitForTimeout(700)
+      // The run only ends when the Duster dies; end it as a clear so the
+      // screen photographed is the one a winning player sees.
+      await page.evaluate('if (window.rdf.world && !window.rdf.world.paused) window.rdf.finishRun(true)')
+      await page.waitForTimeout(900)
       return summary
     },
   },

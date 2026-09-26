@@ -67,7 +67,7 @@
 
 .pshop-eyebrow {
   font-family: var(--label);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.2em;
   color: #7d7057;
 }
@@ -89,7 +89,7 @@
 /* §7.7: what this visit uniquely sells — the pitch for stopping at all. */
 .pshop-exclusive {
   font-family: var(--label);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   color: var(--gold-brand, #c99a3d);
   margin-top: 6px;
@@ -114,7 +114,10 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  align-self: stretch;
 }
+/* Every card in the row the same height, so the HOLD buttons line up. */
+.pshop-slot > :first-child { flex: 1; }
 
 .pshop-hold {
   font-family: var(--label);
@@ -195,7 +198,7 @@
 
 .pshop-counter-head {
   font-family: var(--label);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   color: #4b3a24;
   border-bottom: 2px solid rgba(64, 49, 31, 0.5);
@@ -204,7 +207,7 @@
 
 .pshop-section {
   font-family: var(--label);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.16em;
   color: #6b573b;
   margin-top: 2px;
@@ -238,7 +241,7 @@
 
 .pshop-feed {
   font-family: var(--label);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: #5b4830;
 }

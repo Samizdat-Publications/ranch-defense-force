@@ -89,7 +89,7 @@ void main() {
     float band = floor(swirl * 4.0) / 4.0;
     c = vec4(mix(vec3(0.55, 0.62, 0.22), vec3(0.86, 0.92, 0.46), band), 0.18 + band * 0.22);
     if (rim) c = vec4(0.9, 0.96, 0.55, 0.75 * pulse);
-    glow = 0.12;
+    glow = 0.04;
   } else if (kind == 3) {
     c = vec4(0.36, 0.72, 0.16, 0.66);
     float bub = hash(floor(w / 3.0) + floor(uTime * 3.0) * 7.0 + seed);

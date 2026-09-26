@@ -36,14 +36,13 @@ export function loadItemFor(element: string): string | null {
 }
 
 const DAY = (TUNING as unknown as {
-  daylight: { clockStart: number; clockEnd: number; announce: { t: number; text: string }[] }
+  daylight: { clockStart: number; clockEnd: number; announce: string[] }
 }).daylight
 
-/** The line for a wave starting at run progress `t`: the last one at or before it. */
-function announceFor(t: number): string {
-  let line = ''
-  for (const a of DAY.announce ?? []) if (a.t <= t + 1e-6) line = a.text
-  return line
+/** The line for a wave (1-based). */
+function announceFor(wave: number): string {
+  const lines = DAY.announce ?? []
+  return lines[Math.min(lines.length - 1, Math.max(0, wave - 1))] ?? ''
 }
 
 /** "4:12 PM" for a fractional hour. */
@@ -97,6 +96,7 @@ export class Hud {
   private lastLoadSig = ''
   private lastPortrait = ''
   private lastAbilityState = ''
+  private lastElapsed = 0
 
   constructor(parent: HTMLElement) {
     this.hpChase = el('div', { class: 'hud-hp-chase' })
@@ -230,10 +230,14 @@ export class Hud {
       // The wave card: drops in, holds, lifts away. Restarted by re-adding the class.
       const bossName = boss ? ENEMIES[boss]?.name : undefined
       this.bannerWave.textContent = bossName ? bossName : `Wave ${Math.min(wave, count - 1)}`
-      this.bannerLine.textContent = bossName && wave >= count ? 'Nobody is driving it.' : announceFor(dayProgress(world))
+      this.bannerLine.textContent = announceFor(wave)
       this.banner.classList.remove('show')
-      void this.banner.offsetWidth
-      this.banner.classList.add('show')
+      // Only for a wave that arrived in play: a jump (a new run, a tour
+      // fast-forward) should not leave a card hanging over the field.
+      if (world.elapsed - this.lastElapsed < 0.5) {
+        void this.banner.offsetWidth
+        this.banner.classList.add('show')
+      }
     }
     const left = `${Math.max(0, Math.ceil(world.spawner.waveRemaining))}s`
     if (left !== this.lastLeft) {
@@ -331,6 +335,7 @@ export class Hud {
       this.abilityName.textContent = p.def.ability.name
       this.lastAbilityState = state
     }
+    this.lastElapsed = world.elapsed
   }
 
   private shown = true

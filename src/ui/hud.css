@@ -67,14 +67,14 @@
 @keyframes hud-hp-pulse { 50% { filter: brightness(1.45); } }
 .hud-hp-text {
   position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: calc(11 * var(--u)); letter-spacing: 0.08em;
+  font-size: calc(12 * var(--u)); letter-spacing: 0.06em;
   color: #fff4dc; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
 }
 
 .hud-xp-row { display: flex; align-items: center; gap: calc(6 * var(--u)); }
 .hud-level {
   min-width: calc(38 * var(--u));
-  font-size: calc(11 * var(--u)); font-weight: 700; letter-spacing: 0.06em;
+  font-size: calc(12 * var(--u)); font-weight: 700; letter-spacing: 0.06em;
   color: #16110b; background: var(--gold-brand);
   border: calc(1 * var(--u)) solid var(--gold-edge);
   padding: calc(2 * var(--u)) calc(5 * var(--u));
@@ -145,8 +145,8 @@
   text-shadow: 0 2px 0 #000;
 }
 .hud-wave-line { display: flex; gap: calc(10 * var(--u)); align-items: baseline; }
-.hud-wave-n { font-size: calc(10 * var(--u)); letter-spacing: 0.14em; color: var(--muted); }
-.hud-wave-left { font-size: calc(10 * var(--u)); color: #d9c7a2; }
+.hud-wave-n { font-size: calc(12 * var(--u)); letter-spacing: 0.1em; color: #c9b890; }
+.hud-wave-left { font-size: calc(12 * var(--u)); color: #e8d6ae; }
 .hud-wave-track {
   width: 100%; height: calc(3 * var(--u));
   background: rgba(246, 230, 194, 0.12);
@@ -211,11 +211,11 @@
     conic-gradient(#e0a02e var(--p), rgba(246, 230, 194, 0.14) var(--p));
 }
 .hud-ability-name {
-  font-size: calc(10 * var(--u)); letter-spacing: 0.1em; text-transform: uppercase;
+  font-size: calc(12 * var(--u)); letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--muted);
 }
 .hud-ability-key {
-  font-size: calc(9 * var(--u)); letter-spacing: 0.14em;
+  font-size: calc(11 * var(--u)); letter-spacing: 0.14em;
   color: #16110b; background: #b9a47a; padding: 0 calc(5 * var(--u));
 }
 .hud-ability.ready { border-color: #c98c2a; }
@@ -278,7 +278,7 @@
 
 /* --- the wave card: drops in under the dial, holds, lifts away --- */
 .hud-banner {
-  position: absolute; left: 50%; top: calc(128 * var(--u));
+  position: absolute; left: 50%; top: calc(172 * var(--u));
   transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: calc(6 * var(--u));
   opacity: 0; pointer-events: none;

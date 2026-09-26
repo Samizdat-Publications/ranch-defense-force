@@ -101,7 +101,7 @@
   justify-content: space-between;
   gap: 6px;
   font-family: var(--label);
-  font-size: 8.5px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-band);
@@ -283,7 +283,7 @@
 
 .pcard-blurb {
   font-family: var(--body);
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.5;
   min-height: 52px;
   color: var(--ink-body);
@@ -319,7 +319,7 @@
 
 .pcard-stat-label {
   font-family: var(--label);
-  font-size: 8.5px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-label);
@@ -337,7 +337,7 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--label);
-  font-size: 7.5px;
+  font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink-label);

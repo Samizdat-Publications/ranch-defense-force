@@ -81,7 +81,7 @@
 
 .psheet-hint {
   font-family: var(--label);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   color: var(--ink-label);
   text-transform: uppercase;
@@ -159,7 +159,7 @@
 
 .psheet-chip {
   font-family: var(--label);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.06em;
   color: var(--cream-2);
   background: var(--wood-chip, linear-gradient(180deg, #5d4b33, #3f3121));

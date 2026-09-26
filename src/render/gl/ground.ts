@@ -185,6 +185,10 @@ void main() {
   v = floor((v + bayer) * 4.0) / 4.0;
   c.rgb *= 0.9 + v * 0.18;
 
+  // The ground sits back: a touch darker and less saturated than the art
+  // that stands on it, so the cast reads against it at any hour.
+  float luma = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+  c.rgb = mix(vec3(luma), c.rgb, 0.82) * 0.9;
   oColor = vec4(c.rgb, 1.0);
   oEmissive = vec4(0.0);
 }`

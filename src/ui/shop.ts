@@ -77,7 +77,7 @@ export class ShopScreen {
       el('div', { class: 'pshop-inner' }, [
         el('div', { class: 'pshop-head' }, [
           el('div', { class: 'pshop-eyebrow', text: 'BETWEEN WAVES' }),
-          el('h1', { class: 'pshop-title', text: 'Same packet, priced' }),
+          el('h1', { class: 'pshop-title', text: 'Tolliver’s Feed & Hardware' }),
           this.subtitle,
           this.exclusiveNote,
         ]),

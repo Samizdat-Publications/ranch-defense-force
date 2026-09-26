@@ -86,7 +86,7 @@ const COL = {
   hazardBurnRim: parseColour('rgba(255, 176, 84, 0.9)'),
   telegraph: parseColour('rgba(220, 90, 90, 0.28)'),
   blood: parseColour('#8a2626'),
-  outlineEnemy: parseColour('rgba(18, 14, 12, 0.8)'),
+  outlineEnemy: parseColour('rgba(14, 10, 8, 1)'),
   outlineMoon: parseColour('rgba(120, 138, 182, 0.75)'),
   outlineElite: parseColour('#f0d060'),
   outlineText: parseColour('#1a1410'),
@@ -373,6 +373,9 @@ export class GLRenderer {
       this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, false, COL.outlinePlayer)
     }
     if (!this.holdCamera) this.drawRain(rainAt(day.t))
+    this.flushSprites()
+    this.drawBossMarker()
+    this.flushShapes()
     this.drawDamageNumbers()
     this.flushSprites()
 
@@ -391,8 +394,8 @@ export class GLRenderer {
     cp.saturation = day.saturation
     cp.contrast = day.contrast
     cp.vignette = day.vignette
-    cp.emissiveGain = 0.35 + 0.65 * day.night
-    cp.bloomGain = 0.45 + 0.55 * day.night
+    cp.emissiveGain = 0.35 + 0.5 * day.night
+    cp.bloomGain = 0.35 + 0.3 * day.night
     cp.time = w.elapsed
     cp.originX = this.vx
     cp.originY = this.vy
@@ -443,8 +446,8 @@ export class GLRenderer {
       const col = s[i + 2]
       const acid = ((col >> 8) & 255) > ((col >> 16) & 255)
       const h = ((x * 73856093) ^ (y * 19349663)) >>> 0
-      // Half the drops soak in without a mark.
-      if ((h >> 12) & 1) continue
+      // Two drops in three soak in without a mark.
+      if (((h >> 12) % 3) !== 0) continue
       const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
       const a = 0.42 + ((h >> 3) & 3) * 0.07
       const w0 = 2 + ((h >> 5) & 1)
@@ -792,7 +795,7 @@ export class GLRenderer {
       it.y = y
       it.frame = frame ?? null
       it.colour = p.type === 'melee' || p.type === 'orbit' ? COL.melee : COL.projectile
-      it.emissive = p.type === 'melee' || p.type === 'orbit' || p.behaviour === 'minionHunt' || p.type === 'placeable' ? 0 : 0.85
+      it.emissive = p.type === 'melee' || p.type === 'orbit' || p.behaviour === 'minionHunt' || p.type === 'placeable' ? 0 : 0.6
       it.caster = p.behaviour === 'minionHunt' || p.type === 'placeable'
       it.w = p.radius * 2
       it.h = p.radius * 2
@@ -1222,7 +1225,14 @@ export class GLRenderer {
     const s = this.dev.shapes
     for (const a of this.arcs) {
       if (a.aura) {
-        s.ring(a.x, a.y, a.radius * 0.9, 3, 150 / 255, 205 / 255, 225 / 255, 0.5)
+        const r = a.radius * 0.9
+        const dashes = Math.max(12, Math.round(r / 9))
+        const step = (Math.PI * 2) / dashes
+        const spin = this.world.elapsed * 0.4
+        for (let d = 0; d < dashes; d++) {
+          const a0 = spin + d * step
+          s.arc(a.x, a.y, r, a0, a0 + step * 0.45, 1.5, 170 / 255, 215 / 255, 235 / 255, 0.26)
+        }
       } else {
         const half = 0.85
         s.wedge(a.x, a.y, a.radius, a.radius, a.angle - half, a.angle + half, 242 / 255, 234 / 255, 210 / 255, 0.3)
@@ -1317,6 +1327,34 @@ export class GLRenderer {
       if (a <= 0.01) continue
       this.spr(o.frame, o.x, o.y, 0, 0, 0, 1, 1, a, false)
     }
+  }
+
+  /**
+   * A marker on the edge of the view pointing at a boss that is off it, so a
+   * boss wave never starts with a health bar and nothing to look at.
+   */
+  private drawBossMarker(): void {
+    const b = this.world.findBoss()
+    if (!b) return
+    const cam = this.camera
+    const m = 26
+    const cx = cam.x + cam.viewW / 2
+    const cy = cam.y + cam.viewH / 2
+    if (b.x > cam.x + m && b.x < cam.x + cam.viewW - m && b.y > cam.y + m && b.y < cam.y + cam.viewH - m) return
+    const dx = b.x - cx
+    const dy = b.y - cy
+    const k = Math.min((cam.viewW / 2 - m) / Math.max(1e-3, Math.abs(dx)), (cam.viewH / 2 - m) / Math.max(1e-3, Math.abs(dy)))
+    const x = cx + dx * k
+    const y = cy + dy * k
+    const ang = Math.atan2(dy, dx)
+    const pulse = 0.75 + 0.25 * Math.sin(this.world.elapsed * 6)
+    const s = this.dev.shapes
+    const c = Math.cos(ang)
+    const n = Math.sin(ang)
+    const tipX = x + c * 12
+    const tipY = y + n * 12
+    s.tri(tipX, tipY, x - c * 6 - n * 9, y - n * 6 + c * 9, x - c * 6 + n * 9, y - n * 6 - c * 9, 0.95, 0.35, 0.18, pulse)
+    s.ring(x - c * 16, y - n * 16, 7, 2, 0.95, 0.35, 0.18, pulse)
   }
 
   /**
