@@ -196,6 +196,9 @@ export class GLRenderer {
   private readonly bucketOffset: number
   private readonly digits = new Int8Array(12)
   private lastWeather = -1
+  /** This frame's fireflies (x, y, strength), lit in the light pass. */
+  private readonly fireflyLights = new Float32Array(36 * 3)
+  private fireflyCount = 0
   private lastDraw = 0
   /** The player's frame this draw, for the outline drawn over everything. */
   private playerFrame: AtlasFrame | null = null
@@ -372,7 +375,10 @@ export class GLRenderer {
     if (this.playerFrame) {
       this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, false, COL.outlinePlayer)
     }
-    if (!this.holdCamera) this.drawRain(rainAt(day.t))
+    if (!this.holdCamera) {
+      this.drawRain(rainAt(day.t))
+      this.drawFireflies(smoothstep(0.72, 0.8, day.t) * (1 - smoothstep(0.86, 0.9, day.t)))
+    }
     this.flushSprites()
     this.drawBossMarker()
     this.flushShapes()
@@ -1043,6 +1049,12 @@ export class GLRenderer {
     const bottom = cam.y + cam.viewH + 80
     const lc = DAY.lanternColour
 
+    for (let i = 0; i < this.fireflyCount; i++) {
+      const k = this.fireflyLights[i * 3 + 2]
+      if (k > 0.05) L.point(this.fireflyLights[i * 3], this.fireflyLights[i * 3 + 1], 14, 0.8, 1, 0.4, 0.4 * k, 0.9)
+    }
+    this.fireflyCount = 0
+
     for (let i = 0; i < this.extraLights.length; i++) {
       const e = this.extraLights[i]
       L.point(e.x, e.y, e.radius, e.r, e.g, e.b, e.intensity, e.squash)
@@ -1358,6 +1370,33 @@ export class GLRenderer {
   }
 
   /**
+   * Fireflies over the grass between golden hour and the rain: a few dozen
+   * blinking points, placed by hash and wandering on sines, glowing into the
+   * bloom. Nothing is stored.
+   */
+  private drawFireflies(amount: number): void {
+    if (amount <= 0.01) return
+    const batch = this.dev.sprites
+    const t = this.world.elapsed
+    const n = Math.floor(36 * amount)
+    for (let i = 0; i < n; i++) {
+      const hx = fract(Math.sin(i * 91.7) * 43758.5453)
+      const hy = fract(Math.sin(i * 47.3) * 24634.6345)
+      const x = this.vx + mod(hx * this.tw + Math.sin(t * 0.37 + i * 1.9) * 40 + t * 3, this.tw)
+      const y = this.vy + mod(hy * this.th + Math.sin(t * 0.53 + i * 2.7) * 24, this.th)
+      const blink = Math.max(0, Math.sin(t * 1.7 + i * 3.1)) * amount
+      this.fireflyLights[i * 3 + 2] = 0
+      if (blink < 0.05) continue
+      batch.push(Math.round(x), Math.round(y), 0, 0, 1, 1, 0, 0, PAGE_SOLID,
+        0, 1, 1, 0.85, 1, 0.45, blink, 0, 1, 0, 0, 0, 0)
+      this.fireflyLights[i * 3] = x
+      this.fireflyLights[i * 3 + 1] = y
+      this.fireflyLights[i * 3 + 2] = blink
+    }
+    this.fireflyCount = n
+  }
+
+  /**
    * Rain over the view: thin streaks falling on a slant, placed by hash so
    * nothing is stored, and the odd splash on the ground. Faintly emissive so it
    * still reads in the dark.
@@ -1421,6 +1460,10 @@ export class GLRenderer {
 const DIGIT_CHARS = '0123456789'
 
 function fract(x: number): number { return x - Math.floor(x) }
+function smoothstep(a: number, b: number, x: number): number {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
 function mod(a: number, b: number): number { return ((a % b) + b) % b }
 
 const colourCache = new Map<string, RGBA>()

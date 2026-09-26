@@ -70,11 +70,11 @@
           "grassC": "wang.grass_to_soil.0000",
           "dirt": "wang.short_mown_to_shallow_muddy.1111",
           "tilled": "wang.dark_tilled_to_lush_overgrown.0000",
-          "yard": "wang.grass_to_gravel_v2.1111",
+          "yard": "wang.dirt_to_grass_plain.0000",
           "water": "wang.lush_overgrown_to_stagnant_black.1111",
           "withered": "wang.ash_to_dyinggrass_v2.1111",
           "rot": "wang.grass_to_rot.1111",
-          "ash": "wang.grass_to_deadground.1111"
+          "ash": "wang.grass_to_greybrown.1111"
         },
         "paths": [
           {
@@ -268,7 +268,7 @@
         ],
         "landmarks": [
           {
-            "sprite": "scene.treeOak",
+            "sprite": "node.treeBig",
             "x": 110,
             "y": -70
           },
@@ -323,7 +323,7 @@
             "y": -58
           },
           {
-            "sprite": "scene.treeOak",
+            "sprite": "node.appleTree",
             "x": 2420,
             "y": -80
           },
@@ -368,7 +368,7 @@
             "y": 1790
           },
           {
-            "sprite": "scene.oak",
+            "sprite": "node.treeMedium",
             "x": 1320,
             "y": 1790
           },
@@ -393,12 +393,12 @@
             "y": 1840
           },
           {
-            "sprite": "scene.treeOak",
+            "sprite": "node.treeBig",
             "x": -130,
             "y": 1830
           },
           {
-            "sprite": "scene.treeOak",
+            "sprite": "node.appleTree",
             "x": 2560,
             "y": 1620
           }
@@ -539,6 +539,534 @@
         "tint": "#e6e2d2",
         "drift": 11,
         "scale": 1.35
+      },
+      "place": {
+        "_note": "The Salt Flats as a place: the Whitacres' back forty, where the spray settled into the low ground and dried to a crust. Pale, open and nearly empty on purpose. A barbed-wire line rings it; out past the wire there is a dead windmill over a dry stock pond, a wagon somebody walked away from, bones, and a county road along the south with the posts of an older fence beside it. Nothing grows and nothing hides.",
+        "margin": 200,
+        "interiorScenery": 0.3,
+        "ground": {
+          "grassA": "wang.grass_to_palegreygreen.1111",
+          "grassB": "wang.lush_overgrown_to_pale_bone.1111",
+          "grassC": "wang.short_mown_to_bare_pale.1111",
+          "dirt": "wang.grass_to_olivegrey.1111",
+          "tilled": "wang.lush_overgrown_to_pale_bone.1111",
+          "yard": "wang.grass_to_gravel_v2.1111",
+          "water": "wang.lush_overgrown_to_stagnant_black.1111",
+          "withered": "wang.grass_to_coldash.1111",
+          "rot": "wang.grass_to_rot.1111",
+          "ash": "wang.grass_to_ash.1111"
+        },
+        "paths": [
+          {
+            "width": 30,
+            "points": [
+              [
+                1450,
+                -210
+              ],
+              [
+                1446,
+                0
+              ],
+              [
+                1480,
+                280
+              ],
+              [
+                1410,
+                620
+              ],
+              [
+                1510,
+                960
+              ],
+              [
+                1462,
+                1300
+              ],
+              [
+                1470,
+                1420
+              ]
+            ]
+          },
+          {
+            "width": 22,
+            "points": [
+              [
+                -200,
+                430
+              ],
+              [
+                260,
+                470
+              ],
+              [
+                760,
+                440
+              ],
+              [
+                1150,
+                520
+              ],
+              [
+                1410,
+                620
+              ]
+            ]
+          },
+          {
+            "width": 50,
+            "points": [
+              [
+                -200,
+                1424
+              ],
+              [
+                600,
+                1416
+              ],
+              [
+                1400,
+                1428
+              ],
+              [
+                2200,
+                1414
+              ],
+              [
+                3100,
+                1422
+              ]
+            ]
+          },
+          {
+            "width": 81,
+            "points": [
+              [
+                537,
+                -174
+              ],
+              [
+                390,
+                -151
+              ]
+            ]
+          },
+          {
+            "width": 136,
+            "points": [
+              [
+                537,
+                -134
+              ],
+              [
+                421,
+                -90
+              ]
+            ]
+          },
+          {
+            "width": 94,
+            "points": [
+              [
+                584,
+                -113
+              ],
+              [
+                428,
+                -98
+              ]
+            ]
+          },
+          {
+            "width": 82,
+            "points": [
+              [
+                517,
+                -158
+              ],
+              [
+                458,
+                -123
+              ]
+            ]
+          },
+          {
+            "width": 85,
+            "points": [
+              [
+                506,
+                -144
+              ],
+              [
+                432,
+                -56
+              ]
+            ]
+          }
+        ],
+        "tilled": [
+          {
+            "x": 383,
+            "y": -131,
+            "w": 121,
+            "h": 32
+          },
+          {
+            "x": 399,
+            "y": -166,
+            "w": 127,
+            "h": 35
+          },
+          {
+            "x": 458,
+            "y": -153,
+            "w": 121,
+            "h": 29
+          },
+          {
+            "x": 393,
+            "y": -172,
+            "w": 90,
+            "h": 30
+          },
+          {
+            "x": 2391,
+            "y": 583,
+            "w": 149,
+            "h": 162
+          },
+          {
+            "x": 2070,
+            "y": 591,
+            "w": 234,
+            "h": 120
+          },
+          {
+            "x": 2247,
+            "y": 669,
+            "w": 194,
+            "h": 166
+          },
+          {
+            "x": 2288,
+            "y": 830,
+            "w": 244,
+            "h": 99
+          },
+          {
+            "x": 2063,
+            "y": 688,
+            "w": 210,
+            "h": 107
+          },
+          {
+            "x": 2154,
+            "y": 681,
+            "w": 198,
+            "h": 173
+          },
+          {
+            "x": 2392,
+            "y": 644,
+            "w": 150,
+            "h": 101
+          },
+          {
+            "x": 519,
+            "y": 912,
+            "w": 172,
+            "h": 131
+          },
+          {
+            "x": 466,
+            "y": 950,
+            "w": 175,
+            "h": 109
+          },
+          {
+            "x": 693,
+            "y": 883,
+            "w": 124,
+            "h": 169
+          },
+          {
+            "x": 375,
+            "y": 901,
+            "w": 140,
+            "h": 166
+          },
+          {
+            "x": 364,
+            "y": 797,
+            "w": 156,
+            "h": 167
+          },
+          {
+            "x": 501,
+            "y": 829,
+            "w": 155,
+            "h": 145
+          },
+          {
+            "x": 431,
+            "y": 753,
+            "w": 187,
+            "h": 140
+          },
+          {
+            "x": 1801,
+            "y": 187,
+            "w": 166,
+            "h": 104
+          },
+          {
+            "x": 1802,
+            "y": 172,
+            "w": 122,
+            "h": 90
+          },
+          {
+            "x": 1857,
+            "y": 136,
+            "w": 128,
+            "h": 109
+          },
+          {
+            "x": 1723,
+            "y": 202,
+            "w": 89,
+            "h": 119
+          },
+          {
+            "x": 1787,
+            "y": 209,
+            "w": 143,
+            "h": 68
+          },
+          {
+            "x": 1147,
+            "y": 1363,
+            "w": 354,
+            "h": 40
+          },
+          {
+            "x": 1062,
+            "y": 1340,
+            "w": 205,
+            "h": 33
+          },
+          {
+            "x": 1069,
+            "y": 1385,
+            "w": 352,
+            "h": 24
+          },
+          {
+            "x": 910,
+            "y": 1379,
+            "w": 238,
+            "h": 25
+          },
+          {
+            "x": 967,
+            "y": 1350,
+            "w": 376,
+            "h": 37
+          },
+          {
+            "x": 2568,
+            "y": 1125,
+            "w": 127,
+            "h": 58
+          },
+          {
+            "x": 2509,
+            "y": 1140,
+            "w": 85,
+            "h": 86
+          },
+          {
+            "x": 2592,
+            "y": 1091,
+            "w": 98,
+            "h": 79
+          },
+          {
+            "x": 2500,
+            "y": 1133,
+            "w": 132,
+            "h": 54
+          }
+        ],
+        "yard": [],
+        "water": [],
+        "landmarks": [
+          {
+            "sprite": "node.treeBig",
+            "x": 150,
+            "y": -96
+          },
+          {
+            "sprite": "ranch.windmill",
+            "x": 520,
+            "y": -66
+          },
+          {
+            "sprite": "prop.trough",
+            "x": 640,
+            "y": -36
+          },
+          {
+            "sprite": "prop.carcass",
+            "x": 400,
+            "y": -30
+          },
+          {
+            "sprite": "node.saltRock",
+            "x": 860,
+            "y": -30
+          },
+          {
+            "sprite": "prop.gate",
+            "x": 1540,
+            "y": -26
+          },
+          {
+            "sprite": "ranch.hayWagon",
+            "x": 2240,
+            "y": -44
+          },
+          {
+            "sprite": "prop.bonePile",
+            "x": 2130,
+            "y": -22
+          },
+          {
+            "sprite": "node.boneHeap",
+            "x": 2340,
+            "y": -14
+          },
+          {
+            "sprite": "node.treeSmall",
+            "x": 2500,
+            "y": -70
+          },
+          {
+            "sprite": "node.saltRock",
+            "x": 2700,
+            "y": -64
+          },
+          {
+            "sprite": "node.saltRock",
+            "x": 2736,
+            "y": -40
+          },
+          {
+            "sprite": "node.rockSmall",
+            "x": 2680,
+            "y": -30
+          },
+          {
+            "sprite": "node.saltRock",
+            "x": -120,
+            "y": 300
+          },
+          {
+            "sprite": "node.saltRock",
+            "x": -92,
+            "y": 318
+          },
+          {
+            "sprite": "prop.bonePile",
+            "x": -100,
+            "y": 900
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": -130,
+            "y": 1160
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 3010,
+            "y": 520
+          },
+          {
+            "sprite": "prop.bonePile",
+            "x": 2990,
+            "y": 1010
+          },
+          {
+            "sprite": "node.saltRock",
+            "x": 3040,
+            "y": 200
+          },
+          {
+            "sprite": "prop.carcass",
+            "x": 260,
+            "y": 1370
+          },
+          {
+            "sprite": "prop.trough",
+            "x": 1180,
+            "y": 1372
+          },
+          {
+            "sprite": "node.saltRock",
+            "x": 1760,
+            "y": 1360
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": 2620,
+            "y": 1494
+          },
+          {
+            "sprite": "prop.bonePile",
+            "x": 2700,
+            "y": 1376
+          }
+        ],
+        "rows": [
+          {
+            "sprites": [
+              "prop.fencePost",
+              "prop.barbedWire"
+            ],
+            "alt": 0.08,
+            "x0": 760,
+            "x1": 1260,
+            "y0": -150,
+            "y1": -150,
+            "dx": 46,
+            "dy": 30,
+            "jitter": 0
+          },
+          {
+            "sprites": [
+              "ranch.fenceCornerPost"
+            ],
+            "x0": -150,
+            "x1": 3080,
+            "y0": 1494,
+            "y1": 1494,
+            "dx": 230,
+            "dy": 30,
+            "jitter": 6
+          }
+        ],
+        "fence": {
+          "run": "prop.fencePost",
+          "post": "ranch.fenceCornerPost",
+          "gates": [
+            1450,
+            1466
+          ],
+          "pitch": 46,
+          "sidePitch": 96
+        }
       }
     },
     "scrapyard": {
@@ -619,6 +1147,569 @@
         "tint": "#b9b6ae",
         "drift": 4,
         "scale": 0.85
+      },
+      "place": {
+        "_note": "The Scrapyard as a place: the Whitacre machine yard, where equipment went when it stopped. A board fence around a gravel lot; out past it every side is crowded with what used to be machines: the combine that seized in '79, tractors, a burnt-out combine still smoking from this morning, drums of the spray stacked where the duster crew left them, and scrap in heaps. The dark pools are oil.",
+        "margin": 200,
+        "interiorScenery": 0.35,
+        "ground": {
+          "grassA": "wang.grass_to_olivegrey.1111",
+          "grassB": "wang.grass_to_rot.1111",
+          "grassC": "wang.grass_to_ash_v2.1111",
+          "dirt": "wang.short_mown_to_shallow_muddy.1111",
+          "tilled": "wang.grass_to_ash_v2.1111",
+          "yard": "wang.grass_to_ash_v2.1111",
+          "water": "wang.lush_overgrown_to_stagnant_black.1111",
+          "withered": "wang.grass_to_rot.1111",
+          "rot": "wang.grass_to_coldash.1111",
+          "ash": "wang.grass_to_ash_v2.1111"
+        },
+        "paths": [
+          {
+            "width": 56,
+            "points": [
+              [
+                850,
+                -210
+              ],
+              [
+                850,
+                -20
+              ],
+              [
+                880,
+                260
+              ],
+              [
+                800,
+                560
+              ],
+              [
+                860,
+                900
+              ],
+              [
+                820,
+                1240
+              ],
+              [
+                850,
+                1560
+              ],
+              [
+                850,
+                1910
+              ]
+            ]
+          },
+          {
+            "width": 40,
+            "points": [
+              [
+                -210,
+                1000
+              ],
+              [
+                300,
+                980
+              ],
+              [
+                600,
+                1020
+              ],
+              [
+                860,
+                900
+              ],
+              [
+                1200,
+                860
+              ],
+              [
+                1500,
+                900
+              ],
+              [
+                1910,
+                880
+              ]
+            ]
+          },
+          {
+            "width": 48,
+            "points": [
+              [
+                -210,
+                -110
+              ],
+              [
+                600,
+                -118
+              ],
+              [
+                1200,
+                -100
+              ],
+              [
+                1910,
+                -108
+              ]
+            ]
+          }
+        ],
+        "tilled": [],
+        "yard": [
+          {
+            "x": 204,
+            "y": -114,
+            "w": 210,
+            "h": 72
+          },
+          {
+            "x": 299,
+            "y": -110,
+            "w": 204,
+            "h": 63
+          },
+          {
+            "x": 259,
+            "y": -170,
+            "w": 194,
+            "h": 59
+          },
+          {
+            "x": 408,
+            "y": -125,
+            "w": 104,
+            "h": 81
+          },
+          {
+            "x": 127,
+            "y": -111,
+            "w": 191,
+            "h": 65
+          },
+          {
+            "x": 1290,
+            "y": -184,
+            "w": 137,
+            "h": 43
+          },
+          {
+            "x": 1217,
+            "y": -117,
+            "w": 122,
+            "h": 33
+          },
+          {
+            "x": 1302,
+            "y": -119,
+            "w": 172,
+            "h": 34
+          },
+          {
+            "x": 1301,
+            "y": -146,
+            "w": 136,
+            "h": 47
+          },
+          {
+            "x": -151,
+            "y": 786,
+            "w": 59,
+            "h": 79
+          },
+          {
+            "x": -190,
+            "y": 716,
+            "w": 92,
+            "h": 101
+          },
+          {
+            "x": -146,
+            "y": 792,
+            "w": 82,
+            "h": 108
+          },
+          {
+            "x": -112,
+            "y": 874,
+            "w": 77,
+            "h": 74
+          },
+          {
+            "x": 1728,
+            "y": 1340,
+            "w": 80,
+            "h": 127
+          },
+          {
+            "x": 1751,
+            "y": 1395,
+            "w": 52,
+            "h": 94
+          },
+          {
+            "x": 1734,
+            "y": 1432,
+            "w": 53,
+            "h": 108
+          },
+          {
+            "x": 1782,
+            "y": 1398,
+            "w": 93,
+            "h": 111
+          },
+          {
+            "x": 452,
+            "y": 1793,
+            "w": 137,
+            "h": 56
+          },
+          {
+            "x": 492,
+            "y": 1819,
+            "w": 149,
+            "h": 69
+          },
+          {
+            "x": 555,
+            "y": 1788,
+            "w": 122,
+            "h": 73
+          },
+          {
+            "x": 520,
+            "y": 1775,
+            "w": 88,
+            "h": 56
+          },
+          {
+            "x": 1504,
+            "y": 1784,
+            "w": 134,
+            "h": 61
+          },
+          {
+            "x": 1516,
+            "y": 1830,
+            "w": 82,
+            "h": 68
+          },
+          {
+            "x": 1572,
+            "y": 1796,
+            "w": 121,
+            "h": 39
+          },
+          {
+            "x": 1678,
+            "y": 1773,
+            "w": 103,
+            "h": 37
+          }
+        ],
+        "water": [],
+        "landmarks": [
+          {
+            "sprite": "ranch.bunkhouse",
+            "x": 260,
+            "y": -46
+          },
+          {
+            "sprite": "base.cratePallet",
+            "x": 380,
+            "y": -24
+          },
+          {
+            "sprite": "bossCombine.idle.left.0",
+            "x": 540,
+            "y": -26
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 660,
+            "y": -20
+          },
+          {
+            "sprite": "prop.oilDrumWebbed",
+            "x": 688,
+            "y": -36
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 714,
+            "y": -14
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 990,
+            "y": -40
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 1022,
+            "y": -44
+          },
+          {
+            "sprite": "prop.oilDrumWebbed",
+            "x": 1054,
+            "y": -38
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 1006,
+            "y": -16
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 1040,
+            "y": -14
+          },
+          {
+            "sprite": "vault.drumStack",
+            "x": 1170,
+            "y": -26
+          },
+          {
+            "sprite": "ranch.tractor",
+            "x": 1330,
+            "y": -28
+          },
+          {
+            "sprite": "node.scrapHeap",
+            "x": 1450,
+            "y": -16
+          },
+          {
+            "sprite": "prop.wheelbarrow",
+            "x": 1560,
+            "y": -38
+          },
+          {
+            "sprite": "vault.drumStack",
+            "x": 1800,
+            "y": -30
+          },
+          {
+            "sprite": "base.cableSpool",
+            "x": -70,
+            "y": 140
+          },
+          {
+            "sprite": "scene.tractorLeft",
+            "x": -100,
+            "y": 300
+          },
+          {
+            "sprite": "prop.wheelbarrow",
+            "x": -150,
+            "y": 440
+          },
+          {
+            "sprite": "prop.plough",
+            "x": -80,
+            "y": 540
+          },
+          {
+            "sprite": "prop.oilDrumWebbed",
+            "x": -40,
+            "y": 610
+          },
+          {
+            "sprite": "decal.scorch",
+            "x": -110,
+            "y": 800
+          },
+          {
+            "sprite": "bossCombine.death.left.8",
+            "x": -104,
+            "y": 820
+          },
+          {
+            "sprite": "ranch.hayWagon",
+            "x": -110,
+            "y": 1240
+          },
+          {
+            "sprite": "node.scrapHeap",
+            "x": -60,
+            "y": 1390
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": -140,
+            "y": 1410
+          },
+          {
+            "sprite": "base.rubble",
+            "x": -100,
+            "y": 1580
+          },
+          {
+            "sprite": "prop.plough",
+            "x": 1780,
+            "y": 150
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 1740,
+            "y": 250
+          },
+          {
+            "sprite": "vault.drumScatter",
+            "x": 1860,
+            "y": 430
+          },
+          {
+            "sprite": "base.cableSpool",
+            "x": 1750,
+            "y": 600
+          },
+          {
+            "sprite": "ranch.tractorRed",
+            "x": 1810,
+            "y": 760
+          },
+          {
+            "sprite": "prop.wheelbarrow",
+            "x": 1760,
+            "y": 900
+          },
+          {
+            "sprite": "vault.drumWeeping",
+            "x": 1830,
+            "y": 1080
+          },
+          {
+            "sprite": "bossCombine.death.downLeft.8",
+            "x": 1820,
+            "y": 1440
+          },
+          {
+            "sprite": "node.scrapHeap",
+            "x": 1760,
+            "y": 1610
+          },
+          {
+            "sprite": "prop.oilDrum",
+            "x": 1880,
+            "y": 1630
+          },
+          {
+            "sprite": "ranch.coopBroken",
+            "x": 180,
+            "y": 1860
+          },
+          {
+            "sprite": "prop.logPile",
+            "x": 330,
+            "y": 1800
+          },
+          {
+            "sprite": "vault.drumStack",
+            "x": 560,
+            "y": 1884
+          },
+          {
+            "sprite": "bossCombine.death.right.8",
+            "x": 1080,
+            "y": 1864
+          },
+          {
+            "sprite": "prop.wheelbarrow",
+            "x": 1300,
+            "y": 1780
+          },
+          {
+            "sprite": "base.cratePallet",
+            "x": 1370,
+            "y": 1800
+          },
+          {
+            "sprite": "ranch.tractor",
+            "x": 1580,
+            "y": 1876
+          }
+        ],
+        "rows": [
+          {
+            "sprites": [
+              "node.scrapHeap",
+              "prop.oilDrum",
+              "base.rubble",
+              "prop.oilDrumWebbed",
+              "prop.wheelbarrow"
+            ],
+            "alt": 0.7,
+            "x0": -180,
+            "x1": 1880,
+            "y0": -186,
+            "y1": -186,
+            "dx": 72,
+            "dy": 30,
+            "jitter": 22
+          },
+          {
+            "sprites": [
+              "node.scrapHeap",
+              "prop.oilDrum",
+              "base.rubble",
+              "prop.oilDrumWebbed"
+            ],
+            "alt": 0.6,
+            "x0": -196,
+            "x1": -110,
+            "y0": 60,
+            "y1": 1660,
+            "dx": 64,
+            "dy": 76,
+            "jitter": 24
+          },
+          {
+            "sprites": [
+              "node.scrapHeap",
+              "prop.oilDrum",
+              "base.rubble",
+              "prop.oilDrumWebbed"
+            ],
+            "alt": 0.6,
+            "x0": 1810,
+            "x1": 1896,
+            "y0": 60,
+            "y1": 1660,
+            "dx": 64,
+            "dy": 76,
+            "jitter": 24
+          },
+          {
+            "sprites": [
+              "node.scrapHeap",
+              "prop.oilDrum",
+              "base.rubble",
+              "prop.oilDrumWebbed"
+            ],
+            "alt": 0.65,
+            "x0": -180,
+            "x1": 1880,
+            "y0": 1900,
+            "y1": 1900,
+            "dx": 96,
+            "dy": 30,
+            "jitter": 40
+          }
+        ],
+        "fence": {
+          "run": "scene.fenceRow",
+          "post": "ranch.fenceCornerPost",
+          "gate": "ranch.gateOpen",
+          "gates": [
+            850
+          ],
+          "pitch": 62,
+          "sidePitch": 64
+        }
       }
     },
     "theBurn": {
@@ -698,6 +1789,310 @@
         "tint": "#9a9086",
         "drift": 8,
         "scale": 1.15
+      },
+      "place": {
+        "_note": "The Burn as a place: the long south strip, burnt off this morning to stop whatever the spray started, and it did not stop it. A charred rail fence, a ploughed fire break down both sides, the tenant house scorched to the frame, the combine that caught and is still smoking, and burn barrels nobody has put out. West of the break the wheat stands; east of it the fire jumped and the corn is black stalks.",
+        "margin": 200,
+        "interiorScenery": 0.35,
+        "ground": {
+          "grassA": "wang.grass_to_ash.1111",
+          "grassB": "wang.dark_grey_to_pale_grey.0000",
+          "grassC": "wang.grass_to_rot.1111",
+          "dirt": "wang.short_mown_to_shallow_muddy.1111",
+          "tilled": "wang.soil_to_croprows.0000",
+          "yard": "wang.grass_to_gravel_v2.1111",
+          "water": "wang.lush_overgrown_to_stagnant_black.1111",
+          "withered": "wang.grass_to_coldash.1111",
+          "rot": "wang.grass_to_ash_v2.1111",
+          "ash": "wang.dark_grey_to_pale_grey.0000"
+        },
+        "paths": [
+          {
+            "width": 40,
+            "points": [
+              [
+                850,
+                -210
+              ],
+              [
+                850,
+                -10
+              ],
+              [
+                800,
+                300
+              ],
+              [
+                900,
+                700
+              ],
+              [
+                820,
+                1100
+              ],
+              [
+                880,
+                1500
+              ],
+              [
+                810,
+                1900
+              ],
+              [
+                850,
+                2360
+              ],
+              [
+                850,
+                2560
+              ]
+            ]
+          },
+          {
+            "width": 54,
+            "points": [
+              [
+                -210,
+                2462
+              ],
+              [
+                600,
+                2454
+              ],
+              [
+                1200,
+                2466
+              ],
+              [
+                1910,
+                2458
+              ]
+            ]
+          },
+          {
+            "width": 32,
+            "points": [
+              [
+                850,
+                -70
+              ],
+              [
+                600,
+                -90
+              ],
+              [
+                380,
+                -70
+              ]
+            ]
+          }
+        ],
+        "tilled": [
+          {
+            "x": -130,
+            "y": -200,
+            "w": 90,
+            "h": 2750
+          },
+          {
+            "x": 1740,
+            "y": -200,
+            "w": 90,
+            "h": 2750
+          }
+        ],
+        "yard": [
+          {
+            "x": 180,
+            "y": -200,
+            "w": 360,
+            "h": 170
+          }
+        ],
+        "water": [],
+        "landmarks": [
+          {
+            "sprite": "node.treeMedium",
+            "x": -120,
+            "y": -60
+          },
+          {
+            "sprite": "prop.logPile",
+            "x": 110,
+            "y": -28
+          },
+          {
+            "sprite": "ranch.bunkhouse",
+            "x": 360,
+            "y": -56
+          },
+          {
+            "sprite": "prop.burnBarrel",
+            "x": 480,
+            "y": -26
+          },
+          {
+            "sprite": "prop.burnBarrel",
+            "x": 512,
+            "y": -48
+          },
+          {
+            "sprite": "prop.troughFouled",
+            "x": 660,
+            "y": -30
+          },
+          {
+            "sprite": "decal.scorch",
+            "x": 1190,
+            "y": -28
+          },
+          {
+            "sprite": "bossCombine.death.right.8",
+            "x": 1210,
+            "y": -22
+          },
+          {
+            "sprite": "node.ashStump",
+            "x": 1400,
+            "y": -20
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 1560,
+            "y": -84
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": -110,
+            "y": 1500
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": 1830,
+            "y": 420
+          },
+          {
+            "sprite": "prop.burnBarrel",
+            "x": 1790,
+            "y": 700
+          },
+          {
+            "sprite": "decal.scorch",
+            "x": 1800,
+            "y": 1200
+          },
+          {
+            "sprite": "node.ashStump",
+            "x": 1780,
+            "y": 1220
+          },
+          {
+            "sprite": "prop.burnBarrel",
+            "x": 1774,
+            "y": 1640
+          },
+          {
+            "sprite": "node.treeSmall",
+            "x": 1860,
+            "y": 1900
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": -130,
+            "y": 2150
+          },
+          {
+            "sprite": "prop.hayBaleRotted",
+            "x": 300,
+            "y": 2408
+          },
+          {
+            "sprite": "ranch.roundBaleRotted",
+            "x": 380,
+            "y": 2420
+          },
+          {
+            "sprite": "node.ashStump",
+            "x": 200,
+            "y": 2530
+          },
+          {
+            "sprite": "prop.burnBarrel",
+            "x": 1100,
+            "y": 2400
+          },
+          {
+            "sprite": "node.ashStump",
+            "x": 1300,
+            "y": 2410
+          },
+          {
+            "sprite": "prop.carcass",
+            "x": 1560,
+            "y": 2404
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 1400,
+            "y": 2548
+          }
+        ],
+        "rows": [
+          {
+            "sprites": [
+              "scene.cropRowWheat",
+              "scene.cropRowWheatRot"
+            ],
+            "alt": 0.14,
+            "x0": -196,
+            "x1": -150,
+            "y0": -170,
+            "y1": 2540,
+            "dx": 40,
+            "dy": 28,
+            "jitter": 3
+          },
+          {
+            "sprites": [
+              "scene.cropRowCornRot",
+              "node.ashStump",
+              "scene.cropRowWheatRot"
+            ],
+            "alt": 0.2,
+            "x0": 1846,
+            "x1": 1900,
+            "y0": -170,
+            "y1": 2540,
+            "dx": 42,
+            "dy": 30,
+            "jitter": 3
+          },
+          {
+            "sprites": [
+              "scene.cropRowWheatRot",
+              "node.ashStump"
+            ],
+            "alt": 0.12,
+            "x0": -190,
+            "x1": 1890,
+            "y0": 2510,
+            "y1": 2548,
+            "dx": 40,
+            "dy": 28,
+            "jitter": 3
+          }
+        ],
+        "fence": {
+          "run": "prop.fenceRail",
+          "broken": "ranch.fenceRail",
+          "post": "ranch.fenceCornerPost",
+          "gate": "ranch.gateOpen",
+          "gates": [
+            850
+          ],
+          "pitch": 62,
+          "sidePitch": 72
+        }
       }
     },
     "boneOrchard": {
@@ -794,6 +2189,516 @@
         "fadeRadius": 150,
         "minAlpha": 0.14,
         "alpha": 0.8
+      },
+      "place": {
+        "_note": "The Bone Orchard as a place: the old orchard on the rise where the Whitacres have always buried their own. The family plot stands north of the fence behind a white picket, three rows deep, and the front row was dug today. Apple rows run down both sides and across the road to the south, a few of them already rotting on the branch. The grass is the greenest on the farm.",
+        "margin": 200,
+        "interiorScenery": 0.35,
+        "ground": {
+          "grassA": "wang.soil_to_croprows.1111",
+          "grassB": "wang.dirt_to_grass_plain.1111",
+          "grassC": "wang.grey_ashen_to_dry_sage.1111",
+          "dirt": "wang.short_mown_to_shallow_muddy.1111",
+          "tilled": "wang.dark_tilled_to_lush_overgrown.0000",
+          "yard": "wang.grass_to_gravel_v2.1111",
+          "water": "wang.lush_overgrown_to_stagnant_black.1111",
+          "withered": "wang.grass_to_olivegrey.1111",
+          "rot": "wang.grass_to_rot.1111",
+          "ash": "wang.grass_to_ash_v2.1111"
+        },
+        "paths": [
+          {
+            "width": 42,
+            "points": [
+              [
+                1150,
+                -210
+              ],
+              [
+                1150,
+                -20
+              ],
+              [
+                1100,
+                300
+              ],
+              [
+                1200,
+                650
+              ],
+              [
+                1120,
+                1000
+              ],
+              [
+                1180,
+                1350
+              ],
+              [
+                1150,
+                1710
+              ],
+              [
+                1150,
+                1910
+              ]
+            ]
+          },
+          {
+            "width": 30,
+            "points": [
+              [
+                1150,
+                -104
+              ],
+              [
+                900,
+                -112
+              ],
+              [
+                760,
+                -100
+              ]
+            ]
+          },
+          {
+            "width": 54,
+            "points": [
+              [
+                -210,
+                1812
+              ],
+              [
+                700,
+                1804
+              ],
+              [
+                1500,
+                1816
+              ],
+              [
+                2510,
+                1806
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                575,
+                -170
+              ],
+              [
+                575,
+                -148
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                343,
+                -124
+              ],
+              [
+                343,
+                -102
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                581,
+                -124
+              ],
+              [
+                581,
+                -102
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                288,
+                -78
+              ],
+              [
+                288,
+                -56
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                343,
+                -78
+              ],
+              [
+                343,
+                -56
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                400,
+                -78
+              ],
+              [
+                400,
+                -56
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                461,
+                -78
+              ],
+              [
+                461,
+                -56
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                516,
+                -78
+              ],
+              [
+                516,
+                -56
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                578,
+                -78
+              ],
+              [
+                578,
+                -56
+              ]
+            ]
+          },
+          {
+            "width": 20,
+            "points": [
+              [
+                641,
+                -78
+              ],
+              [
+                641,
+                -56
+              ]
+            ]
+          }
+        ],
+        "tilled": [],
+        "yard": [
+          {
+            "x": 1390,
+            "y": -200,
+            "w": 330,
+            "h": 180
+          }
+        ],
+        "water": [],
+        "landmarks": [
+          {
+            "sprite": "prop.graveMarker",
+            "x": 227,
+            "y": -178
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 288,
+            "y": -178
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 347,
+            "y": -178
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 516,
+            "y": -178
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 575,
+            "y": -178
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 640,
+            "y": -178
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 229,
+            "y": -132
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 285,
+            "y": -132
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 343,
+            "y": -132
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 401,
+            "y": -132
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 462,
+            "y": -132
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 581,
+            "y": -132
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 634,
+            "y": -132
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 288,
+            "y": -86
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 343,
+            "y": -86
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 400,
+            "y": -86
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 461,
+            "y": -86
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 516,
+            "y": -86
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 578,
+            "y": -86
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 641,
+            "y": -86
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 120,
+            "y": -60
+          },
+          {
+            "sprite": "scene.crowPerched",
+            "x": 348,
+            "y": -120
+          },
+          {
+            "sprite": "scene.crowPerched",
+            "x": 580,
+            "y": -166
+          },
+          {
+            "sprite": "prop.scarecrowRotted",
+            "x": 820,
+            "y": -40
+          },
+          {
+            "sprite": "ranch.coop",
+            "x": 1500,
+            "y": -40
+          },
+          {
+            "sprite": "ranch.feedPan",
+            "x": 1620,
+            "y": -24
+          },
+          {
+            "sprite": "prop.feedBin",
+            "x": 1400,
+            "y": -26
+          },
+          {
+            "sprite": "ranch.hayWagon",
+            "x": 1820,
+            "y": -30
+          },
+          {
+            "sprite": "prop.bonePile",
+            "x": 380,
+            "y": 1766
+          },
+          {
+            "sprite": "node.boneHeap",
+            "x": 440,
+            "y": 1782
+          },
+          {
+            "sprite": "ranch.hayWagon",
+            "x": 620,
+            "y": 1770
+          },
+          {
+            "sprite": "prop.milkCans",
+            "x": 720,
+            "y": 1760
+          },
+          {
+            "sprite": "prop.scarecrowRotted",
+            "x": 1660,
+            "y": 1772
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 1900,
+            "y": 1760
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 1950,
+            "y": 1774
+          },
+          {
+            "sprite": "prop.bonePile",
+            "x": -110,
+            "y": 900
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": 2420,
+            "y": 820
+          },
+          {
+            "sprite": "prop.graveMarker",
+            "x": -120,
+            "y": 380
+          }
+        ],
+        "rows": [
+          {
+            "sprites": [
+              "scene.fencePicket"
+            ],
+            "x0": 220,
+            "x1": 700,
+            "y0": -44,
+            "y1": -44,
+            "dx": 96,
+            "dy": 30
+          },
+          {
+            "sprites": [
+              "scene.orchardTree",
+              "scene.orchardTreeRot",
+              "node.appleTree"
+            ],
+            "alt": 0.35,
+            "x0": -186,
+            "x1": -50,
+            "y0": 60,
+            "y1": 1660,
+            "dx": 70,
+            "dy": 74,
+            "jitter": 5
+          },
+          {
+            "sprites": [
+              "scene.orchardTree",
+              "scene.orchardTreeRot",
+              "node.appleTree"
+            ],
+            "alt": 0.35,
+            "x0": 2350,
+            "x1": 2490,
+            "y0": 60,
+            "y1": 1660,
+            "dx": 70,
+            "dy": 74,
+            "jitter": 5
+          },
+          {
+            "sprites": [
+              "scene.orchardTree",
+              "scene.orchardTreeRot",
+              "node.appleTree"
+            ],
+            "alt": 0.3,
+            "x0": 1760,
+            "x1": 2490,
+            "y0": -180,
+            "y1": -80,
+            "dx": 70,
+            "dy": 74,
+            "jitter": 5
+          },
+          {
+            "sprites": [
+              "scene.orchardTree",
+              "scene.orchardTreeRot",
+              "node.appleTree"
+            ],
+            "alt": 0.3,
+            "x0": -190,
+            "x1": 2490,
+            "y0": 1880,
+            "y1": 1900,
+            "dx": 70,
+            "dy": 74,
+            "jitter": 5
+          }
+        ],
+        "fence": {
+          "run": "ranch.fenceRun",
+          "broken": "ranch.fenceBroken",
+          "post": "ranch.fenceCornerPost",
+          "gate": "ranch.gateOpen",
+          "gates": [
+            1150
+          ],
+          "pitch": 128,
+          "sidePitch": 64
+        }
       }
     },
     "_previewNote": "theVault below is a preview map, not part of the run rotation. It exists so `npm run shot` can render the base's floor and props before the level system is built. It carries weight 0 -- `pickMapId` never selects it -- so it changes no seed and no test.",
@@ -875,6 +2780,997 @@
         "playerSlowPct": 40,
         "minDistanceFromPlayer": 190,
         "maxDistanceFromPlayer": 470
+      },
+      "place": {
+        "_note": "The Bottoms as a place: the creek bottom below the farm, where the low ground never drained and the spray ran off into it. Standing water on every side, reeds and cattails at every edge, a rotten boardwalk out of the north gate, drowned snags, a wagon left to sink and an old fence line walking into the creek.",
+        "margin": 200,
+        "interiorScenery": 0.35,
+        "ground": {
+          "grassA": "wang.grey_ashen_to_dry_sage.1111",
+          "grassB": "wang.short_mown_to_shallow_muddy.1111",
+          "grassC": "wang.soil_to_croprows.1111",
+          "dirt": "wang.short_mown_to_shallow_muddy.1111",
+          "tilled": "wang.dark_tilled_to_lush_overgrown.0000",
+          "yard": "wang.water_to_wood.1111",
+          "water": "wang.lush_overgrown_to_stagnant_black.1111",
+          "withered": "wang.grass_to_ash.1111",
+          "rot": "wang.grass_to_rot.1111",
+          "ash": "wang.lush_overgrown_to_loose_grey.1111"
+        },
+        "paths": [
+          {
+            "width": 40,
+            "points": [
+              [
+                1350,
+                -10
+              ],
+              [
+                1300,
+                300
+              ],
+              [
+                1420,
+                600
+              ],
+              [
+                1330,
+                900
+              ],
+              [
+                1380,
+                1200
+              ],
+              [
+                1350,
+                1560
+              ]
+            ]
+          },
+          {
+            "width": 24,
+            "points": [
+              [
+                -210,
+                560
+              ],
+              [
+                400,
+                620
+              ],
+              [
+                900,
+                760
+              ],
+              [
+                1330,
+                900
+              ]
+            ]
+          },
+          {
+            "width": 127,
+            "points": [
+              [
+                1773,
+                1124
+              ],
+              [
+                1874,
+                1148
+              ]
+            ]
+          },
+          {
+            "width": 147,
+            "points": [
+              [
+                1949,
+                1115
+              ],
+              [
+                1875,
+                1141
+              ]
+            ]
+          },
+          {
+            "width": 103,
+            "points": [
+              [
+                1865,
+                1097
+              ],
+              [
+                2001,
+                1146
+              ]
+            ]
+          },
+          {
+            "width": 83,
+            "points": [
+              [
+                1793,
+                1131
+              ],
+              [
+                1882,
+                1143
+              ]
+            ]
+          },
+          {
+            "width": 79,
+            "points": [
+              [
+                567,
+                395
+              ],
+              [
+                691,
+                420
+              ]
+            ]
+          },
+          {
+            "width": 62,
+            "points": [
+              [
+                626,
+                375
+              ],
+              [
+                656,
+                426
+              ]
+            ]
+          },
+          {
+            "width": 85,
+            "points": [
+              [
+                692,
+                400
+              ],
+              [
+                586,
+                432
+              ]
+            ]
+          },
+          {
+            "width": 112,
+            "points": [
+              [
+                548,
+                378
+              ],
+              [
+                620,
+                416
+              ]
+            ]
+          },
+          {
+            "width": 83,
+            "points": [
+              [
+                1124,
+                1244
+              ],
+              [
+                1200,
+                1252
+              ]
+            ]
+          },
+          {
+            "width": 70,
+            "points": [
+              [
+                1131,
+                1253
+              ],
+              [
+                1202,
+                1260
+              ]
+            ]
+          },
+          {
+            "width": 68,
+            "points": [
+              [
+                1152,
+                1243
+              ],
+              [
+                1200,
+                1280
+              ]
+            ]
+          },
+          {
+            "width": 85,
+            "points": [
+              [
+                1241,
+                1218
+              ],
+              [
+                1194,
+                1281
+              ]
+            ]
+          },
+          {
+            "width": 51,
+            "points": [
+              [
+                2237,
+                344
+              ],
+              [
+                2338,
+                351
+              ]
+            ]
+          },
+          {
+            "width": 67,
+            "points": [
+              [
+                2303,
+                357
+              ],
+              [
+                2229,
+                359
+              ]
+            ]
+          },
+          {
+            "width": 71,
+            "points": [
+              [
+                2223,
+                358
+              ],
+              [
+                2285,
+                364
+              ]
+            ]
+          },
+          {
+            "width": 57,
+            "points": [
+              [
+                2322,
+                311
+              ],
+              [
+                2367,
+                350
+              ]
+            ]
+          },
+          {
+            "width": 121,
+            "points": [
+              [
+                1285,
+                0
+              ],
+              [
+                1357,
+                56
+              ]
+            ]
+          },
+          {
+            "width": 118,
+            "points": [
+              [
+                1326,
+                32
+              ],
+              [
+                1299,
+                126
+              ]
+            ]
+          },
+          {
+            "width": 121,
+            "points": [
+              [
+                1403,
+                59
+              ],
+              [
+                1409,
+                102
+              ]
+            ]
+          },
+          {
+            "width": 117,
+            "points": [
+              [
+                1420,
+                40
+              ],
+              [
+                1310,
+                114
+              ]
+            ]
+          },
+          {
+            "width": 177,
+            "points": [
+              [
+                341,
+                1252
+              ],
+              [
+                294,
+                1338
+              ]
+            ]
+          },
+          {
+            "width": 167,
+            "points": [
+              [
+                330,
+                1233
+              ],
+              [
+                522,
+                1254
+              ]
+            ]
+          },
+          {
+            "width": 127,
+            "points": [
+              [
+                382,
+                1213
+              ],
+              [
+                397,
+                1292
+              ]
+            ]
+          },
+          {
+            "width": 172,
+            "points": [
+              [
+                338,
+                1238
+              ],
+              [
+                457,
+                1242
+              ]
+            ]
+          },
+          {
+            "width": 111,
+            "points": [
+              [
+                297,
+                1186
+              ],
+              [
+                398,
+                1280
+              ]
+            ]
+          },
+          {
+            "width": 86,
+            "points": [
+              [
+                2277,
+                856
+              ],
+              [
+                2416,
+                875
+              ]
+            ]
+          },
+          {
+            "width": 136,
+            "points": [
+              [
+                2362,
+                792
+              ],
+              [
+                2390,
+                887
+              ]
+            ]
+          },
+          {
+            "width": 91,
+            "points": [
+              [
+                2316,
+                861
+              ],
+              [
+                2335,
+                910
+              ]
+            ]
+          },
+          {
+            "width": 101,
+            "points": [
+              [
+                2307,
+                864
+              ],
+              [
+                2209,
+                887
+              ]
+            ]
+          },
+          {
+            "width": 77,
+            "points": [
+              [
+                856,
+                142
+              ],
+              [
+                772,
+                173
+              ]
+            ]
+          },
+          {
+            "width": 62,
+            "points": [
+              [
+                789,
+                144
+              ],
+              [
+                752,
+                190
+              ]
+            ]
+          },
+          {
+            "width": 70,
+            "points": [
+              [
+                830,
+                100
+              ],
+              [
+                778,
+                142
+              ]
+            ]
+          },
+          {
+            "width": 90,
+            "points": [
+              [
+                -100,
+                975
+              ],
+              [
+                -197,
+                994
+              ]
+            ]
+          },
+          {
+            "width": 112,
+            "points": [
+              [
+                -3,
+                979
+              ],
+              [
+                -112,
+                1053
+              ]
+            ]
+          },
+          {
+            "width": 97,
+            "points": [
+              [
+                -49,
+                1022
+              ],
+              [
+                -164,
+                1046
+              ]
+            ]
+          },
+          {
+            "width": 134,
+            "points": [
+              [
+                -155,
+                969
+              ],
+              [
+                -14,
+                973
+              ]
+            ]
+          },
+          {
+            "width": 94,
+            "points": [
+              [
+                2829,
+                641
+              ],
+              [
+                2775,
+                690
+              ]
+            ]
+          },
+          {
+            "width": 103,
+            "points": [
+              [
+                2895,
+                651
+              ],
+              [
+                2719,
+                684
+              ]
+            ]
+          },
+          {
+            "width": 128,
+            "points": [
+              [
+                2876,
+                727
+              ],
+              [
+                2774,
+                753
+              ]
+            ]
+          },
+          {
+            "width": 109,
+            "points": [
+              [
+                2656,
+                646
+              ],
+              [
+                2750,
+                739
+              ]
+            ]
+          },
+          {
+            "width": 73,
+            "points": [
+              [
+                947,
+                1068
+              ],
+              [
+                1017,
+                1071
+              ]
+            ]
+          },
+          {
+            "width": 97,
+            "points": [
+              [
+                924,
+                1067
+              ],
+              [
+                1008,
+                1074
+              ]
+            ]
+          },
+          {
+            "width": 86,
+            "points": [
+              [
+                1044,
+                1043
+              ],
+              [
+                962,
+                1092
+              ]
+            ]
+          }
+        ],
+        "tilled": [
+          {
+            "x": -200,
+            "y": 1540,
+            "w": 3100,
+            "h": 50
+          },
+          {
+            "x": 2180,
+            "y": -60,
+            "w": 400,
+            "h": 50
+          }
+        ],
+        "yard": [
+          {
+            "x": 1322,
+            "y": -200,
+            "w": 56,
+            "h": 200
+          }
+        ],
+        "water": [
+          {
+            "x": -60,
+            "y": -110,
+            "rx": 170,
+            "ry": 70
+          },
+          {
+            "x": 2380,
+            "y": -120,
+            "rx": 220,
+            "ry": 64
+          },
+          {
+            "x": 2830,
+            "y": 700,
+            "rx": 90,
+            "ry": 150
+          },
+          {
+            "x": -120,
+            "y": 1000,
+            "rx": 80,
+            "ry": 130
+          },
+          {
+            "x": 600,
+            "y": 420,
+            "rx": 70,
+            "ry": 26
+          },
+          {
+            "x": 1900,
+            "y": 1100,
+            "rx": 90,
+            "ry": 30
+          },
+          {
+            "x": 1180,
+            "y": 1250,
+            "rx": 50,
+            "ry": 20
+          },
+          {
+            "x": 2300,
+            "y": 350,
+            "rx": 60,
+            "ry": 24
+          },
+          {
+            "x": -260,
+            "y": 1640,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": -10,
+            "y": 1645,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 240,
+            "y": 1647,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 490,
+            "y": 1659,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 740,
+            "y": 1644,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 990,
+            "y": 1649,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 1240,
+            "y": 1637,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 1490,
+            "y": 1648,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 1740,
+            "y": 1656,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 1990,
+            "y": 1649,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 2240,
+            "y": 1641,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 2490,
+            "y": 1639,
+            "rx": 190,
+            "ry": 50
+          },
+          {
+            "x": 2740,
+            "y": 1656,
+            "rx": 190,
+            "ry": 50
+          }
+        ],
+        "landmarks": [
+          {
+            "sprite": "node.cattails",
+            "x": -120,
+            "y": -30
+          },
+          {
+            "sprite": "node.reeds",
+            "x": 10,
+            "y": -40
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 100,
+            "y": -66
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 300,
+            "y": -70
+          },
+          {
+            "sprite": "scene.oak",
+            "x": 420,
+            "y": -30
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 700,
+            "y": -90
+          },
+          {
+            "sprite": "prop.troughFouled",
+            "x": 960,
+            "y": -26
+          },
+          {
+            "sprite": "prop.logPile",
+            "x": 1600,
+            "y": -30
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": 1800,
+            "y": -70
+          },
+          {
+            "sprite": "ranch.hayWagon",
+            "x": 2120,
+            "y": -46
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": 2440,
+            "y": -100
+          },
+          {
+            "sprite": "node.reeds",
+            "x": 2200,
+            "y": -40
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 2320,
+            "y": -44
+          },
+          {
+            "sprite": "node.reeds",
+            "x": 2560,
+            "y": -52
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 2640,
+            "y": -24
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 668,
+            "y": 434
+          },
+          {
+            "sprite": "node.reeds",
+            "x": 1996,
+            "y": 1116
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 1820,
+            "y": 1122
+          },
+          {
+            "sprite": "node.reeds",
+            "x": 2350,
+            "y": 362
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": 2800,
+            "y": 300
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 2760,
+            "y": 600
+          },
+          {
+            "sprite": "node.reeds",
+            "x": 2750,
+            "y": 820
+          },
+          {
+            "sprite": "node.cattails",
+            "x": 2790,
+            "y": 880
+          },
+          {
+            "sprite": "scene.oak",
+            "x": 2790,
+            "y": 1200
+          },
+          {
+            "sprite": "node.treeBig",
+            "x": -100,
+            "y": 500
+          },
+          {
+            "sprite": "node.cattails",
+            "x": -60,
+            "y": 900
+          },
+          {
+            "sprite": "node.reeds",
+            "x": -50,
+            "y": 1110
+          },
+          {
+            "sprite": "prop.fenceRail",
+            "x": -110,
+            "y": 1300
+          },
+          {
+            "sprite": "prop.fenceRail",
+            "x": 900,
+            "y": 1650
+          },
+          {
+            "sprite": "prop.fenceRail",
+            "x": 962,
+            "y": 1664
+          },
+          {
+            "sprite": "ranch.hayWagon",
+            "x": 2100,
+            "y": 1664
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": 420,
+            "y": 1660
+          },
+          {
+            "sprite": "node.treeSmall",
+            "x": 1640,
+            "y": 1668
+          },
+          {
+            "sprite": "node.treeMedium",
+            "x": 2560,
+            "y": 1650
+          }
+        ],
+        "rows": [
+          {
+            "sprites": [
+              "node.cattails",
+              "node.reeds"
+            ],
+            "alt": 0.5,
+            "x0": -190,
+            "x1": 1250,
+            "y0": 1576,
+            "y1": 1590,
+            "dx": 86,
+            "dy": 20,
+            "jitter": 22
+          },
+          {
+            "sprites": [
+              "node.cattails",
+              "node.reeds"
+            ],
+            "alt": 0.5,
+            "x0": 1460,
+            "x1": 2890,
+            "y0": 1576,
+            "y1": 1590,
+            "dx": 86,
+            "dy": 20,
+            "jitter": 22
+          }
+        ],
+        "fence": {
+          "run": "ranch.fenceRun",
+          "broken": "ranch.fenceBroken",
+          "post": "ranch.fenceCornerPost",
+          "gate": "ranch.gateOpen",
+          "gates": [
+            1350
+          ],
+          "pitch": 128,
+          "sidePitch": 64
+        }
       }
     },
     "theVault": {

@@ -232,7 +232,7 @@ const SCENARIOS: Scenario[] = [
     file: '05-run-mid.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      return ff(page, waveStart(7) + 10)
+      return ff(page, waveStart(7) + 30)
     },
   },
   {
@@ -253,7 +253,7 @@ const SCENARIOS: Scenario[] = [
     file: '07-run-late.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      return ff(page, waveStart(17) + 10, true)
+      return ff(page, waveStart(17) + 32, true)
     },
   },
   {
@@ -261,7 +261,7 @@ const SCENARIOS: Scenario[] = [
     file: '08-run-night.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      return ff(page, waveStart(22) + 10, true)
+      return ff(page, waveStart(22) + 32, true)
     },
   },
   {

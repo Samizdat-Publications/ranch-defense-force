@@ -130,7 +130,13 @@ const dev = new DevOverlay(uiRoot, {
  * given the larger of them -- the same overhang `#stage`'s old `width: 100vw`
  * had. See the note on `#stage` in ui/style.css for the measurement.
  */
-function resize(): void {
+/**
+ * Size the canvas and the ONE renderer that owns it right now. The title's
+ * diorama and a run share the GPU device (and its view height), so resizing
+ * both would leave whichever went last in charge: the run came out zoomed to
+ * the diorama's closer framing.
+ */
+function resize(forRun = false): void {
   const dpr = Math.min(2, window.devicePixelRatio || 1)
   const cssW = document.documentElement.clientWidth
   const cssH = document.documentElement.clientHeight
@@ -138,8 +144,8 @@ function resize(): void {
   const h = Math.floor(cssH * dpr)
   canvas.style.width = `${cssW}px`
   canvas.style.height = `${cssH}px`
-  renderer?.resize(w, h)
-  if (state === 'menu') diorama?.resize(w, h)
+  if (!forRun && state === 'menu' && diorama) diorama.resize(w, h)
+  else renderer?.resize(w, h)
 }
 
 /**
@@ -158,7 +164,7 @@ function openTitle(): void {
   }
   resize()
 }
-window.addEventListener('resize', resize)
+window.addEventListener('resize', () => resize())
 
 function startRun(classId: string, seedText: string): void {
   currentClassId = classId
@@ -179,7 +185,7 @@ function startRun(classId: string, seedText: string): void {
   offers.setUnlocked([...unlockedWeapons(profile), ...unlockedItems(profile)])
   renderer = makeRenderer(world, atlas)
   hud = new Hud(uiRoot)
-  resize()
+  resize(true)
   renderer.camera.snapTo(world.player.x, world.player.y)
 
   // A handle on the live run, dev builds only, so what is actually on screen can
