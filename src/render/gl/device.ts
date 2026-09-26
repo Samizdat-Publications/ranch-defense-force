@@ -145,7 +145,10 @@ void main() {
   vec2 wp = uOrigin + texel;
   float cloud = texture(uNoise, wp / 1100.0 + vec2(uTime * 0.004, uTime * 0.0015)).r * 0.7
               + texture(uNoise, wp / 430.0 + vec2(uTime * 0.007, 0.0)).r * 0.3;
-  float shade = smoothstep(0.5, 0.66, cloud) * uClouds;
+  float shade = smoothstep(0.5, 0.66, cloud);
+  // Stepped and dithered on the art's own pixel grid, so a cloud's edge is
+  // made of the same size pixels as everything under it.
+  shade = floor(shade * 3.0 + hash(floor(wp)) * 0.9) / 3.0 * uClouds;
   vec3 illum = uAmbient * (1.0 - sh.g * 0.55) + uSun * (1.0 - max(sh.r, sh.g)) * (1.0 - shade * 0.6) + light;
   vec3 col = albedo * illum + emis * uEmissiveGain + bloom * uBloomGain + uFlash;
   col *= uExposure;

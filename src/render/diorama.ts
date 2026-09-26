@@ -54,6 +54,8 @@ export class Diorama {
   private readonly barrel: DrawExtra | null = null
   private time = 0
   private selected = 'hand'
+  /** The title shoots the yard round the barrel; the Homestead drifts along the buildings. */
+  private mode: 'title' | 'homestead' = 'title'
 
   constructor(private readonly canvas: HTMLCanvasElement, private readonly atlas: Atlas | null) {
     this.world = new World(0x1987_0924, 'hand', {}, 1, 'homeField')
@@ -118,6 +120,10 @@ export class Diorama {
     })
   }
 
+  setMode(mode: 'title' | 'homestead'): void {
+    this.mode = mode
+  }
+
   /** Bring the chosen class to the front of the group. */
   select(classId: string): void {
     this.selected = classId
@@ -145,14 +151,20 @@ export class Diorama {
     const vh = r.camera.viewH
 
     // A slow drift along the farmstead, barn to farmhouse and back.
-    const cx = 1180 + Math.sin(t * 0.045) * 190
-    r.holdCamera = { x: Math.round(cx - vw / 2), y: Math.round(-8 - vh * 0.62) }
+    if (this.mode === 'homestead') {
+      // Along the farmstead, coop to bunkhouse and back, buildings whole.
+      const hx = 1300 + Math.sin(t * 0.03) * 620
+      r.holdCamera = { x: Math.round(hx - vw / 2), y: Math.round(-40 - vh * 0.74) }
+    } else {
+      const cx = 1180 + Math.sin(t * 0.045) * 190
+      r.holdCamera = { x: Math.round(cx - vw / 2), y: Math.round(-8 - vh * 0.62) }
+    }
 
     // Lightning: two flashes, then the dark and the turned, then sundown again.
     const cycle = t % STRIKE_EVERY
     const since = cycle - (STRIKE_EVERY - 2.2)
-    const cursed = since >= 0 && since < CURSED_SECONDS
-    const flash = since >= 0 ? Math.max(0, 1 - since / 0.22) * 0.9 + Math.max(0, 1 - Math.abs(since - 0.42) / 0.12) * 0.5 : 0
+    const cursed = this.mode === 'title' && since >= 0 && since < CURSED_SECONDS
+    const flash = this.mode === 'title' && since >= 0 ? Math.max(0, 1 - since / 0.22) * 0.9 + Math.max(0, 1 - Math.abs(since - 0.42) / 0.12) * 0.5 : 0
     r.flash[0] = flash * 0.85
     r.flash[1] = flash * 0.9
     r.flash[2] = flash

@@ -55,13 +55,25 @@ const input = new Input()
 input.attach()
 
 let world: World | null = null
-/** `?r=2d` keeps the v1 Canvas 2D renderer for side-by-side comparison. */
-const USE_2D = new URLSearchParams(location.search).get('r') === '2d'
+/**
+ * The v1 Canvas 2D renderer: `?r=2d` for comparison, and the automatic
+ * fallback on a browser with no WebGL2, so the game still plays there (flat,
+ * without light, but playable).
+ */
+let USE_2D = new URLSearchParams(location.search).get('r') === '2d'
 /** Dev only: `?map=saltFlats` starts every run on that map (the RNG still draws, see maps.json _rngNote). */
 const FORCE_MAP = import.meta.env.DEV ? new URLSearchParams(location.search).get('map') ?? undefined : undefined
 let renderer: Renderer | GLRenderer | null = null
 function makeRenderer(w: World, a: Atlas | null): Renderer | GLRenderer {
-  return USE_2D ? new Renderer(canvas, w, a) : new GLRenderer(canvas, w, a)
+  if (!USE_2D) {
+    try {
+      return new GLRenderer(canvas, w, a)
+    } catch (err) {
+      console.warn('WebGL2 renderer unavailable, falling back to Canvas 2D:', err)
+      USE_2D = true
+    }
+  }
+  return new Renderer(canvas, w, a)
 }
 /** Null until the atlas resolves, and stays null if it fails — the game then
  *  renders the M0-M3 coloured squares rather than not rendering at all. */
@@ -144,7 +156,7 @@ function resize(forRun = false): void {
   const h = Math.floor(cssH * dpr)
   canvas.style.width = `${cssW}px`
   canvas.style.height = `${cssH}px`
-  if (!forRun && state === 'menu' && diorama) diorama.resize(w, h)
+  if (!forRun && (state === 'menu' || state === 'homestead') && diorama) diorama.resize(w, h)
   else renderer?.resize(w, h)
 }
 
@@ -160,6 +172,7 @@ function openTitle(): void {
   menu.open()
   if (diorama && atlas) {
     diorama.rebuild(atlas)
+    diorama.setMode('title')
     diorama.select(menu.selectedClass)
   }
   resize()
@@ -248,6 +261,16 @@ function openHomestead(): void {
   menu.close()
   pause.close()
   state = 'homestead'
+  hud?.destroy()
+  hud = null
+  // The live farm stands behind the Homestead. Rebuilt, like the title's, in
+  // case a run on another map has the shared ground layout.
+  if (diorama && atlas) {
+    diorama.rebuild(atlas)
+    diorama.setMode('homestead')
+    homestead.useLiveScene(true)
+  }
+  resize()
   homestead.open(
     profile,
     currentTier,
@@ -398,13 +421,14 @@ const loop = new Loop(
     const now = performance.now()
     const dt = Math.min(0.1, lastFrameAt ? (now - lastFrameAt) / 1000 : 0)
     lastFrameAt = now
-    const dayT = state === 'menu' || !world ? 0.795 : dayProgress(world)
-    ambience.update(dayT, state === 'menu' || state === 'playing' || state === 'levelup')
+    const onFarm = state === 'menu' || state === 'homestead'
+    const dayT = onFarm || !world ? 0.795 : dayProgress(world)
+    ambience.update(dayT, onFarm || state === 'playing' || state === 'levelup')
     // Thunder follows the flash the renderer draws from the same function.
     const bolt = world && state === 'playing' ? lightning(world.elapsed, dayT) : 0
     if (bolt > 0 && lastBolt === 0) ambience.thunder(0.6 + (world ? world.elapsed % 1.3 : 0))
     lastBolt = bolt
-    if (state === 'menu') {
+    if (state === 'menu' || state === 'homestead') {
       diorama?.draw(dt)
     } else if (renderer && world) {
       renderer.draw(alpha, shakeRand)
@@ -514,8 +538,15 @@ Atlas.load(import.meta.env.BASE_URL)
     // has to be rebuilt once the art is actually here.
     menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
     if (!USE_2D) {
-      diorama = new Diorama(canvas, a)
-      diorama.select(menu.selectedClass)
+      // No probe with getContext: that would create the WebGL context with
+      // default attributes before the device asks for its own.
+      try {
+        diorama = new Diorama(canvas, a)
+        diorama.select(menu.selectedClass)
+      } catch (err) {
+        console.warn('WebGL2 unavailable; the title runs without its live farm:', err)
+        USE_2D = true
+      }
       resize()
     }
     // The Homestead mounts the same yard, and it was built at module load too.
@@ -634,7 +665,7 @@ function fastForward(seconds: number, opts: { invulnerable?: boolean } = {}): {
  * requestAnimationFrame a hidden or headless pane may never fire.
  */
 function renderNow(): void {
-  if (state === 'menu') { diorama?.draw(0); return }
+  if (state === 'menu' || state === 'homestead') { diorama?.draw(0); return }
   if (!renderer || !world) return
   renderer.draw(1, shakeRand)
   hud?.setVisible(state === 'playing' || state === 'levelup' || state === 'paused')

@@ -303,3 +303,10 @@
   border-top: 2px dashed rgba(64, 49, 31, 0.35);
 }
 .phome-sign-price.is-open { color: #2f5d1f; background: rgba(63, 104, 39, 0.16); }
+
+/* Over the live farm: no painted barn, a dusk wash so the signs read. */
+.phome.is-live {
+  background:
+    linear-gradient(180deg, rgba(10, 8, 6, 0.7) 0%, rgba(10, 8, 6, 0.15) 22%, rgba(10, 8, 6, 0) 45%),
+    linear-gradient(0deg, rgba(10, 8, 6, 0.82) 0%, rgba(10, 8, 6, 0.35) 30%, rgba(10, 8, 6, 0) 52%);
+}

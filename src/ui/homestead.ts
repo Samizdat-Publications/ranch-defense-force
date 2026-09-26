@@ -144,6 +144,15 @@ export class HomesteadScreen {
    * fourth screen to need this and it has been the cause of a blank render
    * every time it was forgotten.
    */
+  /**
+   * Stand the Homestead over the live farm (render/diorama.ts) instead of its
+   * own painted barn: the four buildings it sells from are right there.
+   */
+  useLiveScene(on: boolean): void {
+    this.sceneEl.style.display = on ? 'none' : ''
+    this.root.classList.toggle('is-live', on)
+  }
+
   refreshScene(): void {
     this.sceneEl.replaceChildren(buildScene('barn'))
   }

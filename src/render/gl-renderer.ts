@@ -107,7 +107,8 @@ interface DrawItem {
   colour: RGBA
   w: number
   h: number
-  flash: boolean
+  /** How far toward white this draw is flashed, 0..1. */
+  flash: number
   scaleX: number
   scaleY: number
   rotation: number
@@ -199,6 +200,9 @@ export class GLRenderer {
   /** This frame's fireflies (x, y, strength), lit in the light pass. */
   private readonly fireflyLights = new Float32Array(36 * 3)
   private fireflyCount = 0
+  /** Level-up pulse: the level last seen and the world time it went up. */
+  private seenLevel = -1
+  private levelUpAt = -10
   private lastDraw = 0
   /** The player's frame this draw, for the outline drawn over everything. */
   private playerFrame: AtlasFrame | null = null
@@ -240,7 +244,7 @@ export class GLRenderer {
 
   private blankItem(): DrawItem {
     return {
-      x: 0, y: 0, liftY: 0, frame: null, colour: COL.void, w: 0, h: 0, flash: false,
+      x: 0, y: 0, liftY: 0, frame: null, colour: COL.void, w: 0, h: 0, flash: 0,
       scaleX: 1, scaleY: 1, rotation: 0, outline: NO_OUTLINE, alpha: 1, pivotX: 0, pivotY: 0,
       caster: false, contact: false, emissive: 0,
     }
@@ -355,6 +359,7 @@ export class GLRenderer {
     this.drawEffects(true)
     this.flushSprites()
     this.drawPlayerMark(pxi, pyi)
+    this.drawLevelPulse(pxi, pyi)
 
     // Standing things.
     dev.spriteBlend()
@@ -373,7 +378,7 @@ export class GLRenderer {
     this.drawOverhead(pxi, pyi)
     // The player's outline, over everything: findable in any crowd.
     if (this.playerFrame) {
-      this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, false, COL.outlinePlayer)
+      this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, 0, COL.outlinePlayer)
     }
     if (!this.holdCamera) {
       this.drawRain(rainAt(day.t))
@@ -485,12 +490,12 @@ export class GLRenderer {
   /** Queue one atlas frame. `ox/oy` add to the frame's own offset. */
   private spr(
     f: AtlasFrame, x: number, y: number, ox: number, oy: number,
-    rot: number, sx: number, sy: number, a: number, flash: boolean,
+    rot: number, sx: number, sy: number, a: number, flash: number,
     outline: RGBA = NO_OUTLINE, r = 1, g = 1, b = 1, emissive = 0, caster = false, lift = 0,
   ): void {
     this.dev.sprites.push(
       x, y, f.ox + ox, f.oy + oy, f.w, f.h, f.x, f.y, f.page,
-      rot, sx, sy, r, g, b, a, flash ? HIT_FLASH : 0, emissive,
+      rot, sx, sy, r, g, b, a, flash, emissive,
       outline[0], outline[1], outline[2], outline[3], caster ? 1 : 0, lift,
     )
   }
@@ -499,7 +504,7 @@ export class GLRenderer {
     if (this.itemCount >= this.items.length) return null
     const it = this.items[this.itemCount++]
     it.frame = null
-    it.flash = false
+    it.flash = 0
     it.liftY = 0
     it.scaleX = 1
     it.scaleY = 1
@@ -681,7 +686,7 @@ export class GLRenderer {
       it.x = c.x
       it.y = c.y
       it.frame = this.propFrame(blighted && this.frames && c.sprite.startsWith('crop.') ? this.frames.blighted(c.sprite) : c.sprite, c.x, c.y)
-      it.flash = c.flash > 0
+      it.flash = c.flash > 0 ? HIT_FLASH : 0
       it.colour = COL.crop
       it.caster = true
       it.contact = true
@@ -708,7 +713,7 @@ export class GLRenderer {
       it.x = b.x
       it.y = b.y
       it.frame = this.propFrame(b.sprite, b.x, b.y)
-      it.flash = b.flash > 0
+      it.flash = b.flash > 0 ? HIT_FLASH : 0
       it.colour = COL.breakable
       it.caster = true
       it.contact = true
@@ -740,7 +745,7 @@ export class GLRenderer {
       it.x = x
       it.y = y
       it.frame = frame ?? null
-      it.flash = e.flash > 0
+      it.flash = e.flash > 0 ? HIT_FLASH : 0
       it.colour = e.elite ? COL.enemyElite : COL.enemy
       it.w = e.radius * 2
       it.h = e.radius * 2
@@ -751,6 +756,7 @@ export class GLRenderer {
 
       const bossDef = ENEMIES[e.typeId] as { drawScale?: number; deathSeconds?: number } | undefined
       const bossScale = Math.round(bossDef?.drawScale ?? 1)
+      if (bossScale > 1 || e.typeId === 'duster') it.flash *= 0.4
       const scale = (e.elite ? 1.5 : 1) * bossScale
       it.scaleX = scale
       it.scaleY = scale
@@ -1001,7 +1007,7 @@ export class GLRenderer {
           it.outline, 1, 1, 1, it.emissive, it.caster, it.liftY)
       } else {
         const c = it.colour
-        const fl = it.flash ? HIT_FLASH : 0
+        const fl = it.flash
         batch.push(it.x, y, -it.w / 2, -it.h / 2, it.w, it.h, 0, 0, PAGE_SOLID,
           it.rotation, it.scaleX, it.scaleY, c[0], c[1], c[2], it.alpha * c[3], fl, 0,
           it.outline[0], it.outline[1], it.outline[2], it.outline[3], it.caster ? 1 : 0, it.liftY)
@@ -1058,6 +1064,11 @@ export class GLRenderer {
     for (let i = 0; i < this.extraLights.length; i++) {
       const e = this.extraLights[i]
       L.point(e.x, e.y, e.radius, e.r, e.g, e.b, e.intensity, e.squash)
+    }
+
+    const pulseAge = w.elapsed - this.levelUpAt
+    if (pulseAge >= 0 && pulseAge < 0.7) {
+      L.point(px, py - 12, 120, 1, 0.8, 0.35, 1.4 * (1 - pulseAge / 0.7), 0.7)
     }
 
     if (p.alive && !this.hidePlayer) {
@@ -1158,7 +1169,7 @@ export class GLRenderer {
       if (fi >= len) fi = len - 1
       const frame = strip[fi]
       if (!frame) continue
-      this.spr(frame, e.x, e.y, 0, 0, e.rotation, e.scale, e.scale, 1, false)
+      this.spr(frame, e.x, e.y, 0, 0, e.rotation, e.scale, e.scale, 1, 0)
     }
   }
 
@@ -1233,6 +1244,22 @@ export class GLRenderer {
     this.flushShapes()
   }
 
+  /** A gold ring that rolls out from the player's feet when a level lands. */
+  private drawLevelPulse(x: number, y: number): void {
+    const p = this.world.player
+    if (this.seenLevel < 0) this.seenLevel = p.level
+    if (p.level > this.seenLevel) {
+      this.seenLevel = p.level
+      this.levelUpAt = this.world.elapsed
+    }
+    const age = this.world.elapsed - this.levelUpAt
+    if (age < 0 || age > 0.7) return
+    const k = age / 0.7
+    const s = this.dev.shapes
+    s.ellipseRing(x, y - 2, 10 + k * 70, (10 + k * 70) * 0.45, 3 * (1 - k) + 1, 1, 0.85, 0.35, 0.9 * (1 - k))
+    this.flushShapes()
+  }
+
   private drawArcs(): void {
     const s = this.dev.shapes
     for (const a of this.arcs) {
@@ -1293,7 +1320,7 @@ export class GLRenderer {
         ? atlas?.get(itemCardSprite(g.itemId)) ?? atlas?.get('pickup.feed')
         : this.frames ? this.propFrame(this.frames.named.get('pickup', g.kind), g.x, g.y) : null
       if (f) {
-        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, 1, false)
+        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, 1, 0)
       } else {
         const c = g.kind === 'xp' ? COL.xp : COL.feed
         const s = g.kind === 'xp' ? 5 : 7
@@ -1337,7 +1364,7 @@ export class GLRenderer {
         a = cfg.minAlpha + (cfg.alpha - cfg.minAlpha) * e
       }
       if (a <= 0.01) continue
-      this.spr(o.frame, o.x, o.y, 0, 0, 0, 1, 1, a, false)
+      this.spr(o.frame, o.x, o.y, 0, 0, 0, 1, 1, a, 0)
     }
   }
 
