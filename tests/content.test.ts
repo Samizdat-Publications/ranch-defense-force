@@ -233,11 +233,15 @@ describe('card art', () => {
     }).drawAt
     const frames = JSON.parse(readFileSync('public/atlas.json', 'utf8')).frames as
       Record<string, { w: number; h: number }>
-    // A pony and a bulldog are within 11px of each other in the SOURCE...
+    // The SOURCE gap used to be within 11px -- a pony and a bulldog drawn at
+    // nearly the same size -- until `fieldScale` (art/sprites.json) corrected
+    // the animal sheets that were authored on the human 32x64 grid. The pony
+    // is not one of them (horses stay unscaled), so the gap is now real
+    // rather than something only `drawAt` compensates for.
     const ponySrc = frames['fjordPony.idle.down.0']
     const dogSrc = frames['joy.idle.down.0']
-    expect(Math.abs(ponySrc.h - dogSrc.h)).toBeLessThan(16)
-    // ...and must not be, once drawn.
+    expect(ponySrc.h - dogSrc.h).toBeGreaterThan(16)
+    // And the scene still exaggerates the separation further for readability.
     expect(at.fjordPony - at.joy).toBeGreaterThan(40)
   })
 

@@ -194,6 +194,15 @@ interface Manifest {
    */
   fieldClips?: { _base: string; clips: string[] }
   terrainSource: { path: string; tiles: Record<string, [number, number]> }
+  /**
+   * Downscale factors for sheets authored on the human 32x64 grid that should
+   * read smaller in the field. Key is a sheet id (a frame name's first
+   * dot-segment); value is the scale applied to every one of that sheet's
+   * frames. Carries a `_note` string alongside the numeric entries, which is
+   * why this is not typed `Record<string, number>` -- see the post-pass this
+   * feeds, below.
+   */
+  fieldScale?: Record<string, number | string>
 }
 
 const PAD = 2 // bleed, so a filtered draw never samples a neighbour
@@ -1282,6 +1291,157 @@ if (existsSync(TILESET_DIR)) {
     if (missing.length) {
       errors.push(`${png}: tileset is incomplete — missing ${missing.length} of 16 corner combinations (${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ', …' : ''})`)
     }
+  }
+}
+
+// -------------------------------------------------------------- field scale
+
+/**
+ * Nearest colour in a per-frame palette, plain squared RGB distance.
+ *
+ * The palette is small (a single frame's own opaque colours), so a linear
+ * scan is cheap and there is no reason to reach for anything fancier.
+ */
+function nearestPaletteColor(
+  r: number, g: number, b: number, palette: [number, number, number][],
+): [number, number, number] {
+  let best = palette[0]
+  let bestDist = Infinity
+  for (const c of palette) {
+    const dr = r - c[0]
+    const dg = g - c[1]
+    const db = b - c[2]
+    const dist = dr * dr + dg * dg + db * db
+    if (dist < bestDist) {
+      bestDist = dist
+      best = c
+    }
+  }
+  return best
+}
+
+/**
+ * Downscale one already-sliced frame by `s`, in place of its pixels.
+ *
+ * 1. Premultiplied box filter (area-weighted, so a non-integer scale still
+ *    averages correctly) down to `round(w*s) x round(h*s)`, at least 1x1.
+ * 2. Un-premultiply, then hard-threshold alpha at 0.45 -- a shrunk sprite
+ *    keeps crisp pixel-art edges instead of a soft antialiased fringe.
+ * 3. Snap every opaque output pixel's RGB to the nearest colour in THIS
+ *    frame's own palette (its opaque source pixels, before downscaling), so
+ *    the box filter's blended colours collapse back onto colours the sprite
+ *    actually used.
+ *
+ * Returns a new, standalone `Image` sized exactly to the scaled frame; the
+ * caller re-points the `Pending` at it with `sx: 0, sy: 0`.
+ */
+function downscaleFrame(img: Image, sx: number, sy: number, sw: number, sh: number, s: number): Image {
+  const newW = Math.max(1, Math.round(sw * s))
+  const newH = Math.max(1, Math.round(sh * s))
+  const scaleX = sw / newW
+  const scaleY = sh / newH
+
+  const sumR = new Float64Array(newW * newH)
+  const sumG = new Float64Array(newW * newH)
+  const sumB = new Float64Array(newW * newH)
+  const sumA = new Float64Array(newW * newH)
+  for (let oy = 0; oy < newH; oy++) {
+    const ySrc0 = oy * scaleY
+    const ySrc1 = ySrc0 + scaleY
+    const y0 = Math.max(0, Math.floor(ySrc0))
+    const y1 = Math.min(sh, Math.ceil(ySrc1))
+    for (let ox = 0; ox < newW; ox++) {
+      const xSrc0 = ox * scaleX
+      const xSrc1 = xSrc0 + scaleX
+      const x0 = Math.max(0, Math.floor(xSrc0))
+      const x1 = Math.min(sw, Math.ceil(xSrc1))
+      let r = 0
+      let g = 0
+      let b = 0
+      let a = 0
+      let wgt = 0
+      for (let yy = y0; yy < y1; yy++) {
+        const wy = Math.min(yy + 1, ySrc1) - Math.max(yy, ySrc0)
+        if (wy <= 0) continue
+        for (let xx = x0; xx < x1; xx++) {
+          const wx = Math.min(xx + 1, xSrc1) - Math.max(xx, xSrc0)
+          if (wx <= 0) continue
+          const w = wx * wy
+          const idx = ((sy + yy) * img.width + (sx + xx)) * 4
+          const alpha = img.data[idx + 3] / 255
+          r += img.data[idx] * alpha * w
+          g += img.data[idx + 1] * alpha * w
+          b += img.data[idx + 2] * alpha * w
+          a += alpha * w
+          wgt += w
+        }
+      }
+      if (wgt > 0) {
+        const o = oy * newW + ox
+        sumR[o] = r / wgt
+        sumG[o] = g / wgt
+        sumB[o] = b / wgt
+        sumA[o] = a / wgt
+      }
+    }
+  }
+
+  // This frame's own palette, from its SOURCE opaque pixels -- not the output
+  // of the box filter, which would let a blend colour become a new "own"
+  // colour and defeat the point of snapping.
+  const paletteMap = new Map<number, [number, number, number]>()
+  for (let yy = 0; yy < sh; yy++) {
+    for (let xx = 0; xx < sw; xx++) {
+      const idx = ((sy + yy) * img.width + (sx + xx)) * 4
+      if (img.data[idx + 3] < 250) continue
+      const key = (img.data[idx] << 16) | (img.data[idx + 1] << 8) | img.data[idx + 2]
+      if (!paletteMap.has(key)) paletteMap.set(key, [img.data[idx], img.data[idx + 1], img.data[idx + 2]])
+    }
+  }
+  const palette = [...paletteMap.values()]
+
+  const out = new Uint8Array(newW * newH * 4)
+  for (let i = 0; i < newW * newH; i++) {
+    if (sumA[i] < 0.45) continue // stays transparent (out is zero-filled)
+    const invA = sumA[i] > 0 ? 1 / sumA[i] : 0
+    let r = Math.min(255, sumR[i] * invA)
+    let g = Math.min(255, sumG[i] * invA)
+    let b = Math.min(255, sumB[i] * invA)
+    if (palette.length > 0) [r, g, b] = nearestPaletteColor(r, g, b, palette)
+    out[i * 4] = Math.round(r)
+    out[i * 4 + 1] = Math.round(g)
+    out[i * 4 + 2] = Math.round(b)
+    out[i * 4 + 3] = 255
+  }
+  return { width: newW, height: newH, data: out }
+}
+
+/*
+   The field-scale post-pass. Runs over every `Pending` frame collected above,
+   from every group -- humanoids, animals, pixellabObjects, tilesets, all of
+   it -- so it needs no knowledge of which section produced a frame, only its
+   name. A frame's sheet id is the first dot-segment of that name, exactly the
+   convention `SCREEN_GROUPS` below also relies on.
+
+   Runs BEFORE the pack step, so a scaled frame is packed at its scaled size
+   from the start and the page-fit assertion after `pending.sort` measures the
+   real thing.
+*/
+if (manifest.fieldScale) {
+  const scales = manifest.fieldScale
+  for (const p of pending) {
+    const sheetId = p.name.split('.')[0]
+    const s = scales[sheetId]
+    if (typeof s !== 'number') continue // `_note` and every unscaled sheet
+    const scaled = downscaleFrame(p.img, p.sx, p.sy, p.sw, p.sh, s)
+    p.img = scaled
+    p.sx = 0
+    p.sy = 0
+    p.sw = scaled.width
+    p.sh = scaled.height
+    // Same rounding as every other pivot maths in this file.
+    p.ox = Math.round(p.ox * s)
+    p.oy = Math.round(p.oy * s)
   }
 }
 
