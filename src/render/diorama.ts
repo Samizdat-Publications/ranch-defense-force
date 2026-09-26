@@ -89,7 +89,7 @@ export class Diorama {
     r.dayOverride = SUNDOWN
     r.camera.margin = 600
     r.viewHeight = 380
-    r.blightOverride = this.mode === 'homestead' ? 0 : 0.12
+    r.blightOverride = 0
     return r
   }
 
@@ -123,8 +123,9 @@ export class Diorama {
 
   setMode(mode: 'title' | 'homestead'): void {
     this.mode = mode
-    // Between runs the farm is at rest; at the title the rot is only at the fence.
-    this.renderer.blightOverride = mode === 'homestead' ? 0 : 0.12
+    // The farm at rest, in both framings: a little rot at the fence read as
+    // rust stains under the sundown grade, not as a curse creeping in.
+    this.renderer.blightOverride = 0
   }
 
   /** Bring the chosen class to the front of the group. */

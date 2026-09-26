@@ -133,7 +133,7 @@ void main() {
     // soil ramp. The tile only adds grain. The wang tiles for tilled soil
     // either carry transparent holes or read as camouflage at this scale.
     float row = mod(w.y, 7.0);
-    vec3 ridge = vec3(0.40, 0.29, 0.18);
+    vec3 ridge = vec3(0.47, 0.35, 0.22);
     vec3 s = row < 1.0 ? ridge * 1.18 : (row < 3.0 ? ridge : (row < 5.0 ? ridge * 0.8 : ridge * 0.56));
     float grit = dot(tile(4, p).rgb, vec3(0.333));
     s *= 0.86 + grit * 0.32;
@@ -142,8 +142,10 @@ void main() {
   } else if (t == 1) {
     c = tile(3, p);
   } else {
+    // The lighter grass only in the broadest swells, and toned toward the
+    // base: big pale patches read as camouflage (critic round 7).
     float d = (n(w, 31.0) - 0.5) * 0.08;
-    c = gp + d > 0.64 ? tile(1, p) : (gp + d < 0.3 ? tile(2, p) : tile(0, p));
+    c = gp + d > 0.74 ? tile(1, p) * vec4(0.95, 0.95, 0.95, 1.0) : (gp + d < 0.3 ? tile(2, p) : tile(0, p));
   }
 
   // Blight turns grass and paths alike, in bands that never reorder.
@@ -152,23 +154,38 @@ void main() {
     c = b > 0.5 ? tile(9, p) : (b > 0.24 ? tile(8, p) : tile(7, p));
   }
 
-  // Rims: a lower terrain touching grass gets a dark edge, like a cut bank.
-  if (t != 0) {
+  // Tufted edges, the way a hand-drawn farm tileset draws them: grass
+  // overhangs every patch of dirt, soil and yard by one to three pixels,
+  // ragged along the edge, with a line of shade under the top lip. A hard
+  // rectangle of soil on grass read as a texture pasted on (rounds 3-7).
+  if (t != 0 && t != 4) {
     float g2;
-    int up = terrainAt(w + vec2(0.0, -1.0), g2);
-    int lf = terrainAt(w + vec2(-1.0, 0.0), g2);
-    int rt = terrainAt(w + vec2(1.0, 0.0), g2);
-    int dn = terrainAt(w + vec2(0.0, 1.0), g2);
-    if (up == 0 || up < t && t != 3) c.rgb *= 0.62;
-    else if (lf == 0 || rt == 0) c.rgb *= 0.74;
-    else if (dn == 0) c.rgb *= 0.86;
+    float over = 1.0 + floor(hash(vec2(floor(w.x / 2.0), 11.0)) * 3.0);
+    float side = 1.0 + floor(hash(vec2(floor(w.y / 2.0), 23.0)) * 2.0);
+    bool lip = terrainAt(w + vec2(0.0, -over), g2) == 0
+            || terrainAt(w + vec2(0.0, over - 1.0), g2) == 0
+            || terrainAt(w + vec2(-side, 0.0), g2) == 0
+            || terrainAt(w + vec2(side, 0.0), g2) == 0;
+    if (lip) {
+      // The grass as it would be here, blight and all, a shade lighter at
+      // the lip so the edge reads as grass standing over the soil.
+      float bb = blightAt(w);
+      vec4 gc = bb > 0.0 ? (bb > 0.5 ? tile(9, p) : (bb > 0.24 ? tile(8, p) : tile(7, p))) : tile(0, p);
+      c = vec4(gc.rgb * 1.06, 1.0);
+    } else if (terrainAt(w + vec2(0.0, -over - 1.0), g2) == 0) {
+      c.rgb *= 0.64;
+    } else if (terrainAt(w + vec2(-side - 1.0, 0.0), g2) == 0 || terrainAt(w + vec2(side + 1.0, 0.0), g2) == 0) {
+      c.rgb *= 0.82;
+    }
   }
 
-  // Tufts, flowers and pebbles on a hashed 14 px grid.
+  // Tufts, flowers and pebbles on a hashed 14 px grid, gathered in drifts
+  // rather than spread evenly: even spacing read as grain.
   if (t == 0 && b <= 0.0) {
     vec2 cell = floor(w / 14.0);
     float h = hash(cell * 1.7 + 3.1);
-    if (h < 0.34) {
+    float drift = smoothstep(0.5, 0.72, n(cell * 14.0, 150.0));
+    if (h < 0.12 + 0.5 * drift) {
       ivec2 origin = ivec2(cell * 14.0) + ivec2(int(hash(cell + 7.0) * 9.0), int(hash(cell + 11.0) * 9.0));
       ivec2 q = p - origin;
       float kind = hash(cell + 19.0);
@@ -188,15 +205,6 @@ void main() {
         if (q == ivec2(2, 4) || q == ivec2(3, 4)) c.rgb *= 0.72;
       }
     }
-  }
-
-  // Grass blades: two-pixel strokes, a dark base with a lit tip above it, so
-  // the ground carries detail at the same pixel size as everything on it.
-  // Reviewers read the flat tones alone as a smeared texture under crisp art.
-  if (t == 0 && b <= 0.0) {
-    vec2 fw = floor(w);
-    if (hash(fw + 13.0) > 0.955) c.rgb *= 0.74;
-    else if (hash(fw + vec2(0.0, 1.0) + 13.0) > 0.955) c.rgb = mix(c.rgb, vec3(0.78, 0.84, 0.46), 0.35);
   }
 
   // Broad, stepped variation so the field is not one flat colour. Ordered

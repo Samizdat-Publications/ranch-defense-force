@@ -146,10 +146,15 @@
   overflow: hidden;
 }
 
-/* -9px clears the plate, which overlaps the window's bottom edge. */
+/* -9px clears the plate, which overlaps the window's bottom edge. Pixelated
+   explicitly rather than relying only on the inline style `spriteEl` sets --
+   an icon this is drawn at a whole-pixel 2x zoom (see `artZoom` in card.ts)
+   and any smoothing would blur exactly the edge that makes it read as pixel
+   art rather than a small blurry photo. */
 .pcard-window .card-sprite {
   position: relative;
   top: -9px;
+  image-rendering: pixelated;
   animation: sprite-breathe 3.4s ease-in-out infinite;
 }
 

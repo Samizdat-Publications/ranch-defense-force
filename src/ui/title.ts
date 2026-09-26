@@ -138,11 +138,14 @@ export class TitleScreen {
     }
     figure.append(el('div', { class: 'hero-horizon' }), el('div', { class: 'hero-shade' }))
     if (locked) {
+      // A dark silhouette (CSS handles the figure itself, see `.hero.is-locked
+      // .hero-figure`) plus a small stamped tag along the window's bottom edge
+      // -- not a plank nailed across the face, which is unreadable as "who is
+      // this" and was the whole complaint. The face stays visible, dimmed.
       figure.append(
-        el('div', { class: 'hero-board hero-board-top' }, [
+        el('div', { class: 'hero-lock-tag' }, [
           el('span', { class: 'hero-price', text: price ? `${price} ACRES` : 'LOCKED' }),
         ]),
-        el('div', { class: 'hero-board hero-board-bottom' }),
       )
     }
 

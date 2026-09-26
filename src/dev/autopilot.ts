@@ -28,6 +28,10 @@ const MAX_WEIGHED = 80
 const STRAFE_RATE = 0.6
 /** How far from an arena edge the pull-back starts. */
 const EDGE_MARGIN = 160
+/** The distance it fights from: closer than this it backs off, further it
+ *  closes in. A bot that only ever ran outran the crowd, and the photographs
+ *  of wave 7 showed one enemy on screen with seventy alive (critic round 7). */
+const STANDOFF = 150
 /** Nothing inside this radius means it is safe to go shopping for pickups. */
 const GREED_SAFE = 150
 /** How hard a pickup pulls, against 1 for "away from the crowd". A person
@@ -86,8 +90,9 @@ export class Autopilot {
         const strafeX = -awayY
         const strafeY = awayX
         const strafe = Math.sin(this.strafePhase)
-        moveX = awayX + strafeX * strafe * 0.6
-        moveY = awayY + strafeY * strafe * 0.6
+        const push = Math.max(-1, Math.min(1, (STANDOFF - d) / STANDOFF))
+        moveX = awayX * push + strafeX * strafe * 0.8
+        moveY = awayY * push + strafeY * strafe * 0.8
       }
     }
 

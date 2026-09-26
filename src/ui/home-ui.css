@@ -417,30 +417,26 @@
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55));
 }
 
-/* The two nailed boards, with the figure still visible in the gap. */
-.hero-board {
+/*
+   The locked price: a small stamped tag along the window's bottom edge,
+   not a plank nailed across the face.
+
+   The face used to disappear under two crossed boards reading "90 ACRES" --
+   which answers "how much" but not "who is this", and hides the one thing a
+   class-select card exists to show. The silhouette (`.hero.is-locked
+   .hero-figure` below) says "locked" on its own; this tag only needs to
+   carry the price, so it sits in the strip the ground-shade gradient already
+   darkens instead of covering the portrait.
+*/
+.hero-lock-tag {
   position: absolute;
-  left: -12px;
-  right: -12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  border-top: 2px solid #3b2b18;
-  border-bottom: 2px solid #241a0e;
-  display: grid;
-  place-items: center;
-}
-
-.hero-board-top {
-  top: 10px;
-  height: 20px;
-  background: linear-gradient(180deg, #8a6a42 0%, #5f472a 100%);
-  transform: rotate(-4deg);
-}
-
-.hero-board-bottom {
-  top: 44px;
-  height: 16px;
-  background: linear-gradient(180deg, #7e6039 0%, #543f26 100%);
-  transform: rotate(3deg);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3px 0 4px;
+  text-align: center;
+  background: rgba(20, 15, 9, 0.86);
+  border-top: 1px solid rgba(0, 0, 0, 0.55);
 }
 
 .hero-price {
@@ -539,7 +535,9 @@
 
 .hero.is-selected .hero-tab { border-color: var(--paper-edge-gold); }
 .hero.is-locked .hero-body { background: var(--paper-dead); }
-.hero.is-locked .hero-figure { filter: brightness(0.55) saturate(0.6); }
+/* A dark silhouette instead of a dim photo -- readable at a glance as "not
+   yet", and the shape underneath still says who it is. */
+.hero.is-locked .hero-figure { filter: brightness(0) opacity(0.55); }
 
 /* ===================================================================
    THE SCENE SELECTOR

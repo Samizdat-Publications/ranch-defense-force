@@ -13,7 +13,7 @@
  */
 import { RARITY, type RarityTier } from '../content'
 import { el } from './dom'
-import { spriteEl } from './sprite'
+import { frameOf, spriteEl } from './sprite'
 
 export interface CardStat {
   label: string
@@ -46,8 +46,6 @@ export interface CardSpec {
   zoom?: number
   rarity?: string
   stats?: CardStat[]
-  /** Footer left slot. The design calls it a lot number. */
-  lot?: string
   /**
    * The stack counter, beside the lot number (docs/UPGRADE_ROSTER.md §5).
    *
@@ -155,7 +153,7 @@ export function card(spec: CardSpec): HTMLElement {
   root.append(kindBand)
 
   const window = el('div', { class: 'pcard-window' })
-  const art = spec.sprite ? spriteEl(spec.sprite, 96, spec.zoom) : null
+  const art = spec.sprite ? spriteEl(spec.sprite, 96, spec.zoom ?? artZoom(spec.sprite)) : null
   if (art) window.append(art)
   root.append(window)
 
@@ -182,12 +180,10 @@ export function card(spec: CardSpec): HTMLElement {
   }
 
   const foot = el('div', { class: 'pcard-foot' })
-  // The lot number and the stack counter share the footer's left slot: the lot
-  // is flavour, the stack is the only place the card says whether taking it
-  // again will do anything. When both are present the stack wins the emphasis.
+  // The footer's left slot: the stack is the only place the card says whether
+  // taking it again will do anything ("2 of 5", "ONE ONLY", "4 of 4 · LAST").
   const left = el('div', { class: 'pcard-lot' })
-  left.append(el('span', { text: spec.lot ?? '' }))
-  if (spec.stack) left.append(el('b', { class: 'pcard-stack', text: spec.stack }))
+  if (spec.stack) left.append(el('b', { class: 'pcard-stack', text: humanizeStack(spec.stack) }))
   foot.append(left)
   if (typeof spec.price === 'number') {
     foot.append(el('div', {
@@ -216,9 +212,29 @@ export function deal(cards: readonly HTMLElement[]): void {
   })
 }
 
-/** A stable, meaningless-but-consistent lot number, for the footer. */
-export function lotOf(id: string): string {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  return `LOT ${String(h % 90 + 10)}`
+/**
+ * The art window's usable box: 132px tall with no side border (see
+ * `.pcard-window` in card.css), so once the border-box top/bottom border is
+ * out the window has 126px of height and the card's own 204px of content
+ * width to draw into.
+ */
+const ART_WINDOW_W = 204
+const ART_WINDOW_H = 126
+
+/**
+ * 2x when the sprite still fits the window at that size, 1x otherwise --
+ * never a fraction in between, so the icon stays on the pixel grid. Every
+ * item and weapon icon in the atlas is under 64px a side, so this reaches 2x
+ * for the whole roster; it only drops to 1x for art bigger than the window
+ * was ever going to hold anyway.
+ */
+function artZoom(name: string): number {
+  const f = frameOf(name)
+  if (!f) return 2
+  return f.w * 2 <= ART_WINDOW_W && f.h * 2 <= ART_WINDOW_H ? 2 : 1
+}
+
+/** "3/5" -> "3 of 5"; "4/4 · LAST" -> "4 of 4 · LAST". "ONE ONLY" is untouched. */
+function humanizeStack(stack: string): string {
+  return stack.replace(/^(\d+)\/(\d+)/, '$1 of $2')
 }

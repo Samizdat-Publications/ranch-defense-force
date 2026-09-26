@@ -14,7 +14,7 @@ import { STAT_KEYS, STAT_LABELS } from '../content'
 import { categoryLabel, stackLabel, type Offer, type OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta, type DerivedStats } from '../sim/stats'
-import { card, deal, lotOf } from './card'
+import { card, deal } from './card'
 import { shopRerollCost } from '../sim/formulas'
 import { clear, el, fmtStat } from './dom'
 import { buildLedger } from './ledger'
@@ -67,8 +67,11 @@ export class ShopScreen {
     this.feedEl = el('div', { class: 'pshop-feed' })
     this.subtitle = el('div', { class: 'pshop-sub' })
     this.exclusiveNote = el('div', { class: 'pshop-exclusive' })
+    // Secondary: rerolling is the thing you do a few times a visit, not the
+    // thing the panel should be shouting. "Back to the field" carries the
+    // gold treatment instead, see the button below.
     this.rerollBtn = el('button', {
-      class: 'pshop-btn is-gold',
+      class: 'pshop-btn',
       text: 'REROLL',
       onClick: () => this.reroll(),
     })
@@ -146,7 +149,7 @@ export class ShopScreen {
   private updateExclusiveNote(): void {
     const n = this.offers.filter((o) => o?.exclusive).length
     this.exclusiveNote.textContent = n > 0
-      ? `${n} of ${this.offers.length} cards here you will never see at a level-up.`
+      ? `${n} of ${this.offers.length} are shop-only.`
       : 'The swap, the Loads, and every epic and legendary live only here.'
   }
 
@@ -254,7 +257,6 @@ export class ShopScreen {
         sprite: offer.sprite,
         rarity: offer.rarity,
         stats: this.statRows(offer),
-        lot: lotOf(offer.id),
         stack: stackLabel(offer.stacks),
         price: offer.cost,
         affordable,
@@ -421,8 +423,10 @@ export class ShopScreen {
     this.feedEl.textContent = `FEED ${p.feed}`
     foot.appendChild(this.feedEl)
     foot.appendChild(this.rerollBtn)
+    // Primary: the one action every visit ends with, so it gets the gold
+    // treatment Reroll used to wear.
     foot.appendChild(el('button', {
-      class: 'pshop-btn',
+      class: 'pshop-btn is-gold',
       text: 'BACK TO THE FIELD',
       onClick: () => this.finish(),
     }))

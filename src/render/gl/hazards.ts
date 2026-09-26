@@ -78,13 +78,26 @@ void main() {
   float g = hash(w + seed);
 
   if (kind == 0) {
-    // Tar: near-black and glossy, a lit lip along the top edge, slow sheen.
-    // The old translucent brown read as a shadow with no caster.
-    float sheen = texture(uNoise, (w + vec2(uTime * 2.0, 0.0)) / 18.0).r;
-    bool lip = d > edge - 2.5;
-    c = vec4(0.09, 0.07, 0.05, 0.36);
-    if (sheen > 0.7) c = vec4(0.3, 0.27, 0.23, 0.5);
-    if (lip && q.y < -r * 0.2) c = vec4(0.44, 0.38, 0.3, 0.7);
+    // Tar: splashed puddles, thick at the middle and scattering out, with a
+    // dotted ring where the slow ends. A zone this big (up to ~290 px) drawn
+    // as one translucent disc read as a shadow with no caster, round after
+    // round; spilled tar reads as spilled tar.
+    float blob = texture(uNoise, (w + seed * 53.0) / 64.0).r * 0.8
+               + texture(uNoise, (w + seed * 31.0) / 21.0).r * 0.2;
+    float fall = d / edge;
+    bool puddle = blob > 0.5 + fall * 0.22;
+    bool edgeOfPuddle = blob <= 0.525 + fall * 0.22;
+    if (rim) {
+      if (hash(floor(w / 2.0) + seed) < 0.5) discard;
+      c = vec4(0.08, 0.06, 0.05, 0.55);
+    } else if (!puddle) {
+      discard;
+    } else {
+      float sheen = texture(uNoise, (w + vec2(uTime * 2.0, 0.0)) / 18.0).r;
+      c = vec4(0.06, 0.05, 0.04, 0.8);
+      if (sheen > 0.72) c = vec4(0.26, 0.24, 0.22, 0.8);
+      if (edgeOfPuddle) c = vec4(0.16, 0.13, 0.1, 0.7);
+    }
   } else if (kind == 1) {
     if (g > 0.18 && !rim) discard;
     c = rim ? vec4(0.92, 0.78, 0.42, 0.55) : vec4(0.86, 0.7, 0.36, 0.9);

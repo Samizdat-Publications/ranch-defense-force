@@ -12,7 +12,7 @@ import type { OfferPool } from '../sim/offers'
 import type { World } from '../sim/world'
 import { emptyDerived, previewDelta } from '../sim/stats'
 import { LEVEL_REROLL_COST } from '../sim/formulas'
-import { card, deal, lotOf } from './card'
+import { card, deal } from './card'
 import { clear, el, fmtStat } from './dom'
 
 export class LevelUpScreen {
@@ -134,7 +134,6 @@ export class LevelUpScreen {
             tone: raw.includes('-') && !raw.includes('->') ? 'cost' as const : 'gain' as const,
           }
         }),
-        lot: lotOf(offer.id),
         // §5: the card says what taking it AGAIN does, or that it cannot be.
         stack: stackLabel(offer.stacks),
         source: offer.band?.toUpperCase() ?? (offer.kind === 'weapon' ? 'WEAPON' : 'ITEM'),

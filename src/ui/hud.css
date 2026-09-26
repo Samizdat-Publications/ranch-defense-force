@@ -326,3 +326,13 @@
 
 /* A sheet is open over the field (pause, level-up): the wave card gives way. */
 .is-covered .hud-banner { visibility: hidden; }
+
+/* Everything else on the HUD dims rather than disappearing, so the field still
+   reads behind the sheet but the sheet is unmistakably what has focus. The
+   banner is handled above rather than here because it hides outright instead
+   of dimming: a wave card fading in under a modal would read as two things
+   fighting for the same moment. */
+.is-covered > *:not(.hud-banner) {
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+}
