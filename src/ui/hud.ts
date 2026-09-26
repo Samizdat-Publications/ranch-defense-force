@@ -78,6 +78,8 @@ export class Hud {
   private readonly abilityKey: HTMLElement
   private readonly abilityRing: HTMLElement
   private readonly bossBar: HTMLElement
+  /** Sim time the wave card last dropped in; the boss plate waits it out. */
+  private bannerAt = -99
   private readonly bossFill: HTMLElement
   private readonly bossName: HTMLElement
   private readonly banner: HTMLElement
@@ -250,6 +252,7 @@ export class Hud {
       if (world.elapsed - this.lastElapsed < 0.5) {
         void this.banner.offsetWidth
         this.banner.classList.add('show')
+        this.bannerAt = world.elapsed
       }
     }
     const left = `${Math.max(0, Math.ceil(world.spawner.waveRemaining))}s`
@@ -265,6 +268,8 @@ export class Hud {
       const pct = Math.max(0, Math.min(1, boss.hp / boss.maxHp))
       this.bossBar.style.display = ''
       this.bossFill.style.transform = `scaleX(${pct.toFixed(3)})`
+      // One name at a time: the card says it first, then the plate takes over.
+      this.bossName.style.visibility = world.elapsed - this.bannerAt < 3.3 ? 'hidden' : ''
       const name = ENEMIES[boss.typeId]?.name ?? 'BOSS'
       if (this.lastBossName !== name) {
         this.bossName.textContent = name

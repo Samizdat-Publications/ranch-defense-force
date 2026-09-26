@@ -171,4 +171,4 @@
 
 /* The hero cards' trait tags ("SLOW · ARMOURED · IMMOVABLE") were 6.5px under
    a 0.83 stage scale: 5.4px on screen. home-ui.css owns the base rule. */
-.title-rail .hero-tag { font-size: 14px; letter-spacing: 0.05em; }
+.title-rail .hero-tag { font-size: 12px; letter-spacing: 0.02em; white-space: normal; line-height: 1.25; }

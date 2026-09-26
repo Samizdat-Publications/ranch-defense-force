@@ -51,6 +51,7 @@ const EYE_DAY = RENDER.eyeGlowDay ?? 0
 const XP_TINT = (RENDER_ANY.xpTint as number[] | undefined) ?? [1, 1, 1]
 const STAIN_KEEP = Math.max(1, Math.round(RENDER.stainKeep ?? 3))
 const STAIN_WEATHER = RENDER.stainWeather ?? 0.94
+const FX_SCALE = RENDER.fxScale ?? 1
 
 const JAB = TUNING.fx.jab as {
   tines: number; tineSpacing: number; lengthFraction: number
@@ -1233,7 +1234,8 @@ export class GLRenderer {
       if (!frame) continue
       // Never a fractional upscale: 1.2x doubles every fifth pixel and the
       // effect reads at another pixel density from everything around it.
-      const s = e.scale >= 1.75 ? 2 : Math.min(1, e.scale)
+      const raw = e.scale * FX_SCALE
+      const s = raw >= 1.75 ? 2 : Math.min(1, raw)
       // Warmed: the hit and poof sheets are drawn pure white, and pure white
       // stars read as generic placeholder sparkle; struck metal and struck
       // flesh give off something nearer lamp-light.
@@ -1395,9 +1397,9 @@ export class GLRenderer {
         ? atlas?.get(itemCardSprite(g.itemId)) ?? atlas?.get('pickup.feed')
         : this.frames ? this.propFrame(this.frames.named.get('pickup', g.kind), g.x, g.y) : null
       // Loot left lying settles into the ground: full strength for its first
-      // eight seconds, then down to 55% over twelve more, so a field of old
+      // five seconds, then down to 40% over ten more, so a field of old
       // drops stops shouting over the fight. `bob` only runs while it lies.
-      const settle = g.magnetised ? 1 : 1 - Math.min(0.45, Math.max(0, g.bob - 8) / 12 * 0.45)
+      const settle = g.magnetised ? 1 : 1 - Math.min(0.6, Math.max(0, g.bob - 5) / 10 * 0.6)
       if (f) {
         const xp = g.kind === 'xp'
         // Seeds sit back after dark: the eye should find the threats first.

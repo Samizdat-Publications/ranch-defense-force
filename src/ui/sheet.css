@@ -507,3 +507,10 @@
   margin-top: 20px;
   flex-wrap: wrap;
 }
+
+/* The seed, as a reference under the sheet (it used to be a stat row). */
+.results-seed {
+  margin: 16px 0 4px; text-align: right;
+  font-family: var(--label); font-size: 12px; letter-spacing: 0.08em;
+  color: rgba(64, 49, 31, 0.6);
+}

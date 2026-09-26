@@ -7,16 +7,28 @@
   "eyeGlowDay": 0.45,
   "_curseNote": "How cursed the enemy cast looks, all of it render-side. enemyPallor pushes every non-boss enemy toward a cold drained grey-green (0 = the art as drawn, 1 = fully drained); the eyes are exempt and brightened instead. eyeGlowDay is the least the eyes glow in daylight; at night they glow at the night's full strength. Critic round 2: 'enemies look like ordinary farmhands'.",
   "xpTint": [
-   0.62,
-   0.92,
-   2.1
+   0.5,
+   0.88,
+   2.4
   ],
   "_xpTintNote": "Multiplied into the green seed sprite to turn it a cold cyan: the one hue nothing else on the field uses (ground, gas and acid are all olive to lime). Channels above 1 are the point, a multiply cannot otherwise move a hue.",
-  "fieldSceneryExcluded": ["prop.fencePost", "prop.fenceRail", "prop.gate", "ranch.gateOpen", "ranch.fenceRun", "ranch.fenceBroken", "ranch.fenceCornerPost", "ranch.gateClosed", "ranch.fenceRail"],
+  "fieldSceneryExcluded": [
+   "prop.fencePost",
+   "prop.fenceRail",
+   "prop.gate",
+   "ranch.gateOpen",
+   "ranch.fenceRun",
+   "ranch.fenceBroken",
+   "ranch.fenceCornerPost",
+   "ranch.gateClosed",
+   "ranch.fenceRail"
+  ],
   "_fieldSceneryNote": "Scenery a place never scatters INSIDE the fence. Half the default dressing is fence pieces, and a run of rail standing alone mid-field read as a floating island (critic round 5). The place draws its real fence around the arena; these stay in the list for maps without a place.",
   "stainKeep": 30,
   "stainWeather": 0.86,
-  "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20, and round 3 then found 'almost no visible gore'. One in thirty, as a 5-8 px splat: few marks, each one a kill you can see."
+  "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20, and round 3 then found 'almost no visible gore'. One in thirty, as a 5-8 px splat: few marks, each one a kill you can see.",
+  "fxScale": 0.6,
+  "_fxScaleNote": "Every effect draws at this fraction of its content scale (then never a fractional upscale). At view 450 the hit sparks were the biggest, brightest things on a late screen and sat on top of their targets (critic round 6)."
  },
  "daylight": {
   "_note": "THE LONG DAY (docs/V2.md D4). A run is one day: t is run progress, 0 = the first second of wave 1, 1 = the end of the last wave. Each stop sets the sky (ambient), the sun or moon (colour x sunI), where it stands (az: compass degrees, 90 east, 180 south, 270 west; el: degrees above the horizon, which sets shadow length), shadow strength, and the grade. Stops are smoothstepped between. Around sunset the shadows fade to nothing and come back as faint moon shadows from the other side, so the switch is never seen. Purely visual: the sim never reads this.",
@@ -33,20 +45,20 @@
     ],
     "sun": [
      1,
-     0.66,
+     0.62,
      0.42
     ],
-    "sunI": 0.86,
+    "sunI": 0.95,
     "az": 72,
     "el": 3,
     "shadow": 0.45,
     "exposure": 1,
-    "saturation": 1.04,
+    "saturation": 1.08,
     "contrast": 1.1,
     "tint": [
-     1.02,
-     0.97,
-     1
+     1.08,
+     0.95,
+     0.93
     ],
     "vignette": 0.38,
     "lantern": 0.35,
@@ -317,9 +329,9 @@
    {
     "t": 0.9,
     "ambient": [
-     0.15,
-     0.17,
-     0.29
+     0.11,
+     0.13,
+     0.22
     ],
     "sun": [
      0.55,
@@ -341,14 +353,14 @@
     "vignette": 0.5,
     "lantern": 1,
     "night": 0.9,
-    "fog": 0.25
+    "fog": 0.1
    },
    {
     "t": 1,
     "ambient": [
-     0.12,
-     0.14,
-     0.25
+     0.09,
+     0.1,
+     0.19
     ],
     "sun": [
      0.55,
@@ -370,7 +382,7 @@
     "vignette": 0.55,
     "lantern": 1,
     "night": 1,
-    "fog": 0.32
+    "fog": 0.1
    }
   ],
   "lanternRadius": 170,
@@ -426,7 +438,8 @@
    "The last of them. Hold the field.",
    "The plane came down in the south forty. The rig kept spraying. Nobody is driving it."
   ],
-  "_dawnNote": "Dawn retuned in v2 critic round 3 (\"flat sepia mud\"): the old first stop lit a purple-pink ambient with a pink sun through 0.42 of pale mist, so shade and light were the same beige. Now the shade is cool blue and the low sun warm gold-rose, which is where morning gets its contrast, and the mist is thinner."
+  "_dawnNote": "Dawn retuned in v2 critic round 3 (\"flat sepia mud\"): the old first stop lit a purple-pink ambient with a pink sun through 0.42 of pale mist, so shade and light were the same beige. Now the shade is cool blue and the low sun warm gold-rose, which is where morning gets its contrast, and the mist is thinner.",
+  "_nightNote": "Night retuned in critic round 6 (\"a blue-grey wash with grain, not black\"): the last two stops carried 0.25-0.32 of pale blue fog over a 0.15 ambient. Now near-dark outside the lantern and almost no fog, and the cast is found by its eyes and its moonlit rim instead."
  },
  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code — CLAUDE.md forbids balance constants living in source.",
  "player": {

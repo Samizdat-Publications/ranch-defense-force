@@ -37,16 +37,17 @@ export class ResultsScreen {
     const mins = Math.floor(world.elapsed / 60)
     const secs = Math.floor(world.elapsed % 60)
 
-    // The tally. Seed last, because it is a reference rather than a result.
+    // The tally. The seed is a reference, not a result: it lives in a small
+    // note under the sheet rather than at the size of the kill count.
+    const n = (v: number): string => Math.round(v).toLocaleString('en-US')
     const rows: [string, string][] = [
       ['Wave reached', String(world.spawner.wave)],
       ['Time survived', `${mins}:${String(secs).padStart(2, '0')}`],
-      ['Kills', String(world.kills)],
-      ['Crops harvested', String(world.cropsHarvested)],
-      ['Damage dealt', String(Math.round(world.damageDealt))],
+      ['Kills', n(world.kills)],
+      ['Crops harvested', n(world.cropsHarvested)],
+      ['Damage dealt', n(world.damageDealt)],
       ['Level reached', String(p.level)],
-      ['Feed left', String(p.feed)],
-      ['Seed', String(world.seed)],
+      ['Feed left', n(p.feed)],
     ]
 
     const statRow = ([label, value]: [string, string], i: number): HTMLElement => {
@@ -132,7 +133,7 @@ export class ResultsScreen {
               el('div', { class: 'psheet-rule', style: { marginTop: '22px' } }),
               el('div', { class: 'psheet-section', text: 'The build you ended with' }),
               chips,
-              el('div', { style: { height: '18px' } }),
+              el('div', { class: 'results-seed', text: `Seed ${world.seed}` }),
             ]),
           ]),
           el('div', { style: { display: 'flex', flexDirection: 'column', gap: '18px' } }, [

@@ -61,6 +61,10 @@
 .pshop-inner {
   padding: 28px 24px;
   max-width: 1240px;
+  /* Centred when it fits, top-aligned when it does not: auto margins on a
+     flex item resolve to zero rather than going negative, so the overflow
+     rule above still holds. A four-card visit left the bottom 40% empty. */
+  margin-block: auto;
 }
 
 .pshop-head { margin-bottom: 18px; }

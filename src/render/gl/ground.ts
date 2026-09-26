@@ -190,9 +190,21 @@ void main() {
     }
   }
 
-  // Broad, stepped variation so the field is not one flat colour.
+  // Grass blades: two-pixel strokes, a dark base with a lit tip above it, so
+  // the ground carries detail at the same pixel size as everything on it.
+  // Reviewers read the flat tones alone as a smeared texture under crisp art.
+  if (t == 0 && b <= 0.0) {
+    vec2 fw = floor(w);
+    if (hash(fw + 13.0) > 0.955) c.rgb *= 0.74;
+    else if (hash(fw + vec2(0.0, 1.0) + 13.0) > 0.955) c.rgb = mix(c.rgb, vec3(0.78, 0.84, 0.46), 0.35);
+  }
+
+  // Broad, stepped variation so the field is not one flat colour. Ordered
+  // 2x2 dither between the steps: random dither read as grain, a Bayer
+  // pattern reads as pixel art.
   float v = n(w, 700.0) * 0.6 + n(w, 210.0) * 0.4;
-  float bayer = hash(floor(w)) * 0.12;
+  float bxy = mod(floor(w.x), 2.0) * 2.0 + mod(floor(w.y), 2.0) * 3.0;
+  float bayer = mod(bxy, 4.0) / 4.0 * 0.12;
   v = floor((v + bayer) * 4.0) / 4.0;
   c.rgb *= 0.9 + v * 0.18;
 

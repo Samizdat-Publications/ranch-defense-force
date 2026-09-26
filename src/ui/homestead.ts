@@ -288,7 +288,9 @@ export class HomesteadScreen {
     const max = maxTier(s)
     // The Fair costs nothing, so "open" means there is a harder tier to pick.
     return {
-      count: `TIER ${this.tier} OF ${max}`,
+      // "TIER 1 OF 1" beside "kill the Duster to open the next" read as a
+      // contradiction: say which tier you are on and whether another is open.
+      count: max > 1 ? `TIER ${this.tier} · ${max} OPEN` : `TIER ${this.tier} · THE NEXT IS LOCKED`,
       open: max > this.tier,
       price: max > this.tier ? 'A HARDER TIER IS OPEN' : 'KILL THE DUSTER TO OPEN THE NEXT',
     }
