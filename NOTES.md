@@ -15,11 +15,12 @@ The v1 state is tagged `v1-final`.
 
 | Area | State |
 |---|---|
-| Renderer | WebGL2, done. `src/render/gl/*` + `src/render/gl-renderer.ts`. The Canvas 2D renderer is still in the tree behind `?r=2d` for comparison; delete it once v2 ships. |
+| Renderer | WebGL2, done. `src/render/gl/*` + `src/render/gl-renderer.ts`. The v1 Canvas 2D renderer stays as the fallback on a browser without WebGL2 (and `?r=2d`). 400 enemies at night at 1080p: ~1 ms of renderer CPU per frame. |
 | Light and time | Done. `src/render/daylight.ts`, curve in `tuning.json` -> `daylight`. |
-| The place | Home Field done by hand. The other surface maps were given `place` blocks by an agent (see the session log). |
+| The place | Every surface map has a `place` block: the Home Field by hand, the Salt Flats, Scrapyard, Burn, Bone Orchard and Bottoms by an agent working from it. |
 | HUD | Rebuilt: `src/ui/hud.ts`, `hud.css`. |
-| Title | Rebuilt as a live diorama: `src/ui/title.ts`, `title.css`, `src/render/diorama.ts`. The v1 menu (`src/ui/menu.ts`, `scene.ts`, `home*.css`) is no longer mounted; delete it once v2 ships. |
+| Title | Rebuilt as a live diorama: `src/ui/title.ts`, `title.css`, `src/render/diorama.ts`. `menu.ts` is deleted. `scene.ts` and `home*.css` remain: the class-card CSS lives in `home-ui.css`, and the Homestead's painted barn is its fallback without WebGL2. |
+| Homestead | Stands over the diorama in its `homestead` framing; signs show prices. `src/ui/homestead.ts` `useLiveScene`. |
 | Ambience | Synthesised birds, wind, crickets, owl, thunder: `src/core/ambience.ts`. |
 | Sim | Unchanged from v1 so far. The replay and bot tests still describe it. |
 
@@ -76,4 +77,6 @@ Dev flags: `?dev` (overlay; F1 still toggles), `?tod=0..1`, `?map=<id>`,
 
 ## Open
 
-See docs/V2.md, milestones M4 onward, and the critic log there.
+- The owner has not played v2. D13 in docs/V2.md: the sim's balance is v1's, on purpose.
+- The critic log and the milestone table are in docs/V2.md.
+- The resize rule: the diorama and a run share one GPU device and its view height. Only the renderer that owns the canvas may be resized (`resize(forRun)` in main.ts), or a run inherits the title's closer framing.
