@@ -171,6 +171,8 @@ async function untilBoss(page: Page): Promise<void> {
   // Long enough to be past its entrance, short enough that a strong build
   // has not already killed it (a 3 s wait photographed an empty field).
   await ff(page, 1.2, true)
+  // Then stand it inside the fence, facing the player (see rdf.stageBoss).
+  await page.evaluate('window.rdf.stageBoss()')
 }
 
 /** Photograph the run at a representative health (see `rdf.stageHp`). */

@@ -291,7 +291,7 @@
   /* A band of dusk behind the card, so it never prints straight over the
      player or a crowd. */
   padding: calc(14 * var(--u)) calc(90 * var(--u)) calc(16 * var(--u));
-  background: linear-gradient(90deg, rgba(12, 9, 6, 0) 0%, rgba(12, 9, 6, 0.74) 20%, rgba(12, 9, 6, 0.74) 80%, rgba(12, 9, 6, 0) 100%);
+  background: linear-gradient(90deg, rgba(12, 9, 6, 0) 0%, rgba(12, 9, 6, 0.58) 20%, rgba(12, 9, 6, 0.58) 80%, rgba(12, 9, 6, 0) 100%);
 }
 .hud-banner.show { animation: hud-banner 3.6s var(--ease-out) both; }
 .hud-banner-wave {

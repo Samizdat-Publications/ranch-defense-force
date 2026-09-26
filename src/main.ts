@@ -742,6 +742,25 @@ Object.assign(window as unknown as Record<string, unknown>, {
     },
     bossUp: (): boolean => !!world?.findBoss(),
     /**
+     * Tour only: stand the boss inside the fence, beside the player and
+     * facing them. A boss enters from the edge and a strong late build
+     * kills it in seconds, so waiting for it to come in photographs either its
+     * back at the fence or an empty field. Staged like the hour and the health.
+     */
+    stageBoss: (): void => {
+      const b = world?.findBoss()
+      if (!b || !world) return
+      const m = 260
+      // Beside the player, not above: the top third of the screen is where
+      // the boss card and the health bar sit.
+      const side = world.player.x + 240 < world.arenaW - m ? 1 : -1
+      const x = Math.min(world.arenaW - m, Math.max(m, world.player.x + side * 240))
+      const y = Math.min(world.arenaH - m, Math.max(m, world.player.y - 20))
+      b.x = b.px = x
+      b.y = b.py = y
+      b.facing = Math.atan2(world.player.y - y, world.player.x - x)
+    },
+    /**
      * Tour only: set the player's health to a fraction of max for the photo.
      * The bot kites better than a person plays, so a fast-forwarded run is
      * always at full health, and a photograph of a fight with nothing at

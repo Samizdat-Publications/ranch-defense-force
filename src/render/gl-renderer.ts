@@ -275,6 +275,11 @@ export class GLRenderer {
     this.camera.margin = place.margin
     const keep = place.interiorScenery ?? 1
     if (keep < 1) this.scenery = this.scenery.filter((_, i) => (i * 0.618034) % 1 < keep)
+    if (this.atlas) {
+      const atlas = this.atlas
+      const out = new Set(((RENDER_ANY.fieldSceneryExcluded as string[] | undefined) ?? []).map((n) => atlas.get(n)))
+      this.scenery = this.scenery.filter((s) => !out.has(s.frame))
+    }
     this.layout = bakeLayout(world, place)
     this.dev.ground.setLayout(this.layout.data, this.layout.w, this.layout.h)
     if (this.atlas) {
@@ -778,7 +783,9 @@ export class GLRenderer {
       it.outline = bossDef?.boss ? this.enemyOutline : e.elite ? this.cursedElite : this.cursedOutline
       it.caster = true
       it.contact = true
-      it.emissive = -Math.max(EYE_DAY, this.day.night)
+      // A boss at 2x doubles every lamp pixel, and its bloom became a white
+      // blob over the machine; half strength keeps the lamps and the shape.
+      it.emissive = -Math.max(EYE_DAY, this.day.night) * (bossDef?.boss ? 0.5 : 1)
 
       const bossScale = Math.round(bossDef?.drawScale ?? 1)
       if (bossScale > 1 || e.typeId === 'duster') it.flash *= 0.4
@@ -1227,7 +1234,10 @@ export class GLRenderer {
       // Never a fractional upscale: 1.2x doubles every fifth pixel and the
       // effect reads at another pixel density from everything around it.
       const s = e.scale >= 1.75 ? 2 : Math.min(1, e.scale)
-      this.spr(frame, e.x, e.y, 0, 0, e.rotation, s, s, 1, 0)
+      // Warmed: the hit and poof sheets are drawn pure white, and pure white
+      // stars read as generic placeholder sparkle; struck metal and struck
+      // flesh give off something nearer lamp-light.
+      this.spr(frame, e.x, e.y, 0, 0, e.rotation, s, s, 0.92, 0, NO_OUTLINE, 1, 0.86, 0.64)
     }
   }
 

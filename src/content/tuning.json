@@ -12,6 +12,8 @@
    2.1
   ],
   "_xpTintNote": "Multiplied into the green seed sprite to turn it a cold cyan: the one hue nothing else on the field uses (ground, gas and acid are all olive to lime). Channels above 1 are the point, a multiply cannot otherwise move a hue.",
+  "fieldSceneryExcluded": ["prop.fencePost", "prop.fenceRail", "prop.gate", "ranch.gateOpen", "ranch.fenceRun", "ranch.fenceBroken", "ranch.fenceCornerPost", "ranch.gateClosed", "ranch.fenceRail"],
+  "_fieldSceneryNote": "Scenery a place never scatters INSIDE the fence. Half the default dressing is fence pieces, and a run of rail standing alone mid-field read as a floating island (critic round 5). The place draws its real fence around the arena; these stay in the list for maps without a place.",
   "stainKeep": 30,
   "stainWeather": 0.86,
   "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20, and round 3 then found 'almost no visible gore'. One in thirty, as a 5-8 px splat: few marks, each one a kill you can see."
@@ -422,7 +424,7 @@
    "Full dark. Watch for their eyes.",
    "Rain on the tin roof. Thunder over Canton.",
    "The last of them. Hold the field.",
-   "Nobody is driving it."
+   "The plane came down in the south forty. The rig kept spraying. Nobody is driving it."
   ],
   "_dawnNote": "Dawn retuned in v2 critic round 3 (\"flat sepia mud\"): the old first stop lit a purple-pink ambient with a pink sun through 0.42 of pale mist, so shade and light were the same beige. Now the shade is cool blue and the low sun warm gold-rose, which is where morning gets its contrast, and the mist is thinner."
  },
