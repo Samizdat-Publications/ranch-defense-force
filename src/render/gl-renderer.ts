@@ -884,7 +884,11 @@ export class GLRenderer {
       it.emissive = -Math.max(EYE_DAY, this.day.night)
 
       const bossScale = Math.round(bossDef?.drawScale ?? 1)
-      if (bossScale > 1 || SPRAY_TYPES.has(e.typeId)) it.flash *= 0.4
+      // A boss blinks, it does not blanch: under six T4 weapons the black
+      // Prize Bull spent half its time 36% white and round 20 read it as "a
+      // pale, almost see-through grey sprite".
+      if (bossDef?.boss) it.flash *= 0.18
+      else if (bossScale > 1 || SPRAY_TYPES.has(e.typeId)) it.flash *= 0.4
       const scale = (e.elite ? 1.5 : 1) * bossScale
       it.scaleX = scale
       it.scaleY = scale

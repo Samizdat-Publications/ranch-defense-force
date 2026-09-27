@@ -171,9 +171,8 @@ async function untilBoss(page: Page): Promise<void> {
     if (await page.evaluate('window.rdf.bossUp()')) break
     await ff(page, 0.5, true)
   }
-  // Long enough to be past its entrance, short enough that a strong build
-  // has not already killed it (a 3 s wait photographed an empty field).
-  await ff(page, 1.2, true)
+  // Past its entrance in short, topped-up steps (below): a single 1.2 s wait
+  // let the round-20 build kill the bull outright before it was staged.
   // Then stand it inside the fence, facing the player (see rdf.stageBoss),
   // and let its intro card clear before the shutter: the card is drawn
   // across the top third, and a 2x boss reaches up into it. Its health is
@@ -183,11 +182,16 @@ async function untilBoss(page: Page): Promise<void> {
   // Steps of a quarter second at full health: at half a second the round-20
   // build (pickups drifting in, so more levels by wave 12) killed the bull
   // between two top-ups and the shot caught its death fade.
-  for (let i = 0; i < 10; i++) {
+  // 2.8 s of sim in all: the boss plate names the boss only once the wave
+  // card has had 2.4 s.
+  for (let i = 0; i < 14; i++) {
     await page.evaluate('window.rdf.stageBoss(1)')
-    await ff(page, 0.26, true)
+    await ff(page, 0.2, true)
   }
   await page.evaluate('window.rdf.stageBoss(0.62)')
+  // One live frame first, so the HUD has drawn the boss bar (a fast-forward
+  // steps the sim without the HUD, and the round-20 shot had no bar).
+  await page.waitForTimeout(120)
   // The card animates in real time, and a fast-forward takes almost none:
   // hold the sim and let the card finish before the shutter.
   await page.evaluate('window.rdf.hold(true)')
