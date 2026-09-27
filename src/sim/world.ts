@@ -37,6 +37,8 @@ import { ENEMY_BEHAVIOURS, type SteerContext } from '../behaviours/enemies'
 const T = TUNING
 const P = T.player
 const C = T.combat
+/** Seconds a seed or feed may lie before it drifts to the player; 0 never. */
+const SETTLE = (T.pickups as { settleSeconds?: number }).settleSeconds ?? 0
 /** Minimum seconds between bark-summoned packs, across the whole field. */
 const BARK_INTERVAL = 6
 
@@ -48,6 +50,8 @@ export interface Telegraph {
   spread: number
   life: number
   maxLife: number
+  /** A lane `width` px wide and `range` long instead of a cone; 0 is a cone. */
+  width: number
 }
 
 export interface WorldEvents {
@@ -2359,6 +2363,13 @@ export class World {
         }
       } else {
         g.bob += dt
+        // Seeds and feed left lying drift in after a while (v2 critic round
+        // 19: a late wave carpeted the field with them until it ended). A
+        // heal jar or a gear card stays put: those are choices, not litter.
+        if (SETTLE > 0 && g.bob >= SETTLE && (g.kind === 'xp' || g.kind === 'feed')) {
+          g.magnetised = true
+          g.speed = T.pickups.magnetInitialSpeed
+        }
       }
     }
   }
@@ -3464,8 +3475,13 @@ export class World {
         this.sparkAcc += T.fx.hitSparkChance
         if (this.sparkAcc >= 1) {
           this.sparkAcc -= 1
-          // The impact reads as the element too, not just the bullet.
-          const impact = ELEMENTS[this.player.element]?.impact ?? 'arrowImpact'
+          // The impact reads as the element too, not just the bullet; with
+          // no element it reads as the WEAPON (`impactFx`): round 19 could
+          // not tell six T4 weapons apart by what their hits looked like.
+          const own = (WEAPONS[e.lastHitWeaponId] as { impactFx?: string } | undefined)?.impactFx
+          const impact = this.player.element === 'none'
+            ? own ?? ELEMENTS.none?.impact ?? 'arrowImpact'
+            : ELEMENTS[this.player.element]?.impact ?? 'arrowImpact'
           this.playFx(this.elementalFx(impact), e.x, e.y - e.radius * 0.4)
           this.sound('hit')
         }
@@ -3928,8 +3944,8 @@ export class World {
     }
   }
 
-  addTelegraph(x: number, y: number, angle: number, range: number, spread: number, life: number): void {
-    this.telegraphs.push({ x, y, angle, range, spread, life, maxLife: life })
+  addTelegraph(x: number, y: number, angle: number, range: number, spread: number, life: number, width = 0): void {
+    this.telegraphs.push({ x, y, angle, range, spread, life, maxLife: life, width })
   }
 
   queueBark(x: number, y: number): void {

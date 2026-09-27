@@ -173,6 +173,9 @@ const charge: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
       // state numbering stays private to this behaviour; the world advances and
       // ends the clip.
       e.attackT = EPSILON
+      // The tell on the ground: the lane it will run, body-wide and exactly
+      // as long as the charge. Round 19 could not tell where to stand.
+      world.addTelegraph(e.x, e.y, e.facing, dist + 140, 0, e.t0, e.radius * 2)
     }
   } else if (e.s0 === 1) {
     e.vx = 0

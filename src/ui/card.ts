@@ -25,6 +25,10 @@ export interface CardStat {
 export interface CardSpec {
   /** The band across the top: WEAPON, ITEM, CLASS, UPGRADE… */
   kind: string
+  /** The key that picks this card, drawn as a keycap before the kind. */
+  key?: string
+  /** A verb before the price ("Buy"): round 20 could not tell how to buy. */
+  priceVerb?: string
   /**
    * The draw's own quota axis (docs/UPGRADE_ROSTER.md §7.1), printed at the
    * right of the kind band: ON-HIT, LOAD, ALLY… so a board reads at a glance
@@ -142,7 +146,10 @@ export function card(spec: CardSpec): HTMLElement {
   if (spec.clipped) root.append(el('div', { class: 'pcard-clip' }))
 
   const kindBand = el('div', { class: 'pcard-kind' }, [
-    el('span', { class: 'pcard-kind-main', text: spec.kind }),
+    el('span', { class: 'pcard-kind-main' }, [
+      spec.key ? el('kbd', { class: 'pcard-key', text: spec.key }) : null,
+      document.createTextNode(spec.kind),
+    ]),
   ])
   if (spec.category || spec.exclusive) {
     const tags = el('span', { class: 'pcard-kind-tags' })
@@ -188,7 +195,7 @@ export function card(spec: CardSpec): HTMLElement {
   if (typeof spec.price === 'number') {
     foot.append(el('div', {
       class: 'pcard-price',
-      text: `${spec.price} ${spec.priceUnit ?? 'feed'}`,
+      text: `${spec.priceVerb ? `${spec.priceVerb} · ` : ''}${spec.price} ${spec.priceUnit ?? 'feed'}`,
     }))
   } else {
     foot.append(el('div', { text: spec.source ?? '' }))

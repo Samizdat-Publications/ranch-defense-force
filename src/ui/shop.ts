@@ -16,7 +16,7 @@ import type { World } from '../sim/world'
 import { emptyDerived, previewDelta, type DerivedStats } from '../sim/stats'
 import { card, deal } from './card'
 import { shopRerollCost } from '../sim/formulas'
-import { clear, el, fmtStat } from './dom'
+import { clear, deltaTone, el, fmtStat } from './dom'
 import { buildLedger } from './ledger'
 
 const SLOTS = 4
@@ -259,6 +259,7 @@ export class ShopScreen {
         stats: this.statRows(offer),
         stack: stackLabel(offer.stacks),
         price: offer.cost,
+        priceVerb: 'Buy',
         affordable,
         // Unaffordable is UNPRINTED STOCK, not disabled chrome - pulpboard
         // grey, and the plate drops its emboss. It reads as "not for you yet"
@@ -276,7 +277,7 @@ export class ShopScreen {
         c,
         el('button', {
           class: `pshop-hold${held ? ' is-held' : ''}`,
-          text: held ? 'HELD' : 'HOLD',
+          text: held ? 'Held for next visit' : 'Hold for next visit',
           onClick: () => this.toggleLock(i),
         }),
       ])
@@ -311,7 +312,7 @@ export class ShopScreen {
       return {
         label: m ? m[1] : d,
         value: raw,
-        tone: raw.includes('-') && !raw.includes('→') ? 'cost' as const : 'gain' as const,
+        tone: deltaTone(raw),
       }
     })
   }

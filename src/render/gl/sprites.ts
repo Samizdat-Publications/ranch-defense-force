@@ -160,7 +160,9 @@ void main() {
     // blighted ground of the afternoon ("mauve enemies on maroon dirt").
     vec3 pale = vec3(l) * vec3(0.96, 0.9, 1.2) * 1.18 + vec3(0.03, 0.03, 0.07);
     c.rgb = mix(c.rgb, pale, curse * (1.0 - eye));
-    c.rgb = mix(c.rgb, vec3(1.0, 0.86, 0.36), eye * curse * 0.6);
+    // Sick green, the spray's own colour: one strong accent on a pale body
+    // (round 20: "enemies with ... one strong accent (sick-green eyes)").
+    c.rgb = mix(c.rgb, vec3(0.74, 1.0, 0.3), eye * curse * 0.85);
     // The spray's mark: blotches of chemical green on every cursed body, in
     // 2x2 art pixels at fixed places in the frame, faintly lit after dark.
     // Round 13 read the pallor alone as "lavender mannequins" and asked for
@@ -174,6 +176,18 @@ void main() {
       sore = k;
     }
   }
+  // Moonlight on the top edge. After dusk every cursed body gets a one-pixel
+  // cold rim wherever the pixel above it is empty (half as much at the
+  // sides), inside its dark outline: round 19 lost the crowd past the lantern
+  // as "dark blue on dark blue". The outline stays dark; the rim is what
+  // catches the eye at the edge of the screen.
+  float dusk = clamp((-vFx.y - 0.7) / 0.3, 0.0, 1.0) * min(1.0, curse / 0.3);
+  float moon = 0.0;
+  if (dusk > 0.0 && eye < 0.5) {
+    if (fetch(t - ivec2(0, 1)).a < 0.02) moon = dusk;
+    else if (fetch(t - ivec2(1, 0)).a < 0.02 || fetch(t + ivec2(1, 0)).a < 0.02) moon = dusk * 0.5;
+    c.rgb = mix(c.rgb, vec3(0.74, 0.82, 1.0), moon * 0.6);
+  }
   c.rgb = mix(c.rgb, vec3(1.0, 0.96, 0.88), vFx.x);
   c *= vTint;
   oColor = vec4(c.rgb * c.a, c.a);
@@ -182,6 +196,9 @@ void main() {
   float body = max(0.0, -vFx.y - 0.5) * 0.22 * min(1.0, curse / 0.3);
   em = max(em, body * (1.0 - eye));
   em = max(em, sore * max(0.0, -vFx.y - 0.5) * 0.5);
+  em = max(em, moon * 0.7);
+  // The eyes burn hotter after dark: two pixels at the lantern's edge.
+  em *= 1.0 + eye * dusk * 0.8;
   // Alpha is the sprite's own coverage, not its glow: a body in front hides
   // the glow of whatever stands behind it. With alpha = glow, the crowd's
   // lit eyes showed straight through the Duster's wings (round 14).

@@ -77,21 +77,25 @@ export class PauseScreen {
      * every vendor pseudo-element. It is a div with a pointer handler, which is
      * less code than the styling would have been.
      */
+    // Ten pips, like a volume meter on a radio, rather than a web form's
+    // track and knob (critic round 19: "form-style sliders"). Click or drag;
+    // the value steps by a tenth.
     const slider = (label: string, value: number, onInput: (v: number) => void): HTMLElement => {
-      const pct = (v: number): string => `${Math.round(v * 100)}%`
-      const readout = el('span', { text: String(Math.round(value * 100)) })
-      const fill = el('div', { class: 'psheet-slider-fill' })
-      const knob = el('div', { class: 'psheet-slider-knob' })
-      fill.style.width = pct(value)
-      knob.style.left = pct(value)
+      const readout = el('span', { text: String(Math.round(value * 10)) })
+      const pips: HTMLElement[] = []
+      for (let i = 0; i < 10; i++) pips.push(el('div', { class: 'psheet-pip' }))
+      const show = (v: number): void => {
+        const n = Math.round(v * 10)
+        pips.forEach((p, i) => p.classList.toggle('is-on', i < n))
+        readout.textContent = String(n)
+      }
+      show(value)
 
-      const track = el('div', { class: 'psheet-slider' }, [fill, knob])
+      const track = el('div', { class: 'psheet-meter' }, pips)
       const setFrom = (clientX: number): void => {
         const b = track.getBoundingClientRect()
-        const v = Math.min(1, Math.max(0, (clientX - b.left) / b.width))
-        fill.style.width = pct(v)
-        knob.style.left = pct(v)
-        readout.textContent = String(Math.round(v * 100))
+        const v = Math.round(Math.min(1, Math.max(0, (clientX - b.left) / b.width)) * 10) / 10
+        show(v)
         onInput(v)
       }
       track.addEventListener('pointerdown', (e: PointerEvent) => {

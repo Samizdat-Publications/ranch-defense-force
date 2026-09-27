@@ -63,6 +63,13 @@ const FEED_BIG = 8
  *  that sprays like one (the Duster and the Spray Rig): plume and lamps. */
 const PLANE_TYPES = new Set(Object.keys(ENEMIES).filter((k) => !!(ENEMIES[k] as EnemyDef).plane))
 const SPRAY_TYPES = new Set(Object.keys(ENEMIES).filter((k) => (ENEMIES[k] as EnemyDef).behaviour === 'duster'))
+/** Radians a held tool tilts up at rest between thrusts (collectCarried). */
+const CARRY_REST_TILT = 0.5
+/** Where the Duster's wingtip lamps sit on its art, nose up: (lateral, fore). */
+const NAV_WING = [114, -44]
+/** And its tail strobe, px behind the centre. */
+const NAV_TAIL = 62
+const SPRAY_LANE = (RENDER as unknown as { sprayLane: { length: number; fill: number; edge: number } }).sprayLane
 
 const JAB = TUNING.fx.jab as {
   tines: number; tineSpacing: number; lengthFraction: number
@@ -103,7 +110,9 @@ const COL = {
   hazardBurn: parseColour('rgba(226, 122, 46, 0.34)'),
   hazardBurnRim: parseColour('rgba(255, 176, 84, 0.9)'),
   telegraph: parseColour('rgba(220, 90, 90, 0.28)'),
-  blood: parseColour('#8a2626'),
+  // Soaked in, not spilled: at #8a2626 every splat read as a bright red dot on
+  // the grass, "like confetti" (critic round 19). A dark ground decal.
+  blood: parseColour('#6a1d18'),
   outlineEnemy: parseColour('rgba(14, 10, 8, 1)'),
   // Dark at night as by day (round 12): a pale body inside a dark line is
   // what separates the crowd from dark soil. A moonlit line read as an x-ray
@@ -113,7 +122,7 @@ const COL = {
   outlineText: parseColour('#1a1410'),
   outlinePlayer: parseColour('rgba(255, 232, 168, 0.9)'),
   acid: parseColour('#5c8f2a'),
-  bloodDark: parseColour('#5e1a1a'),
+  bloodDark: parseColour('#431411'),
   crit: parseColour('#ffd452'),
   number: parseColour('#f4efe2'),
 }
@@ -212,7 +221,7 @@ export class GLRenderer {
    *  moonlit rim and self-light after dark without draining its colours. */
   private readonly bossOutline: RGBA = [0, 0, 0, 0]
   /** The plane's moonlit rim; alpha set per frame from the night. */
-  private readonly planeRim: RGBA = [0.62, 0.64, 0.74, 0]
+  private readonly planeRim: RGBA = [0.7, 0.76, 0.94, 0]
   private readonly fogRgb = [0, 0, 0]
   private readonly decals: Target
   private scenery: Placed[] = []
@@ -416,8 +425,12 @@ export class GLRenderer {
     this.drawUnderBackdrop()
     this.drawArenaBurn()
     this.drawHazards()
-    this.drawTelegraphs()
     this.flushShapes()
+    this.drawTelegraphs()
+    this.drawSprayLanes(alpha)
+    // Warnings are self-lit a little, more after dark: a lane or a cone the
+    // night swallows warns nobody (round 20 tour: the Duster's lane vanished).
+    this.dev.shapes.flush(this.vx, this.vy, this.tw, this.th, 0.12 + 0.3 * day.night)
     this.drawEffects(true)
     this.drawPlanes(alpha, true)
     // Pickups lie on the ground: under whatever stands on them, a boss
@@ -450,6 +463,7 @@ export class GLRenderer {
     this.dev.shapes.flush(this.vx, this.vy, this.tw, this.th, 0.35)
     this.drawPlanes(alpha, false)
     this.drawPropBlur(alpha)
+    this.drawNavLights(alpha)
     // The player's outline, over everything: findable in any crowd.
     if (this.playerFrame) {
       this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, 0, COL.outlinePlayer)
@@ -540,8 +554,10 @@ export class GLRenderer {
       if (((h >> 12) % STAIN_KEEP) !== 0) continue
       const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
       const a = 0.5 + ((h >> 3) & 3) * 0.06
-      const w0 = 5 + ((h >> 5) & 3)
-      const h0 = 3 + ((h >> 6) & 1)
+      // Chunkier since round 20 ("dark-red specks at the same brightness as
+      // the dirt"): a bigger pool with a wet highlight reads as gore.
+      const w0 = 7 + ((h >> 5) & 3)
+      const h0 = 4 + ((h >> 6) & 1)
       batch.push(x - 1, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
       batch.push(x, y - 1, 0, 0, w0 - 2, h0 + 2, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
       // A thrown spray off one side, tapering: rounds 12 and 13 read the old
@@ -558,6 +574,7 @@ export class GLRenderer {
       }
       const dk = acid ? COL.acid : COL.bloodDark
       batch.push(x, y, 0, 0, Math.max(2, w0 - 3), Math.max(1, h0 - 1), 0, 0, PAGE_SOLID, 0, 1, 1, dk[0] * 0.8, dk[1] * 0.8, dk[2] * 0.8, a, 0, 0, 0, 0, 0, 0)
+      if (!acid) batch.push(x, y, 0, 0, 2, 1, 0, 0, PAGE_SOLID, 0, 1, 1, 0.66, 0.24, 0.2, a * 0.9, 0, 0, 0, 0, 0, 0)
     }
     s.length = 0
     this.decals.bind()
@@ -1032,8 +1049,15 @@ export class GLRenderer {
       it.pivotY = -(frame.oy + frame.h / 2)
       const aims = held && carryAimsOf(slot.id)
       const facingLeft = aims ? Math.abs(slot.aimAngle) > Math.PI / 2 : a.flip
+      // Between thrusts a held tool comes up to rest, tines raised, and
+      // breathes with him: held level and still it read as "a static white
+      // glyph pointing right, like a cursor" (critic round 19). It drops level
+      // for the thrust and rises again after.
+      const since = slot.firedAt < 0 ? 9 : (w.tick - slot.firedAt) / 60
+      const rest = aims ? Math.min(1, Math.max(0, (since - 0.2) / 0.35)) : 0
+      const tilt = rest * (CARRY_REST_TILT + 0.05 * Math.sin(w.elapsed * 2.4))
       it.rotation = aims
-        ? (facingLeft ? slot.aimAngle + Math.PI : slot.aimAngle)
+        ? (facingLeft ? slot.aimAngle + Math.PI + tilt : slot.aimAngle - tilt)
         : (a.angle + carryAngleOf(slot.id)) * (a.flip ? -1 : 1)
       const fit = Math.min(1, carryHeightOf(slot.id) / Math.max(1, Math.max(frame.w, frame.h)))
         * (fresh > 0 ? CARRY.freshScale : 1)
@@ -1282,10 +1306,21 @@ export class GLRenderer {
         // beam bleached its own wings white (round 13 tour).
         // Three soft pools along the heading rather than a cone: the cone's
         // apex drew a hard white triangle on the ground (round 15).
-        L.point(x + dx * 130, y + dy * 100, 90, 1, 0.9, 0.72, 0.15 + 0.6 * night, 0.8)
-        L.point(x + dx * 220, y + dy * 170, 120, 1, 0.9, 0.72, 0.12 + 0.5 * night, 0.8)
-        L.point(x + dx * 320, y + dy * 245, 140, 1, 0.9, 0.72, 0.08 + 0.35 * night, 0.8)
-        L.point(x + dx * 46, y - plane.altitude + dy * 46, 34, 1, 0.55, 0.25, 0.15 + 0.3 * night, 1)
+        // Clear of its own wings since round 19 (the nearest pool lit the
+        // plane itself), and its navigation lamps glint on the wingtips.
+        L.point(x + dx * 230, y + dy * 180, 90, 1, 0.9, 0.72, 0.15 + 0.6 * night, 0.8)
+        L.point(x + dx * 330, y + dy * 250, 120, 1, 0.9, 0.72, 0.12 + 0.5 * night, 0.8)
+        L.point(x + dx * 440, y + dy * 330, 140, 1, 0.9, 0.72, 0.08 + 0.35 * night, 0.8)
+        L.point(x + dx * 46, y - plane.altitude + dy * 46, 22, 1, 0.55, 0.25, 0.08 + 0.12 * night, 1)
+        const rot = e.facing + Math.PI / 2
+        const cr = Math.cos(rot)
+        const sr = Math.sin(rot)
+        for (let side = -1; side <= 1; side += 2) {
+          const lx = side * NAV_WING[0]
+          const ly = NAV_WING[1]
+          L.point(x + lx * cr - ly * sr, y - plane.altitude + lx * sr + ly * cr, 26,
+            side < 0 ? 1 : 0.3, side < 0 ? 0.2 : 1, side < 0 ? 0.15 : 0.35, 0.25 * night, 1)
+        }
         continue
       }
       // A pool of lamp light on the ground ahead of it; the cone it replaced
@@ -1395,14 +1430,19 @@ export class GLRenderer {
         // A shade toward rust: the art is a cream plane with rust on it. Full
         // strength it read as a pale decal (round 14); at 0.8 it was the
         // colour of the dirt (round 16).
+        // After dark it is a dark shape against the stars, found by its
+        // navigation lights and the moon on its edge: self-lit and caught in
+        // its own searchlight it was "lit brighter than the night around it"
+        // and read as a pale paper cut-out (round 19).
+        const n = this.day.night
         this.spr(f, Math.round(x), Math.round(y - alt), ox, oy, rot, sc, sc, 1, flash, this.bossOutline,
-          0.92, 0.84, 0.76, 0.05 + 0.1 * this.day.night)
+          0.92 - 0.18 * n, 0.84 - 0.16 * n, 0.76 - 0.06 * n, 0.05 * (1 - n))
         // After dark, a moonlit rim of its own, drawn as an outline alone over
         // everything: the crowd had one and the boss did not.
         const night = this.day.night
         if (night > 0.05) {
           const rim = this.planeRim
-          rim[3] = 0.12 * night
+          rim[3] = 0.32 * night
           this.spr(f, Math.round(x), Math.round(y - alt), ox, oy, rot, sc, sc, -1, 0, rim)
         }
       }
@@ -1442,6 +1482,94 @@ export class GLRenderer {
       S.line(nx - fy * blade, ny + fx * blade, nx + fy * blade, ny - fx * blade, 2, 0.95, 0.94, 0.88, 0.55)
     }
     if (any) this.flushShapes()
+  }
+
+  /**
+   * Red on the left wingtip, green on the right, a white strobe on the tail:
+   * how you find a plane in the dark. Self-lit, so they burn at any hour.
+   */
+  private drawNavLights(alpha: number): void {
+    const w = this.world
+    const S = this.dev.shapes
+    let any = false
+    const strobe = (w.elapsed % 1.3) < 0.08 || ((w.elapsed + 0.18) % 1.3) < 0.08
+    for (let i = 0; i < w.enemies.live; i++) {
+      const e = w.enemies.items[i]
+      if (!PLANE_TYPES.has(e.typeId) || e.dying > 0) continue
+      const plane = (ENEMIES[e.typeId] as EnemyDef).plane
+      if (!plane) continue
+      any = true
+      const x = e.px + (e.x - e.px) * alpha
+      const y = e.py + (e.y - e.py) * alpha - plane.altitude
+      const rot = e.facing + Math.PI / 2
+      const cr = Math.cos(rot)
+      const sr = Math.sin(rot)
+      for (let side = -1; side <= 1; side += 2) {
+        const lx = side * NAV_WING[0]
+        const ly = NAV_WING[1]
+        const nx = Math.round(x + lx * cr - ly * sr)
+        const ny = Math.round(y + lx * sr + ly * cr)
+        const r = side < 0 ? 1 : 0.35
+        const g = side < 0 ? 0.25 : 1
+        const b = side < 0 ? 0.2 : 0.45
+        S.disc(nx, ny, 5, r, g, b, 0.3)
+        S.disc(nx, ny, 2, Math.min(1, r + 0.3), Math.min(1, g + 0.3), Math.min(1, b + 0.3), 1)
+      }
+      if (strobe) {
+        const tx = Math.round(x - NAV_TAIL * sr)
+        const ty = Math.round(y + NAV_TAIL * cr)
+        S.disc(tx, ty, 6, 1, 1, 1, 0.35)
+        S.disc(tx, ty, 2, 1, 1, 1, 1)
+      }
+    }
+    if (any) this.dev.shapes.flush(this.vx, this.vy, this.tw, this.th, 1.6)
+  }
+
+  /**
+   * The Duster's telegraph: the strip of ground it is about to poison, laid
+   * out ahead of it along its heading, as wide as the gas it drops, fading
+   * with distance, with chevrons running the way it flies. Round 19 wanted
+   * "a clear crop-spray lane"; the plane itself only ever says where it is.
+   */
+  private drawSprayLanes(alpha: number): void {
+    const w = this.world
+    const S = this.dev.shapes
+    const march = (w.elapsed * 1.2) % 1
+    for (let i = 0; i < w.enemies.live; i++) {
+      const e = w.enemies.items[i]
+      if (!SPRAY_TYPES.has(e.typeId) || e.dying > 0) continue
+      const sp = ((ENEMIES[e.typeId] as EnemyDef).special ?? {}) as Record<string, unknown>
+      const half = typeof sp.gasRadius === 'number' ? sp.gasRadius : 44
+      const x = e.px + (e.x - e.px) * alpha
+      const y = e.py + (e.y - e.py) * alpha
+      const dx = Math.cos(e.facing)
+      const dy = Math.sin(e.facing)
+      const len = SPRAY_LANE.length
+      const steps = 6
+      for (let k = 0; k < steps; k++) {
+        const d0 = (len * k) / steps
+        const d1 = (len * (k + 1)) / steps
+        const fade = 1 - k / steps
+        S.line(x + dx * d0, y + dy * d0, x + dx * d1, y + dy * d1, half * 2, 0.74, 0.84, 0.3, SPRAY_LANE.fill * fade)
+        for (let side = -1; side <= 1; side += 2) {
+          const ox = -dy * half * side
+          const oy = dx * half * side
+          S.line(x + dx * d0 + ox, y + dy * d0 + oy, x + dx * (d1 - 10) + ox, y + dy * (d1 - 10) + oy, 2,
+            0.82, 0.92, 0.36, SPRAY_LANE.edge * fade)
+        }
+      }
+      const cw = half * 0.45
+      for (let j = 0; j < 3; j++) {
+        const d = len * ((j + march) / 3)
+        const cx = x + dx * d
+        const cy = y + dy * d
+        const bx = cx - dx * 10
+        const by = cy - dy * 10
+        const a = SPRAY_LANE.edge * (1 - d / len)
+        S.line(bx - dy * cw, by + dx * cw, cx, cy, 3, 0.86, 0.95, 0.4, a)
+        S.line(bx + dy * cw, by - dx * cw, cx, cy, 3, 0.86, 0.95, 0.4, a)
+      }
+    }
   }
 
   private drawEffects(under: boolean): void {
@@ -1578,33 +1706,49 @@ export class GLRenderer {
   private drawTelegraphs(): void {
     const s = this.dev.shapes
     const c = COL.telegraph
-    // A warning, not a hitbox: a fill that thins toward the edge in bands, a
-    // pulsing rim, and chevrons marching out along the line of the charge.
-    // A flat wedge with a 1 px outline read as debug geometry in rounds 5 and
-    // 17, and its straight side lines were the most debug part of it.
+    // One shape per attack, and the shape is the attack (critic round 19:
+    // bands, arcs and chevrons on every cone "fill the left half of the
+    // screen" and do not say where to stand). A spray is its cone: a faint
+    // wedge that fills from the mouth outward as the wind-up runs out, so the
+    // moment it reaches the rim is the moment it fires. A charge is its lane.
     const pulse = 0.75 + 0.25 * Math.sin(this.world.elapsed * 9)
     for (const t of this.world.telegraphs) {
+      const k = t.maxLife > 0 ? 1 - Math.max(0, t.life) / t.maxLife : 1
+      const dx = Math.cos(t.angle)
+      const dy = Math.sin(t.angle)
+      if (t.width > 0) {
+        // The lane: body-wide, as long as the run, filling from the charger
+        // toward the far end, with an end bar and chevrons marching down it.
+        const ex = t.x + dx * t.range
+        const ey = t.y + dy * t.range
+        s.line(t.x, t.y, ex, ey, t.width, c[0], c[1], c[2], c[3] * 0.3)
+        s.line(t.x, t.y, t.x + dx * t.range * k, t.y + dy * t.range * k, t.width, c[0], c[1], c[2], c[3] * 0.45)
+        const hw = t.width / 2
+        s.line(ex - dy * hw, ey + dx * hw, ex + dy * hw, ey - dx * hw, 3, 1, 0.5, 0.36, Math.min(1, 0.9 * pulse))
+        const march = (this.world.elapsed * 1.6) % 1
+        const w = Math.min(10, hw * 0.7)
+        for (let j = 0; j < 4; j++) {
+          const d = t.range * ((j + march) / 4)
+          const cx = t.x + dx * d
+          const cy = t.y + dy * d
+          const bx = cx - dx * 7
+          const by = cy - dy * 7
+          s.line(bx - dy * w, by + dx * w, cx, cy, 3, 1, 0.55, 0.4, 0.75 * pulse)
+          s.line(bx + dy * w, by - dx * w, cx, cy, 3, 1, 0.55, 0.4, 0.75 * pulse)
+        }
+        continue
+      }
       const half = ((t.spread / 2) * Math.PI) / 180
       const a0 = t.angle - half
       const a1 = t.angle + half
-      for (let b = 0; b < 3; b++) {
-        const r = t.range * (1 - b * 0.28)
-        s.wedge(t.x, t.y, r, r, a0, a1, c[0], c[1], c[2], c[3] * (0.22 + b * 0.12))
+      if (t.spread >= 360) {
+        // A ring on the ground (the Claymore's trigger radius).
+        s.ring(t.x, t.y, t.range - 1, 2, c[0], c[1], c[2], Math.min(1, c[3] * 2.4 * pulse))
+        continue
       }
+      s.wedge(t.x, t.y, t.range, t.range, a0, a1, c[0], c[1], c[2], c[3] * 0.22)
+      if (k > 0.02) s.wedge(t.x, t.y, t.range * k, t.range * k, a0, a1, c[0], c[1], c[2], c[3] * 0.75)
       s.arc(t.x, t.y, t.range - 1, a0, a1, 3, c[0], c[1], c[2], Math.min(1, c[3] * 2.4 * pulse))
-      const dx = Math.cos(t.angle)
-      const dy = Math.sin(t.angle)
-      const w = Math.min(14, t.range * Math.tan(half) * 0.35)
-      const march = (this.world.elapsed * 1.4) % 1
-      for (let k = 0; k < 3; k++) {
-        const d = t.range * (0.22 + ((k / 3 + march) % 1) * 0.66)
-        const cx = t.x + dx * d
-        const cy = t.y + dy * d
-        const bx = cx - dx * 8
-        const by = cy - dy * 8
-        s.line(bx - dy * w, by + dx * w, cx, cy, 3, 1, 0.55, 0.4, 0.8 * pulse)
-        s.line(bx + dy * w, by - dx * w, cx, cy, 3, 1, 0.55, 0.4, 0.8 * pulse)
-      }
     }
   }
 

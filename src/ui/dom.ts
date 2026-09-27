@@ -39,3 +39,19 @@ export function fmtStat(key: string, value: number): string {
   const rounded = Math.round(value * 10) / 10
   return pct ? `${rounded > 0 ? '+' : ''}${rounded}%` : String(rounded)
 }
+
+/**
+ * Green or red for a stat row's value. "before → after" compares the two
+ * numbers, so "-20% → -4%" is a gain: the old test (any minus sign is a cost)
+ * painted that improvement red (critic round 20). A lone value is a cost when
+ * it is negative.
+ */
+export function deltaTone(raw: string): 'gain' | 'cost' {
+  const parts = raw.split(/\s*(?:→|->)\s*/)
+  if (parts.length === 2) {
+    const a = parseFloat(parts[0].replace(/[^\d.+-]/g, ''))
+    const b = parseFloat(parts[1].replace(/[^\d.+-]/g, ''))
+    if (Number.isFinite(a) && Number.isFinite(b)) return b >= a ? 'gain' : 'cost'
+  }
+  return raw.trim().startsWith('-') ? 'cost' : 'gain'
+}

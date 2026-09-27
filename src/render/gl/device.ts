@@ -252,10 +252,16 @@ uniform float uScale;
 layout(location=0) out vec4 oColor;
 layout(location=1) out vec4 oEmissive;
 void main() {
-  vec2 p = floor(vWorld) / uScale;
-  float n = texture(uNoise, p + uDrift).r * 0.65 + texture(uNoise, p * 2.3 - uDrift * 1.7).r * 0.35;
-  float d = smoothstep(0.38, 0.85, n);
-  d = floor(d * 5.0 + 0.5) / 5.0;
+  // Low wisps lying along the ground, not blotches: round-cornered noise
+  // blobs quantised in five soft steps read as "a grimy overlay" on the field
+  // (critic round 19). Stretched flat, three steps, and an ordered 2x2 dither
+  // between them on the art's own pixel grid.
+  vec2 w = floor(vWorld);
+  vec2 p = w / vec2(uScale * 2.6, uScale * 0.55);
+  float n = texture(uNoise, p + uDrift).r * 0.65 + texture(uNoise, p * vec2(2.3, 1.7) - uDrift * 1.7).r * 0.35;
+  float d = smoothstep(0.45, 0.8, n);
+  float bayer = mod(mod(w.x, 2.0) * 2.0 + mod(w.y, 2.0) * 3.0, 4.0) / 4.0;
+  d = floor(d * 3.0 + bayer * 0.9) / 3.0;
   float a = d * uColor.a;
   oColor = vec4(uColor.rgb * a, a);
   oEmissive = vec4(0.0);

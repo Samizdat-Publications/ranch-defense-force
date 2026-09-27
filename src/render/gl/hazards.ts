@@ -95,16 +95,23 @@ void main() {
     // Duster lays them in chains) they merge into one mass, and the edge is a
     // thinning scatter rather than a drawn ring. Reviewers read the old ring
     // as debug circles in six rounds out of nine.
+    // Coarse swirl only: the fine octave threw single bright pixels all over
+    // the fill, and round 19 read a cloud as a green disc full of confetti.
     float swirl = texture(uNoise, (w + vec2(uTime * 5.0, uTime * 3.0) + seed * 41.0) / 34.0).r
-                * 0.6 + texture(uNoise, (w - vec2(uTime * 4.0, 0.0)) / 13.0).r * 0.4;
-    float band = floor(swirl * 4.0) / 4.0;
+                * 0.75 + texture(uNoise, (w - vec2(uTime * 4.0, 0.0)) / 60.0).r * 0.25;
+    float band = floor(swirl * 3.0) / 3.0;
     // Soft, not dithered: round 14 read the ordered dither as "hard edges
     // and checkerboard noise". Density fades to nothing at the edge, in four
     // steps of the swirl so it still sits on the art's pixel grid.
     float density = clamp((1.0 - d / edge) * 1.8, 0.0, 1.0) * (0.5 + 0.5 * swirl);
     density = floor(density * 5.0) / 5.0;
     if (density <= 0.0) discard;
-    c = vec4(mix(vec3(0.44, 0.48, 0.22), vec3(0.7, 0.74, 0.4), band), density * (0.2 + band * 0.12));
+    // A faint fill inside the ragged rim (round 20: "huge flat dithered green
+    // discs" hiding what stands in them).
+    c = vec4(mix(vec3(0.44, 0.48, 0.22), vec3(0.7, 0.74, 0.4), band), density * (0.1 + band * 0.08));
+    // A ragged edge line, so each cloud reads as a zone to step out of rather
+    // than one more green blob (round 19 asked for outlined hazards).
+    if (d > edge - 1.5 && hash(floor(w / 2.0) + seed) > 0.3) c = vec4(0.72, 0.86, 0.34, 0.62);
     glow = 0.02;
   } else if (kind == 3) {
     // A faint wash inside a bright rim: at 0.44 a 220 px pool greened out

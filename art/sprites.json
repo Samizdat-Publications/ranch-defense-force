@@ -546,9 +546,6 @@
       "item.burrLoad": "plant_burr.png",
       "item.moonshineJug": "moonshine_jug.png",
       "item.broadSide": "wide_bore_round.png",
-      "item.tracerRounds": "round_tracer.png",
-      "item.coldRounds": "round_cold.png",
-      "item.etchedRounds": "round_etched.png",
       "item.weakSeam": "seam_ripper.png",
       "item.broodyHen": "broody_chick.png",
       "item.bloodMeal": "bloody_scoop.png",
@@ -2023,6 +2020,15 @@
       "tarImpact": {
         "dir": "tarImpact"
       }
+    }
+  },
+  "pixellabRaw": {
+    "_note": "Generated card art packed WITHOUT the palette conform the pixellab group gets. The three elemental rounds are wide_bore_round.png with a red, a blue and a green tip; conformed, red became brick and blue became cream, and v2 critic round 20 read Tracer Rounds and Cold Rounds as the same icon.",
+    "_base": "assets/pixellab/picked/",
+    "files": {
+      "item.tracerRounds": "round_tracer.png",
+      "item.coldRounds": "round_cold.png",
+      "item.etchedRounds": "round_etched.png"
     }
   },
   "cave": {

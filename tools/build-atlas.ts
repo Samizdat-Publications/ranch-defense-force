@@ -126,6 +126,8 @@ interface Manifest {
   /** Cave art: overhead stalactites and the corner webs. See art/sprites.json. */
   cave?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   webbed?: { _base: string; files: Record<string, string>; noTrim?: boolean }
+  /** Generated card art that must keep colours the house palette lacks. */
+  pixellabRaw?: SingleGroup
   /** The generated ranch: buildings, vehicles, fencing, feed. See art/sprites.json. */
   ranch?: { _base: string; files: Record<string, string>; noTrim?: boolean }
   /** Complete enclosures, one sprite per pen. See art/sprites.json. */
@@ -727,6 +729,10 @@ const singleGroups = [
   // the "_Load_ pile" check - does not apply to them either way.
   manifest.carry,
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
+  // Never conformed: the three elemental rounds are told apart by a red, a
+  // blue and a green tip, and the 32-colour farm palette has none of the
+  // three (round 20 read tracer and cold as the same icon).
+  manifest.pixellabRaw ? { ...manifest.pixellabRaw, conform: false, cardArt: true } : undefined,
   // `cardArt` because these are 64px, well over the field's 32x32 rule -- and
   // legitimately so: an overhead sprite is not read at the player's scale, it is
   // read as the thing above the player, and shrinking it to 32 would make a

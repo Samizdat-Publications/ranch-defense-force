@@ -159,6 +159,30 @@ void main() {
     c = b > 0.5 ? tile(9, p) : (b > 0.24 ? tile(8, p) : tile(7, p));
   }
 
+  // Blades. The healthy grass tiles are one flat colour (dirt_to_grass_plain
+  // measures a standard deviation of zero), and flat grass under crisp
+  // sprites read as "a soft, smeared texture ... assets pasted onto a photo"
+  // (critic round 19). A one-pixel blade, two or three tall with a lit tip, on
+  // two jittered grids of different pitch so no period shows.
+  if (t == 0 && b <= 0.24) {
+    for (int k = 0; k < 2; k++) {
+      vec2 pitch = k == 0 ? vec2(5.0, 6.0) : vec2(7.0, 5.0);
+      vec2 bc = floor((w + float(k) * vec2(2.0, 3.0)) / pitch);
+      float bh = hash(bc * (1.31 + float(k) * 0.7) + 7.7);
+      // Sparse (round 20 read a denser pass as "fine grainy streaks").
+      if (bh < (k == 0 ? 0.34 : 0.14)) {
+        ivec2 o = ivec2(bc * pitch - float(k) * vec2(2.0, 3.0))
+                + ivec2(int(hash(bc + 2.3) * (pitch.x - 1.0)), int(hash(bc + 5.1) * (pitch.y - 3.0)));
+        ivec2 q = p - o;
+        int len = bh < 0.22 ? 3 : 2;
+        if (q.x == 0 && q.y >= 1 && q.y <= len) c.rgb *= 0.8;
+        else if (q.x == 0 && q.y == 0) c.rgb *= 1.12;
+        // Every third blade leans: a second stroke beside the first.
+        else if (bh < 0.16 && q.x == 1 && q.y >= 2 && q.y <= len) c.rgb *= 0.86;
+      }
+    }
+  }
+
   // Tufted edges, the way a hand-drawn farm tileset draws them: grass
   // overhangs every patch of dirt, soil and yard by one to three pixels,
   // ragged along the edge, with a line of shade under the top lip. A hard
@@ -226,7 +250,8 @@ void main() {
   // The ground sits back: a touch darker and less saturated than the art
   // that stands on it, so the cast reads against it at any hour.
   float luma = dot(c.rgb, vec3(0.299, 0.587, 0.114));
-  c.rgb = mix(vec3(luma), c.rgb, 0.88) * 0.9;
+  // A step darker since round 20 ("enemies about as bright as the grass").
+  c.rgb = mix(vec3(luma), c.rgb, 0.88) * 0.85;
   oColor = vec4(c.rgb, 1.0);
   oEmissive = vec4(0.0);
 }`

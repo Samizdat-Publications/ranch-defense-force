@@ -180,9 +180,12 @@ async function untilBoss(page: Page): Promise<void> {
   // topped up first so a strong build has not killed it by then.
   // In short steps, topping it up each time: the bull has a fraction of
   // the Duster's health and a late build kills it inside one long wait.
-  for (let i = 0; i < 5; i++) {
-    await page.evaluate('window.rdf.stageBoss(0.9)')
-    await ff(page, 0.52, true)
+  // Steps of a quarter second at full health: at half a second the round-20
+  // build (pickups drifting in, so more levels by wave 12) killed the bull
+  // between two top-ups and the shot caught its death fade.
+  for (let i = 0; i < 10; i++) {
+    await page.evaluate('window.rdf.stageBoss(1)')
+    await ff(page, 0.26, true)
   }
   await page.evaluate('window.rdf.stageBoss(0.62)')
   // The card animates in real time, and a fast-forward takes almost none:
@@ -206,6 +209,9 @@ async function dismissLevelUps(page: Page): Promise<void> {
       const card = root.querySelector('.pcard')
       if (!card) return false
       card.click()
+      // Keep the sim held: a pick resumes the run, and six picks at 250 ms
+      // each gave a late build time to kill the staged bull (round 20 tour).
+      window.rdf.hold(true)
       return true
     })()`)
     if (!picked) return

@@ -181,6 +181,30 @@ traps worth knowing:
 - **The horde is two numbers, not one.** More bodies level the bots faster;
   raising the count without cutting xp made the never-move pilots clear more.
 
+## Rounds 16 to 19 (2026-09-27)
+
+V2.md D25 to D28 has the what and why. What a later session should know:
+
+- **The healthy grass tile is one flat colour.** `wang.dirt_to_grass_plain.1111`
+  measures a standard deviation of zero, so every "smeared ground" complaint
+  was the grade and the fog on a flat fill. The ground shader draws blades
+  now (`gl/ground.ts`). Round 7 read an older, denser blade pass as
+  "sandpaper"; these are sparse one-pixel strokes on two jittered grids.
+- **Pickups drift in after `tuning.pickups.settleSeconds` (4).** Ten left
+  sixty feed sacks on screen at wave 17: the horde kills about fifty a second.
+  It is a sim change, so it moves `run.test.ts`; re-measure if you touch it.
+- **Telegraphs carry a width.** `addTelegraph(..., width)` draws a lane
+  instead of a cone; the charge behaviour lays one for its run. The shapes
+  batch is flushed self-lit for warnings, or the night swallows them.
+- **`impactFx` on a weapon** picks the burst its ordinary hits throw when
+  the player has no element. `hitSpark` at full scale reads as a red urchin
+  at dusk; only the pitchfork keeps it, at its jab scale.
+- **The Duster at night is dark on purpose**: found by its lamps, its moon
+  rim and its spray lane (`drawNavLights`, `drawSprayLanes`). Its searchlight
+  pools start 230 px ahead, or they light its own wings.
+- **The auger's swing was still the demon-bite loop** the pitchfork gave up
+  (`proj.claw`). Grep `swingClip` before assuming an art complaint is gone.
+
 ## Traps found this session
 
 - **The Preview tool and this session's working directory disagreed** after

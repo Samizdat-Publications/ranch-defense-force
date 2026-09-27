@@ -13,7 +13,7 @@ import type { World } from '../sim/world'
 import { emptyDerived, previewDelta } from '../sim/stats'
 import { LEVEL_REROLL_COST } from '../sim/formulas'
 import { card, deal } from './card'
-import { clear, el, fmtStat } from './dom'
+import { clear, deltaTone, el, fmtStat } from './dom'
 
 export class LevelUpScreen {
   private readonly root: HTMLElement
@@ -116,7 +116,8 @@ export class LevelUpScreen {
         // §5: a weapon-upgrade card (batch 4's class cards will follow) names
         // what it belongs to instead of the generic kind - `offer.band`,
         // driven off `ItemDef.requiresWeapon`/`requiresClass` in content.
-        kind: `[${i + 1}]  ${offer.band ?? offer.kind}${offer.boosted ? ' · 2x' : ''}`,
+        key: String(i + 1),
+        kind: `${offer.band ?? offer.kind}${offer.boosted ? ' · 2x' : ''}`,
         category: categoryLabel(offer.category),
         exclusive: offer.exclusive,
         name: offer.name,
@@ -131,7 +132,7 @@ export class LevelUpScreen {
           return {
             label: m ? m[1] : d,
             value: raw,
-            tone: raw.includes('-') && !raw.includes('->') ? 'cost' as const : 'gain' as const,
+            tone: deltaTone(raw),
           }
         }),
         // §5: the card says what taking it AGAIN does, or that it cannot be.

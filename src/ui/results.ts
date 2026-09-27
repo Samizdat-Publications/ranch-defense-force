@@ -64,7 +64,7 @@ export class ResultsScreen {
       return row
     }
 
-    // Chips, not a comma list: the build is the thing you want to read back.
+    // Tiles, not a comma list: the build is the thing you want to read back.
     //
     // A stackable item is one row per pickup in `p.items`: four Blood Meals
     // taken is four entries, not one entry counted four times, so a chip
@@ -86,17 +86,32 @@ export class ResultsScreen {
       counts.set(label, (counts.get(label) ?? 0) + (it.boosted ? 2 : 1))
       icons.set(label, itemCardSprite(it.id))
     }
-    const chips = el('div', { class: 'psheet-chips' })
+    // An icon grid: round 19 read 21 text pills as "a wall of identical dark
+    // pills". Weapons are named under their tile, items carry their count in
+    // the corner and their name on hover.
+    const chips = el('div', { class: 'build-grid' })
+    const nWeapons = p.weapons.length
+    let i = 0
     for (const [label, n] of counts) {
-      const icon = spriteEl(icons.get(label), 18)
-      chips.append(el('span', { class: 'psheet-chip' }, [
-        ...(icon ? [icon] : []),
-        el('span', { text: n > 1 ? `${label} ×${n}` : label }),
+      const weapon = i++ < nWeapons
+      const icon = spriteEl(icons.get(label), weapon ? 44 : 34)
+      const tier = weapon ? label.slice(label.lastIndexOf(' ') + 1) : ''
+      const name = weapon ? label.slice(0, label.lastIndexOf(' ')) : label
+      chips.append(el('div', { class: `build-tile${weapon ? ' is-weapon' : ''}`, title: n > 1 ? `${label} ×${n}` : label }, [
+        el('div', { class: 'build-tile-art' }, icon ? [icon] : [el('span', { text: name.slice(0, 2) })]),
+        weapon ? el('span', { class: 'build-tile-badge', text: tier }) : n > 1 ? el('span', { class: 'build-tile-badge', text: `×${n}` }) : null,
+        weapon ? el('span', { class: 'build-tile-name', text: name }) : null,
       ]))
     }
     if (!counts.size) {
       chips.append(el('span', { class: 'psheet-chip', text: 'nothing' }))
     }
+
+    // The win gets a picture: the Duster down in the corn and burning, the
+    // hand who put it there standing in the lantern light, and the first
+    // grey of the next morning on the horizon. Round 19: "no downed plane
+    // and no dawn, so the biggest moment in the game gets no celebration".
+    const scene = cleared ? this.victoryScene(p.classId) : null
 
     // Where the acres came from, in words. A bare number tells you nothing
     // about whether you should have climbed a tier.
@@ -116,6 +131,7 @@ export class ResultsScreen {
     // dark stock with a desaturated red accent for losing it.
     this.inner.replaceChildren(
       el('div', { class: `results${cleared ? ' is-win' : ' is-lose'}` }, [
+        scene,
         el('div', { class: 'results-head' }, [
           // The lose screen's copy already carries its own weight ("The
           // hands got you"); the win screen had nothing above the headline
@@ -171,6 +187,34 @@ export class ResultsScreen {
       ]),
     )
     this.root.style.display = ''
+  }
+
+  private victoryScene(classId: string): HTMLElement {
+    const band = el('div', { class: 'victory-scene' })
+    band.append(el('div', { class: 'victory-sky' }))
+    const wreck = el('div', { class: 'victory-wreck' })
+    const plane = spriteEl('boss.dusterPlane', 240, 1)
+    if (plane) wreck.append(plane)
+    band.append(wreck)
+    const smoke = el('div', { class: 'victory-smoke' })
+    for (let k = 0; k < 6; k++) {
+      const puff = el('span', { class: 'victory-puff' })
+      puff.style.animationDelay = `${-k * 0.7}s`
+      puff.style.left = `${(k % 3) * 14}px`
+      smoke.append(puff)
+    }
+    band.append(smoke, el('div', { class: 'victory-fire' }))
+    const corn = el('div', { class: 'victory-corn' })
+    for (let k = 0; k < 18; k++) {
+      const stalk = spriteEl(k % 3 === 1 ? 'scene.cropRowCorn' : 'scene.cropRowCornRot', 62, 1)
+      if (stalk) corn.append(stalk)
+    }
+    band.append(corn)
+    const hero = el('div', { class: 'victory-hero' })
+    const who = spriteEl(`${classId}.idle.down.0`, 104, 2)
+    if (who) hero.append(el('div', { class: 'victory-lantern' }), who)
+    band.append(hero)
+    return band
   }
 
   close(): void {

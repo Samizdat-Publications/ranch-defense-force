@@ -111,6 +111,25 @@
 }
 
 .pcard-kind-main { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The pick key as a keycap, not "[1]": round 19 read the brackets as web-page
+   trappings. */
+.pcard-key {
+  display: inline-block;
+  min-width: 18px;
+  margin-right: 7px;
+  padding: 0 4px;
+  font-family: var(--label);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  color: #2b1d08;
+  background: var(--paper, #e8d9b5);
+  border: 1px solid #2b241a;
+  border-bottom-width: 3px;
+  border-radius: 3px;
+  vertical-align: 1px;
+}
 
 /*
    docs/UPGRADE_ROSTER.md §7.1/§7.7: the category quota a card was drawn under,
