@@ -154,7 +154,11 @@ export class TitleScreen {
     }, [
       el('div', { class: 'hero-tab' }, [el('div', { class: 'hero-punch' })]),
       el('div', { class: 'hero-body' }, [
-        el('div', { class: 'hero-tag', text: def.tag ?? '' }),
+        // One span a trait, the dot drawn before each but the first, so a
+        // wrapped line starts with its dot instead of one dangling at the end
+        // of the line above (round 21).
+        el('div', { class: 'hero-tag' }, (def.tag ?? '').split(/\s*·\s*/).filter(Boolean)
+          .map((t) => el('span', { class: 'hero-trait', text: t }))),
         figure,
         el('div', { class: 'hero-name', text: def.name }),
         el('div', { class: 'hero-rule' }),

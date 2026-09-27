@@ -20,7 +20,7 @@ import { tierHpMultiplier } from './meta'
 import { Spawner } from './spawner'
 import { resolveDamage, waveIncome, waveScalar, waveHpScalar } from './formulas'
 import {
-  BREAKABLES, BREAKABLE_CLASSES, ELEMENTS, ENEMIES, FIELD_GEAR_POOL, ITEMS, MAPS,
+  BLOOD_BOSS, BLOOD_HIT, BLOOD_KILL, BREAKABLES, BREAKABLE_CLASSES, ELEMENTS, ENEMIES, FIELD_GEAR_POOL, ITEMS, MAPS,
   NODES, TUNING, WAVES, WEAPONS, carryMuzzleOffset, elementStat, pickMapId, swingStyleOf,
   type BreakableClass, type DropRow, type MapDef, type NodeVariant, type StatMods,
 } from '../content'
@@ -3774,7 +3774,10 @@ export class World {
     const isBoss = ENEMIES[e.typeId]?.boss === true
     if (isBoss) this.bossKills++
     this.sound(isBoss ? 'bossDeath' : 'enemyDeath')
-    this.bleed(e.x, e.y, e.typeId === 'rooster' ? 2 : 10)
+    // Death blood carries its own colour code (BLOOD_KILL / BLOOD_BOSS) so the
+    // renderer can pool it where the thing fell; hit blood leaves no mark.
+    // Same draws as before: only the colour differs, so no seed moves.
+    this.bleed(e.x, e.y, e.typeId === 'rooster' ? 2 : 10, isBoss ? BLOOD_BOSS : BLOOD_KILL)
     /*
        How long the corpse stays before its slot is freed.
 
@@ -3974,7 +3977,7 @@ export class World {
     d.crit = crit
   }
 
-  private bleed(x: number, y: number, count: number): void {
+  private bleed(x: number, y: number, count: number, colour = BLOOD_HIT): void {
     for (let i = 0; i < count; i++) {
       const p = this.particles.acquire()
       if (!p) return
@@ -3984,7 +3987,7 @@ export class World {
       p.vy = this.rng.range(-110, -20)
       p.maxLife = this.rng.range(0.25, 0.45)
       p.life = p.maxLife
-      p.colour = 0xa02c2c
+      p.colour = colour
       p.size = 2
       p.stains = true
     }

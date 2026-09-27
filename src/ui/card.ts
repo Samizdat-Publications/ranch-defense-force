@@ -27,8 +27,6 @@ export interface CardSpec {
   kind: string
   /** The key that picks this card, drawn as a keycap before the kind. */
   key?: string
-  /** A verb before the price ("Buy"): round 20 could not tell how to buy. */
-  priceVerb?: string
   /**
    * The draw's own quota axis (docs/UPGRADE_ROSTER.md §7.1), printed at the
    * right of the kind band: ON-HIT, LOAD, ALLY… so a board reads at a glance
@@ -195,7 +193,7 @@ export function card(spec: CardSpec): HTMLElement {
   if (typeof spec.price === 'number') {
     foot.append(el('div', {
       class: 'pcard-price',
-      text: `${spec.priceVerb ? `${spec.priceVerb} · ` : ''}${spec.price} ${spec.priceUnit ?? 'feed'}`,
+      text: `${spec.price} ${spec.priceUnit ?? 'feed'}`,
     }))
   } else {
     foot.append(el('div', { text: spec.source ?? '' }))

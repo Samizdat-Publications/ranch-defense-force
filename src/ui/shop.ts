@@ -249,9 +249,9 @@ export class ShopScreen {
         // §5: a weapon-upgrade card names its weapon; `swap` shows plainly.
         kind: offer.band ?? offer.kind,
         category: categoryLabel(offer.category),
-        // §7.7: the shop's own pitch - a card here that a level-up could
-        // never have dealt you.
-        exclusive: offer.exclusive,
+        // §7.7's "SHOP ONLY" flag is not printed here: in the shop it is
+        // implied (the header counts them), and beside the category it read
+        // as one cryptic phrase, "SHOP ONLY LOAD" (round 21).
         name: offer.name,
         blurb: offer.detail,
         sprite: offer.sprite,
@@ -259,7 +259,6 @@ export class ShopScreen {
         stats: this.statRows(offer),
         stack: stackLabel(offer.stacks),
         price: offer.cost,
-        priceVerb: 'Buy',
         affordable,
         // Unaffordable is UNPRINTED STOCK, not disabled chrome - pulpboard
         // grey, and the plate drops its emboss. It reads as "not for you yet"
@@ -273,13 +272,26 @@ export class ShopScreen {
       // listener is on the SLOT rather than the card, because `dead` disables
       // the card's button and a disabled button fires no pointer events - and
       // the card you cannot afford is exactly the one you most want to price.
+      // A real Buy button under the tag, with the price on it, and Hold as
+      // the small second choice: round 21 found the big button said "Hold"
+      // and buying was a line of green text in the footer.
+      const buyBtn = el('button', {
+        class: 'btn btn-primary pshop-buy',
+        text: affordable ? `Buy · ${offer.cost} feed` : `${offer.cost} feed`,
+        onClick: () => this.buy(i),
+      })
+      buyBtn.disabled = !affordable
       const slot = el('div', { class: 'pshop-slot' }, [
         c,
-        el('button', {
-          class: `pshop-hold${held ? ' is-held' : ''}`,
-          text: held ? 'Held for next visit' : 'Hold for next visit',
-          onClick: () => this.toggleLock(i),
-        }),
+        el('div', { class: 'pshop-actions' }, [
+          buyBtn,
+          el('button', {
+            class: `pshop-hold${held ? ' is-held' : ''}`,
+            text: held ? 'Held' : 'Hold',
+            title: 'Keep this card for your next visit',
+            onClick: () => this.toggleLock(i),
+          }),
+        ]),
       ])
       slot.addEventListener('mouseenter', () => {
         this.hovered = offer

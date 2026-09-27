@@ -56,9 +56,9 @@
    "_note": "A seed on the ground: a size-px square turned 45 degrees (a diamond about 7 px tall) in this colour, with a dark outline, faintly self-lit and pulsing. Replaced the 16 px gem sprite in v2 round 18 (\"as big as a chicken\")."
   },
   "_damageNumbersNote": "\"crits\" draws only critical hits (in the big face); \"all\" draws every hit of 3 or more. Critic rounds 12 to 16 read the ordinary numbers as clutter over the fight.",
-  "stainKeep": 20,
+  "stainKeep": 24,
   "stainWeather": 0.86,
-  "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20, and round 3 then found 'almost no visible gore'. One in thirty, as a 5-8 px splat: few marks, each one a kill you can see. Then one in fourteen: rounds 11 and 12 both read the gore as 'scattered red dots'. One in twenty since round 19, when the blood turned dark and the horde's kill rate laid a maroon carpet over the dusk field.",
+  "_stainNote": "One blood drop in stainKeep leaves a mark, as a bigger splat; the decal target is multiplied by stainWeather every two seconds (0.86 = a half-life of about 9 s). Round 2 read the old one-in-three speckle as static; at one in seven a bot fighting mid-field still laid a red carpet by wave 20, and round 3 then found 'almost no visible gore'. One in thirty, as a 5-8 px splat: few marks, each one a kill you can see. Then one in fourteen: rounds 11 and 12 both read the gore as 'scattered red dots'. One in twenty since round 19, when the blood turned dark and the horde's kill rate laid a maroon carpet over the dusk field. Since round 21 only a DEATH's blood marks the ground (hit blood soaks in unmarked; the sim tags death blood with BLOOD_KILL), so one in twenty-four of a death's ten drops (the horde kills fifty a second; one in eight still carpeted the dusk): a pool where some things fell, and a boss's every drop, twice the size.",
   "fxScale": 0.6,
   "_fxScaleNote": "Every effect draws at this fraction of its content scale (then never a fractional upscale). At view 450 the hit sparks were the biggest, brightest things on a late screen and sat on top of their targets (critic round 6)."
  },
@@ -231,7 +231,7 @@
     "shadow": 0.56,
     "exposure": 0.98,
     "saturation": 1.1,
-    "contrast": 1.12,
+    "contrast": 1.16,
     "tint": [
      1.06,
      0.99,
@@ -251,20 +251,20 @@
     ],
     "sun": [
      1,
-     0.56,
-     0.42
+     0.64,
+     0.46
     ],
     "sunI": 0.72,
     "az": 266,
     "el": 9,
     "shadow": 0.42,
     "exposure": 0.92,
-    "saturation": 1.04,
-    "contrast": 1.1,
+    "saturation": 0.98,
+    "contrast": 1.2,
     "tint": [
-     1.04,
-     0.95,
-     0.95
+     1.02,
+     0.96,
+     0.98
     ],
     "vignette": 0.36,
     "lantern": 0.1,
@@ -501,7 +501,7 @@
   ],
   "_dawnNote": "Dawn retuned in v2 critic round 3 (\"flat sepia mud\"): the old first stop lit a purple-pink ambient with a pink sun through 0.42 of pale mist, so shade and light were the same beige. Now the shade is cool blue and the low sun warm gold-rose, which is where morning gets its contrast, and the mist is thinner.",
   "_nightNote": "Night retuned in critic round 6 (\"a blue-grey wash with grain, not black\"): the last two stops carried 0.25-0.32 of pale blue fog over a 0.15 ambient. Now near-dark outside the lantern and almost no fog, and the cast is found by its eyes and its moonlit rim instead.",
-  "_arcNote": "Critic round 13 measured the play area at 84 at dawn, 94 at noon, 86 at 5:15 PM and 39 at night: one switch, not a failing light. The day now peaks at noon (t 0.3) and every stop after it is darker and warmer than the one before: amber afternoon, gold at 0.58, red dusk with the vignette closing in at 0.68 (wave 17), then night. Dawn is pink-gold and a little under-exposed, with long cool shadows. Round 14 still saw dawn as flat and the dusk as a brown lens that flattened every value: dawn is pink with mist (fog 0.5), noon is saturated, the golden hour keeps its contrast, and the dusk is violet and contrasty rather than sepia. Round 15 then read the stronger tints as filters (\"a purple haze\", \"a red filter\"), so the tints came back toward neutral and the hour is carried by the sun colour, the shadow length and the exposure falling stop by stop. Round 16 found the dusk \"one mid-dark band\" with the highlights crushed: the exposure falls more gently to night (0.92 at wave 17 rather than 0.82) and the vignette is lighter, so the light fails without flattening the range. Round 17 read the low sun as \"each enemy dragging a long black shadow streak\" through the crowd: shadows cap at 1.6 body lengths (was 2.2) and thin as the sun sets. Round 18 still could not tell first light from 10 AM: dawn carries a heavier warm mist (fog 0.52 thinning to 0.3 by 7 AM; 0.34 since rounds 19 and 20, when the fog became flat wisps) and sits a little under-exposed. Round 20 still read 6:33 AM and 10:49 AM as \"the same flat olive\": dawn is gold now (tint 1.1/0.97/0.86, a stronger low sun, more saturation) under a cooler blue shade, and mid-morning is brighter and crisper.",
+  "_arcNote": "Critic round 13 measured the play area at 84 at dawn, 94 at noon, 86 at 5:15 PM and 39 at night: one switch, not a failing light. The day now peaks at noon (t 0.3) and every stop after it is darker and warmer than the one before: amber afternoon, gold at 0.58, red dusk with the vignette closing in at 0.68 (wave 17), then night. Dawn is pink-gold and a little under-exposed, with long cool shadows. Round 14 still saw dawn as flat and the dusk as a brown lens that flattened every value: dawn is pink with mist (fog 0.5), noon is saturated, the golden hour keeps its contrast, and the dusk is violet and contrasty rather than sepia. Round 15 then read the stronger tints as filters (\"a purple haze\", \"a red filter\"), so the tints came back toward neutral and the hour is carried by the sun colour, the shadow length and the exposure falling stop by stop. Round 16 found the dusk \"one mid-dark band\" with the highlights crushed: the exposure falls more gently to night (0.92 at wave 17 rather than 0.82) and the vignette is lighter, so the light fails without flattening the range. Round 17 read the low sun as \"each enemy dragging a long black shadow streak\" through the crowd: shadows cap at 1.6 body lengths (was 2.2) and thin as the sun sets. Round 18 still could not tell first light from 10 AM: dawn carries a heavier warm mist (fog 0.52 thinning to 0.3 by 7 AM; 0.34 since rounds 19 and 20, when the fog became flat wisps) and sits a little under-exposed. Round 20 still read 6:33 AM and 10:49 AM as \"the same flat olive\": dawn is gold now (tint 1.1/0.97/0.86, a stronger low sun, more saturation) under a cooler blue shade, and mid-morning is brighter and crisper. Round 21 read 5:15 PM as \"a flat red-brown wash\" that made soil, crops and enemies one hue: the dusk keeps its hue but gains contrast (1.2) and a less red sun.",
   "_gradeNote": "Critic round 10 still saw dawn to 1:30 PM as one flat olive-grey. The dawn mist (fogDay) was a pale blue-grey that greyed the rose light it sat in; it is a warm haze now. Dawn is rose and contrasty, 8 AM gold, mid-morning cool and clear, noon bleached (exposure 1.1) under a high sun, then the afternoon warms as before."
  },
  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code - CLAUDE.md forbids balance constants living in source.",
@@ -618,8 +618,9 @@
    "scale": 1
   },
   "arrowImpact": {
-   "life": 0.28,
-   "scale": 0.7
+   "life": 0.22,
+   "scale": 0.5,
+   "_note": "Smaller and shorter since v2 critic round 21: its yellow burst on every other enemy read as \"dandelions\"."
   },
   "_impactNote": "One impact per ELEMENT, so a build decision the design calls \"visible everywhere\" is visible at the moment it lands. acid/frost/salt/lime all resolved to arrowImpact until session 25, which meant four of the six elements looked identical on hit. Timed just under arrowImpact: these are generated bursts that dissipate rather than pack sprites that hold, so they read as done sooner.",
   "acidImpact": {

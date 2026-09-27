@@ -177,3 +177,14 @@
 .title-rail .hero-foot { font-size: 12px; letter-spacing: 0; white-space: nowrap; }
 /* The locked card's price was 8.5px, about 7 on screen (round 16). */
 .title-rail .hero-price { font-size: 13px; letter-spacing: 0.06em; }
+
+/* Traits as separate words (title.ts): the dot leads each after the first.
+   Two lines tall whatever the count, so every card's top sits level (round
+   21: the Drifter, with one line of traits, hung 16 px lower). */
+.title-rail .hero-tag {
+  display: flex; flex-wrap: wrap; column-gap: 0.45em; align-content: flex-start;
+  /* Border-box with 6 px of padding: two lines of 1.25 are 2.5em plus that. */
+  min-height: calc(2.5em + 6px);
+}
+.hero-trait + .hero-trait::before { content: '\00b7\00a0'; }
+.hero-trait { white-space: nowrap; }

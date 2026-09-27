@@ -1130,3 +1130,13 @@ export function mapIsBlighted(
   for (const b of terrain.blight) if (wave >= b.fromWave) return true
   return false
 }
+
+/**
+ * Blood particle colours, shared by the sim that spills it and the renderer
+ * that stamps it: a hit, a kill and a boss kill. The renderer pools only the
+ * last two, where the thing fell (v2 critic round 21: blood from every hit
+ * read as "polka dots" evenly over the field).
+ */
+export const BLOOD_HIT = 0xa02c2c
+export const BLOOD_KILL = 0xa02c2d
+export const BLOOD_BOSS = 0xa02c2e

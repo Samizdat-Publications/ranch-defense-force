@@ -104,17 +104,19 @@ export function groupOf(category: OfferCategory): OfferGroup {
  * card"). One table rather than two, so the level-up and the shop cannot
  * drift into calling the same category two different things.
  */
+// Plain words since round 21: "SHOP ONLY LOAD" read as cryptic. A load is
+// what the guns are loaded with, so it says AMMO; the ledger is money.
 const CATEGORY_LABEL: Record<OfferCategory, string> = {
   stat: 'STAT',
   merge: 'MERGE',
   newWeapon: 'NEW WEAPON',
-  load: 'LOAD',
-  rider: 'LOAD RIDER',
+  load: 'AMMO',
+  rider: 'AMMO BONUS',
   onHit: 'ON-HIT',
   onKill: 'ON-KILL',
   ally: 'ALLY',
   body: 'BODY',
-  ledger: 'LEDGER',
+  ledger: 'MONEY',
   weaponMod: 'UPGRADE',
   class: 'CLASS',
 }

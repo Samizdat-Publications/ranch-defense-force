@@ -623,8 +623,7 @@
       "weapon.postAuger.t3",
       "weapon.postAuger.t4"
     ],
-    "swingClip": "fx.dust",
-    "_swingClipNote": "Was proj.claw, the demon-bite loop the pitchfork gave up for reading as 'a giant sand mouth eating things'. v2 critic round 19 found the same jaw on the auger (a cream-and-orange mouth beside the player at dusk). A drill bites the ground: a burst of dust (a ground shockwave was tried first and read as a white claw at night).",
+    "_swingClipNote": "No swing clip: the sweep draws its own arc. It was proj.claw, the demon-bite loop the pitchfork gave up for reading as 'a giant sand mouth eating things' (v2 critic round 19 found the same jaw on the auger); a ground shockwave then read as a white claw at night, and a dust burst scaled to the swing as a blocky white cloud (round 21 tour).",
     "sound": "swing",
     "blurb": "Chews a hole in whatever is directly in front of you. Very fast, very short.",
     "tiers": {

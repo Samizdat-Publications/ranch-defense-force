@@ -14,7 +14,7 @@
 import type { World } from '../sim/world'
 import { Camera } from './camera'
 import { type EnemyDef,
-  CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
+  BLOOD_BOSS, BLOOD_KILL, CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
   isHeldSlot, carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf,
   itemCardSprite, mapIsBlighted, projectileScaleFor, swingStyleOf, thrustPhase, type CarrySlot,
 } from '../content'
@@ -118,7 +118,9 @@ const COL = {
   // what separates the crowd from dark soil. A moonlit line read as an x-ray
   // (round 11) and a dim violet one as ghosts the colour of the ground.
   outlineMoon: parseColour('rgba(22, 18, 30, 0.9)'),
-  outlineElite: parseColour('#f0d060'),
+  // Hot red, not gold: gold is the player's own outline, and round 21 could
+  // not tell an elite from the farmhand.
+  outlineElite: parseColour('#e0503c'),
   outlineText: parseColour('#1a1410'),
   outlinePlayer: parseColour('rgba(255, 232, 168, 0.9)'),
   acid: parseColour('#5c8f2a'),
@@ -220,8 +222,6 @@ export class GLRenderer {
   /** A boss: the day's outline with a trace of curse, which buys it the
    *  moonlit rim and self-light after dark without draining its colours. */
   private readonly bossOutline: RGBA = [0, 0, 0, 0]
-  /** The plane's moonlit rim; alpha set per frame from the night. */
-  private readonly planeRim: RGBA = [0.7, 0.76, 0.94, 0]
   private readonly fogRgb = [0, 0, 0]
   private readonly decals: Target
   private scenery: Placed[] = []
@@ -549,15 +549,19 @@ export class GLRenderer {
       const col = s[i + 2]
       const acid = ((col >> 8) & 255) > ((col >> 16) & 255)
       const h = ((x * 73856093) ^ (y * 19349663)) >>> 0
-      // Most drops soak in without a mark; the ones that land make a splat
-      // (a body, a longer smear, a few flecks) rather than a pixel of static.
-      if (((h >> 12) % STAIN_KEEP) !== 0) continue
+      // Blood pools where a thing FELL (round 21: blood from every hit read
+      // as "polka dots" evenly over the field). Hit blood soaks in unmarked;
+      // a death's drops mark one in STAIN_KEEP; a boss's every drop, bigger.
+      const boss = col === BLOOD_BOSS
+      if (!acid && !boss && col !== BLOOD_KILL) continue
+      if (!boss && ((h >> 12) % STAIN_KEEP) !== 0) continue
       const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
       const a = 0.5 + ((h >> 3) & 3) * 0.06
       // Chunkier since round 20 ("dark-red specks at the same brightness as
       // the dirt"): a bigger pool with a wet highlight reads as gore.
-      const w0 = 7 + ((h >> 5) & 3)
-      const h0 = 4 + ((h >> 6) & 1)
+      const big = boss ? 2 : 1
+      const w0 = (10 + ((h >> 5) & 3)) * big
+      const h0 = (5 + ((h >> 6) & 1)) * big
       batch.push(x - 1, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
       batch.push(x, y - 1, 0, 0, w0 - 2, h0 + 2, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
       // A thrown spray off one side, tapering: rounds 12 and 13 read the old
@@ -565,7 +569,7 @@ export class GLRenderer {
       const ang = ((h >> 13) & 7) * (Math.PI / 4) + ((h >> 16) & 3) * 0.19
       const dx = Math.cos(ang)
       const dy = Math.sin(ang) * 0.6
-      const len = 4 + ((h >> 18) & 3)
+      const len = 6 + ((h >> 18) & 3)
       for (let k = 0; k < len; k++) {
         const d = w0 * 0.5 + 2 + k * 2.4
         const sz = k < 2 ? 2 : 1
@@ -1424,7 +1428,9 @@ export class GLRenderer {
         // No sun, no hard shadow: after dark a full one read as a second plane
         // stacked under the first (round 12), and none at all as a plane
         // parked on the ground (round 13). A faint moon shadow says airborne.
-        const a = 0.34 * (1 - this.day.night) * (1 - this.day.night) + 0.3 * this.day.night
+        // Stronger under the moon since round 21 ("no ground shadow, so it
+        // looks parked").
+        const a = 0.34 * (1 - this.day.night) * (1 - this.day.night) + 0.5 * this.day.night
         this.spr(f, Math.round(x + this.day.shadowX * alt * 0.35), Math.round(y + 6), ox, oy, rot, sc * 0.92, sc * 0.92, a, 0,
           NO_OUTLINE, 0.05, 0.04, 0.06)
       } else {
@@ -1440,15 +1446,10 @@ export class GLRenderer {
         // and read as a pale paper cut-out (round 19).
         const n = this.day.night
         this.spr(f, Math.round(x), Math.round(y - alt), ox, oy, rot, sc, sc, 1, flash, this.bossOutline,
-          0.92 - 0.18 * n, 0.84 - 0.16 * n, 0.76 - 0.06 * n, 0.05 * (1 - n))
-        // After dark, a moonlit rim of its own, drawn as an outline alone over
-        // everything: the crowd had one and the boss did not.
-        const night = this.day.night
-        if (night > 0.05) {
-          const rim = this.planeRim
-          rim[3] = 0.32 * night
-          this.spr(f, Math.round(x), Math.round(y - alt), ox, oy, rot, sc, sc, -1, 0, rim)
-        }
+          0.92 - 0.1 * n, 0.84 - 0.1 * n, 0.76 - 0.02 * n, 0.05 * (1 - n))
+        // No outline-only moon rim any more: round 21 read the thin pale line
+        // round the dark plane as "an editor selection". Its rust shows, its
+        // lamps and its shadow carry it.
       }
     }
   }
@@ -1604,7 +1605,14 @@ export class GLRenderer {
       // Warmed: the hit and poof sheets are drawn pure white, and pure white
       // stars read as generic placeholder sparkle; struck metal and struck
       // flesh give off something nearer lamp-light.
-      this.spr(frame, e.x, e.y, 0, 0, e.rotation, s, s, 0.92, 0, NO_OUTLINE, 1, 0.86, 0.64)
+      // A blast burns: self-lit and pushed toward yellow at its heart. Unlit
+      // and warmed like a spark, its red middle frames read as "raspberries"
+      // (round 21).
+      if (e.clip.startsWith('explosion')) {
+        this.spr(frame, e.x, e.y, 0, 0, e.rotation, s, s, 0.95, 0, NO_OUTLINE, 1.2, 1.02, 0.6, 0.55)
+      } else {
+        this.spr(frame, e.x, e.y, 0, 0, e.rotation, s, s, 0.92, 0, NO_OUTLINE, 1, 0.86, 0.64)
+      }
     }
   }
 
@@ -1857,9 +1865,12 @@ export class GLRenderer {
         // pale cream: brown burlap on tilled soil read as a clod (round 10),
         // and gold read as one more pumpkin (round 11).
         const feed = g.kind === 'feed'
-        const tr = xp ? XP_TINT[0] * dim : feed ? 1.14 : 1
-        const tg = xp ? XP_TINT[1] * dim : feed ? 1.12 : 1
-        const tb = xp ? XP_TINT[2] * dim : feed ? 1.04 : 1
+        // Sacks sit back after dark as well: pale and still past the lantern
+        // they read as "tombstones" (round 21).
+        const fd = 1 - 0.45 * this.day.night
+        const tr = xp ? XP_TINT[0] * dim : feed ? 1.14 * fd : 1
+        const tg = xp ? XP_TINT[1] * dim : feed ? 1.12 * fd : 1
+        const tb = xp ? XP_TINT[2] * dim : feed ? 1.04 * fd : 1
         if (xp) {
           // A seed is a small crisp diamond, not the 16 px gem: round 18 found
           // the gems "as big as a chicken" and the field a soup of loot. A

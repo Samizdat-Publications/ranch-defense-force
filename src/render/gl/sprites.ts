@@ -158,7 +158,9 @@ void main() {
     // Bruised lilac-grey: the complement of every green the field is made of.
     // Cooler since round 18: the pink-lilac sat in one hue band with the
     // blighted ground of the afternoon ("mauve enemies on maroon dirt").
-    vec3 pale = vec3(l) * vec3(0.96, 0.9, 1.2) * 1.18 + vec3(0.03, 0.03, 0.07);
+    // Lifted further in round 21 ("mid-grey-purple on mid-green or brown
+    // ground"): pale corpses over a darker field, a value gap at any hour.
+    vec3 pale = vec3(l) * vec3(0.96, 0.9, 1.2) * 1.3 + vec3(0.06, 0.06, 0.09);
     c.rgb = mix(c.rgb, pale, curse * (1.0 - eye));
     // Sick green, the spray's own colour: one strong accent on a pale body
     // (round 20: "enemies with ... one strong accent (sick-green eyes)").

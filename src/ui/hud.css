@@ -69,7 +69,7 @@
 @keyframes hud-hp-pulse { 50% { filter: brightness(1.45); } }
 .hud-hp-text {
   position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: calc(13 * var(--u)); letter-spacing: 0.06em;
+  font-size: calc(16 * var(--u)); font-weight: 700; letter-spacing: 0.06em;
   color: #fff4dc; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000, 0 0 calc(4 * var(--u)) #000;
 }
 
@@ -276,15 +276,20 @@
   background: rgba(0, 0, 0, 0.55);
   transform-origin: bottom center; transform: scaleY(0);
 }
-/* The tier as a number: four 4px pips could not be read (critic round 11). */
+/* The tier as a number: four 4px pips could not be read (critic round 11).
+   A corner badge since round 21, off the art ("T4 printed over the icons"). */
 .hud-slot-pips {
-  position: absolute; left: calc(2 * var(--u)); bottom: calc(1 * var(--u));
-  font-family: var(--label); font-size: calc(14 * var(--u)); font-weight: 700; line-height: 1;
-  color: #f2d9a8; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
+  position: absolute; right: 0; top: 0;
+  padding: calc(1 * var(--u)) calc(3 * var(--u));
+  font-family: var(--label); font-size: calc(12 * var(--u)); font-weight: 700; line-height: 1;
+  color: #1b130a; background: #d6a33a;
+  border-left: calc(1 * var(--u)) solid #120d08; border-bottom: calc(1 * var(--u)) solid #120d08;
 }
 .hud-load {
   width: calc(60 * var(--u)); height: calc(60 * var(--u));
-  border: calc(2 * var(--u)) solid #7b4fb3;
+  /* The weapon tiles' own frame: the purple one read as from another UI
+     (round 21). */
+  border: calc(2 * var(--u)) solid #d6a33a;
 }
 .hud-load-stacks {
   position: absolute; right: calc(2 * var(--u)); bottom: calc(1 * var(--u));
@@ -352,3 +357,8 @@
   opacity: 0.35;
   transition: opacity 0.2s ease;
 }
+/* The badge wears the tier's colour, the same as the tile's edge. */
+.hud-slot .hud-slot-pips { background: #a89878; }
+.hud-slot.tier-2 .hud-slot-pips { background: #7fae58; }
+.hud-slot.tier-3 .hud-slot-pips { background: #6ea4dc; }
+.hud-slot.tier-4 .hud-slot-pips { background: #d6a33a; }

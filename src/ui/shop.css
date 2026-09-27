@@ -125,11 +125,15 @@
 /* Every card in the row the same height, so the HOLD buttons line up. */
 .pshop-slot > :first-child { flex: 1; }
 
+/* Buy, then Hold, under the tag (round 21). */
+.pshop-actions { display: flex; gap: 6px; width: 100%; }
+.pshop-buy { flex: 1; font-size: 15px; padding: 9px 8px; letter-spacing: 0.06em; }
+.pshop-buy:disabled { filter: grayscale(0.8) brightness(0.7); cursor: default; }
 /* A wooden peg under the tag, not a 9.5 px web button (critic round 19:
    "HOLD buttons" as web-page trappings). Same plank as the game's other
-   buttons, full tag width, readable. */
+   buttons, readable. */
 .pshop-hold {
-  width: 100%;
+  flex: none;
   font-family: var(--label);
   font-size: 13px;
   font-weight: 600;
