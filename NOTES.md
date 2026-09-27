@@ -181,9 +181,9 @@ traps worth knowing:
 - **The horde is two numbers, not one.** More bodies level the bots faster;
   raising the count without cutting xp made the never-move pilots clear more.
 
-## Rounds 16 to 19 (2026-09-27)
+## Rounds 16 to 22 (2026-09-27)
 
-V2.md D25 to D28 has the what and why. What a later session should know:
+V2.md D25 to D31 has the what and why. What a later session should know:
 
 - **The healthy grass tile is one flat colour.** `wang.dirt_to_grass_plain.1111`
   measures a standard deviation of zero, so every "smeared ground" complaint
@@ -202,6 +202,16 @@ V2.md D25 to D28 has the what and why. What a later session should know:
 - **The Duster at night is dark on purpose**: found by its lamps, its moon
   rim and its spray lane (`drawNavLights`, `drawSprayLanes`). Its searchlight
   pools start 230 px ahead, or they light its own wings.
+- **The day was flat because of the lantern knee, not the stops.** The
+  composite eased all illumination above 1, sun included, so ten rounds of
+  daylight retuning moved nothing above 1. The knee is on the lamps only
+  (`gl/device.ts`, `lampOver`); a stop's brightness is roughly
+  `ambient + sunI * sun`, then `exposure`. Measure frame luma per hour
+  before and after a grade change, do not trust the eye.
+- **Death blood is tagged** (`BLOOD_KILL`, `BLOOD_BOSS` in content): only it
+  marks the ground. Same draws as hit blood, so no seed moves.
+- **`world.hurtBy`** names what last hurt the player, for the lose screen.
+  Nothing in the sim reads it.
 - **The auger's swing was still the demon-bite loop** the pitchfork gave up
   (`proj.claw`). Grep `swingClip` before assuming an art complaint is gone.
 
