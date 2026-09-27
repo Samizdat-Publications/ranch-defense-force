@@ -67,8 +67,9 @@ const SPRAY_TYPES = new Set(Object.keys(ENEMIES).filter((k) => (ENEMIES[k] as En
 const CARRY_REST_TILT = 0.5
 /** Where the Duster's wingtip lamps sit on its art, nose up: (lateral, fore). */
 const NAV_WING = [114, -44]
-/** And its tail strobe, px behind the centre. */
+/** And its tail strobe, px behind the centre, and its engine, px ahead. */
 const NAV_TAIL = 62
+const NAV_NOSE = 78
 const SPRAY_LANE = (RENDER as unknown as { sprayLane: { length: number; fill: number; edge: number } }).sprayLane
 
 const JAB = TUNING.fx.jab as {
@@ -558,27 +559,52 @@ export class GLRenderer {
       const c = acid ? COL.acid : (h & 1) ? COL.blood : COL.bloodDark
       const a = 0.5 + ((h >> 3) & 3) * 0.06
       // Chunkier since round 20 ("dark-red specks at the same brightness as
-      // the dirt"): a bigger pool with a wet highlight reads as gore.
+      // the dirt"), and in three shapes since round 22 ("the same dark-red
+      // oblong ... like bricks"): a lumpy pool, a smear thrown one way, or a
+      // burst of drops round a small pool. Every shape is made of a few
+      // overlapping lumps at hashed offsets, so no two are the same outline.
       const big = boss ? 2 : 1
-      const w0 = (10 + ((h >> 5) & 3)) * big
-      const h0 = (5 + ((h >> 6) & 1)) * big
-      batch.push(x - 1, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
-      batch.push(x, y - 1, 0, 0, w0 - 2, h0 + 2, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
-      // A thrown spray off one side, tapering: rounds 12 and 13 read the old
-      // pool-and-two-flecks as "evenly spaced round red dots", confetti.
+      const kind = (h >>> 20) % 3
       const ang = ((h >> 13) & 7) * (Math.PI / 4) + ((h >> 16) & 3) * 0.19
       const dx = Math.cos(ang)
       const dy = Math.sin(ang) * 0.6
-      const len = 6 + ((h >> 18) & 3)
-      for (let k = 0; k < len; k++) {
-        const d = w0 * 0.5 + 2 + k * 2.4
-        const sz = k < 2 ? 2 : 1
-        batch.push(Math.round(x + dx * d), Math.round(y + dy * d), 0, 0, sz, sz, 0, 0, PAGE_SOLID, 0, 1, 1,
-          c[0], c[1], c[2], a * (0.95 - k * 0.1), 0, 0, 0, 0, 0, 0)
+      let r = h
+      const lumps = kind === 2 ? 1 : 3 + ((h >> 22) & 1)
+      for (let k = 0; k < lumps; k++) {
+        r = (Math.imul(r ^ (r >>> 15), 0x2c1b3c6d) + 0x6d2b79f5) >>> 0
+        const lw = (4 + (r & 3) + (k === 0 ? 3 : 0)) * big
+        const lh = (3 + ((r >> 2) & 1) + (k === 0 ? 1 : 0)) * big
+        const along = kind === 1 ? k * 4 * big : 0
+        const ox = Math.round(dx * along + ((((r >> 4) & 7) - 3) * big) * (kind === 1 ? 0.4 : 1))
+        const oy = Math.round(dy * along + ((((r >> 7) & 3) - 1) * big))
+        batch.push(x + ox - (lw >> 1), y + oy - (lh >> 1), 0, 0, lw, lh, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
+      }
+      if (kind === 2) {
+        const w0 = 5 * big
+        batch.push(x - (w0 >> 1), y - 1, 0, 0, w0, 3 * big, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
+        for (let k = 0; k < 6; k++) {
+          r = (Math.imul(r ^ (r >>> 15), 0x2c1b3c6d) + 0x6d2b79f5) >>> 0
+          const t = k * 1.05 + (r & 7) * 0.1
+          const d = (5 + ((r >> 3) & 3)) * big
+          const sz = (1 + ((r >> 5) & 1)) * big
+          batch.push(Math.round(x + Math.cos(t) * d), Math.round(y + Math.sin(t) * d * 0.6), 0, 0, sz, sz, 0, 0, PAGE_SOLID, 0, 1, 1,
+            c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
+        }
+      } else {
+        // A thrown spray off one side, tapering: rounds 12 and 13 read the
+        // old pool-and-two-flecks as "evenly spaced round red dots".
+        const len = 4 + ((h >> 18) & 3)
+        const start = kind === 1 ? (lumps * 4 + 3) * big : 7 * big
+        for (let k = 0; k < len; k++) {
+          const d = start + k * 2.4
+          const sz = k < 2 ? 2 : 1
+          batch.push(Math.round(x + dx * d), Math.round(y + dy * d), 0, 0, sz, sz, 0, 0, PAGE_SOLID, 0, 1, 1,
+            c[0], c[1], c[2], a * (0.95 - k * 0.1), 0, 0, 0, 0, 0, 0)
+        }
       }
       const dk = acid ? COL.acid : COL.bloodDark
-      batch.push(x, y, 0, 0, Math.max(2, w0 - 3), Math.max(1, h0 - 1), 0, 0, PAGE_SOLID, 0, 1, 1, dk[0] * 0.8, dk[1] * 0.8, dk[2] * 0.8, a, 0, 0, 0, 0, 0, 0)
-      if (!acid) batch.push(x, y, 0, 0, 2, 1, 0, 0, PAGE_SOLID, 0, 1, 1, 0.66, 0.24, 0.2, a * 0.9, 0, 0, 0, 0, 0, 0)
+      batch.push(x - 2 * big, y - big, 0, 0, 4 * big, 2 * big, 0, 0, PAGE_SOLID, 0, 1, 1, dk[0] * 0.8, dk[1] * 0.8, dk[2] * 0.8, a, 0, 0, 0, 0, 0, 0)
+      if (!acid) batch.push(x - 2, y - 2, 0, 0, 2, 1, 0, 0, PAGE_SOLID, 0, 1, 1, 0.66, 0.24, 0.2, a * 0.9, 0, 0, 0, 0, 0, 0)
     }
     s.length = 0
     this.decals.bind()
@@ -1446,7 +1472,7 @@ export class GLRenderer {
         // and read as a pale paper cut-out (round 19).
         const n = this.day.night
         this.spr(f, Math.round(x), Math.round(y - alt), ox, oy, rot, sc, sc, 1, flash, this.bossOutline,
-          0.92 - 0.1 * n, 0.84 - 0.1 * n, 0.76 - 0.02 * n, 0.05 * (1 - n))
+          0.92 - 0.1 * n, 0.84 - 0.1 * n, 0.76 - 0.02 * n, 0.05 + 0.07 * n)
         // No outline-only moon rim any more: round 21 read the thin pale line
         // round the dark plane as "an editor selection". Its rust shows, its
         // lamps and its shadow carry it.
@@ -1517,9 +1543,18 @@ export class GLRenderer {
         const r = side < 0 ? 1 : 0.35
         const g = side < 0 ? 0.25 : 1
         const b = side < 0 ? 0.2 : 0.45
-        S.disc(nx, ny, 5, r, g, b, 0.3)
-        S.disc(nx, ny, 2, Math.min(1, r + 0.3), Math.min(1, g + 0.3), Math.min(1, b + 0.3), 1)
+        // Bigger since round 22 ("a dark brown plane on dark ground"): the
+        // lamps are how the climax is found at night.
+        S.disc(nx, ny, 11, r, g, b, 0.18)
+        S.disc(nx, ny, 6, r, g, b, 0.4)
+        S.disc(nx, ny, 3, Math.min(1, r + 0.3), Math.min(1, g + 0.3), Math.min(1, b + 0.3), 1)
       }
+      // The engine: a hot glow at the nose behind the propeller.
+      const ex = Math.round(x + NAV_NOSE * sr)
+      const ey = Math.round(y - NAV_NOSE * cr)
+      const fl = 0.8 + 0.2 * Math.sin(w.elapsed * 23)
+      S.disc(ex, ey, 14, 1, 0.55, 0.2, 0.22 * fl)
+      S.disc(ex, ey, 6, 1, 0.8, 0.45, 0.6 * fl)
       if (strobe) {
         const tx = Math.round(x - NAV_TAIL * sr)
         const ty = Math.round(y + NAV_TAIL * cr)

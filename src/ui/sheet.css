@@ -648,7 +648,7 @@
 }
 .victory-hero .card-sprite { position: relative; filter: drop-shadow(0 0 0 #000) drop-shadow(2px 0 0 #120e0a) drop-shadow(-2px 0 0 #120e0a); }
 /* The headline sits in the sky of the picture, over the stars. */
-.results.is-win .results-head {
+.victory-scene + .results-head {
   position: relative;
   box-sizing: border-box;
   height: 262px;
@@ -678,3 +678,30 @@
   box-shadow: inset 0 2px 0 rgba(255, 240, 200, 0.45);
 }
 .psheet-meter { margin-top: 6px; }
+
+/* The loss: the same frame at dusk, the hand face-down in the dirt at the
+   corn's edge and what took him standing over him (round 22). */
+.loss-sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 50% 70% at 20% 100%, rgba(140, 40, 30, 0.35), rgba(140, 40, 30, 0) 70%),
+    linear-gradient(180deg, #0c0d14 0%, #1b1c28 40%, #3a2630 70%, #5a3028 86%, #2a1c16 87%);
+}
+.loss-scene .victory-corn { filter: brightness(0.26) saturate(0.6); }
+.loss-fallen {
+  position: absolute; left: 9%; bottom: 2px;
+  transform: rotate(-90deg);
+  transform-origin: 50% 70%;
+  filter: brightness(0.7) saturate(0.7);
+}
+.loss-killer {
+  position: absolute; left: 21%; bottom: 14px;
+  filter: drop-shadow(2px 0 0 #120e0a) drop-shadow(-2px 0 0 #120e0a) drop-shadow(0 -2px 0 #120e0a);
+}
+.loss-caption {
+  position: absolute; right: 14px; bottom: 12px;
+  font-family: var(--label); font-size: 14px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e8d6ae; background: rgba(12, 9, 6, 0.72);
+  padding: 5px 10px; border: 1px solid #3a2a1c;
+}

@@ -5,7 +5,7 @@
  * "Run it back" restarts immediately with the same class - never make the
  * player walk back through a menu. The Homestead button lands in M7.
  */
-import { ITEMS, META, WAVES, WEAPONS, itemCardSprite, weaponCardSprite } from '../content'
+import { ENEMIES, ITEMS, META, WAVES, WEAPONS, itemCardSprite, weaponCardSprite } from '../content'
 import { feedAcres } from '../sim/meta'
 import type { World } from '../sim/world'
 import { el } from './dom'
@@ -111,7 +111,10 @@ export class ResultsScreen {
     // hand who put it there standing in the lantern light, and the first
     // grey of the next morning on the horizon. Round 19: "no downed plane
     // and no dawn, so the biggest moment in the game gets no celebration".
-    const scene = cleared ? this.victoryScene(p.classId) : null
+    // The loss gets one too (round 22: "a form that is about 70% empty, with
+    // no image, no 'killed by'"): the hand down in the dirt and what put him
+    // there standing over him.
+    const scene = cleared ? this.victoryScene(p.classId) : this.lossScene(world)
 
     // Where the acres came from, in words. A bare number tells you nothing
     // about whether you should have climbed a tier.
@@ -214,6 +217,34 @@ export class ResultsScreen {
     const who = spriteEl(`${classId}.idle.down.0`, 104, 2)
     if (who) hero.append(el('div', { class: 'victory-lantern' }), who)
     band.append(hero)
+    return band
+  }
+
+  private lossScene(world: World): HTMLElement {
+    const band = el('div', { class: 'victory-scene loss-scene' })
+    band.append(el('div', { class: 'loss-sky' }))
+    const corn = el('div', { class: 'victory-corn' })
+    for (let k = 0; k < 18; k++) {
+      const stalk = spriteEl(k % 3 === 1 ? 'scene.cropRowCornRot' : 'scene.cropRowCorn', 62, 1)
+      if (stalk) corn.append(stalk)
+    }
+    band.append(corn)
+    const fallen = el('div', { class: 'loss-fallen' })
+    const who = spriteEl(`${world.player.classId}.idle.down.0`, 104, 2)
+    if (who) fallen.append(who)
+    band.append(fallen)
+    const sheet = world.hurtBySheet
+    const killer = sheet
+      ? spriteEl(`${sheet}.idle.left.0`, 150) ?? spriteEl(`${sheet}.walk.left.0`, 150)
+        ?? spriteEl(`${sheet}.walk.right.0`, 150) ?? spriteEl(`${sheet}.walk.down.0`, 150)
+      : null
+    if (killer) band.append(el('div', { class: 'loss-killer' }, [killer]))
+    const name = ENEMIES[world.hurtBy]?.name
+    const HAZARD: Record<string, string> = {
+      gas: 'the spray', acid: 'acid', damage: 'fire', slow: 'tar', burn: 'the burning field',
+    }
+    const by = name ? `the ${name.replace(/^The /, '')}` : HAZARD[world.hurtBy] ?? 'the field'
+    band.append(el('div', { class: 'loss-caption', text: `Taken by ${by} on wave ${Math.min(world.spawner.wave, WAVES.waveCount - 1)}` }))
     return band
   }
 

@@ -119,7 +119,8 @@
 
   /* --- Ink: text on paper --- */
   --ink: #33261a;
-  --ink-body: #5c4a33;
+  /* Darker since round 22 ("grey-brown on tan"): body copy in near-ink. */
+  --ink-body: #3f3020;
   --ink-label: #6b5840;
   --ink-band: #4b3a24;
   --perf: 2px dashed rgba(64, 49, 31, 0.45);

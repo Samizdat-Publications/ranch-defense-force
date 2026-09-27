@@ -196,6 +196,11 @@ export class World {
   readonly telegraphs: Telegraph[] = []
   /** Blood pixels that landed this tick, drained by the decal layer. */
   readonly stains: number[] = []
+  /** What last hurt the player: an enemy type id or a hazard kind. Read by
+   *  the results screen ("killed by"); nothing in the sim reads it. */
+  hurtBy = ''
+  /** That enemy's sheet, so the results can draw it. */
+  hurtBySheet = ''
 
   // Run stats for the results screen, and for the balance harness - knowing
   // *what* killed a run is most of knowing whether the run is fair.
@@ -2025,6 +2030,8 @@ export class World {
       // refunded and countered outright. H9 (batch 3) folds it into
       // `damagePlayer`'s shield absorption instead, so contact damage always
       // goes through the one call below now.
+      this.hurtBy = e.typeId
+      this.hurtBySheet = e.sheetId
       this.damagePlayer(e.damage * waveScalar(this.spawner.wave))
       e.touchCd = P.contactDamageInterval
       // The chasers have no attack STATE - they damage by touching. The hit is
@@ -2205,6 +2212,8 @@ export class World {
           if (h.playerAcc >= 1) {
             const dmg = Math.floor(h.playerAcc)
             h.playerAcc -= dmg
+            this.hurtBy = h.kind
+            this.hurtBySheet = ''
             this.damagePlayer(dmg, 'hazard')
           }
         } else {
@@ -2864,6 +2873,8 @@ export class World {
     if (this.arenaBurnAcc >= 1) {
       const dmg = Math.floor(this.arenaBurnAcc)
       this.arenaBurnAcc -= dmg
+      this.hurtBy = 'burn'
+      this.hurtBySheet = ''
       this.damagePlayer(dmg, 'hazard')
     }
   }
@@ -3933,7 +3944,6 @@ export class World {
     x: number, y: number, angle: number, range: number,
     spreadDeg: number, damage: number, sourceIndex: number,
   ): void {
-    void sourceIndex
     const p = this.player
     const dx = p.x - x
     const dy = p.y - y
@@ -3943,6 +3953,11 @@ export class World {
     while (diff > Math.PI) diff -= Math.PI * 2
     while (diff < -Math.PI) diff += Math.PI * 2
     if (Math.abs(diff) <= ((spreadDeg / 2) * Math.PI) / 180) {
+      const src = this.enemies.items[sourceIndex]
+      if (src) {
+        this.hurtBy = src.typeId
+        this.hurtBySheet = src.sheetId
+      }
       this.damagePlayer(damage * waveScalar(this.spawner.wave))
     }
   }

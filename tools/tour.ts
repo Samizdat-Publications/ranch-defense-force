@@ -284,7 +284,7 @@ const SCENARIOS: Scenario[] = [
     file: '05-run-mid.png',
     run: async (page) => {
       await page.evaluate(startRunJs())
-      const s = await ff(page, waveStart(7) + 30, true)
+      const s = await ff(page, waveStart(7) + 16, true)
       await stageHp(page, 0.78)
       return s
     },

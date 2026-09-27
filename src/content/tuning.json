@@ -3,7 +3,7 @@
   "viewHeight": 450,
   "_viewHeightNote": "540 until v2 critic round 4. Four reviewers in a row could not read the fight: a 32x64 rig drew about 40 px tall on a 1600x900 screen. 450 is exactly 2x at 900p (2.4x at 1080p) and every sprite, number and outline is a fifth bigger. The arena did not change; you see less of it at once.",
   "_viewNote": "Height of the world view in art pixels on every screen. The world draws at art resolution into a target this tall and is scaled to the window, so every sprite shares one pixel density (docs/V2.md D2).",
-  "enemyPallor": 0.55,
+  "enemyPallor": 0.65,
   "eyeGlowDay": 0.65,
   "cropBed": {
    "radiusX": 13,
@@ -19,7 +19,7 @@
    ],
    "_note": "A mound of turned soil drawn under every standing crop (the crop art is the fruit alone). Critic round 11 read loose tomatoes and pumpkins on the grass as pickups."
   },
-  "_curseNote": "How cursed the enemy cast looks, all of it render-side. enemyPallor pushes every non-boss enemy toward a cold drained grey-green (0 = the art as drawn, 1 = fully drained); the eyes are exempt and brightened instead. eyeGlowDay is the least the eyes glow in daylight; at night they glow at the night's full strength. Critic round 2: 'enemies look like ordinary farmhands'.",
+  "_curseNote": "How cursed the enemy cast looks, all of it render-side. enemyPallor pushes every non-boss enemy toward a cold drained grey-green (0 = the art as drawn, 1 = fully drained); the eyes are exempt and brightened instead. eyeGlowDay is the least the eyes glow in daylight; at night they glow at the night's full strength. Critic round 2: 'enemies look like ordinary farmhands'. 0.65 since v2 round 22 ('about as light or dark as the olive grass'): paler corpses over a darker field.",
   "xpTint": [
    0.5,
    0.88,
@@ -71,28 +71,28 @@
    {
     "t": 0,
     "ambient": [
-     0.34,
-     0.36,
-     0.56
+     0.4,
+     0.42,
+     0.62
     ],
     "sun": [
      1,
      0.66,
-     0.42
+     0.6
     ],
-    "sunI": 1.15,
+    "sunI": 0.95,
     "az": 72,
     "el": 3,
     "shadow": 0.5,
     "exposure": 0.9,
-    "saturation": 1.18,
-    "contrast": 1.12,
+    "saturation": 0.9,
+    "contrast": 1.08,
     "tint": [
-     1.1,
-     0.97,
-     0.86
+     1.0,
+     0.96,
+     1.04
     ],
-    "vignette": 0.42,
+    "vignette": 0.4,
     "lantern": 0.35,
     "night": 0.25,
     "fog": 0.34
@@ -100,31 +100,31 @@
    {
     "t": 0.07,
     "ambient": [
-     0.42,
      0.44,
-     0.54
+     0.46,
+     0.58
     ],
     "sun": [
      1,
-     0.76,
-     0.48
+     0.72,
+     0.5
     ],
-    "sunI": 0.9,
+    "sunI": 1.0,
     "az": 85,
     "el": 10,
     "shadow": 0.52,
-    "exposure": 0.95,
-    "saturation": 1.16,
-    "contrast": 1.08,
+    "exposure": 0.98,
+    "saturation": 1.1,
+    "contrast": 1.1,
     "tint": [
-     1.07,
+     1.06,
      0.99,
-     0.9
+     0.92
     ],
     "vignette": 0.32,
     "lantern": 0.1,
     "night": 0.05,
-    "fog": 0.3
+    "fog": 0.22
    },
    {
     "t": 0.18,
@@ -135,20 +135,20 @@
     ],
     "sun": [
      1,
-     0.93,
-     0.82
+     0.95,
+     0.85
     ],
-    "sunI": 0.64,
+    "sunI": 0.7,
     "az": 120,
     "el": 36,
     "shadow": 0.52,
-    "exposure": 1.06,
-    "saturation": 1.1,
-    "contrast": 1.08,
+    "exposure": 1.08,
+    "saturation": 1.15,
+    "contrast": 1.06,
     "tint": [
      0.98,
-     1,
-     1.02
+     1.02,
+     1.0
     ],
     "vignette": 0.24,
     "lantern": 0,
@@ -158,28 +158,28 @@
    {
     "t": 0.3,
     "ambient": [
-     0.52,
-     0.54,
-     0.58
+     0.58,
+     0.58,
+     0.6
     ],
     "sun": [
      1,
-     0.98,
-     0.93
+     1,
+     0.96
     ],
-    "sunI": 0.7,
+    "sunI": 0.8,
     "az": 180,
-    "el": 60,
-    "shadow": 0.5,
+    "el": 70,
+    "shadow": 0.4,
     "exposure": 1.1,
-    "saturation": 1.14,
-    "contrast": 1.08,
+    "saturation": 0.9,
+    "contrast": 0.98,
     "tint": [
-     1.02,
-     1.02,
-     0.97
+     1.04,
+     1.03,
+     0.96
     ],
-    "vignette": 0.22,
+    "vignette": 0.18,
     "lantern": 0,
     "night": 0,
     "fog": 0
@@ -200,13 +200,13 @@
     "az": 230,
     "el": 34,
     "shadow": 0.54,
-    "exposure": 1,
-    "saturation": 1.14,
+    "exposure": 1.05,
+    "saturation": 1.1,
     "contrast": 1.06,
     "tint": [
-     1.07,
-     1,
-     0.88
+     1.08,
+     1.0,
+     0.86
     ],
     "vignette": 0.27,
     "lantern": 0,
@@ -222,8 +222,8 @@
     ],
     "sun": [
      1,
-     0.74,
-     0.46
+     0.72,
+     0.44
     ],
     "sunI": 0.72,
     "az": 252,
@@ -231,11 +231,11 @@
     "shadow": 0.56,
     "exposure": 0.98,
     "saturation": 1.1,
-    "contrast": 1.16,
+    "contrast": 1.14,
     "tint": [
-     1.06,
-     0.99,
-     0.9
+     1.1,
+     0.97,
+     0.82
     ],
     "vignette": 0.33,
     "lantern": 0,
@@ -455,9 +455,9 @@
   "lanternIntensity": 1.15,
   "personalLight": 0.18,
   "fogDay": [
-   0.98,
-   0.85,
-   0.76
+   0.9,
+   0.86,
+   0.96
   ],
   "fogNight": [
    0.52,
@@ -501,7 +501,7 @@
   ],
   "_dawnNote": "Dawn retuned in v2 critic round 3 (\"flat sepia mud\"): the old first stop lit a purple-pink ambient with a pink sun through 0.42 of pale mist, so shade and light were the same beige. Now the shade is cool blue and the low sun warm gold-rose, which is where morning gets its contrast, and the mist is thinner.",
   "_nightNote": "Night retuned in critic round 6 (\"a blue-grey wash with grain, not black\"): the last two stops carried 0.25-0.32 of pale blue fog over a 0.15 ambient. Now near-dark outside the lantern and almost no fog, and the cast is found by its eyes and its moonlit rim instead.",
-  "_arcNote": "Critic round 13 measured the play area at 84 at dawn, 94 at noon, 86 at 5:15 PM and 39 at night: one switch, not a failing light. The day now peaks at noon (t 0.3) and every stop after it is darker and warmer than the one before: amber afternoon, gold at 0.58, red dusk with the vignette closing in at 0.68 (wave 17), then night. Dawn is pink-gold and a little under-exposed, with long cool shadows. Round 14 still saw dawn as flat and the dusk as a brown lens that flattened every value: dawn is pink with mist (fog 0.5), noon is saturated, the golden hour keeps its contrast, and the dusk is violet and contrasty rather than sepia. Round 15 then read the stronger tints as filters (\"a purple haze\", \"a red filter\"), so the tints came back toward neutral and the hour is carried by the sun colour, the shadow length and the exposure falling stop by stop. Round 16 found the dusk \"one mid-dark band\" with the highlights crushed: the exposure falls more gently to night (0.92 at wave 17 rather than 0.82) and the vignette is lighter, so the light fails without flattening the range. Round 17 read the low sun as \"each enemy dragging a long black shadow streak\" through the crowd: shadows cap at 1.6 body lengths (was 2.2) and thin as the sun sets. Round 18 still could not tell first light from 10 AM: dawn carries a heavier warm mist (fog 0.52 thinning to 0.3 by 7 AM; 0.34 since rounds 19 and 20, when the fog became flat wisps) and sits a little under-exposed. Round 20 still read 6:33 AM and 10:49 AM as \"the same flat olive\": dawn is gold now (tint 1.1/0.97/0.86, a stronger low sun, more saturation) under a cooler blue shade, and mid-morning is brighter and crisper. Round 21 read 5:15 PM as \"a flat red-brown wash\" that made soil, crops and enemies one hue: the dusk keeps its hue but gains contrast (1.2) and a less red sun.",
+  "_arcNote": "Critic round 13 measured the play area at 84 at dawn, 94 at noon, 86 at 5:15 PM and 39 at night: one switch, not a failing light. The day now peaks at noon (t 0.3) and every stop after it is darker and warmer than the one before: amber afternoon, gold at 0.58, red dusk with the vignette closing in at 0.68 (wave 17), then night. Dawn is pink-gold and a little under-exposed, with long cool shadows. Round 14 still saw dawn as flat and the dusk as a brown lens that flattened every value: dawn is pink with mist (fog 0.5), noon is saturated, the golden hour keeps its contrast, and the dusk is violet and contrasty rather than sepia. Round 15 then read the stronger tints as filters (\"a purple haze\", \"a red filter\"), so the tints came back toward neutral and the hour is carried by the sun colour, the shadow length and the exposure falling stop by stop. Round 16 found the dusk \"one mid-dark band\" with the highlights crushed: the exposure falls more gently to night (0.92 at wave 17 rather than 0.82) and the vignette is lighter, so the light fails without flattening the range. Round 17 read the low sun as \"each enemy dragging a long black shadow streak\" through the crowd: shadows cap at 1.6 body lengths (was 2.2) and thin as the sun sets. Round 18 still could not tell first light from 10 AM: dawn carries a heavier warm mist (fog 0.52 thinning to 0.3 by 7 AM; 0.34 since rounds 19 and 20, when the fog became flat wisps) and sits a little under-exposed. Round 20 still read 6:33 AM and 10:49 AM as \"the same flat olive\": dawn is gold now (tint 1.1/0.97/0.86, a stronger low sun, more saturation) under a cooler blue shade, and mid-morning is brighter and crisper. Round 21 read 5:15 PM as \"a flat red-brown wash\" that made soil, crops and enemies one hue: the dusk keeps its hue but gains contrast (1.2) and a less red sun. Round 22 still found 6:34 AM to 1:35 PM \"the same flat olive\" and asked that any screenshot tell the hour: four looks before dusk now, each carried by more than a tint. Dawn is cold blue shade under a pink sun through lavender mist (fogDay), 7 AM a low gold sun with long shadows, 9 AM fresh and saturated, noon bleached (exposure 1.22, saturation 0.9, the sun nearly overhead), then the afternoon turns amber by 2 PM and deep gold by 4. The same round found why none of this had shown: the composite's lantern knee squashed the SUN too, so every daylight stop above an illumination of 1 came out at about 1. The knee is on the lamps only now, and the stops' own brightness (ambient + sunI x sun, about 1.1 at dawn, 1.4 at noon, 0.7 at 5 PM) finally carries through; noon's exposure came down to 1.1 to match.",
   "_gradeNote": "Critic round 10 still saw dawn to 1:30 PM as one flat olive-grey. The dawn mist (fogDay) was a pale blue-grey that greyed the rose light it sat in; it is a warm haze now. Dawn is rose and contrasty, 8 AM gold, mid-morning cool and clear, noon bleached (exposure 1.1) under a high sun, then the afternoon warms as before."
  },
  "_note": "Engine-level constants the design handoff did not specify. Kept out of the design's own JSON files so those stay exactly as delivered. Still content, not code - CLAUDE.md forbids balance constants living in source.",

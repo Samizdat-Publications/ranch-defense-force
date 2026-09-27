@@ -149,10 +149,14 @@ void main() {
   // Stepped and dithered on the art's own pixel grid, so a cloud's edge is
   // made of the same size pixels as everything under it.
   shade = floor(shade * 3.0 + hash(floor(wp)) * 0.9) / 3.0 * uClouds;
-  vec3 illum = uAmbient * (1.0 - sh.g * 0.55) + uSun * (1.0 - max(sh.r, sh.g)) * (1.0 - shade * 0.6) + light;
-  // A knee above 1: the lantern pools warm instead of bleaching whoever holds
-  // it into a pale blob (critic round 5). Colour is kept, only excess eased.
-  illum = illum / (1.0 + max(illum - 1.0, 0.0) * 0.9);
+  vec3 day = uAmbient * (1.0 - sh.g * 0.55) + uSun * (1.0 - max(sh.r, sh.g)) * (1.0 - shade * 0.6);
+  // A knee on the LAMPS above 1: the lantern pools warm instead of bleaching
+  // whoever holds it into a pale blob (critic round 5). It used to squash the
+  // whole illumination, sun included, so every daylight hour above 1 came out
+  // at about 1: dawn, 9 AM and noon at one brightness, which is the "same
+  // flat olive" rounds 13 to 22 kept reporting. The sun is left alone now.
+  float lampOver = max(dot(day + light, vec3(0.3333)) - 1.0, 0.0);
+  vec3 illum = day + light / (1.0 + lampOver * 0.9);
   vec3 col = albedo * illum + emis * uEmissiveGain + bloom * uBloomGain + uFlash;
   col *= uExposure;
   // A soft shoulder above 0.75 so a lantern or a muzzle flash never clips flat.
