@@ -10,7 +10,7 @@
  * two documents, not composed by eye and not inferred from a table.
  *
  * That distinction cost this project a whole session. `docs/mockups/PLACEMENTS.md`
- * lists the scenes' `<img>` placements — and only those. It has no sky, no sun,
+ * lists the scenes' `<img>` placements - and only those. It has no sky, no sun,
  * no clouds, no ground, no barn, no farmhouse, no porch light, no chimney smoke,
  * no walking actors, no fireflies and no vignette, because those are CSS layers
  * rather than sprites. A build made faithfully from that table measures correct
@@ -21,13 +21,13 @@
  *
  * - **A fixed 1920x1080 stage, letterboxed.** Every number below is a stage
  *   pixel. The stage scales as one unit, so there are no breakpoints anywhere in
- *   this screen — the interface lives in the same coordinate space.
+ *   this screen - the interface lives in the same coordinate space.
  * - **NOTHING THAT MOVES GOES IN x 0-430 ABOVE y 726.** The left third is
  *   reserved for print. The class panel is only 78% opaque, so anything behind
  *   it ghosts through and reads as a rendering fault rather than as scenery.
  * - **Integer zoom only.** Scenery is 1x and actors are 2x; that difference is
  *   the depth cue that makes the place read as a place. If something wants to be
- *   smaller, it moves further away — it does not scale.
+ *   smaller, it moves further away - it does not scale.
  * - **Strip offsets are pixels, never percentages.** `-600%` on a six-frame
  *   strip lands frame 0 and then five blanks.
  * - **DOM order is paint order.** The order of the calls in `yard()` and
@@ -37,7 +37,7 @@
  *
  * The scene sprites are packed **untrimmed** (`noTrim` on the `scene` group in
  * `art/sprites.json`). Design's coordinates are the top-left of each sprite's
- * FULL box, so a trimmed frame draws at the right place with the wrong offset —
+ * FULL box, so a trimmed frame draws at the right place with the wrong offset -
  * silently. The scarecrow trimmed 96x96 down to 84x78 and stood twelve pixels
  * left and eighteen high of where it belongs, and so did every other prop.
  */
@@ -258,7 +258,7 @@ function blightStrip(
  * `sepia` then `hue-rotate` rather than a green overlay, because an overlay
  * flattens the art it covers and this has to sit under a scene that is already
  * two vignette passes deep. Sepia pushes everything onto one warm axis and the
- * rotation swings that axis into the green — the standard trick, and the only
+ * rotation swings that axis into the green - the standard trick, and the only
  * one that keeps pixel edges rather than veiling them.
  */
 const BLIGHT_FILTER = 'saturate(0.25) brightness(0.78) sepia(0.55) hue-rotate(55deg)'
@@ -293,7 +293,7 @@ function box(css: string): HTMLElement {
 /**
  * One sprite at an integer zoom, placed by the top-left of its full box.
  *
- * Returns null when the atlas has no frame — a missing sprite costs its own
+ * Returns null when the atlas has no frame - a missing sprite costs its own
  * layer and nothing else. The screen is built at module load and the atlas
  * resolves later, so this runs twice and only the second run draws.
  */
@@ -328,8 +328,8 @@ function tileBand(name: string, css: string, tileW: number, tileH: number): HTML
 /**
  * A stepped walk strip, drawn at an integer zoom.
  *
- * `sheetW`/`sheetH` are the strip's size ON SCREEN — native size times the
- * zoom — and the frame is `sheetW / frames` wide. The keyframe scrolls by
+ * `sheetW`/`sheetH` are the strip's size ON SCREEN - native size times the
+ * zoom - and the frame is `sheetW / frames` wide. The keyframe scrolls by
  * exactly `sheetW` pixels, which is why the strips are packed untrimmed: a
  * 192px six-frame strip trimmed to 188px makes 188/6 fractional and the walk
  * slides instead of stepping.
@@ -413,7 +413,7 @@ function travelling(x: number, y: number, anim: string, child: HTMLElement | nul
  * A generated actor strip, placed by its top-left like every other scene sprite.
  *
  * `npm run anim` writes one cell per frame at the SOURCE SPRITE'S OWN SIZE, so
- * the only numbers needed here are the cell and the frame count — and that tool
+ * the only numbers needed here are the cell and the frame count - and that tool
  * prints both when it assembles the strip. Everything else derives, which is
  * the point: a sheet width typed by hand is a number that fails silently by
  * sliding the animation instead of stepping it.
@@ -937,8 +937,8 @@ function joy(x: number, y: number, size: number): HTMLElement | null {
 /**
  * The far treeline: real oaks, small, hazed, on the horizon line.
  *
- * Spacings and sizes come from the gradient band this replaces — 640px of
- * repeat carrying five trees at roughly 60, 190, 300, 430 and 560 — so the
+ * Spacings and sizes come from the gradient band this replaces - 640px of
+ * repeat carrying five trees at roughly 60, 190, 300, 430 and 560 - so the
  * rhythm is Design's and only the art changed. Every oak is drawn at 1x on its
  * own baseline; the varied look comes from spacing and vertical offset rather
  * than from scaling, because scaling a pixel tree is what made the pack's oak
@@ -1005,16 +1005,16 @@ function field(): (HTMLElement | null)[] {
 
   // THE TREELINE, and it is real trees now.
   //
-  // Design's own field draws this band as five repeating radial gradients —
-  // the green mounds — and says why: "a distant tree needs a small SPRITE, not
+  // Design's own field draws this band as five repeating radial gradients -
+  // the green mounds - and says why: "a distant tree needs a small SPRITE, not
   // a small scale", and the LimeZu pack's modular oak read as three identical
   // shrubs at any size that fit here. The mounds were a placeholder for art
   // that did not exist.
   //
   // It exists now: `scene.oak` is generated at 59x54, which is already a small
   // sprite, so it goes in at 1x with no scaling at all. The band keeps the
-  // gradients' own numbers — same y, same 82px height, same 0.5 opacity and
-  // 3px blur — because those are what make it read as distance rather than as
+  // gradients' own numbers - same y, same 82px height, same 0.5 opacity and
+  // 3px blur - because those are what make it read as distance rather than as
   // a row of trees in the middle ground.
   L.push(treeline())
 
@@ -1308,7 +1308,7 @@ function patrol(
      ANIMATION AND THEY MUST NOT SHARE A TIMING FUNCTION.
 
      This wrapper carried `step-end` too, and `step-end` on a transform does not
-     travel — it holds the old value and JUMPS at the keyframe. So every figure
+     travel - it holds the old value and JUMPS at the keyframe. So every figure
      in the lab played its eight-frame walk on the spot for a couple of seconds
      and then teleported three hundred pixels. The owner's words were "a
      treadmill", which is exactly what a walk cycle with no translation is.
@@ -1317,7 +1317,7 @@ function patrol(
 
      One consequence worth knowing: the `-path` keyframes' travel windows now
      have to line up with the `-wl`/`-wr` opacity windows to the percent,
-     because a mismatch is no longer invisible — it is a figure sliding while
+     because a mismatch is no longer invisible - it is a figure sliding while
      standing still. They are matched in home.css and commented there.
   */
   const wrap = box(`left:${x}px;top:${y}px;animation:mull-${key}-path ${dur} linear infinite`)
@@ -1723,8 +1723,8 @@ export function buildSoil(): HTMLElement {
   /*
      TWO LAYERS OF GROUND, BECAUSE A CROSS-SECTION HAS TWO.
 
-     `terrain.dirt` averages rgb(170,143,90) and `terrain.soil` rgb(102,68,60) —
-     measured off the atlas, not guessed — so the pack already carries a light
+     `terrain.dirt` averages rgb(170,143,90) and `terrain.soil` rgb(102,68,60) -
+     measured off the atlas, not guessed - so the pack already carries a light
      topsoil and a dark subsoil, and stacking them in that order is the whole of
      the geology. One tile the whole way down reads as a texture; two read as a
      dig. The first build of this dimmed the column to 0.92 black at the bottom
@@ -1758,7 +1758,7 @@ export function buildSoil(): HTMLElement {
      calls `rng` before a run starts invalidates every seed in the game. A menu
      backdrop has no business touching it.
 
-     `cave.branches*` averages rgb(11,11,12) — near black — which is why they go
+     `cave.branches*` averages rgb(11,11,12) - near black - which is why they go
      in at full brightness and read as roots against the brown rather than
      needing a filter to darken them.
   */

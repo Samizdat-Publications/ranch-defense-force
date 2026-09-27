@@ -3,14 +3,14 @@
  *
  * `create_topdown_tileset` returns sixteen tiles covering every combination of
  * four corner terrains. A cell is drawn by sampling terrain at its four CORNERS
- * — not its centre — and picking the tile whose corners match. That is what
+ * - not its centre - and picking the tile whose corners match. That is what
  * gives ground a real boundary instead of a staircase of whole tiles, and it is
  * the whole reason the floor stopped looking blocky.
  *
  * Corner order is **NW NE SW SE, most significant first**, so `wang.x.1101` is
  * upper/upper/lower/upper. The order is arbitrary; agreeing on it is not. The
  * atlas builder and the renderer both call this, so a key can never be built
- * one way in the pack and read another way at draw time — six bugs in this
+ * one way in the pack and read another way at draw time - six bugs in this
  * project have been exactly that shape.
  */
 export type Corner = 0 | 1

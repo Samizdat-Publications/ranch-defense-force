@@ -6,7 +6,7 @@
  * because a single bot proves nothing: if the good one fails the game is too
  * hard, and if the bad one clears the progression does not matter.
  *
- * These bots are crude — `smart` merges weapons and favours defence, `kite`
+ * These bots are crude - `smart` merges weapons and favours defence, `kite`
  * runs from the crowd's centre of mass. They are nowhere near a competent human
  * and are not a substitute for playing it. What they do prove is that the loop
  * runs end to end, that build quality changes the outcome, and that the run is
@@ -21,13 +21,13 @@ import { WAVES } from '../src/content'
 
 type Picker = (offers: Offer[]) => Offer | undefined
 
-/** Takes nothing at all — the floor. */
+/** Takes nothing at all - the floor. */
 const pickNothing: Picker = () => undefined
 /** Whatever came up first. */
 const pickFirst: Picker = (o) => o[0]
 /**
  * A uniformly random card. The owner's own experiment: "chose every powerup
- * randomly". Takes an Rng because it must NOT draw off the run's stream — a
+ * randomly". Takes an Rng because it must NOT draw off the run's stream - a
  * choice made there would shift every later sim decision, and then `idle` and
  * `kite` would not be flying the same arena on the same seed.
  */
@@ -53,7 +53,7 @@ interface RunResult {
   items: number
   seconds: number
   /**
-   * Enemies alive at exactly t=60s — twenty seconds into wave 2. The opening
+   * Enemies alive at exactly t=60s - twenty seconds into wave 2. The opening
    * waves' density, as one number. The owner's verdict on the build before
    * session 23 was "waves 1-5 were painfully slow and need double the
    * enemies", and nothing in this file could have caught that: every other
@@ -67,7 +67,7 @@ interface RunResult {
  *
  * `kite` runs from the crowd at all times; `brawl` holds ground while it is
  * healthy and the crowd is off it. The distinction is load-bearing rather than
- * cosmetic: kiting *is* The Kid's kit — fast, damage scaling with velocity —
+ * cosmetic: kiting *is* The Kid's kit - fast, damage scaling with velocity -
  * and the exact opposite of The Hand's, which buys damage reduction by standing
  * still and has an ability that roots it in place. Measuring both classes with
  * a kiting bot reports The Hand as weaker no matter what the game does.
@@ -101,17 +101,17 @@ type Pilot = 'kite' | 'brawl' | 'wander' | 'space' | 'idle'
  * the wrong pilot measures nothing: kiting The Hand reports his damage
  * reduction as absent, because it is. The same is now true four more times.
  *
- *   hand        brawl — Braced pays for standing, Dig In roots
- *   kid         kite  — Momentum pays for velocity
- *   widow       brawl — Grit pays for fighting through a hit; the ward is planted
- *   vet         space — Overwatch pays past 170px and charges inside 80px
- *   agronomist  brawl — the Chem Sprayer is a 130px AURA; range is not an option
- *   drifter     kite  — Hot Streak dies to one hit, so contact is the enemy
+ *   hand        brawl - Braced pays for standing, Dig In roots
+ *   kid         kite  - Momentum pays for velocity
+ *   widow       brawl - Grit pays for fighting through a hit; the ward is planted
+ *   vet         space - Overwatch pays past 170px and charges inside 80px
+ *   agronomist  brawl - the Chem Sprayer is a 130px AURA; range is not an option
+ *   drifter     kite  - Hot Streak dies to one hit, so contact is the enemy
  *
  * The Agronomist was assigned `kite` first, on "she is fragile", and that was
  * reading the stat block instead of the weapon: she starts holding a 130px
  * aura, so a pilot that runs from the crowd is a pilot that turns her gun off.
- * The harness agrees — 18/24 holding ground against 13/24 running — but the
+ * The harness agrees - 18/24 holding ground against 13/24 running - but the
  * weapon is the reason and the number is the confirmation, not the other way
  * round. Do not pick these by which score is highest; that is tuning the game
  * to the instrument.
@@ -133,7 +133,7 @@ function simulate(
   pick: Picker,
   pilot: Pilot,
   /**
-   * What the bot does with a shop board. `'none'` walks out without spending —
+   * What the bot does with a shop board. `'none'` walks out without spending -
    * the owner banked 4,614 feed doing exactly that. `'firstAffordable'` is
    * `idle-buy`: it buys, but it does not choose.
    */
@@ -188,7 +188,7 @@ function simulate(
       } else if (pilot === 'space' && healthy && near < 6) {
         // Hold a band rather than a point: close when the crowd drifts out of
         // Overwatch's far bracket, back off when it gets inside the near one.
-        // Neither existing pilot can measure a spacing class — one runs to the
+        // Neither existing pilot can measure a spacing class - one runs to the
         // wall, the other lets the crowd into the penalty ring.
         const dx = world.player.x - cx / n
         const dy = world.player.y - cy / n
@@ -314,8 +314,8 @@ describe('a full run', () => {
     expect(cleared.length).toBeLessThan(Math.ceil(SEEDS.length / 2))
 
     for (const r of cleared) {
-      // 25 waves x 40s = 1000s. The count went from 24 to 25 so wave 25 —
-      // the Duster's wave in §9 — can actually be reached; it never was.
+      // 25 waves x 40s = 1000s. The count went from 24 to 25 so wave 25 -
+      // the Duster's wave in §9 - can actually be reached; it never was.
       expect(r.seconds).toBeGreaterThan(940)
       expect(r.seconds).toBeLessThan(1060)
       // The density pass doubled the opening waves and a cleared run now kills
@@ -325,7 +325,7 @@ describe('a full run', () => {
     }
   }, 600_000)
 
-  it('treats both classes comparably — neither is a trap pick', () => {
+  it('treats both classes comparably - neither is a trap pick', () => {
     // The Hand's -20% speed once left it clearing 1 seed in 6 while The Kid
     // cleared all 6. Whatever the enemy speeds are, that gap must not reopen.
     //
@@ -347,7 +347,7 @@ describe('a full run', () => {
     expect(kid).toBeGreaterThan(0)
   }, 600_000)
 
-  it('treats all six classes comparably — none is a trap pick', () => {
+  it('treats all six classes comparably - none is a trap pick', () => {
     /*
        The same question the pair test above asks, asked of the four unlockable
        classes as well.
@@ -400,7 +400,7 @@ describe('a full run', () => {
       .map(([c, n]) => `${c} ${n}/${SEEDS.length}`).join(', ')
 
     for (const [classId, n] of Object.entries(cleared)) {
-      expect(n, `${classId} never cleared a run — trap pick (${table})`).toBeGreaterThan(0)
+      expect(n, `${classId} never cleared a run - trap pick (${table})`).toBeGreaterThan(0)
     }
     for (const [classId, n] of Object.entries(cleared)) {
       expect(
@@ -441,7 +441,7 @@ describe('a full run', () => {
       }
       expect(
         fired,
-        `${classId}'s ability "${world.player.def.ability.id}" did nothing — no branch in tryAbility`,
+        `${classId}'s ability "${world.player.def.ability.id}" did nothing - no branch in tryAbility`,
       ).toBe(true)
     }
   }, 120_000)
@@ -455,12 +455,12 @@ describe('a full run', () => {
     // six seeds can actually resolve. Measured over 24 seeds with
     // `npm run balance`:
     //
-    //   The Kid   kiting 96%  vs holding ground 79%   — a 17 point gap
-    //   The Hand  holding 83% vs kiting        79%    — a 4 point gap
+    //   The Kid   kiting 96%  vs holding ground 79%   - a 17 point gap
+    //   The Hand  holding 83% vs kiting        79%    - a 4 point gap
     //
     // The Kid's preference is strong enough to assert outright. The Hand's is
     // real but small, and on a six-seed sample a four point effect is a coin
-    // flip — it failed here at 4 against 5 while the 24-seed harness had it the
+    // flip - it failed here at 4 against 5 while the 24-seed harness had it the
     // right way round. Asserting it strictly would buy a flaky test, not a
     // safer game, so it allows a single seed of slack and the harness stays the
     // instrument for the real number.
@@ -484,11 +484,11 @@ describe('a full run', () => {
     // Asserted as a PAIR, not one class at a time. Measured over 32 seeds with
     // `npm run balance`:
     //
-    //   The Hand  holding 94% vs kiting  75%   — a 19 point gap
-    //   The Kid   kiting  88% vs holding 78%   — a 10 point gap
+    //   The Hand  holding 94% vs kiting  75%   - a 19 point gap
+    //   The Kid   kiting  88% vs holding 78%   - a 10 point gap
     //
     // Both are real, but a 10 point effect over 16 seeds is roughly a 1.6 seed
-    // difference, which binomial noise swallows — it landed 13 against 14 here
+    // difference, which binomial noise swallows - it landed 13 against 14 here
     // while the 32-seed harness had it the right way round. Pooling the two
     // classes doubles the effective sample for the same runtime, and "each
     // class prefers its own game" is a claim about the pair anyway. The Hand's
@@ -514,7 +514,7 @@ describe('a full run', () => {
     }
   }, 600_000)
 
-  it('rewards build quality — merging beats taking whatever came up', () => {
+  it('rewards build quality - merging beats taking whatever came up', () => {
     // Pooled over several seeds, not one. On a single seed this is a coin flip:
     // it flipped in roster batch 1 and again when the shop pass reshuffled the
     // RNG stream (random cleared on seed 4242 while smart died on wave 25). The
@@ -682,8 +682,8 @@ describe('the opening waves', () => {
      Nothing in this file could have caught that. Every other assertion here is
      about whether a run ENDS; none of them looks at how much is on the screen
      while it runs, and a wave that is boring passes all of them. So this one
-     samples the field at t=60s — twenty seconds into wave 2, past the opening
-     trickle and before the first shop — and asserts a floor.
+     samples the field at t=60s - twenty seconds into wave 2, past the opening
+     trickle and before the first shop - and asserts a floor.
 
      The floor is deliberately well under what was measured -- 20 against a
      measured median of 32, and against 15 before this pass -- because the

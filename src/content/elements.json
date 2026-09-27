@@ -13,7 +13,7 @@
     },
     "fire": {
       "name": "Fire",
-      "_note": "Burns, and sets slop slicks alight — a fire build turns the Chem Sprayer's puddle from a slow into a killing field.",
+      "_note": "Burns, and sets slop slicks alight - a fire build turns the Chem Sprayer's puddle from a slow into a killing field.",
       "impact": "bigImpact",
       "burnDps": 7,
       "burnDpsPerStack": 3,
@@ -42,7 +42,7 @@
     },
     "salt": {
       "name": "Rock Salt",
-      "_note": "No damage of its own at all. It opens the target up and lets everything ELSE you own do more — which is why it is the Load a heavy weapon build wants and the one a solo pistol build should not take.",
+      "_note": "No damage of its own at all. It opens the target up and lets everything ELSE you own do more - which is why it is the Load a heavy weapon build wants and the one a solo pistol build should not take.",
       "impact": "saltImpact",
       "markPct": 30,
       "markSeconds": 4
@@ -66,7 +66,7 @@
     },
     "kerosene": {
       "name": "Kerosene Load",
-      "_note": "H6 at the on-hit site. Every hit leaves burning ground, so a fast weapon paints the field and a slow one does almost nothing with it — the first Load whose worth depends on which gun you are holding.",
+      "_note": "H6 at the on-hit site. Every hit leaves burning ground, so a fast weapon paints the field and a slow one does almost nothing with it - the first Load whose worth depends on which gun you are holding.",
       "impact": "bigImpact",
       "hitHazardKind": "damage",
       "hitHazardRadius": 34,

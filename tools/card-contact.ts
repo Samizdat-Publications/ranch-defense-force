@@ -10,14 +10,14 @@
  * ## Why this exists
  *
  * `cardSprite` is a string in a JSON file. Nothing checks that the key it names
- * is the art the thing IS — only that it resolves, and every atlas key resolves
+ * is the art the thing IS - only that it resolves, and every atlas key resolves
  * to something. So a card can point at a stand-in for months and typecheck,
  * pass 207 tests, and render a rock where a salt lick belongs.
  *
  * It did. The 2026-09-03 inventory audit found seven items drawing borrowed art
- * while their own generated icons sat packed in the atlas — `saltLick` and
+ * while their own generated icons sat packed in the atlas - `saltLick` and
  * `saltCircle` both on `node.rockSmall`, `barbedWire` on a silver ore node,
- * `keroseneCan` on a slop bucket — and five firearms carding off an 8x4 corner
+ * `keroseneCan` on a slop bucket - and five firearms carding off an 8x4 corner
  * of the bundled gun sheet. None of that is visible in source and none of it is
  * visible in a test. It is only visible by LOOKING, which is the lesson session
  * 20 wrote down and this is the instrument for the card surface.
@@ -35,7 +35,7 @@ import { chromium } from 'playwright'
 const out = process.argv[2] ?? 'tools/cards.png'
 const what = process.argv[3] ?? 'all'
 if (!['items', 'weapons', 'all'].includes(what)) {
-  throw new Error(`unknown set '${what}' — expected items, weapons or all`)
+  throw new Error(`unknown set '${what}' - expected items, weapons or all`)
 }
 const PORT = 5197
 
@@ -56,7 +56,7 @@ await new Promise<void>((resolve, reject) => {
   server.stderr.on('data', onData)
 })
 
-/* Same browser resolution as tools/scene-shot.ts — see the comment there. */
+/* Same browser resolution as tools/scene-shot.ts - see the comment there. */
 const store = process.env.PLAYWRIGHT_BROWSERS_PATH ?? ''
 const candidates = store
   ? readdirSync(store)
@@ -80,7 +80,7 @@ try {
   /*
      Wait for the ATLAS, not for the menu.
 
-     `main.ts` opens the menu and THEN loads the atlas in the background — "a
+     `main.ts` opens the menu and THEN loads the atlas in the background - "a
      missing atlas costs you the art, not the game". So `.home-scene` is on
      screen a long time before `setSpriteAtlas` has run, and a contact sheet
      shot at that moment reports every single card as drawing nothing. It did:
@@ -93,7 +93,7 @@ try {
      Handed to the page as a STRING, not as a function.
 
      vite-node transforms this file before running it, and one of the things it
-     transforms is `import(...)` — into `__vite_ssr_dynamic_import__`, its own
+     transforms is `import(...)` - into `__vite_ssr_dynamic_import__`, its own
      server-side loader. A function body that goes over the wire to the browser
      is transformed too, and the browser has no such symbol: every run died with
      `__vite_ssr_dynamic_import__ is not defined` inside the evaluate. A string
@@ -115,7 +115,7 @@ try {
        The app's own page chrome has to be undone, not just emptied.
 
        index.html puts #stage at \`position: fixed; inset: 0\` and the stylesheet
-       gives html/body \`overflow: hidden\` and a viewport height — which is right
+       gives html/body \`overflow: hidden\` and a viewport height - which is right
        for a letterboxed game and wrong for a contact sheet. A fullPage
        screenshot of it returns exactly one viewport of cards and silently drops
        the rest; the first run of this tool showed four and a half rows of
@@ -188,7 +188,7 @@ try {
   const n = await page.locator('.pcard').count()
   console.log(`${n} cards -> ${out}`)
   if (missing.length) {
-    console.error(`\n${missing.length} card(s) draw NOTHING — the key does not resolve:`)
+    console.error(`\n${missing.length} card(s) draw NOTHING - the key does not resolve:`)
     for (const m of missing) console.error(`  ${m}`)
   }
   if (problems.length) {

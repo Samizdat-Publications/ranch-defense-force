@@ -4,7 +4,7 @@
  *   npm run characters
  *
  * The design says a new class is "one Farmer Generator export plus a stat block
- * and one ability", and treated that export as a manual step — which is what
+ * and one ability", and treated that export as a manual step - which is what
  * blocked the Bunkhouse: the ladder was built and priced with nothing to sell,
  * because adding a class meant leaving the codebase, opening a generator, and
  * exporting a PNG by hand.
@@ -12,7 +12,7 @@
  * It does not have to be manual. Every piece in `Character Pieces/` is a full
  * 1792x704 sheet in the same rig the atlas builder already reads, so a
  * character is just those sheets alpha-composited in the right order. A class
- * becomes a recipe in `art/characters.json` — five strings — and the art is
+ * becomes a recipe in `art/characters.json` - five strings - and the art is
  * generated, reproducible, and diffable like everything else.
  *
  * Output goes to `assets/generated/characters/`, which is where the manual
@@ -85,7 +85,7 @@ function loadLayer(dir: string, prefix: string, name: string, id: string): Image
   // with no other symptom.
   if (img.width !== SHEET_W || img.height !== SHEET_H) {
     throw new Error(
-      `${path}: expected ${SHEET_W}x${SHEET_H}, got ${img.width}x${img.height} — `
+      `${path}: expected ${SHEET_W}x${SHEET_H}, got ${img.width}x${img.height} - `
       + 'this is the 16x16 piece set; use the 32x32 one.',
     )
   }

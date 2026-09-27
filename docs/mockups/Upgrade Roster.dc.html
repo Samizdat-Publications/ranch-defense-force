@@ -36,9 +36,9 @@
 
 <div style="width: 1920px; min-height: 100%; background: radial-gradient(120% 50% at 50% 0%, #241d15 0%, #14120f 60%, #0e0d0b 100%); font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #c9bda6; padding: 56px 78px 110px;">
 
-  <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE — DESIGN PASS 3 OF 4</div>
+  <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE - DESIGN PASS 3 OF 4</div>
   <h1 style="font-family: 'Rye', serif; font-size: 54px; line-height: 1; margin: 14px 0 10px; color: #f0e2c4; font-weight: 400;">The Upgrade Roster</h1>
-  <p style="max-width: 104ch; font-size: 14px; line-height: 1.75; color: #a2957c; margin: 0 0 8px;">Fifty-six upgrades: <b style="color: #e0d2b4;">40 items</b> and <b style="color: #e0d2b4;">16 weapons</b>, every one tiered, priced and assigned to a pool. The complaint was "the same five things over and over" — the fix is not only more cards but a shop that holds cards you cannot draw any other way. Every epic and legendary is shop-only, so the shop is where a run gets its shape.</p>
+  <p style="max-width: 104ch; font-size: 14px; line-height: 1.75; color: #a2957c; margin: 0 0 8px;">Fifty-six upgrades: <b style="color: #e0d2b4;">40 items</b> and <b style="color: #e0d2b4;">16 weapons</b>, every one tiered, priced and assigned to a pool. The complaint was "the same five things over and over" - the fix is not only more cards but a shop that holds cards you cannot draw any other way. Every epic and legendary is shop-only, so the shop is where a run gets its shape.</p>
   <p style="max-width: 104ch; font-size: 13px; line-height: 1.7; color: #7d7057; margin: 0 0 36px;">Both files are drop-in: <a href="content/items.json">content/items.json</a> replaces <b style="color: #9a8e76;">src/content/items.json</b> outright, and <a href="content/weapons-additions.json">content/weapons-additions.json</a> merges into <b style="color: #9a8e76;">src/content/weapons.json</b>. Shapes match what is already there.</p>
 
   <!-- spread -->
@@ -61,7 +61,7 @@
     <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 0; color: #ecdcbc; font-weight: 400;">The level-up draw</h2>
     <span style="font-size: 13px; color: #8a7c62;">{{ levelupCount }} cards · three offered per level, four with luck</span>
   </div>
-  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">Plain numbers, named after the object. A common is one stat and nothing else to read — the point of a common is that you take it in a second and get back to the field.</p>
+  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">Plain numbers, named after the object. A common is one stat and nothing else to read - the point of a common is that you take it in a second and get back to the field.</p>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fill, 236px); gap: 16px 16px; justify-content: start;">
     <sc-for list="{{ levelupCards }}" as="c" hint-placeholder-count="24">
@@ -77,7 +77,7 @@
     <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 0; color: #ecdcbc; font-weight: 400;">Shop only</h2>
     <span style="font-size: 13px; color: #8a7c62;">{{ shopCount }} cards · four offered after waves 5, 10, 15, 20 and 24</span>
   </div>
-  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">These are the run-definers. Five shop visits, four cards a visit, so a player sees at most twenty of these in a full run and can afford far fewer — which is what makes two runs differ. Nothing here is a percentage; every one of them changes a rule.</p>
+  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">These are the run-definers. Five shop visits, four cards a visit, so a player sees at most twenty of these in a full run and can afford far fewer - which is what makes two runs differ. Nothing here is a percentage; every one of them changes a rule.</p>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fill, 236px); gap: 16px 16px; justify-content: start;">
     <sc-for list="{{ shopCards }}" as="c" hint-placeholder-count="12">
@@ -93,7 +93,7 @@
     <h2 style="font-family: 'Rye', serif; font-size: 30px; margin: 0; color: #ecdcbc; font-weight: 400;">Sixteen weapons</h2>
     <span style="font-size: 13px; color: #8a7c62;">twelve retuned into tiers, four new</span>
   </div>
-  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">Weapons draw on the same tier weights as items, so a Legendary weapon is exactly as rare as a Legendary item. The four new ones reuse behaviours that already ship — the auger and the combine head are both <b style="color: #ded0b2;">arcSwing</b> retuned, the bell is <b style="color: #ded0b2;">slam</b> with the stun taken out — so none of them needs new engine work to be playable.</p>
+  <p style="max-width: 100ch; font-size: 13px; line-height: 1.7; color: #8a7c62; margin: 0 0 24px;">Weapons draw on the same tier weights as items, so a Legendary weapon is exactly as rare as a Legendary item. The four new ones reuse behaviours that already ship - the auger and the combine head are both <b style="color: #ded0b2;">arcSwing</b> retuned, the bell is <b style="color: #ded0b2;">slam</b> with the stun taken out - so none of them needs new engine work to be playable.</p>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fill, 236px); gap: 16px 16px; justify-content: start;">
     <sc-for list="{{ weaponCards }}" as="c" hint-placeholder-count="16">
@@ -112,11 +112,11 @@
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; max-width: 1760px;">
     <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
       <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #7fb35a; margin-bottom: 10px;">WORKS TODAY</div>
-      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Twenty-eight of the forty items are stat mods, tool upgrades, elements or specials the code already dispatches — drop the file in and they work. Thirty once the two new mod keys are added. Same for all sixteen weapons: the new four use shipped behaviours.</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Twenty-eight of the forty items are stat mods, tool upgrades, elements or specials the code already dispatches - drop the file in and they work. Thirty once the two new mod keys are added. Same for all sixteen weapons: the new four use shipped behaviours.</div>
     </div>
     <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
       <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">NEW MOD KEYS</div>
-      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;"><b style="color: #ded0b2;">minionPct</b> and <b style="color: #ded0b2;">dodgePct</b> are the only stat keys that do not exist yet — dodge is already on The Kid's class stats, so it is a lookup, not a system. Everything else reuses existing keys.</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;"><b style="color: #ded0b2;">minionPct</b> and <b style="color: #ded0b2;">dodgePct</b> are the only stat keys that do not exist yet - dodge is already on The Kid's class stats, so it is a lookup, not a system. Everything else reuses existing keys.</div>
     </div>
     <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
       <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">NEW SPECIALS</div>
@@ -124,19 +124,19 @@
     </div>
     <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
       <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">NEW FIELDS</div>
-      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;"><b style="color: #ded0b2;">maxStacks</b> caps copies per run (5/4/3/2/1 by tier) so a run cannot become nine Whetstones. <b style="color: #ded0b2;">_mockArt</b> is a design-review path only — strip it on import. <b style="color: #ded0b2;">cardSprite</b>: every value the atlas cannot resolve today carries an <b style="color: #ded0b2;">_atlas</b> marker in the JSON. <b style="color: #ded0b2;">18</b> are NEW ATLAS KEY — an itemIcons entry plus art for most of them (SPRITE_REQUESTS.md lists which). <b style="color: #ded0b2;">7</b> are FRAME PICK — the clip is already packed and only needs a named frame exported as an icon, which is the cheap group.</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;"><b style="color: #ded0b2;">maxStacks</b> caps copies per run (5/4/3/2/1 by tier) so a run cannot become nine Whetstones. <b style="color: #ded0b2;">_mockArt</b> is a design-review path only - strip it on import. <b style="color: #ded0b2;">cardSprite</b>: every value the atlas cannot resolve today carries an <b style="color: #ded0b2;">_atlas</b> marker in the JSON. <b style="color: #ded0b2;">18</b> are NEW ATLAS KEY - an itemIcons entry plus art for most of them (SPRITE_REQUESTS.md lists which). <b style="color: #ded0b2;">7</b> are FRAME PICK - the clip is already packed and only needs a named frame exported as an icon, which is the cheap group.</div>
     </div>
     <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
       <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">BALANCE, HONESTLY</div>
-      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">The numbers are authored from the existing file's scale, not from play. Run them through the balance harness before you trust the epics — <b style="color: #ded0b2;">Threshing Floor</b> and <b style="color: #ded0b2;">Crop Duster</b> are the two most likely to be quietly broken with the right weapon.</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">The numbers are authored from the existing file's scale, not from play. Run them through the balance harness before you trust the epics - <b style="color: #ded0b2;">Threshing Floor</b> and <b style="color: #ded0b2;">Crop Duster</b> are the two most likely to be quietly broken with the right weapon.</div>
     </div>
     <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
       <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">ART</div>
-      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Every card draws real owned art at integer zoom — 32px icons at 4×, guns at 6×, the dog at 2×, the tractor at 1×. Five families are pulled from places <b style="color: #ded0b2;">sprites.json</b> does not reach yet: the gas mask and the two hats cropped from character-generator accessory sheets, the gas cloud from one frame of <b style="color: #ded0b2;">fx.gas</b>, the three rounds from their own projectile sheets, and the Bull from the Cow_Big_Black walk band, darkened.</div>
+      <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Every card draws real owned art at integer zoom - 32px icons at 4×, guns at 6×, the dog at 2×, the tractor at 1×. Five families are pulled from places <b style="color: #ded0b2;">sprites.json</b> does not reach yet: the gas mask and the two hats cropped from character-generator accessory sheets, the gas cloud from one frame of <b style="color: #ded0b2;">fx.gas</b>, the three rounds from their own projectile sheets, and the Bull from the Cow_Big_Black walk band, darkened.</div>
     </div>
   </div>
 
-  <div style="margin: 40px 0 0; font-size: 11.5px; color: #6f6350; line-height: 1.8;">Next: <b style="color: #9a8e76;">04</b> the HUD, pause, results and the Homestead — the last screens still wearing the prototype's clothes. Art by <b style="color: #9a8e76;">LimeZu</b> (limezu.itch.io).</div>
+  <div style="margin: 40px 0 0; font-size: 11.5px; color: #6f6350; line-height: 1.8;">Next: <b style="color: #9a8e76;">04</b> the HUD, pause, results and the Homestead - the last screens still wearing the prototype's clothes. Art by <b style="color: #9a8e76;">LimeZu</b> (limezu.itch.io).</div>
 </div>
 
 </x-dc>

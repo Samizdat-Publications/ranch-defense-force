@@ -3,13 +3,13 @@
  *
  * Its own module because BOTH the object and the character pipelines need it,
  * and a shared helper living inside a CLI script means importing the helper
- * runs the CLI — which it did: `npm run character` printed `npm run object`'s
+ * runs the CLI - which it did: `npm run character` printed `npm run object`'s
  * usage and exited.
  *
  * `tar` here is GNU tar and does not read zips at all; the object download is a
  * zip, and the first version of this shelled out and got "This does not look
  * like a tar archive". Zip's central directory is forty lines to walk and its
- * entries are raw-deflated, which Node's zlib already does for the PNG codec —
+ * entries are raw-deflated, which Node's zlib already does for the PNG codec -
  * so it is read in-process and cannot be broken by a PATH.
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -19,7 +19,7 @@ import { inflateRawSync } from 'node:zlib'
 /**
  * Walk a zip's central directory and write every entry out.
  *
- * Only the two compression methods PixelLab actually uses are handled — 0
+ * Only the two compression methods PixelLab actually uses are handled - 0
  * (stored) and 8 (deflate). Anything else throws by name rather than writing a
  * corrupt file, because a silently wrong sprite is this project's most
  * expensive category of bug.
@@ -49,7 +49,7 @@ export function unzipTo(buf: Buffer, outDir: string): number {
     if (name.endsWith('/')) continue
 
     // The local header repeats the name and extra fields, and its extra length
-    // is NOT always the central directory's — read it from the local header.
+    // is NOT always the central directory's - read it from the local header.
     const lNameLen = buf.readUInt16LE(localOff + 26)
     const lExtraLen = buf.readUInt16LE(localOff + 28)
     const start = localOff + 30 + lNameLen + lExtraLen

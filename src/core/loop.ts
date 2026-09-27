@@ -5,7 +5,7 @@
  */
 export { STEP } from './step'
 import { STEP } from './step'
-/** Never simulate more than this many steps in one frame — after a tab switch
+/** Never simulate more than this many steps in one frame - after a tab switch
  *  or a long stall, drop the backlog rather than spiralling. */
 const MAX_STEPS_PER_FRAME = 5
 

@@ -1,5 +1,5 @@
 /**
- * Measure a pen's GROUND QUAD — the four inside corners of its enclosure.
+ * Measure a pen's GROUND QUAD - the four inside corners of its enclosure.
  *
  *     npm run pens
  *
@@ -10,8 +10,8 @@
  * animal's `footY` interpolates between the back and front edges and the near
  * rail's z-index is the front edge.
  *
- * **Detected, not eyeballed.** Every pen is drawn with its interior FILLED —
- * worn dirt, scratched earth, pasture — and that fill is one connected region
+ * **Detected, not eyeballed.** Every pen is drawn with its interior FILLED -
+ * worn dirt, scratched earth, pasture - and that fill is one connected region
  * enclosed by the fence. Flood it from the sprite's centre and the four extreme
  * points of the region ARE the corners, because the quad is diamond-oriented in
  * this projection: topmost is the far corner, bottommost the near one, leftmost
@@ -161,7 +161,7 @@ writeFileSync(OUT, `${JSON.stringify({
     + 'extreme points, which ARE the corners because the quad is diamond-oriented in this '
     + 'projection. Nothing is hand-typed, so nothing goes stale when a pen is regenerated.',
   _footLineNote:
-    'footLine is the lowest opaque row of the whole sprite — where the near fence meets the '
+    'footLine is the lowest opaque row of the whole sprite - where the near fence meets the '
     + 'ground. Place the pen by its foot line, not its top.',
   pens: quads,
 }, null, 2)}\n`)

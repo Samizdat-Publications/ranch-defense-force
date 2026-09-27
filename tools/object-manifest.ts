@@ -6,7 +6,7 @@
  *     npm run objman -- --write # write it
  *
  * Why scan: PixelLab names an animation folder after its DESCRIPTION,
- * slugified and truncated to 48 characters —
+ * slugified and truncated to 48 characters -
  * "walking_with_a_heavy_dragging_stagger_head_swingi". That is per-animal,
  * unguessable, and a typo in it produces a missing-sprite coloured square
  * rather than an error. Reading it off disk is the only way it stays true when
@@ -23,8 +23,8 @@
  *
  * **Where an animal has more than one clip of a kind, the one with all eight
  * directions wins.** Two animals carry a half-finished walk from an earlier
- * session — bull_cursed's "a heavy lurching gait" and barn_dog_cursed2's "a
- * stiff lurching limp" — with only four directions each. Picking those would
+ * session - bull_cursed's "a heavy lurching gait" and barn_dog_cursed2's "a
+ * stiff lurching limp" - with only four directions each. Picking those would
  * silently give those two animals a walk that vanishes when they turn.
  */
 import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs'
@@ -38,7 +38,7 @@ const DIRS = ['south', 'south-west', 'west', 'north-west', 'north', 'north-east'
  *
  * **The id must be the ENEMY TYPE ID for anything replacing an enemy**, because
  * that is what the frame key is built from. Both renderers ask for
- * `${e.typeId}.${clip}.${dir}.${frame}` — `src/render/renderer.ts` and, with a
+ * `${e.typeId}.${clip}.${dir}.${frame}` - `src/render/renderer.ts` and, with a
  * second copy of the same rules, `tools/draw-world.ts`. The `sheet` field in
  * `src/content/enemies.json` is NOT read by either of them; the `animals` group
  * in this manifest is likewise keyed by enemy type id, not by species.
@@ -47,7 +47,7 @@ const DIRS = ['south', 'south-west', 'west', 'north-west', 'north', 'north-east'
  * the old sprite, and nothing errors. It cost one screenshot to catch.
  *
  * Where a generated animal takes an enemy's id, **the LimeZu entry for that id
- * must be deleted from the `animals` group** — two groups writing one key means
+ * must be deleted from the `animals` group** - two groups writing one key means
  * the later pass wins and which one that is depends on file order.
  */
 const WANTED: Record<string, string> = {
@@ -279,8 +279,8 @@ if (process.argv.includes('--write')) {
   const manifest = JSON.parse(readFileSync('art/sprites.json', 'utf8')) as Record<string, unknown>
   const prev = manifest.pixellabObjects as { _note?: string } | undefined
   manifest.pixellabObjects = {
-    _note: 'Generated 8-direction animals — enemies and the two summons. Frame keys are id.clip.direction.frame, the same convention as every other sheet.',
-    _generatedBy: 'tools/object-manifest.ts — run `npm run objman -- --write` after downloading or regenerating an animal. The clip slugs are PixelLab folder names (the description, slugified and truncated) and must never be typed by hand.',
+    _note: 'Generated 8-direction animals - enemies and the two summons. Frame keys are id.clip.direction.frame, the same convention as every other sheet.',
+    _generatedBy: 'tools/object-manifest.ts - run `npm run objman -- --write` after downloading or regenerating an animal. The clip slugs are PixelLab folder names (the description, slugified and truncated) and must never be typed by hand.',
     _base: 'assets/pixellab/object/',
     compassToDirection: {
       south: 'down', 'south-west': 'downLeft', west: 'left', 'north-west': 'upLeft',

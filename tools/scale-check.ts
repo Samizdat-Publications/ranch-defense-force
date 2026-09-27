@@ -8,7 +8,7 @@
  * rule this exists to make cheap. It has been broken once already, expensively:
  * the first generated farmhand was better pixel art than LimeZu's farmer and
  * unusable, because its proportions belonged to a different game. Nothing about
- * that is visible in the sprite on its own — only beside the thing it will
+ * that is visible in the sprite on its own - only beside the thing it will
  * stand beside.
  *
  * Draws from the PACKED ATLAS, so it shows what the game draws, and aligns
@@ -32,7 +32,7 @@ const ZOOM = 2
 /*
    Each enemy's own `drawScale`, because leaving it out makes this tool LIE.
 
-   Bosses are drawn at an integer multiple — prizeBull is 2 — and a comparison
+   Bosses are drawn at an integer multiple - prizeBull is 2 - and a comparison
    that ignores that shows a boss at the size of its trash mobs. The first
    version of this file did exactly that and produced the conclusion "the bull
    is about player height", which is wrong by a factor of two in play.
@@ -45,7 +45,7 @@ const drawScaleOf = (sheet: string): number => Math.round(enemies[sheet]?.drawSc
 const args = process.argv.slice(2).filter((a) => a !== '--')
 const sheets = args.length ? args : ['hand', 'feralDog', 'rooster', 'sickHog', 'blownSheep', 'prizeBull']
 
-/** The idle facing the viewer — the pose you compare silhouettes in. */
+/** The idle facing the viewer - the pose you compare silhouettes in. */
 function frameFor(sheet: string): Frame | undefined {
   return atlas.frames[`${sheet}.idle.down.0`] ?? atlas.frames[`${sheet}.walk.down.0`]
 }

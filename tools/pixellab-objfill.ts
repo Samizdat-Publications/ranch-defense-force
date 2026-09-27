@@ -11,14 +11,14 @@
  *
  * A request for eight directions does not reliably produce eight. The API
  * accepts it, reports the object `completed` with no pending jobs, and simply
- * has fewer directions than were asked for — and the ones missing are
+ * has fewer directions than were asked for - and the ones missing are
  * overwhelmingly the EAST side (`east`, `north-east`, `south-east`). Measured
  * across the duck, the crow, the duster and four bosses in session 25: every
  * batch came back short, and re-asking for exactly the gap closed part of it
  * each time. Three rounds is typical, one is never enough.
  *
- * Nothing surfaces this. `status: completed` is true — the jobs it ran did
- * finish — so a caller that trusts the status ships a boss that vanishes when
+ * Nothing surfaces this. `status: completed` is true - the jobs it ran did
+ * finish - so a caller that trusts the status ships a boss that vanishes when
  * it turns east. **Count the directions; do not trust the status.**
  *
  * ## How it decides what is missing
@@ -103,7 +103,7 @@ for (let round = 1; round <= ROUNDS; round++) {
     const disk = onDisk(name)
     const groups = await groupsOf(id)
 
-    // Best group per description — the one with the most directions.
+    // Best group per description - the one with the most directions.
     const best = new Map<string, Group>()
     for (const g of groups) {
       const cur = best.get(g.desc)
@@ -151,5 +151,5 @@ for (let round = 1; round <= ROUNDS; round++) {
 }
 
 console.log(anyLeft
-  ? '\nstill incomplete — re-run; each round closes part of the gap'
+  ? '\nstill incomplete - re-run; each round closes part of the gap'
   : '\nall clips are 8/8')

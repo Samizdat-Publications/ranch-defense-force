@@ -3,7 +3,7 @@
  *
  * Sprites are collected into a flat reusable list, counting-sorted into 8px
  * y-bands, and blitted. `save`/`restore` is used only for the few entities that
- * actually need a transform — a dying enemy spinning, or a fallback square
+ * actually need a transform - a dying enemy spinning, or a fallback square
  * doing the bob-and-lean that stands in for an animation it does not have.
  * Everything with a real walk cycle draws as a plain `drawImage`, because at
  * 800 entities the difference between "one drawImage" and "save, translate,
@@ -32,7 +32,7 @@ const BUCKET = 8
 /**
  * Pick the zoom for a canvas height.
  *
- * Integer only — a 32px sprite at 2.5x is a blurry 32px sprite.
+ * Integer only - a 32px sprite at 2.5x is a blurry 32px sprite.
  *
  * Derived rather than fixed, because a fixed zoom makes screen size and device
  * pixel ratio control HOW MUCH WORLD you see. At 1920x1080 with dpr 1.5 the
@@ -114,7 +114,7 @@ const FOG_TILE = 512
 const FOG_BLOBS = 26
 
 /**
- * Which Wang sets the ground bakes from — now the MAP's, not a global.
+ * Which Wang sets the ground bakes from - now the MAP's, not a global.
  *
  * This used to be `TUNING.terrain`, one ground for every run. It moved into
  * src/content/maps.json when maps arrived, and it moved rather than being
@@ -186,7 +186,7 @@ const PALETTE = {
   hazardAcid: 'rgba(150, 226, 74, 0.40)',
   hazardAcidRim: 'rgba(198, 250, 120, 0.9)',
   /** 'damage' used to fall through to the acid colours, which was invisible
-   *  while the only hazards were weapon-made — nothing in the game raised a
+   *  while the only hazards were weapon-made - nothing in the game raised a
    *  bare `damage` hazard. The Burn's fires do, and an acid-green fire is a
    *  lie about what is hurting you. */
   hazardBurn: 'rgba(226, 122, 46, 0.34)',
@@ -208,7 +208,7 @@ export class Renderer {
   private decalCtx: CanvasRenderingContext2D
   private terrain: HTMLCanvasElement | null = null
   /** Which ground set the baked terrain currently holds, so it re-bakes once
-   *  per band rather than once per frame. Empty until the first bake — the
+   *  per band rather than once per frame. Empty until the first bake - the
    *  map is not readable from a field initialiser. */
   private bakedSet = ''
 
@@ -221,9 +221,9 @@ export class Renderer {
    * through the same sorted pass as crops, so the player walks in front of and
    * behind it rather than always on top.
    *
-   * Placed in a BAND NEAR THE EDGES. These carry no collision — there is no
+   * Placed in a BAND NEAR THE EDGES. These carry no collision - there is no
    * scenery collider in the sim and adding one is a gameplay change, not a
-   * dressing one — and walking through a water trough in open field would read
+   * dressing one - and walking through a water trough in open field would read
    * as a bug. Around the periphery, where the fence already is and the player
    * rarely fights, it reads as the farm the arena was cut out of.
    */
@@ -247,7 +247,7 @@ export class Renderer {
    * Which body anchor each owned weapon is riding this frame, or null.
    *
    * Preallocated at the inventory cap and rewritten in place once per frame by
-   * `assignCarrySlots`, so the loadout costs no allocation. Read twice — once
+   * `assignCarrySlots`, so the loadout costs no allocation. Read twice - once
    * for the items that draw behind the farmhand and once for the rest.
    */
   private readonly carrySlots: (CarrySlot | null)[] = [null, null, null, null, null, null, null, null]
@@ -283,7 +283,7 @@ export class Renderer {
     // Scenery is scattered before the draw list is sized, because it competes
     // for the same fixed slots: `push()` returns null when the list is full and
     // the caller breaks, so under-sizing here silently drops whatever sorts
-    // last — the far side of the field.
+    // last - the far side of the field.
     this.buildScenery()
     const cap = TUNING.pools.enemies + TUNING.pools.projectiles + TUNING.pools.props
       + this.scenery.length + 64
@@ -484,7 +484,7 @@ export class Renderer {
 
   /**
    * Terrain bakes once into an offscreen canvas and blits as one image per
-   * frame — never per-tile draws (§13). Deterministic from the run seed, so a
+   * frame - never per-tile draws (§13). Deterministic from the run seed, so a
    * replayed run gets the same field.
    */
   /** This run's map terrain. */
@@ -521,8 +521,8 @@ export class Renderer {
   /**
    * The blighted counterpart of a crop sprite, once the field has turned.
    *
-   * `<key>Blight` is the convention the cast already uses — `farmhandBlight`,
-   * `rosieBlight`, `scarecrowBlight` — so a crop needs no new shape, only the
+   * `<key>Blight` is the convention the cast already uses - `farmhandBlight`,
+   * `rosieBlight`, `scarecrowBlight` - so a crop needs no new shape, only the
    * art. Falls through to the healthy sprite when no counterpart is packed,
    * which is what lets the five that HAVE one turn while the other five do not,
    * rather than the field going half-empty.
@@ -599,7 +599,7 @@ export class Renderer {
       }
     }
 
-    // Tilled rows along two edges — the corn rows things come out of (§8).
+    // Tilled rows along two edges - the corn rows things come out of (§8).
     if (soil) {
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < 3; x++) put(soil, x * tile, y * tile)
@@ -729,7 +729,7 @@ export class Renderer {
    * field: a baked sprite has no y-sort, so the player draws over it. On the
    * boundary that never shows, because the player is always inside it.
    *
-   * Falls back to the stroked line if the art is not packed — the boundary has
+   * Falls back to the stroked line if the art is not packed - the boundary has
    * to be legible even with no atlas.
    */
   private paintFence(g: CanvasRenderingContext2D, c: HTMLCanvasElement): void {
@@ -868,7 +868,7 @@ export class Renderer {
    *
    * Baked, and only FLAT things are, which is the whole rule. A decal lies on
    * the ground and can never be walked behind, so it loses nothing by having no
-   * y-sort. A hay bale or a trough would — the player would draw on top of it —
+   * y-sort. A hay bale or a trough would - the player would draw on top of it -
    * and those need a sorted layer that does not exist yet.
    *
    * Density is deliberately low. ART_STYLE is explicit that the ground should
@@ -915,7 +915,7 @@ export class Renderer {
    * is grass, which is what the edges are.
    *
    * Returns false if the tilesets are not packed, and the caller falls back to
-   * the stamped bake — a missing tileset costs the ground, not the game.
+   * the stamped bake - a missing tileset costs the ground, not the game.
    */
   private bakeWangGround(
     g: CanvasRenderingContext2D, cols: number, rows: number, tile: number,
@@ -1011,7 +1011,7 @@ export class Renderer {
     this.drawCalls = 0
 
     // The ground degrades with the wave. Re-baking is a full-arena paint, so it
-    // happens only when the band actually changes — three times in a long run,
+    // happens only when the band actually changes - three times in a long run,
     // never per frame. §13's "never per-tile draws" is about the frame loop.
     {
       const want = this.groundSetFor(w.spawner.wave)
@@ -1025,7 +1025,7 @@ export class Renderer {
 
        Trauma decays in `world.step` (`shake -= traumaDecayPerSecond * dt`) but
        is CONSUMED here, every frame, as a fresh random offset. The moment the
-       step stops the decay stops with it — while the draw does not — so the
+       step stops the decay stops with it - while the draw does not - so the
        value sticks at whatever the last hit set it to and the camera jitters at
        full magnitude forever.
 
@@ -1035,7 +1035,7 @@ export class Renderer {
 
        Shake is a reaction to a live hit. A frozen frame should be still, so the
        renderer asks for none rather than the sim being taught to decay while
-       paused — which would be the sim doing cosmetic work on a stopped clock.
+       paused - which would be the sim doing cosmetic work on a stopped clock.
     */
     this.camera.update(pxi, pyi, p.vx, p.vy, w.paused ? 0 : w.shake, rand)
 
@@ -1331,7 +1331,7 @@ export class Renderer {
         it.rotation = (1 - t) * 3
       } else if (c.working > 0) {
         // Being worked. The tools fire on their own, so without this there is
-        // no signal at all that standing here is doing anything — the node just
+        // no signal at all that standing here is doing anything - the node just
         // silently vanishes some seconds later.
         const shake = Math.sin(this.world.elapsed * 42 + c.x) * 1.2
         it.x += shake
@@ -1414,7 +1414,7 @@ export class Renderer {
       it.h = e.radius * 2
       it.outline = e.elite ? '#f0d060' : null
 
-      // §9: bosses are existing sprites at INTEGER scale. Never 2.5 — a 32px
+      // §9: bosses are existing sprites at INTEGER scale. Never 2.5 - a 32px
       // cow at 2.2 is a blurry cow, and the whole screen stops being pixel art.
       const bossDef = ENEMIES[e.typeId] as { drawScale?: number } | undefined
       const bossScale = Math.round(bossDef?.drawScale ?? 1)
@@ -1430,7 +1430,7 @@ export class Renderer {
            The spin-and-scale-to-zero was always a stand-in for art that did not
            exist (§10 step 4). The generated animals have nine death frames per
            direction now, so they play them: the clip runs ONCE, forward, over
-           the enemy's own `deathSeconds` — never looping, because a corpse that
+           the enemy's own `deathSeconds` - never looping, because a corpse that
            loops back to standing is worse than no animation at all.
         */
         const total = (ENEMIES[e.typeId] as { deathSeconds?: number } | undefined)?.deathSeconds
@@ -1445,7 +1445,7 @@ export class Renderer {
           it.rotation = (1 - t) * 6
         }
       } else if (!frame) {
-        // No art for this species yet — bob and lean stand in for the animation
+        // No art for this species yet - bob and lean stand in for the animation
         // it does not have (§10 step 4).
         const bob = Math.sin(e.travelled * 0.16) * 1.5
         it.y += bob
@@ -1463,7 +1463,7 @@ export class Renderer {
       if (x < left || x > right || y < top || y > bottom) continue
 
       // A melee arc and an aura are volumes, not objects. Drawing them as a
-      // square meant a shovel swing rendered as a ~100px white box — the
+      // square meant a shovel swing rendered as a ~100px white box - the
       // single loudest thing on screen, and the reason melee "worked" visibly
       // while every ranged weapon looked identical. They get a swept arc now,
       // and only the things that are really objects get a sprite.
@@ -1572,7 +1572,7 @@ export class Renderer {
     }
 
     // Hoisted out of the loop: two array lookups, then an index per sprite.
-    // The pages cost nothing here — a frame's `page` is a property read the
+    // The pages cost nothing here - a frame's `page` is a property read the
     // loop was already doing five of, and switching source between draws
     // measured free (tools/atlas-bench.ts, condition e).
     const atlasImgs = this.atlas?.images
@@ -1632,8 +1632,8 @@ export class Renderer {
    * Frame is chosen from the effect's remaining life against the clip's packed
    * length, so retiming an effect is one number in `tuning.json` and the clip
    * still plays end to end. Effects carry a centre pivot rather than the
-   * bottom-centre one every other sprite uses — an explosion is centred on a
-   * point, it does not stand on the ground — and they are drawn in pool order
+   * bottom-centre one every other sprite uses - an explosion is centred on a
+   * point, it does not stand on the ground - and they are drawn in pool order
    * rather than y-sorted, because they are decoration layered over the field,
    * not things in it.
    */
@@ -1653,7 +1653,7 @@ export class Renderer {
       if (e.x < left || e.x > right || e.y < top || e.y > bottom) continue
 
       // An element-coloured clip falls back to its base if it was never packed
-      // — `fx.arrowImpact.acid` to `fx.arrowImpact`. Without this, adding an
+      // - `fx.arrowImpact.acid` to `fx.arrowImpact`. Without this, adding an
       // element to a clip that has no variants would silently draw nothing,
       // which is a worse bug than showing the wrong colour.
       let name = `fx.${e.clip}`
@@ -1695,7 +1695,7 @@ export class Renderer {
    *    acid and gas are yellow-greens brighter than any grass on the field, so
    *    they never read as terrain.
    *  - **A rim.** The disc alone has no edge, and the edge is the thing you
-   *    actually need — it is where the damage starts. Harmful hazards get a
+   *    actually need - it is where the damage starts. Harmful hazards get a
    *    brighter, thicker one.
    *  - **A pulse, on harmful hazards only.** Movement in the periphery is what
    *    catches the eye when there are two hundred enemies on screen, and it is
@@ -1724,7 +1724,7 @@ export class Renderer {
         ctx.stroke()
       } else {
         ctx.rotate(a.angle)
-        const half = 0.85 // radians either side — a swing, not a circle
+        const half = 0.85 // radians either side - a swing, not a circle
         ctx.fillStyle = 'rgba(242, 234, 210, 0.30)'
         ctx.beginPath()
         ctx.moveTo(0, 0)
@@ -1808,14 +1808,14 @@ export class Renderer {
    * The sprite a projectile is drawn as.
    *
    * Falls back through the weapon's own icon, so a new weapon is visibly a new
-   * weapon the moment it is packed — which is the whole point. Returns
+   * weapon the moment it is packed - which is the whole point. Returns
    * undefined for anything with no art, and the caller draws its square.
    */
   /**
    * The art for a swept melee arc, if its weapon declares one.
    *
    * Separate from `projectileFrame` because a swing is sized by its radius
-   * rather than by a per-weapon scale — the hit area IS the picture, so the art
+   * rather than by a per-weapon scale - the hit area IS the picture, so the art
    * has to stretch with the stat.
    */
   private swingFrame(
@@ -1859,7 +1859,7 @@ export class Renderer {
    * instead of ticking. The phase term is what stops a whole crop row moving
    * as one object.
    *
-   * Allocation-free and side-effect-free — it reads `elapsed` and returns a
+   * Allocation-free and side-effect-free - it reads `elapsed` and returns a
    * number, so it is safe to call once per visible prop per frame.
    */
   private swayOf(sprite: string, x: number, y: number): number {
@@ -1905,7 +1905,7 @@ export class Renderer {
 
     /*
        docs/UPGRADE_ROSTER.md batch 3, H8: a planted turret/trap/coop is an
-       ITEM, not a weapon — `WEAPONS[p.weaponId]` below is always undefined
+       ITEM, not a weapon - `WEAPONS[p.weaponId]` below is always undefined
        for one, and without this it fell through to the coloured-rectangle
        fallback. `cardSprite` doubles as its field art, the same reuse
        `itemCardSprite`'s own doc comment already establishes for pickups.
@@ -1918,7 +1918,7 @@ export class Renderer {
 
     // An animated clip if the weapon declares one, otherwise its icon. The
     // icon is a decent bullet for thrown produce and a poor one for anything
-    // else — a spinning hacksaw was never going to read as a projectile.
+    // else - a spinning hacksaw was never going to read as a projectile.
     const def = WEAPONS[p.weaponId] as { projectileClip?: string; shardClip?: string } | undefined
     // An element RECOLOURS the weapon's own round rather than replacing it.
     // Swapping the clip outright made every weapon fire an identical bullet the
@@ -1942,7 +1942,7 @@ export class Renderer {
       }
     }
     // `weapon.<id>` does not exist for weapons whose art is per-tier, and the
-    // miss fell through to a coloured rectangle — the Scythe's orbiting blade
+    // miss fell through to a coloured rectangle - the Scythe's orbiting blade
     // rendered as a large cream square for the whole of M5-M7. Ask for the
     // weapon's declared sprite, which is always packed.
     const def2 = WEAPONS[p.weaponId] as { sprite?: string } | undefined
@@ -1954,7 +1954,7 @@ export class Renderer {
    *
    * This is the readout the game was missing and then got wrong twice. Six
    * weapons firing invisible bullets is indistinguishable from one, and picking
-   * up a seventh looked like nothing had happened — so M5 put the icons in a
+   * up a seventh looked like nothing had happened - so M5 put the icons in a
    * ring around him. A circle of evenly spaced objects is the visual signature
    * of ORBITING, though, and squeezing 45-60px card art down to fifteen pixels
    * to fit that circle threw away the one thing the art was carrying: how big
@@ -1971,7 +1971,7 @@ export class Renderer {
    * bucket sort preserves insertion order, so "behind" is simply "pushed
    * first". See `DrawItem.liftY` for why the height is not the depth.
    *
-   * Angles come from the sim (`slot.aimAngle`, `slot.firedAt`) — the renderer
+   * Angles come from the sim (`slot.aimAngle`, `slot.firedAt`) - the renderer
    * decides nothing about targeting or about which weapon is live, it only
    * draws the answer.
    */
@@ -1988,14 +1988,14 @@ export class Renderer {
     for (let i = 0; i < p.weapons.length; i++) {
       const slot = p.weapons[i]
       const anchorSlot = this.carrySlots[i]
-      // `none` — the Scythe is already orbiting him and the Barn Dog is already
+      // `none` - the Scythe is already orbiting him and the Barn Dog is already
       // running about. Drawing a second one on his hip would be a lie.
       if (!anchorSlot) continue
       const a = carryAnchorOf(anchorSlot, dir, p.classId)
       if (!a || a.behind !== behind) continue
 
-      // Purpose-drawn carried art wins outright where it exists — the six
-      // firearms — because it is the only art in the atlas drawn to be held by
+      // Purpose-drawn carried art wins outright where it exists - the six
+      // firearms - because it is the only art in the atlas drawn to be held by
       // a man this size. It has no tiers on purpose; see `carrySpriteOf`.
       //
       // Everything else falls through to tier art: merging a weapon changes the
@@ -2015,7 +2015,7 @@ export class Renderer {
 
       // A newly taken or merged weapon announces itself for a couple of
       // seconds: it rides higher and draws larger. Kept from the ring, because
-      // the reason it existed is unchanged — one more object on an already
+      // the reason it existed is unchanged - one more object on an already
       // busy character is otherwise easy to miss entirely.
       const fresh = p.weaponFlash.get(slot.id) ?? 0
       const lift = fresh > 0 ? Math.sin(fresh * 12) * CARRY.freshLiftPixels : 0
@@ -2053,7 +2053,7 @@ export class Renderer {
       // the art's own box. `weapon.*` is cut bottom-centre to stand on the
       // ground, `gun.*` is centred and `carry.*` is bottom-centre again; this
       // is the one place those differences are reconciled. The fraction is
-      // 0.5 — the centre — for everything but the purpose-drawn guns, which
+      // 0.5 - the centre - for everything but the purpose-drawn guns, which
       // name their trigger so they turn in the hand rather than about the
       // middle of the barrel.
       it.pivotX = -(frame.ox + frame.w * carryPivotOf(slot.id))
@@ -2081,14 +2081,14 @@ export class Renderer {
   /**
    * The pickaxe and axe, hung off the farmhand's belt.
    *
-   * Kept out of the carried LOADOUT on purpose — they are not weapons, they
+   * Kept out of the carried LOADOUT on purpose - they are not weapons, they
    * never aim at anything, and giving them two of the six anchors would both
    * cost the loadout a third of itself and imply they fire. So they get two
    * rungs of their own, `beltR` and `beltL`, which no weapon can reach because
    * neither is in `CARRY.fallbackOrder` and nothing in weapons.json names them.
    *
    * They used to draw at the player's ORIGIN minus four, and the origin is the
-   * character cell's floor — twelve pixels below his boots. Two tools at ankle
+   * character cell's floor - twelve pixels below his boots. Two tools at ankle
    * height that never moved with him read as tools he was standing over rather
    * than tools he owns, which is the same mistake the player mark made. They
    * are on the anchor ladder now, at a rung of their own below the hips, and
@@ -2132,7 +2132,7 @@ export class Renderer {
       // look idle while they work.
       const swing = working ? Math.sin(w.elapsed * 24 + k) * 0.5 : 0
       it.x = p.x + a.dx
-      // Depth is the player's own y, height is the lift — the same split the
+      // Depth is the player's own y, height is the lift - the same split the
       // carried weapons use, and the reason `behind` is enough to layer them.
       it.y = p.y
       it.liftY = -(bootY + a.dy)
@@ -2153,7 +2153,7 @@ export class Renderer {
    *
    * Drawn as four filled bands with a bright inner lip, under the hazards, so
    * the edge you must not cross is the brightest thing at the border. The band
-   * itself pulses like the other harmful hazards — same visual grammar, so it
+   * itself pulses like the other harmful hazards - same visual grammar, so it
    * needs no separate explanation.
    */
   private drawArenaBurn(ctx: CanvasRenderingContext2D): void {

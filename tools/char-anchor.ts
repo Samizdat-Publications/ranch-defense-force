@@ -6,9 +6,9 @@
  *
  * The character builder takes TWO images and they do different jobs:
  *
- *   style     — ONE direction, front-facing. Carries palette, outline weight,
+ *   style     - ONE direction, front-facing. Carries palette, outline weight,
  *               shading and colour count.
- *   reference — FOUR directions in a row. Carries the rig: how a character in
+ *   reference - FOUR directions in a row. Carries the rig: how a character in
  *               this game is posed, framed and turned.
  *
  * Getting them the wrong way round produces a character that looks right and
@@ -45,7 +45,7 @@ mkdirSync(OUT, { recursive: true })
 for (const id of wanted) {
   const path = manifest.humanoids[id]
   if (!path) {
-    console.error(`  ${id}: not a packed humanoid — try one of ${Object.keys(manifest.humanoids).join(', ')}`)
+    console.error(`  ${id}: not a packed humanoid - try one of ${Object.keys(manifest.humanoids).join(', ')}`)
     continue
   }
   const sheet = decodePng(readFileSync(path))

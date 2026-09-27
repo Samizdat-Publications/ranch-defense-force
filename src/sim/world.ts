@@ -2,7 +2,7 @@
  * The simulation. Owns every pool, the grid, the player and the spawner, and
  * runs the tick order from CLAUDE.md in exactly that sequence.
  *
- * Nothing in here imports from `render/` or `ui/` — the world raises events and
+ * Nothing in here imports from `render/` or `ui/` - the world raises events and
  * exposes read-only state, and the presentation layers read it. That boundary
  * is a non-negotiable, and it is what makes the sim testable headlessly.
  */
@@ -52,7 +52,7 @@ export interface Telegraph {
 
 export interface WorldEvents {
   /** A sound the presentation layer may play. The sim never touches audio
-   *  itself — same boundary that keeps it headless and testable. */
+   *  itself - same boundary that keeps it headless and testable. */
   onSound?: (name: string) => void
   onLevelUp?: (levels: number) => void
   onWaveComplete?: (wave: number, income: number) => void
@@ -108,7 +108,7 @@ export class World {
    *
    * Both are assigned in the constructor rather than initialised here, because
    * the map is chosen off the RNG and a field initialiser runs before the
-   * constructor body — the arena has to exist before the spatial grid is sized
+   * constructor body - the arena has to exist before the spatial grid is sized
    * from it, and the map has to be picked before the arena exists.
    */
   /**
@@ -171,7 +171,7 @@ export class World {
   private readonly queryOut: Int32Array
   /**
    * A SECOND grid-query scratch, for the one query that damages while it
-   * iterates — The Drifter's Light Out. `damageEnemy` can reach `areaDamage`
+   * iterates - The Drifter's Light Out. `damageEnemy` can reach `areaDamage`
    * through the Threshing Floor chain and the Reaper's re-swing, and both
    * overwrite `queryOut` mid-loop.
    */
@@ -183,7 +183,7 @@ export class World {
   /** Monotonic tick counter; projectiles stamp it to avoid double-hits. */
   tick = 0
   elapsed = 0
-  /** Frozen while > 0 — crit hitstop and the level-up/shop pause. */
+  /** Frozen while > 0 - crit hitstop and the level-up/shop pause. */
   hitstop = 0
   paused = false
   over = false
@@ -193,7 +193,7 @@ export class World {
   /** Blood pixels that landed this tick, drained by the decal layer. */
   readonly stains: number[] = []
 
-  // Run stats for the results screen, and for the balance harness — knowing
+  // Run stats for the results screen, and for the balance harness - knowing
   // *what* killed a run is most of knowing whether the run is fair.
   kills = 0
   damageDealt = 0
@@ -204,7 +204,7 @@ export class World {
   bossKills = 0
   cropsHarvested = 0
   /**
-   * Acres bought with feed rather than earned by play — the Acre Bond shop
+   * Acres bought with feed rather than earned by play - the Acre Bond shop
    * sink (`items.json`, `special: 'acreBond'`). Feed is a SIM resource and
    * acres are a META one earned only at `bankRun` (`meta.ts`), so this is the
    * one bridge between them: `main.ts`'s `applyOffer` adds to it the instant
@@ -223,7 +223,7 @@ export class World {
   /**
    * Fractional accumulators for the rate-limited cosmetic effects.
    *
-   * Deliberately not RNG rolls. An effect must never touch `this.rng` — a
+   * Deliberately not RNG rolls. An effect must never touch `this.rng` - a
    * cosmetic decision that consumed the sim's stream would mean the number of
    * sparks drawn changed where the next enemy spawned, and the seed-replay
    * guarantee would be hostage to the art. Accumulating the rate gives the exact
@@ -241,7 +241,7 @@ export class World {
    * eaten in from every edge; standing outside the remaining rectangle burns.
    *
    * The only undodgeable pressure in the fight, and slow enough to plan around
-   * — ninety seconds to take the field down to a third.
+   * - ninety seconds to take the field down to a third.
    */
   arenaBurnInset = 0
   private arenaBurnTarget = 0
@@ -259,7 +259,7 @@ export class World {
    * Item specials, flattened once per build change rather than read per hit.
    *
    * Every field is a number or a flag the hot loop can branch on cheaply. The
-   * alternative — walking `player.items` inside the collision pass — is a
+   * alternative - walking `player.items` inside the collision pass - is a
    * per-enemy-per-frame allocation-free-but-still-O(n) scan for something that
    * only changes when a card is taken.
    */
@@ -288,7 +288,7 @@ export class World {
     saltRingRadius: 0,
     saltRingDamage: 0,
     saltRingSlowPct: 0,
-    /** sundayBest: feeds `shieldHp` below (H9, batch 3) — see that field's
+    /** sundayBest: feeds `shieldHp` below (H9, batch 3) - see that field's
      *  doc comment for the generalisation from a one-hit counter-attack to a
      *  numeric shield pool Fence Row also pays into. */
 
@@ -300,26 +300,26 @@ export class World {
 
     /** True when any of the on-hit riders below is live. */
     anyOnHitRider: false,
-    /** H1 — chain. Fence Charge; Live Wire joins it in batch 2. */
+    /** H1 - chain. Fence Charge; Live Wire joins it in batch 2. */
     chainCount: 0,
     chainRange: 0,
     chainMul: 0,
-    /** H2 — ricochet. Ricochet Plate. */
+    /** H2 - ricochet. Ricochet Plate. */
     ricochetCount: 0,
     ricochetRange: 0,
     ricochetMul: 0,
-    /** H3 — split on kill. Split Shot. */
+    /** H3 - split on kill. Split Shot. */
     splitCount: 0,
     splitMul: 0,
-    /** H4 — homing. Burr Load; Match Barrel joins it in batch 2. */
+    /** H4 - homing. Burr Load; Match Barrel joins it in batch 2. */
     homingRate: 0,
-    /** H5 — burst. Moonshine Jug on a hit, Last Rites on a marked kill. */
+    /** H5 - burst. Moonshine Jug on a hit, Last Rites on a marked kill. */
     burstChance: 0,
     burstRadius: 0,
     burstMul: 0,
     markedBurstPct: 0,
     markedBurstRadius: 0,
-    /** H6 — hazards. The Kerosene Load leaves one where a hit lands... */
+    /** H6 - hazards. The Kerosene Load leaves one where a hit lands... */
     hitHazardKind: '' as HazardKind | '',
     hitHazardRadius: 0,
     hitHazardSeconds: 0,
@@ -335,7 +335,7 @@ export class World {
     killPoolRadius: 0,
     killPoolSeconds: 0,
     killPoolDps: 0,
-    /** H11 — what a kill pays out. Feed the Birds, Blood Meal, Font Water,
+    /** H11 - what a kill pays out. Feed the Birds, Blood Meal, Font Water,
      *  Broody Hen. */
     killDropChance: 0,
     killDropValue: 0,
@@ -345,7 +345,7 @@ export class World {
     killSpawnSeconds: 0,
     killSpawnMax: 0,
     killSpawnSprite: '',
-    /** No hook at all — fields the sim already read (§8's list of 19). */
+    /** No hook at all - fields the sim already read (§8's list of 19). */
     extraPierce: 0,
     projectileRadiusPct: 0,
     critMarkPct: 0,
@@ -363,24 +363,24 @@ export class World {
     // Allies & Placeables (H8), the shield/revive layer (H9/H10), and the
     // three Body cards that need no new hook at all.
 
-    /** H8 — Scarecrow Post. One flat per-turret payload; `turretCount` (below)
-     *  is how many turrets `updateTurrets` maintains, not a damage multiplier —
+    /** H8 - Scarecrow Post. One flat per-turret payload; `turretCount` (below)
+     *  is how many turrets `updateTurrets` maintains, not a damage multiplier -
      *  the same "count grows, magnitude does not" shape `killSpawnMax` uses. */
     turretDamage: 0,
     turretCooldown: 0,
     turretRange: 0,
     turretLife: 0,
     turretCount: 0,
-    /** H8 — Bear Trap. `trapMax` is live traps, not copies of the card. */
+    /** H8 - Bear Trap. `trapMax` is live traps, not copies of the card. */
     trapDamage: 0,
     trapStunSeconds: 0,
     trapSpawnSeconds: 0,
     trapMax: 0,
-    /** H8 — Hen Coop. `coopCount` is how many coops `updateCoop` maintains. */
+    /** H8 - Hen Coop. `coopCount` is how many coops `updateCoop` maintains. */
     henDamage: 0,
     henCooldown: 0,
     coopCount: 0,
-    /** H8 — Trip Wire. Damage sums per stack; range and stun are set, not
+    /** H8 - Trip Wire. Damage sums per stack; range and stun are set, not
      *  summed, for the same reason a radius or a duration never is. */
     wireDamage: 0,
     wireStunSeconds: 0,
@@ -394,13 +394,13 @@ export class World {
      *  `minionHunt` in `behaviours/weapons.ts` beside its own `hasMod` checks. */
     hasLittermate: false,
     littermateDamagePct: 0,
-    /** H9 — the shield. Generalises `firstHitShield` (Sunday Best), which now
+    /** H9 - the shield. Generalises `firstHitShield` (Sunday Best), which now
      *  feeds the same pool Fence Row does rather than special-casing a single
      *  counter-attacked hit. Capacity only; the live amount is `playerShield`,
      *  a World field below that (like `shieldReady` before it) is deliberately
-     *  NOT reset here — see `refreshSpecialItems`'s closing top-up. */
+     *  NOT reset here - see `refreshSpecialItems`'s closing top-up. */
     shieldHp: 0,
-    /** H10 — Second Wind. `revives` is the capacity `player.revivesLeft` is
+    /** H10 - Second Wind. `revives` is the capacity `player.revivesLeft` is
      *  topped up toward; see the field's own doc comment on `Player`. */
     revives: 0,
     reviveHpPct: 0,
@@ -418,7 +418,7 @@ export class World {
 
     // --- docs/UPGRADE_ROSTER.md batch 5 -----------------------------------
     /** Ledger Book: `interestOn`'s cap and rate, read by `ShopScreen.open`
-     *  through the `interestFor` getter below rather than the pure formula —
+     *  through the `interestFor` getter below rather than the pure formula -
      *  an owned item is per-run state, not a content constant. */
     interestCapBonus: 0,
     interestPctBonus: 0,
@@ -435,7 +435,7 @@ export class World {
    * H9 (docs/UPGRADE_ROSTER.md batch 3): the shield's CURRENT amount.
    *
    * `specialItems.shieldHp` above is the CAPACITY; this is what is actually
-   * left to absorb. Deliberately not reset in `refreshSpecialItems` — like
+   * left to absorb. Deliberately not reset in `refreshSpecialItems` - like
    * `shieldReady` before it, it persists across a build change and is only
    * topped back up there and on wave complete, never zeroed by owning a new
    * item. Read by `tests/specials.test.ts` through the getter below.
@@ -464,12 +464,12 @@ export class World {
   /** Blood Up (Barn Dog epic): kills THIS wave, capped by `bloodUpMaxPct`
    *  divided by `bloodUpPerKillPct`, reset at every wave boundary below. */
   private bloodUpKillsThisWave = 0
-  /** Public read of the above — `minionHunt` (a different module) reads it
+  /** Public read of the above - `minionHunt` (a different module) reads it
    *  the same way `orbit` already reads `scytheSecondBlade`. */
   get bloodUpKills(): number { return this.bloodUpKillsThisWave }
   /** Littermate (docs/UPGRADE_ROSTER.md batch 3): read by `minionHunt` in
    *  `behaviours/weapons.ts`, the same module and the same reason as
-   *  `bloodUpKills` above — a per-tick weapon behaviour reads world state
+   *  `bloodUpKills` above - a per-tick weapon behaviour reads world state
    *  through a getter rather than reaching into `specialItems` directly. */
   get hasLittermate(): boolean { return this.specialItems.hasLittermate }
   get littermateDamagePct(): number { return this.specialItems.littermateDamagePct }
@@ -478,12 +478,12 @@ export class World {
   /** Guard so a chained kill cannot chain again. */
   private chaining = false
 
-  // --- docs/UPGRADE_ROSTER.md batch 3, H8 — per-stack placeable timers ----
+  // --- docs/UPGRADE_ROSTER.md batch 3, H8 - per-stack placeable timers ----
   // One cooldown per STACK SLOT, not per card: `updateTurrets` etc. index
   // into these by the stack's position (0..maxStacks-1), exactly the way
   // `updateBull`/`findAttached` already key a persistent minion by weapon id
   // and `hatchChick` counts live chicks before hatching another. Sized to
-  // each card's own `maxStacks` — Scarecrow Post's 3, Hen Coop's 2.
+  // each card's own `maxStacks` - Scarecrow Post's 3, Hen Coop's 2.
   private turretCd = new Float64Array(3)
   private coopCd = new Float64Array(2)
   private trapCd = 0
@@ -491,7 +491,7 @@ export class World {
   /**
    * @param tier County Fair difficulty tier, 1-based. Scales enemy HP and the
    *             acre payout; see `meta.ts`. Defaults to 1 so every existing
-   *             caller — tests, tools, the headless painter — is unaffected.
+   *             caller - tests, tools, the headless painter - is unaffected.
    */
   constructor(
     seed: number, classId: string, metaMods: StatMods = {}, readonly tier = 1,
@@ -502,7 +502,7 @@ export class World {
     this.skinRng = new Rng(seed ^ 0x5b1_5a17)
 
     // THE FIRST DRAW OFF THE RUN'S RNG. Exactly one `next()`, before anything
-    // else touches the stream — see the `_rngNote` in maps.json. Moving this
+    // else touches the stream - see the `_rngNote` in maps.json. Moving this
     // later does not just change which map you get, it reseats every draw after
     // it, and every recorded seed replays as a different run.
     //
@@ -554,7 +554,7 @@ export class World {
    * Scatter one kind of harvestable node across the field.
    *
    * Variants are drawn by weight, so a run's field is mostly plain rock with
-   * the occasional gold seam rather than an even spread — the point of ore is
+   * the occasional gold seam rather than an even spread - the point of ore is
    * that spotting it is worth something.
    */
   /**
@@ -619,7 +619,7 @@ export class World {
       // `roll` is `next() * totalWeight` and `next()` is [0, 1), so with the
       // integer weights every map uses today the loop always breaks on the last
       // weighted entry and the fallback cannot fire. It is deliberately NOT
-      // covered by a test — the two versions only diverge when float error
+      // covered by a test - the two versions only diverge when float error
       // across the subtractions exceeds the gap to `totalWeight`, which needs
       // `next()` to land in the last ~1e-16 of its range, and a test that
       // sampled for that would pass under both. Kept because maps.json is a
@@ -1013,7 +1013,7 @@ export class World {
 
     this.updatePlayerSpecials(dt)
     this.updateBull(dt)
-    // docs/UPGRADE_ROSTER.md batch 3, H8 — every early-out on its own count
+    // docs/UPGRADE_ROSTER.md batch 3, H8 - every early-out on its own count
     // field, so a run owning none of these pays five cheap compares.
     if (this.specialItems.turretCount > 0) this.updateTurrets(dt)
     if (this.specialItems.trapMax > 0) this.updateBearTraps(dt)
@@ -1021,7 +1021,7 @@ export class World {
     if (this.specialItems.wireDamage > 0) this.updateTripWire()
     if (this.specialItems.hasGoose) this.updateGoose(dt)
 
-    // 3. spawner — the wave director, then the map's own. Ambient hazards are
+    // 3. spawner - the wave director, then the map's own. Ambient hazards are
     // spawning, so they belong in this step rather than with the vfx at 11:
     // they damage, they block ground, and an enemy steering next tick has to
     // see one that appeared this tick.
@@ -1077,7 +1077,7 @@ export class World {
         s.pickSpawnPoint(this.player.x, this.player.y, this.arenaW, this.arenaH, this.spawnPoint)
         // Rolled per enemy rather than per group. Rolling once for the group
         // and handing the result to every member meant a single success spawned
-        // three to six elites shoulder to shoulder — the balance harness found
+        // three to six elites shoulder to shoulder - the balance harness found
         // 2.6 of them alive at the average death, and wave 5, the first elite
         // wave, was killing more runs than any other.
         const elite = req.eliteEligible && this.rng.chance(WAVES.elite.chance)
@@ -1085,7 +1085,7 @@ export class World {
       }
     }
 
-    // Barks queued by flanking dogs summon a second pack — the tell paying off.
+    // Barks queued by flanking dogs summon a second pack - the tell paying off.
     //
     // Two guards, both load-bearing. The summoned dogs are marked as having
     // already barked, or every pack summons a pack and the roster grows 4^n
@@ -1227,7 +1227,7 @@ export class World {
 
   /**
    * Cheap separation so a pile never fully occludes the player (§11). Uses the
-   * previous tick's grid, which is a frame stale and entirely good enough —
+   * previous tick's grid, which is a frame stale and entirely good enough -
    * rebuilding here would double the grid cost for no visible gain.
    */
   private separateEnemies(): void {
@@ -1244,7 +1244,7 @@ export class World {
       const n = this.grid.query(e.x, e.y, e.radius * 2, this.queryOut)
       let pushX = 0
       let pushY = 0
-      // A hard knockback velocity, not merely "overlapping" — an ordinary
+      // A hard knockback velocity, not merely "overlapping" - an ordinary
       // crowd standing shoulder to shoulder must not deal this every tick.
       const thrown = collideDamage > 0 && e.collideCd <= 0
         && e.kx * e.kx + e.ky * e.ky > C.windbreakThrownSpeed * C.windbreakThrownSpeed
@@ -1335,7 +1335,7 @@ export class World {
       /*
          Batch 2, Post Hole Auger: Two Speed is a per-weapon attack-speed
          upgrade, and attack speed is applied as a DEPLETION RATE on
-         `cooldownLeft` rather than a scale on the refill (see below) — so
+         `cooldownLeft` rather than a scale on the refill (see below) - so
          this weapon's own rate gets its own extra multiplier rather than
          touching the player-wide `attackSpeedMultiplier`. 1 for every other
          weapon and every run that has not taken the card.
@@ -1428,7 +1428,7 @@ export class World {
             }
           }
           // Rifled Cup: relaunches once, at 60%, toward whatever is nearest
-          // the blast. `p.ricochets` is otherwise unused by this behaviour —
+          // the blast. `p.ricochets` is otherwise unused by this behaviour -
           // set on the RELAUNCHED shell so it cannot bounce a second time.
           if (glSlot && hasMod(glSlot, 'rifledCup') && p.ricochets === 0) {
             const rifledTarget = this.findNearestEnemy(p.x, p.y, 260)
@@ -1508,7 +1508,7 @@ export class World {
         const d = Math.hypot(dx, dy) || 1
         // Set from the weapon (angularVelocity is the dog's speed slot), so the
         // T2 rider is a different target speed rather than a multiplier applied
-        // to the current one — the latter compounds every tick.
+        // to the current one - the latter compounds every tick.
         const speed = p.angularVelocity > 0 ? p.angularVelocity : 210
         p.vx = (dx / d) * speed
         p.vy = (dy / d) * speed
@@ -1525,7 +1525,7 @@ export class World {
       }
 
       /*
-         H4 — Burr Load steers the round onto the nearest enemy.
+         H4 - Burr Load steers the round onto the nearest enemy.
 
          In the integrate step, per §8, and rate-limited by an ANGLE rather
          than by a lerp toward the target: a lerp makes a fast round turn
@@ -1537,7 +1537,7 @@ export class World {
       /*
          Batch 2: Match Barrel rides the same steering with its OWN rate,
          set once at spawn on the round itself (`p.homingRate`) rather than on
-         `specialItems` — Burr Load's rate is player-wide (every ranged shot),
+         `specialItems` - Burr Load's rate is player-wide (every ranged shot),
          Match Barrel's is one weapon's own round. The higher of the two wins
          rather than summing them, which keeps this arithmetically identical
          to the line it replaces for every run that owns neither or only one.
@@ -1606,7 +1606,7 @@ export class World {
   private splitShards(p: Projectile, count: number, bounces = 0): void {
     const shardDef = WEAPONS[p.weaponId]
     // Batch 2, Drum Gun: Frangible adds shards and hits harder per shard;
-    // Live Wire gives every shard its own one-hop chain (H1, per-projectile —
+    // Live Wire gives every shard its own one-hop chain (H1, per-projectile -
     // see `applyOnHitRiders`). Both read off the SLOT rather than the def,
     // because they are cards taken, not numbers a tier grants.
     const slot = this.player.weapons.find((w) => w.id === p.weaponId)
@@ -1676,7 +1676,7 @@ export class World {
   }
 
   /**
-   * Shrink hazards of a kind that overlap a point — the watering can's T3
+   * Shrink hazards of a kind that overlap a point - the watering can's T3
    * washing gas out of the air. A cloud that runs out of radius is removed by
    * the hazard pass on its next tick.
    */
@@ -1729,7 +1729,7 @@ export class World {
         // Minions are never spent by hitting; they are refreshed by the weapon.
         if (!p.attached && p.type !== 'minion') {
           // The Reaper's Own: melee cuts clean through everything, and what it
-          // kills it keeps cutting. Ranged is untouched — a legendary that made
+          // kills it keeps cutting. Ranged is untouched - a legendary that made
           // every bullet infinitely piercing would end the game.
           const reaper = this.specialItems.reswingDamageMultiplier > 0
             && (p.type === 'melee' || p.type === 'orbit')
@@ -1743,7 +1743,7 @@ export class World {
           }
         } else if (p.behaviour === 'trapField' && p.hitsLeft <= 0) {
           // Bear Trap (batch 3, H8): `attached` exempts it from the block
-          // above, so its own one-shot consumption is spelled out here —
+          // above, so its own one-shot consumption is spelled out here -
           // triggered and spent in the same tick it bites.
           this.projectiles.free(i)
           break
@@ -1788,7 +1788,7 @@ export class World {
     // ("Straw Chopper: its kills leave..."). Chain hits, hazard ticks and
     // corpse splits go through `damageEnemy` directly rather than here, so
     // this is deliberately "the last WEAPON that hit it", not "the last
-    // damage of any kind" — which is exactly what a per-weapon card wants.
+    // damage of any kind" - which is exactly what a per-weapon card wants.
     e.lastHitWeaponId = p.weaponId
 
     // Statuses land BEFORE the damage, so a killing blow still leaves them on
@@ -1832,7 +1832,7 @@ export class World {
     if (p.burnDps > 0) this.applyBurn(e, p.burnDps * dotDmg, p.burnSeconds * dotLife + dotAdd)
     if (p.bleedDps > 0) this.applyBleed(e, p.bleedDps * dotDmg, p.bleedSeconds * dotLife + dotAdd)
     if (p.markPct > 0) this.applyMark(e, p.markPct, p.markSeconds + dotAdd)
-    // Weak Seam: a crit marks. §8's list of nineteen — `markPct` is a field the
+    // Weak Seam: a crit marks. §8's list of nineteen - `markPct` is a field the
     // Harpoon's T4 rider already writes, so a crit build and a status build
     // become the same build with no new debuff invented.
     if (isCrit && sp.critMarkPct > 0) {
@@ -1847,9 +1847,9 @@ export class World {
 
     this.damageEnemy(enemyIndex, p.damage, type, isCrit)
     if (p.burnDps > 0) this.igniteSlicksNear(p.x, p.y)
-    // H1/H2/H5/H6 — one call, one cached boolean, nothing allocated (§8).
+    // H1/H2/H5/H6 - one call, one cached boolean, nothing allocated (§8).
     // Batch 2's Live Wire rides the same call site with its own per-shard
-    // chain (see `applyOnHitRiders`), so the gate also opens on THAT — still
+    // chain (see `applyOnHitRiders`), so the gate also opens on THAT - still
     // one compare for a run that owns neither.
     if (sp.anyOnHitRider || p.chainCount > 0) this.applyOnHitRiders(enemyIndex, p)
 
@@ -1870,7 +1870,7 @@ export class World {
    * maintaining a second grid for them.
    */
   /**
-   * Proximity harvesting — the pickaxe and the axe working on their own.
+   * Proximity harvesting - the pickaxe and the axe working on their own.
    *
    * This is the Deep Rock Galactic: Survivor model rather than the old one.
    * Before, a crop only broke when a stray bullet happened to clip it, which
@@ -1923,7 +1923,7 @@ export class World {
   private toolDpsFor(kind: string): number {
     const pl = this.player
     for (const [toolId, tool] of Object.entries(NODES.tools)) {
-      // Skip documentation keys — see TOOL_TIER_CAP in player.ts.
+      // Skip documentation keys - see TOOL_TIER_CAP in player.ts.
       if (toolId.startsWith('_') || !Array.isArray(tool?.tiers)) continue
       if (tool.worksKind !== kind && tool.alsoWorks !== kind) continue
       const tierIndex = toolId === 'pickaxe' ? pl.pickaxeTier : pl.axeTier
@@ -1934,7 +1934,7 @@ export class World {
   }
 
   /**
-   * Node timers only — flash, the working shake, and the break animation.
+   * Node timers only - flash, the working shake, and the break animation.
    *
    * Weapons deliberately do NOT damage nodes any more. They used to, and it
    * quietly defeated the whole harvesting design: a shovel swing carries more
@@ -2017,13 +2017,13 @@ export class World {
 
       const sp = this.specialItems
 
-      // Sunday Best used to be special-cased here — the wave's first hit,
+      // Sunday Best used to be special-cased here - the wave's first hit,
       // refunded and countered outright. H9 (batch 3) folds it into
       // `damagePlayer`'s shield absorption instead, so contact damage always
       // goes through the one call below now.
       this.damagePlayer(e.damage * waveScalar(this.spawner.wave))
       e.touchCd = P.contactDamageInterval
-      // The chasers have no attack STATE — they damage by touching. The hit is
+      // The chasers have no attack STATE - they damage by touching. The hit is
       // the only attack moment they have, so it is what plays the pose.
       if (e.attackT <= 0) e.attackT = 1e-6
 
@@ -2046,10 +2046,10 @@ export class World {
       }
 
       /*
-         H13 — Anchor Stone (The Hand, epic): at Braced's cap, anything that
+         H13 - Anchor Stone (The Hand, epic): at Braced's cap, anything that
          reaches him is slowed. §6 writes this as a 90px aura; it rides the
          touch loop instead of a second grid query, the same simplification
-         Straw Hat's "enemies within 60px" already makes here — contact
+         Straw Hat's "enemies within 60px" already makes here - contact
          damage only ever fires from something already touching him, so for
          a class whose whole identity is standing still and letting the
          crowd arrive, "on touch" and "in a small ring around him" are the
@@ -2108,7 +2108,7 @@ export class World {
    * Vent the map's own hazards.
    *
    * These differ from every other hazard in the game in that they hurt BOTH
-   * sides — `dps` and `playerDps` are separate numbers in maps.json and both
+   * sides - `dps` and `playerDps` are separate numbers in maps.json and both
    * are usually non-zero. That is the point of putting hazards on the map
    * rather than on a weapon: a burning patch on The Burn is somewhere you can
    * drag a hog to die, not only somewhere you must not stand. A map that makes
@@ -2188,11 +2188,11 @@ export class World {
         continue
       }
       // Hazards that hurt the player. Acid pools and gas clouds spawned and
-      // rendered but were harmless before this — the pools were the enemy's
+      // rendered but were harmless before this - the pools were the enemy's
       // whole point and they were decoration.
       // Iron Lung makes gas inert. Checked here rather than at spawn so the
       // cloud still exists, still renders, and still hurts enemies caught in it
-      // — the card removes the threat, not the object.
+      // - the card removes the threat, not the object.
       const inert = this.specialItems.gasImmune && h.kind === 'gas'
       if (h.playerDps > 0 && this.player.alive && !inert) {
         const pd = Math.hypot(this.player.x - h.x, this.player.y - h.y)
@@ -2212,12 +2212,12 @@ export class World {
         /*
            Hot As It Comes: "every slick on the field burns twice as hot."
 
-           Applied HERE, at the tick, rather than at each spawn site — which is
+           Applied HERE, at the tick, rather than at each spawn site - which is
            what makes one card worth six sources (tar puddles, kerosene
            splashes, the Chem Sprayer's gas, the Grenade Launcher's rind, the
            Crop Duster's trail, Rot Underfoot's pools) with no new hook. It
            scales `dps` and never `playerDps`, so the enemy's own acid pools
-           and gas clouds — which carry no `dps` at all — are untouched.
+           and gas clouds - which carry no `dps` at all - are untouched.
 
            A payload scalar at the point of application, exactly where
            `dotDamageMul` lives. It is not a stat and does not go near
@@ -2261,7 +2261,7 @@ export class World {
       }
 
       // Whole points only. 4 dps at 60Hz is 0.066 a tick, and rounding that per
-      // tick is sixty zeroes — the accumulator is what makes a burn do damage.
+      // tick is sixty zeroes - the accumulator is what makes a burn do damage.
       if (e.burnLife > 0) {
         e.burnLife -= dt
         e.burnAcc += e.burnDps * dt
@@ -2348,7 +2348,7 @@ export class World {
       }
 
       if (g.magnetised) {
-        // Accelerating, not lerping — the greed curve (§11).
+        // Accelerating, not lerping - the greed curve (§11).
         g.speed += T.pickups.magnetAcceleration * dt
         g.x += (dx / d) * g.speed * dt
         g.y += (dy / d) * g.speed * dt
@@ -2375,7 +2375,7 @@ export class World {
     switch (g.kind) {
       case 'xp': {
         // H15: xpPct is additive with harvestPct, which already scaled XP
-        // pickups — Seed Corn's whole card is this one line.
+        // pickups - Seed Corn's whole card is this one line.
         const gained = g.value *
           (1 + (this.player.stats.harvestPct + this.player.stats.xpPct) / 100)
         const levels = this.player.gainXp(gained)
@@ -2385,7 +2385,7 @@ export class World {
       case 'feed':
         this.sound('pickupFeed')
         // Early Bird (batch 5): every feed pickup, whatever spawned it, is
-        // worth more — added flat, after the harvest scaling, the same way
+        // worth more - added flat, after the harvest scaling, the same way
         // `killHeal` is a flat add after a percentage elsewhere in this file.
         this.player.feed += Math.round(g.value * (1 + this.player.stats.harvestPct / 100))
           + this.specialItems.feedBonusFlat
@@ -2492,11 +2492,11 @@ export class World {
       // Under the sprites: the dash trail is on the ground, not in the air.
       this.playFx('dust', p.px, p.py, p.facing, 1, 0, 0, true)
       /*
-         H13 — Dust Devil (The Kid, epic): the blinding dust trail catches.
+         H13 - Dust Devil (The Kid, epic): the blinding dust trail catches.
          One pooled hazard centred on the dash rather than a segment swept
-         along it — the pool this rides already exists (`spawnHazard`, the
+         along it - the pool this rides already exists (`spawnHazard`, the
          same one Hold the Line's ward and every slick uses), a second
-         travelling hazard per dash would not — and the trail IS the blind
+         travelling hazard per dash would not - and the trail IS the blind
          cloud, which sits roughly where the dash crossed, not at one end
          of it. Radius covers half the dash so a pursuer following the
          blind trail is in it, not chasing behind it.
@@ -2699,7 +2699,7 @@ export class World {
   /**
    * The Drifter's Light Out: a dash that is a weapon.
    *
-   * The Kid's Bolt is an escape — i-frames and a blinding trail. This crosses
+   * The Kid's Bolt is an escape - i-frames and a blinding trail. This crosses
    * the same distance and charges everything on the line for it, and the
    * cooldown comes back for each thing that dies on the way through, so it is
    * the one ability in the game that is cheaper the more committed you are.
@@ -2752,7 +2752,7 @@ export class World {
       if (dx * dx + dy * dy > reach * reach) continue
       this.damageEnemy(j, (a.damage as number) ?? 45, 'melee', this.rng.chance(p.stats.critChance))
       if (!e.active || e.dying > 0 || e.knockbackImmune) continue
-      // Shoved off the line rather than along it — the point is that he goes
+      // Shoved off the line rather than along it - the point is that he goes
       // through the crowd, so the crowd has to end up either side of him.
       const d = Math.hypot(dx, dy) || 1
       const kb = ((a.knockback as number) ?? 300) * this.knockbackMul
@@ -2766,8 +2766,8 @@ export class World {
 
   private updateAbility(dt: number): void {
     const p = this.player
-    // The ward and the mine outlive `abilityActive` — the mine deliberately, so
-    // it is a thing left on the ground rather than a channel — so both tick
+    // The ward and the mine outlive `abilityActive` - the mine deliberately, so
+    // it is a thing left on the ground rather than a channel - so both tick
     // before the early return below.
     if (p.wardLife > 0) {
       p.wardLife -= dt
@@ -2813,7 +2813,7 @@ export class World {
    * budget would only give the budget a chance to refuse them.
    */
   /**
-   * Start the rows burning inward. Idempotent — a second call does not restart
+   * Start the rows burning inward. Idempotent - a second call does not restart
    * a burn already under way.
    */
   beginArenaBurn(seconds: number, toFraction: number): void {
@@ -2942,6 +2942,45 @@ export class World {
     }
   }
 
+  /** One xp seed; see `dropMerged`. */
+  private dropSeed(x: number, y: number, value: number): void {
+    this.dropMerged('xp', x, y, value)
+  }
+
+  /**
+   * One seed or feed sack. If an unclaimed one of the same kind is already
+   * lying within the horde's merge radius it takes the value instead, so a
+   * crowd killed in one place pays out as a few heavy drops rather than a
+   * carpet of light ones (the renderer draws a heavy one big).
+   */
+  private dropMerged(kind: 'xp' | 'feed', x: number, y: number, value: number): void {
+    const r = WAVES.horde?.mergeRadius ?? 0
+    if (r > 0) {
+      const r2 = r * r
+      for (let i = 0; i < this.pickups.live; i++) {
+        const g = this.pickups.items[i]
+        if (g.kind !== kind || g.magnetised) continue
+        const dx = g.x - x
+        const dy = g.y - y
+        if (dx * dx + dy * dy <= r2) {
+          g.value += value
+          return
+        }
+      }
+    }
+    const g = this.pickups.acquire()
+    if (!g) return
+    g.kind = kind
+    g.x = x
+    g.y = y
+    g.px = x
+    g.py = y
+    g.value = value
+    g.magnetised = false
+    g.speed = 0
+    g.bob = kind === 'xp' ? this.rng.range(0, 6) : 0
+  }
+
   spawnEnemy(typeId: string, x: number, y: number, elite: boolean): Enemy | null {
     const def = ENEMIES[typeId]
     if (!def) return null
@@ -2975,12 +3014,19 @@ export class World {
     e.ky = 0
     // Tier is a flat multiplier on top of the wave curve, never compounded
     // into it: Tier 3 is "everything has 50% more HP", not a different curve.
-    e.maxHp = def.hp * scalar * (elite ? WAVES.elite.hpMultiplier : 1) * tierHpMultiplier(this.tier)
+    // The horde (waves.json -> horde): ordinary enemies come in greater numbers
+    // and each is worth proportionally less. A boss is itself.
+    const horde = def.boss === true ? null : WAVES.horde
+    e.maxHp = def.hp * scalar * (elite ? WAVES.elite.hpMultiplier : 1) * tierHpMultiplier(this.tier) *
+      (horde ? horde.hp + (horde.hpPerWave ?? 0) * (this.spawner.wave - 1) : 1)
     e.hp = e.maxHp
     e.speed = def.speed
-    e.damage = def.damage
+    // Contact damage grows through the day: a crowd at dusk bites harder
+    // than one at dawn, which is what keeps a player who never moves from
+    // riding it out (run.test.ts, "a run nobody is playing").
+    e.damage = def.damage * (horde ? horde.damage + (horde.damagePerWave ?? 0) * (this.spawner.wave - 1) : 1)
     e.radius = def.radius
-    e.xp = def.xp
+    e.xp = def.xp * (horde?.xp ?? 1)
     e.behaviour = def.behaviour
     e.elite = elite
     e.flash = 0
@@ -2991,6 +3037,7 @@ export class World {
     e.t1 = -1
     e.s0 = 0
     e.s1 = 0
+    e.a0 = 0
     e.touchCd = 0
     e.knockbackImmune = def.knockbackImmune === true
     e.dying = 0
@@ -3036,7 +3083,7 @@ export class World {
     p.ricochets = 0
     p.t0 = 0
     p.t1 = 0
-    // Batch 2, H1/H4 per-projectile overrides (see entities.ts) — zero unless
+    // Batch 2, H1/H4 per-projectile overrides (see entities.ts) - zero unless
     // the behaviour that just spawned this round sets one.
     p.homingRate = 0
     p.chainCount = 0
@@ -3049,8 +3096,8 @@ export class World {
   /**
    * Put the player's element on every projectile spawned since `fromIndex`.
    *
-   * The element swaps the whole bullet rather than tinting one — a fire build
-   * fires actual fireballs, an acid build fires acid — and carries the lasting
+   * The element swaps the whole bullet rather than tinting one - a fire build
+   * fires actual fireballs, an acid build fires acid - and carries the lasting
    * damage on the payload fields the tier riders already use, so it needed no
    * new damage plumbing.
    *
@@ -3107,7 +3154,7 @@ export class World {
   }
 
   /**
-   * H1, H2, H5, H6 — everything a hit does BEYOND its own damage.
+   * H1, H2, H5, H6 - everything a hit does BEYOND its own damage.
    *
    * One call at the end of `applyHit`, guarded by a single cached boolean so a
    * run that owns none of these pays one compare (§8). Nothing here allocates:
@@ -3126,9 +3173,9 @@ export class World {
     const ox = e.x
     const oy = e.y
 
-    // H1 — Fence Charge arcs to its neighbours, player-wide. Batch 2's Live
+    // H1 - Fence Charge arcs to its neighbours, player-wide. Batch 2's Live
     // Wire is the same arc scoped to one weapon's own shard, carried on the
-    // projectile rather than `specialItems` (see entities.ts) — the higher of
+    // projectile rather than `specialItems` (see entities.ts) - the higher of
     // the two counts and ranges wins rather than summing, so a run with both
     // gets the bigger chain rather than two separate ones stacking.
     const chainCount = Math.max(s.chainCount, p.chainCount)
@@ -3151,7 +3198,7 @@ export class World {
       this.chaining = false
     }
 
-    // H5 — the Moonshine Jug goes up on a fraction of hits.
+    // H5 - the Moonshine Jug goes up on a fraction of hits.
     if (s.burstChance > 0 && this.rng.chance(s.burstChance / 100)) {
       this.chaining = true
       this.areaDamage(ox, oy, s.burstRadius, p.damage * s.burstMul, 'ranged', 40)
@@ -3159,14 +3206,14 @@ export class World {
       this.chaining = false
     }
 
-    // H6 — the Kerosene Load leaves burning ground where the shot landed.
+    // H6 - the Kerosene Load leaves burning ground where the shot landed.
     if (s.hitHazardKind !== '' && p.type !== 'melee' && p.type !== 'orbit') {
       this.dropRiderHazard(
         s.hitHazardKind, ox, oy, s.hitHazardRadius, s.hitHazardSeconds, s.hitHazardDps, 0,
       )
     }
 
-    // H2 — the Ricochet Plate sends the round on rather than freeing it. The
+    // H2 - the Ricochet Plate sends the round on rather than freeing it. The
     // projectile is RETARGETED, not respawned: it keeps its own payload, its
     // element and its pierce budget, and the pool never sees a new slot.
     if (s.ricochetCount > 0 && !p.attached && p.type === 'ranged' && p.ricochets < s.ricochetCount) {
@@ -3188,7 +3235,7 @@ export class World {
   }
 
   /**
-   * H3 — Split Shot. What it kills, it comes out of.
+   * H3 - Split Shot. What it kills, it comes out of.
    *
    * Rounds go out on a fixed fan rather than at random angles: the split is
    * not a draw, so it costs the seeded stream nothing and two runs from one
@@ -3219,14 +3266,14 @@ export class World {
   }
 
   /**
-   * H11 — Broody Hen. Every twelfth kill hatches a chick.
+   * H11 - Broody Hen. Every twelfth kill hatches a chick.
    *
    * A chick is a MINION, on the path the Barn Dog and the Whitacre Bull
    * already fly: pooled as a projectile, steered by `minionHunt` in the
    * integrate step, rate-limited by the same bite stamp. It is not a placeable
    * (H8, batch 3) and it needed no new pool and no new steering. It dies on a
-   * timer rather than on contact, and `killSpawnMax` — one per copy of the
-   * card — is enforced by counting the live ones before hatching another.
+   * timer rather than on contact, and `killSpawnMax` - one per copy of the
+   * card - is enforced by counting the live ones before hatching another.
    */
   private hatchChick(x: number, y: number): void {
     const s = this.specialItems
@@ -3327,8 +3374,8 @@ export class World {
   }
 
   /**
-   * The one place enemy damage is applied. Everything — weapons, hazards,
-   * reflect, boss attacks — comes through here so the formula lives once.
+   * The one place enemy damage is applied. Everything - weapons, hazards,
+   * reflect, boss attacks - comes through here so the formula lives once.
    *
    * `fromDot` marks a damage-over-time tick. It still kills, drops and counts,
    * but it draws no number and no spark: a burn ticks several times a second
@@ -3345,7 +3392,7 @@ export class World {
     const e = this.enemies.items[index]
     if (!e.active || e.dying > 0) return
     const s = this.player.stats
-    // Recorded so `killEnemy` knows whether a blade or a bullet finished it —
+    // Recorded so `killEnemy` knows whether a blade or a bullet finished it -
     // the Reaper re-swings on melee kills only.
     e.lastHitMelee = type === 'melee'
 
@@ -3369,7 +3416,7 @@ export class World {
       /*
          Cross-Contamination joins the mark's own term ADDITIVELY, which is the
          only place a per-target percentage can go without breaking the
-         single-pass rule — the same argument Overwatch is written up with
+         single-pass rule - the same argument Overwatch is written up with
          eight lines above. Zero for every run that does not own it.
 
          "Two or more statuses" is counted here rather than latched on the
@@ -3428,7 +3475,7 @@ export class World {
     if (s.lifestealPct > 0) {
       /*
          Class pass (this session): The Drifter's lifesteal now scales with
-         his OWN Hot Streak rather than being a flat percentage of every hit —
+         his OWN Hot Streak rather than being a flat percentage of every hit -
          see `_lifestealGateNote` on the class. Everyone else keeps `scale`
          at 1, byte-identical to the old unconditional line.
 
@@ -3438,8 +3485,8 @@ export class World {
          wanders into it) farmed near-full healing off ticks Hot Streak was
          never meant to be paid for. Hot Streak's own rule is "any hit at all
          ends it", so `pl.streak` is lowest exactly when a passive, standing
-         build is taking the most contact damage — the moment it needs
-         healing most — while a build that is actually dodging keeps its
+         build is taking the most contact damage - the moment it needs
+         healing most - while a build that is actually dodging keeps its
          streak up and its lifesteal with it. Ties his sustain to the same
          mechanic his damage and speed already scale with, rather than
          leaving it the one flat stat on his sheet.
@@ -3456,7 +3503,7 @@ export class World {
       }
     }
 
-    // Hitstop on crits only — on chaff it reads as lag (§11).
+    // Hitstop on crits only - on chaff it reads as lag (§11).
     if (isCrit) this.hitstop = C.hitstopSecondsOnCrit
 
     if (e.hp <= 0) this.killEnemy(index)
@@ -3465,21 +3512,21 @@ export class World {
   private killEnemy(index: number): void {
     const e = this.enemies.items[index]
     this.kills++
-    // Every kill-driven class effect — Grit closing a wound, Hot Streak
-    // stacking, a ward paying out — hangs off this one call, so the chain and
+    // Every kill-driven class effect - Grit closing a wound, Hot Streak
+    // stacking, a ward paying out - hangs off this one call, so the chain and
     // re-swing kills below feed them exactly as an ordinary kill does.
     this.player.onKill(e.x, e.y)
     const def = ENEMIES[e.typeId]
 
     // Blood Up (Barn Dog epic): every kill this wave counts, regardless of
-    // what killed it — the dog is faster because the FIELD is bloody, not
+    // what killed it - the dog is faster because the FIELD is bloody, not
     // because it personally made the kill.
     const bdSlot = this.player.weapons.find((w) => w.id === 'barnDog')
     if (bdSlot && hasMod(bdSlot, 'bloodUp')) this.bloodUpKillsThisWave++
 
     // The Reaper's Own: "what it kills, it keeps cutting." A melee kill swings
     // again through the same space for a fraction. Guarded by `chaining` too,
-    // so a re-swing kill cannot re-swing — the same runaway the chain guard
+    // so a re-swing kill cannot re-swing - the same runaway the chain guard
     // exists to stop, and they share it because they are the same shape.
     const reap = this.specialItems.reswingDamageMultiplier
     if (reap > 0 && !this.chaining && e.lastHitMelee) {
@@ -3490,7 +3537,7 @@ export class World {
     }
 
     // Threshing Floor: what dies in reach takes the next one with it. Splash is
-    // NOT recursive — a chained kill does not chain again, or one dense wave
+    // NOT recursive - a chained kill does not chain again, or one dense wave
     // would cascade into a screen clear and the card would be a nuke rather
     // than a rider. Same reasoning as the Chili Shot's `burnGen` cap below.
     const chain = this.specialItems
@@ -3511,13 +3558,13 @@ export class World {
        and the Threshing Floor share above, and for the same reason: a kill
        effect that can cause a kill that causes it again is a screen clear
        wearing a rider's clothes. The guard is one boolean and it is shared on
-       purpose — these are all the same shape.
+       purpose - these are all the same shape.
     */
     const b1 = this.specialItems
     if (!this.chaining) {
       this.chaining = true
 
-      // H5 — Last Rites. A MARKED enemy that dies comes apart. The gate is the
+      // H5 - Last Rites. A MARKED enemy that dies comes apart. The gate is the
       // mark, which is what ties it to Rock Salt, Quicklime and Weak Seam: three
       // different routes to the same condition, which is what a tag is for.
       if (b1.markedBurstPct > 0 && e.markLife > 0) {
@@ -3525,13 +3572,13 @@ export class World {
         this.playFx('explosion', e.x, e.y, 0, b1.markedBurstRadius / 70)
       }
 
-      // H3 — Split Shot. Reuses the shard path the Drum Gun already flies, so
+      // H3 - Split Shot. Reuses the shard path the Drum Gun already flies, so
       // the split is pooled projectiles and not a new concept.
       if (b1.splitCount > 0 && !e.lastHitMelee) {
         this.splitFromCorpse(e.x, e.y, b1.splitCount, e.maxHp * b1.splitMul)
       }
 
-      // H6 — the Tar Load leaves a slick where it kills, Rot Underfoot leaves
+      // H6 - the Tar Load leaves a slick where it kills, Rot Underfoot leaves
       // an acid pool on a fraction of kills. One `spawnHazard` each, off the
       // pool that already exists.
       if (b1.loadKillHazardKind !== '') {
@@ -3549,7 +3596,7 @@ export class World {
 
       // Batch 2, Straw Chopper: the Combine Head's OWN kills leave stubble
       // burning behind them. Gated on `lastHitWeaponId` rather than a
-      // player-wide flag — a different weapon's kill must not trigger it.
+      // player-wide flag - a different weapon's kill must not trigger it.
       if (e.lastHitWeaponId === 'combineHead') {
         const chSlot = this.player.weapons.find((w) => w.id === 'combineHead')
         if (chSlot && hasMod(chSlot, 'strawChopper')) {
@@ -3565,10 +3612,10 @@ export class World {
       }
 
       /*
-         H13 — Volunteer Strain (The Agronomist, epic): a kill that dies
+         H13 - Volunteer Strain (The Agronomist, epic): a kill that dies
          carrying 2+ statuses spreads them to nearby survivors. `>= 2` is
          hardcoded rather than a content field for the same reason
-         Cross-Contamination's own gate above is — it is the card's own
+         Cross-Contamination's own gate above is - it is the card's own
          stated trigger, not a tunable magnitude. Reuses `queryOut`; nothing
          between this query and the end of its loop reads it again, the same
          discipline `areaDamage` and the blocks above already keep.
@@ -3605,24 +3652,18 @@ export class World {
       this.chaining = false
     }
 
-    // H11 — what a kill pays out. Outside the guard: none of these can kill,
+    // H11 - what a kill pays out. Outside the guard: none of these can kill,
     // so none of them can recurse.
     if (b1.killHeal > 0 && this.player.alive) {
       this.player.hp = Math.min(this.player.stats.maxHp, this.player.hp + b1.killHeal)
     }
     if (b1.killDropChance > 0 && this.rng.chance(Math.min(1, b1.killDropChance / 100))) {
-      const tok = this.pickups.acquire()
-      if (tok) {
-        tok.kind = 'feed'
-        tok.x = e.x
-        tok.y = e.y
-        tok.px = tok.x
-        tok.py = tok.y
-        tok.value = b1.killDropValue
-        tok.magnetised = false
-        tok.speed = 0
-        tok.bob = 0
-      }
+      // Merged into a token already lying close by, as seeds and the other
+      // feed are: one sack a kill carpeted the late waves (v2 critic rounds
+      // 11 and 12). Paid straight into the purse instead, the Hand's smart
+      // bot cleared one seed fewer in run.test.ts: a token on the ground is
+      // also something the pilots walk to.
+      this.dropMerged('feed', e.x, e.y, b1.killDropValue)
     }
     if (b1.killSpawnEvery > 0) {
       this.hatchAcc++
@@ -3633,7 +3674,7 @@ export class World {
     }
 
     // Chili Shot T3 "burn spreads on death": a burning corpse lights its
-    // neighbours. `burnGen` caps the chain — a spread fire cannot spread again,
+    // neighbours. `burnGen` caps the chain - a spread fire cannot spread again,
     // or one lit enemy in a dense wave would set the whole field alight in a
     // few frames and the rider would be a screen clear rather than a rider.
     if (e.burnLife > 0 && e.burnGen === 0) {
@@ -3696,51 +3737,22 @@ export class World {
       }
     }
 
-    // Drops.
+    // Drops. An enemy's xp can be fractional under the horde; it comes out as
+    // whole-ish seeds, and a seed landing by one already lying there joins it.
     const xpCount = Math.max(1, Math.round(e.xp))
+    const xpEach = e.xp / xpCount
     for (let i = 0; i < xpCount; i++) {
-      const g = this.pickups.acquire()
-      if (!g) break
-      g.kind = 'xp'
-      g.x = e.x + this.rng.range(-8, 8)
-      g.y = e.y + this.rng.range(-8, 8)
-      g.px = g.x
-      g.py = g.y
-      g.value = 1
-      g.magnetised = false
-      g.speed = 0
-      g.bob = this.rng.range(0, 6)
+      this.dropSeed(e.x + this.rng.range(-8, 8), e.y + this.rng.range(-8, 8), xpEach)
     }
     // Seed packs: a small steady feed trickle that is not tied to standing
     // still, so a player kited round the field all wave still earns something.
-    if (this.rng.chance(NODES.mobDrops.seedPackChance)) {
-      const sp = this.pickups.acquire()
-      if (sp) {
-        sp.kind = 'feed'
-        sp.x = e.x + this.rng.range(-6, 6)
-        sp.y = e.y + this.rng.range(-6, 6)
-        sp.px = sp.x
-        sp.py = sp.y
-        sp.value = NODES.mobDrops.seedPackFeed
-        sp.magnetised = false
-        sp.speed = 0
-        sp.bob = 0
-      }
+    const feedScale = ENEMIES[e.typeId]?.boss === true ? 1 : (WAVES.horde?.feed ?? 1)
+    if (this.rng.chance(NODES.mobDrops.seedPackChance * feedScale)) {
+      this.dropMerged('feed', e.x + this.rng.range(-6, 6), e.y + this.rng.range(-6, 6), NODES.mobDrops.seedPackFeed)
     }
 
-    if (e.elite || this.rng.chance(0.04)) {
-      const f = this.pickups.acquire()
-      if (f) {
-        f.kind = 'feed'
-        f.x = e.x
-        f.y = e.y
-        f.px = f.x
-        f.py = f.y
-        f.value = e.elite ? 5 : 1
-        f.magnetised = false
-        f.speed = 0
-        f.bob = 0
-      }
+    if (e.elite || this.rng.chance(0.04 * feedScale)) {
+      this.dropMerged('feed', e.x, e.y, e.elite ? 5 * feedScale : 1)
     }
 
     const isBoss = ENEMIES[e.typeId]?.boss === true
@@ -3751,8 +3763,8 @@ export class World {
        How long the corpse stays before its slot is freed.
 
        The default is the 0.2s spin-and-scale-to-zero that stood in for death
-       art (§10 step 4). The generated animals HAVE death art now — nine frames
-       in eight directions each — and it cannot read in 200ms, so those species
+       art (§10 step 4). The generated animals HAVE death art now - nine frames
+       in eight directions each - and it cannot read in 200ms, so those species
        carry their own `deathSeconds` in content.
 
        It is per-enemy rather than global on purpose: a bullet-heaven kills
@@ -3770,7 +3782,7 @@ export class World {
   /**
    * Damage the player.
    *
-   * `source` is not bookkeeping — it changes the rules. A blow you take from an
+   * `source` is not bookkeeping - it changes the rules. A blow you take from an
    * enemy grants half a second of mercy invulnerability so a crowd cannot
    * chain-hit you to death in three frames. Environmental damage must not, in
    * either direction:
@@ -3802,7 +3814,7 @@ export class World {
       dmg *= 1 - this.specialItems.auraReduction / 100
     }
     // Oilcloth (batch 3, body): hazards specifically do less. Contact damage
-    // is untouched — the card's own words are "hazards", not "everything".
+    // is untouched - the card's own words are "hazards", not "everything".
     if (environmental && this.specialItems.hazardReductionPct > 0) {
       dmg *= 1 - this.specialItems.hazardReductionPct / 100
     }
@@ -3817,13 +3829,13 @@ export class World {
 
        The BOOKKEEPING is deliberately not split. `damageTakenFromContact` is a
        measure of what the field threw at the player, not of what the health bar
-       eventually lost, and the balance harness reads it to compare classes —
+       eventually lost, and the balance harness reads it to compare classes -
        netting a wound the player then cancelled would make The Widow look like
        she was being hit less rather than paying for it differently.
 
        H9 (batch 3) joins the same philosophy: `taken` below still measures
        what the field threw, and the shield absorbs out of a separate `landed`
-       variable — the amount that actually reaches `takeWound` and the health
+       variable - the amount that actually reaches `takeWound` and the health
        bar. A shielded hit still counts as damage taken for the balance
        harness; it just never costs HP.
     */
@@ -3844,7 +3856,7 @@ export class World {
     this.addShake(T.camera.traumaPlayerHit)
 
     /*
-       H10 — Second Wind. Checked after the hit lands rather than before it is
+       H10 - Second Wind. Checked after the hit lands rather than before it is
        computed, so a revive is spent on the actual killing blow and not on a
        hit that the shield or armour would have survived anyway.
     */
@@ -3865,7 +3877,7 @@ export class World {
     x: number, y: number, radius: number, amount: number,
     type: 'melee' | 'ranged', knockback: number, stun = 0,
     // Batch 2, Cracked Bell: an AoE that also slows. Defaulted to 0 so every
-    // existing call site — there were none that needed it before this card —
+    // existing call site - there were none that needed it before this card -
     // is arithmetically unchanged.
     slowPct = 0, slowSeconds = 0,
   ): void {
@@ -3981,7 +3993,7 @@ export class World {
   /**
    * Play a conformed FX clip at a point.
    *
-   * Pure decoration — nothing reads an effect back, so a full pool drops the
+   * Pure decoration - nothing reads an effect back, so a full pool drops the
    * request instead of growing. Deliberately takes no RNG: an effect must never
    * be able to shift the sim's RNG stream, or turning effects off would change
    * where enemies spawn and a seed would stop replaying. Any jitter an effect
@@ -3993,7 +4005,7 @@ export class World {
    * "Adding a fire upgrade or an acid bullet upgrade changed nothing" was half
    * about the bullet and half about this: Fire swapped to a bigger impact, but
    * Acid and Frost both left the same orange spark, so two of the three
-   * elements changed nothing at the moment of contact — the moment you are
+   * elements changed nothing at the moment of contact - the moment you are
    * actually looking at. Every impact clip is packed in all three colours, so
    * the suffix always resolves.
    */
@@ -4014,13 +4026,13 @@ export class World {
   ): void {
     /*
        Fall back to the BASE clip's timing when an element-suffixed key has none
-       of its own — the same fallback `Renderer.drawEffects` already does for the
+       of its own - the same fallback `Renderer.drawEffects` already does for the
        ART, and for the same stated reason: without it this silently draws
        nothing.
 
        It was missing here, and the consequence was not subtle. `elementalFx`
        builds `<clip>.<element>` for every element except None, `tuning.fx` has
-       no dotted keys at all, so this returned early on EVERY elemental impact —
+       no dotted keys at all, so this returned early on EVERY elemental impact -
        fire included. Equipping any element removed the impact effect entirely
        rather than recolouring it. "Adding a fire upgrade or an acid bullet
        upgrade changed nothing" is recorded above as a half-fixed art problem;
@@ -4106,7 +4118,7 @@ export class World {
    * The Whitacre Bull: a permanent minion that charges on a cooldown.
    *
    * Kept as a projectile of type `minion`, exactly like the Barn Dog, rather
-   * than as an enemy on the player's side — the minion path already has
+   * than as an enemy on the player's side - the minion path already has
    * steering, a bite rate-limit and pooled lifetime, and an "enemy that is
    * friendly" would need every one of those written again with the factions
    * inverted.
@@ -4156,17 +4168,17 @@ export class World {
   }
 
   /**
-   * H8 (docs/UPGRADE_ROSTER.md batch 3) — Scarecrow Post.
+   * H8 (docs/UPGRADE_ROSTER.md batch 3) - Scarecrow Post.
    *
    * One `attached` `'placeable'` projectile per stack, keyed by
    * `findAttached('scarecrowPost', i)` exactly the way the Bull is keyed by
    * its own weapon id. `pierce = -1` opts it OUT of `collideProjectiles`
    * entirely (the same escape hatch `arcLob` uses to detonate on expiry
-   * rather than on contact) — its damage is a deliberate `areaDamage` pulse
+   * rather than on contact) - its damage is a deliberate `areaDamage` pulse
    * on its own cooldown, not a touch hitbox, because 190px is a RANGE, not a
    * post's physical size. `turretLife` (25s) is not refreshed after spawn, so
    * a turret times out and the next call replants a fresh one at wherever the
-   * player then is — "one per stack" that follows the fight instead of being
+   * player then is - "one per stack" that follows the fight instead of being
    * abandoned behind it.
    */
   private updateTurrets(dt: number): void {
@@ -4202,16 +4214,16 @@ export class World {
   }
 
   /**
-   * H8 — Bear Trap.
+   * H8 - Bear Trap.
    *
    * Traps are consumed rather than persistent: each is `attached` (so it
    * never moves and `collideProjectiles`' pierce-based free never applies to
    * it) but carries a real `hitStamp` and `hitsLeft: 1`, so the FIRST enemy
-   * that overlaps it triggers `applyHit` exactly once — `collideProjectiles`
+   * that overlaps it triggers `applyHit` exactly once - `collideProjectiles`
    * itself frees it the same tick (see the `trapField` branch added there).
    * `trapMax` counts live traps, not copies of the card, so a run with two
-   * stacks still only ever has two traps on the ground — one more than a run
-   * with one — waiting to be stepped on.
+   * stacks still only ever has two traps on the ground - one more than a run
+   * with one - waiting to be stepped on.
    */
   private updateBearTraps(dt: number): void {
     const s = this.specialItems
@@ -4229,7 +4241,7 @@ export class World {
     p.type = 'placeable'
     p.behaviour = 'trapField'
     p.attached = true
-    // Dropped a short walk from the player, never underfoot — the hand that
+    // Dropped a short walk from the player, never underfoot - the hand that
     // just set it should not be the first thing that finds it.
     const a = this.rng.range(0, Math.PI * 2)
     const d = this.rng.range(40, 90)
@@ -4248,12 +4260,12 @@ export class World {
   }
 
   /**
-   * H8 — Hen Coop.
+   * H8 - Hen Coop.
    *
    * The coop itself is a permanent `attached` `'placeable'` base, one per
    * stack, that pays no damage of its own (`pierce = -1`, same reasoning as
    * the Scarecrow Post) and instead spawns a hen on its own cooldown. The hen
-   * is a SEPARATE, unattached projectile — `spawnHen` below — so `henCoop`
+   * is a SEPARATE, unattached projectile - `spawnHen` below - so `henCoop`
    * names two different live shapes and `findAttached` must never confuse
    * them; the hen's `t1 = -1` guarantees it can never match a coop-base key
    * (0 or 1), which `findAttached` searches by weaponId AND t1 together.
@@ -4290,7 +4302,7 @@ export class World {
   }
 
   /** The Hen Coop's own payout: a hen that dies on its first contact. Type
-   *  `'placeable'` rather than `'minion'` is what MAKES it die on contact —
+   *  `'placeable'` rather than `'minion'` is what MAKES it die on contact -
    *  see the doc comment on `Projectile.type` in entities.ts. */
   private spawnHen(x: number, y: number): void {
     const s = this.specialItems
@@ -4316,11 +4328,11 @@ export class World {
   }
 
   /**
-   * H8 — Trip Wire.
+   * H8 - Trip Wire.
    *
    * Not a projectile at all: a taut line has no natural circular hitbox, so
    * this is a direct per-tick crossing check between the player and the
-   * nearest harvestable prop — the same shape Salt Circle's ring already
+   * nearest harvestable prop - the same shape Salt Circle's ring already
    * uses (`updatePlayerSpecials`), generalised from a circle's boundary to a
    * line segment. `wireMark` latches per enemy so standing on the line bites
    * once per crossing, not once per frame; it is its OWN field on `Enemy`
@@ -4378,12 +4390,12 @@ export class World {
 
   /**
    * Yard Goose: a second, independent chase-and-bite minion on the Bull's own
-   * pattern — see `updateBull`'s doc comment for why a friendly rides the
+   * pattern - see `updateBull`'s doc comment for why a friendly rides the
    * minion path rather than an inverted enemy. Its bite cadence is subject to
    * the same generic `minionHunt` re-arm the Bull already lives with (the
    * integrate step's own steering block re-arms any unattached `minionHunt`
    * projectile off `WEAPONS[p.weaponId]?.biteInterval`, which is `undefined`
-   * for an item-granted minion and falls back to 0.5s) — noted, not fixed
+   * for an item-granted minion and falls back to 0.5s) - noted, not fixed
    * here, because fixing it touches the Bull and the Dog too and is out of
    * this batch's scope.
    */
@@ -4486,7 +4498,7 @@ export class World {
        The ACTIVE Load's own riders, read off `elements.json` and not off the
        item that granted it.
 
-       A Load is exclusive — taking one replaces the last — but the ITEM stays
+       A Load is exclusive - taking one replaces the last - but the ITEM stays
        in `player.items` forever. Reading a chain or a corpse-slick off the
        item would keep it firing long after its Load had been swapped away, so
        the six new Loads carry their riders on the element and exactly one
@@ -4512,7 +4524,7 @@ export class World {
       const def = ITEMS[owned.id] as unknown as Record<string, unknown> | undefined
       if (!def?.special) continue
       // A boosted copy is the rarity roll paying out, so it doubles the payload
-      // — but never a duration or a radius, which would stack into nonsense.
+      // - but never a duration or a radius, which would stack into nonsense.
       const mult = owned.boosted ? 2 : 1
       switch (def.special) {
         case 'reflect': s.reflect += num(def, 'reflectDamage') * mult; break
@@ -4625,7 +4637,7 @@ export class World {
           break
 
         // --- batch 3 (docs/UPGRADE_ROSTER.md), H8: Allies & Placeables -----
-        // Damage/cooldown/range fields are SET, not summed — one turret's own
+        // Damage/cooldown/range fields are SET, not summed - one turret's own
         // payload never changes with the number of turrets. `*Count`/`*Max`
         // sum `mult` exactly like `killSpawnMax` above: a boosted copy is one
         // more live instance, never a stronger one.
@@ -4663,28 +4675,28 @@ export class World {
           s.hasGoose = true
           break
         // Littermate is a flag read by `minionHunt` in behaviours/weapons.ts,
-        // beside its own `hasMod` checks — no state lives here to flatten
+        // beside its own `hasMod` checks - no state lives here to flatten
         // beyond "is it owned", the same shape `gasImmune` already has.
         case 'secondDog':
           s.hasLittermate = true
           s.littermateDamagePct = num(def, 'littermateDamagePct', 80)
           break
 
-        // H9 — the shield. Fence Row sums into the same capacity Sunday
+        // H9 - the shield. Fence Row sums into the same capacity Sunday
         // Best's `firstHitShield` case (above) now feeds.
         case 'shieldPerWave':
           s.shieldHp += num(def, 'shieldAmount', 25) * mult
           break
-        // H10 — Second Wind. `revives` sums (a boosted copy is two charges);
+        // H10 - Second Wind. `revives` sums (a boosted copy is two charges);
         // `player.revivesLeft` is topped up from it once, after this loop,
-        // alongside the shield — see the comment there.
+        // alongside the shield - see the comment there.
         case 'revive':
           s.revives += mult
           s.reviveHpPct = num(def, 'reviveHpPct', 40)
           s.reviveClearRadius = num(def, 'reviveClearRadius', 200)
           break
 
-        // Body cards with no new hook beyond a flattened field — §8's list.
+        // Body cards with no new hook beyond a flattened field - §8's list.
         case 'touchSlow':
           s.touchSlowPct += num(def, 'touchSlowPct', 35) * mult
           s.touchSlowSeconds = num(def, 'touchSlowSeconds', 1)
@@ -4708,7 +4720,7 @@ export class World {
           s.interestCapBonus += num(def, 'interestCapBonus', 6) * mult
           s.interestPctBonus += num(def, 'interestPctBonus', 1.5) * mult
           break
-        // Early Bird: every feed pickup is worth more, whatever spawned it —
+        // Early Bird: every feed pickup is worth more, whatever spawned it -
         // read once at the single collection site in `collect()`.
         case 'feedBonus':
           s.feedBonusFlat += num(def, 'feedBonusPerStack', 1) * mult
@@ -4725,7 +4737,7 @@ export class World {
 
     /*
        H9/H10: topped UP, never assigned outright, and never reset in the loop
-       above — both persist across a build change exactly the way
+       above - both persist across a build change exactly the way
        `shieldReady` did before this batch. A shield or a revive spent earlier
        this run comes back the moment the run buys anything else, gated only
        by the run actually owning the card (`shieldHp`/`revives` are 0 for a

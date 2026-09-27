@@ -1,10 +1,10 @@
-# Brief for Claude Design — the landing screens
+# Brief for Claude Design - the landing screens
 
 **Repository:** `Samizdat-Publications/ranch-defense-force` (public, read access)
 **Branch with everything current:** `claude/rdf-merge-session-l7ta2j`
 
 You have complete creative control over what these scenes are. This brief gives
-you the material, the constraints that are real, and a few starting ideas —
+you the material, the constraints that are real, and a few starting ideas -
 **take them or leave them.** If the ideas here are worse than yours, use yours.
 
 Ask the owner questions. He would rather answer three good ones than receive a
@@ -19,12 +19,12 @@ under the land has gone wrong, and the farm has turned: the animals, the crops,
 the neighbours. TypeScript + Vite + Canvas 2D, no engine.
 
 The tone that has worked so far is **not** monster-movie. It is *this was
-somebody's farm last week*. The horror is recognition — you know that barn, you
+somebody's farm last week*. The horror is recognition - you know that barn, you
 know that dog. Keep that and the scenes will land.
 
 ---
 
-## CORRECTIONS — read this before anything else
+## CORRECTIONS - read this before anything else
 
 Two things in the first passes were bugs in the helpers, not in your
 composition. Both are fixed on the branch above. Pull it.
@@ -37,12 +37,12 @@ in the game every entity *is* a grid cell:
 
 | | source | | source |
 |---|---|---|---|
-| `wiz` — a cat | 16x42 | `hand` — a grown man | 30x52 |
-| `brahmaHen` — a hen | 26x43 | `blackMule` — a mule | 28x63 |
-| `joy` — a bulldog | 29x42 | `fjordPony` — a pony | 25x53 |
+| `wiz` - a cat | 16x42 | `hand` - a grown man | 30x52 |
+| `brahmaHen` - a hen | 26x43 | `blackMule` - a mule | 28x63 |
+| `joy` - a bulldog | 29x42 | `fjordPony` - a pony | 25x53 |
 
 Integer zoom pins all six to 1x. `spriteEl('joy', 40)` returns 40px tall and
-`spriteEl('fjordPony', 96)` returns **53px** — so a bulldog came out nearly as
+`spriteEl('fjordPony', 96)` returns **53px** - so a bulldog came out nearly as
 tall as a pony, and no choice of numbers could have fixed it, because the
 numbers were being discarded.
 
@@ -63,7 +63,7 @@ groundActor('fjordPony', 'walk', 'left', x, footY, 96, '1.1s')   // ANIMATED
 
 Both are exported from `src/ui/scene.ts`. They scale fractionally so they hit
 the height you ask for, they add the shadow, and `groundActor` positions by the
-**feet** — and sets `z-index` from `footY`, so back-to-front depth sorting is
+**feet** - and sets `z-index` from `footY`, so back-to-front depth sorting is
 free. `spriteEl` and `clipActor` are still right for **cards**, where every
 sprite sits in its own fixed window. Never use them in a scene.
 
@@ -74,14 +74,14 @@ derived from what each thing actually is against one stated reference:
 
 > **A grown person is 64px tall.** That is 36.6px per metre.
 
-Small animals sit deliberately above life scale — a cat at true scale is 9px and
-unreadable — but the ORDER is always right: hen < dog < pony < barn.
+Small animals sit deliberately above life scale - a cat at true scale is 9px and
+unreadable - but the ORDER is always right: hen < dog < pony < barn.
 
 Two that are always drawn wrong because their canvases are square and they are
 not:
 
-- `ranch.silo` — **146 wide, 440 tall.** As tall as the barn is wide.
-- `ranch.windmill` — **100 wide, 366 tall.** Taller than the barn. Never square.
+- `ranch.silo` - **146 wide, 440 tall.** As tall as the barn is wide.
+- `ranch.windmill` - **100 wide, 366 tall.** Taller than the barn. Never square.
 
 ### And on depth
 
@@ -89,8 +89,8 @@ The ranch scene is one flat plane, which is why it reads as a collage however
 well the individual pieces are chosen. It wants real ground: a horizon band, a
 mid-ground the buildings **sit in** rather than on top of, and paddock ground
 whose near fence rail crosses **in front of** the animals standing in it. Feet
-on the grass, sorted by `footY`. A foreground layer — dark grass, a fence post
-at the very front, slightly out of focus — costs nothing and does more for depth
+on the grass, sorted by `footY`. A foreground layer - dark grass, a fence post
+at the very front, slightly out of focus - costs nothing and does more for depth
 than any other single change.
 
 ---
@@ -105,8 +105,8 @@ all three are yours. Ranked by effect per unit of work:
 
 **1. Parallax, four or five layers.** The single biggest change available. Sky
 and cloud band, far treeline, the buildings, the paddock, then a foreground
-strip. Drift them at different speeds — a few pixels a second of differential is
-plenty — and a flat collage becomes a place with depth. Nothing else on this
+strip. Drift them at different speeds - a few pixels a second of differential is
+plenty - and a flat collage becomes a place with depth. Nothing else on this
 list comes close.
 
 **2. A foreground strip.** Dark grass and a fence post at the very front, low
@@ -123,7 +123,7 @@ half minute is worth more than ten things looping every second. Constant motion
 becomes wallpaper in about four seconds; something that happens *occasionally*
 keeps the eye moving and makes the scene feel observed rather than played.
 
-**5. Animals that sometimes walk.** Not a permanent walk loop — idle, then a few
+**5. Animals that sometimes walk.** Not a permanent walk loop - idle, then a few
 paces, then idle again, at randomised intervals, each animal on its own clock.
 An animal looping forever is animated; an animal that stops is alive. Walk
 cycles are being generated for the whole cast now, and `groundActor` +
@@ -132,7 +132,7 @@ cycles are being generated for the whole cast now, and `groundActor` +
 **6. Dust motes, pollen, drifting ash.** Pure code, parallaxed with the layers.
 Cheap and enormously effective in the low sun.
 
-### The turn — why the black bar didn't work
+### The turn - why the black bar didn't work
 
 A ten-second bar sliding over the sun reads as a transition effect. The turn
 should read as *a thing happening to a place*. The mechanism is **staggering**:
@@ -143,11 +143,11 @@ should read as *a thing happening to a place*. The mechanism is **staggering**:
 So: the sky gradient goes first, sunset to bruised purple, slowly. The rim light
 cools. Then the farmhouse windows light **one at a time**, a few hundred
 milliseconds apart. Ground fog rises. Then the animals cross-fade to their
-blighted twins — **staggered**, nearest first, two hundred milliseconds each,
+blighted twins - **staggered**, nearest first, two hundred milliseconds each,
 so it travels across the frame like something passing through. The windmill
 slows and stops. A shutter bangs somewhere off-screen.
 
-Every blighted twin is a *state* of the same object — same pose, same canvas, so
+Every blighted twin is a *state* of the same object - same pose, same canvas, so
 `x.idle.down.0` cross-fades to `xBlight.idle.down.0` with nothing to
 re-register. That is what makes the staggered version cheap.
 
@@ -162,17 +162,17 @@ than any single effect in it.
 |---|---|
 | `docs/ASSET_CATALOG.md` | **Start here.** Every frame key you can actually draw, grouped by class, **with a column saying what can move**, and contact-sheet images of each class so you can see it rather than read a list. Regenerated by `npm run catalog`. |
 | `docs/catalog/*.png` | The contact sheets themselves. Open them. |
-| `docs/PIXELLAB_INVENTORY.md` | A different thing: what the PixelLab *account* holds, for answering "has this already been generated?". Uuids, not atlas keys — you cannot draw from it. Only useful if you want something new made. |
+| `docs/PIXELLAB_INVENTORY.md` | A different thing: what the PixelLab *account* holds, for answering "has this already been generated?". Uuids, not atlas keys - you cannot draw from it. Only useful if you want something new made. |
 | `DESIGN_BRIEF_HOMESCREEN.md` | The previous brief. §1 is the buildings placement job, §2 is the lightning cut. The session-18 section lists the owner's own farm animals with atlas keys. |
-| `src/ui/scene.ts` | The current yard scene. This is the thing you are replacing or extending — read it before designing, the layer model is already good. |
+| `src/ui/scene.ts` | The current yard scene. This is the thing you are replacing or extending - read it before designing, the layer model is already good. |
 | `docs/ART_STYLE.md` | The house style, and the rules that were learned the hard way. |
 | `docs/DESIGN_LANGUAGE.md` | Type, colour, spacing. |
-| `art/sprites.json` | The atlas manifest — the authoritative list of frame keys. |
+| `art/sprites.json` | The atlas manifest - the authoritative list of frame keys. |
 | `docs/SUBTERRANEAN.md` | Where the game is going next. Useful if you want a scene that hints at it. |
 
 **Check the catalog before assuming anything is missing.** Four sessions running
 described the barn, farmhouse and silo as missing art. They had been generated
-and paid for the whole time. The prose in this repo is not evidence — the
+and paid for the whole time. The prose in this repo is not evidence - the
 catalog is.
 
 ---
@@ -187,7 +187,7 @@ atlas by frame key:
 spriteEl('scene.barn', 400)                     // key, box size
 spriteEl('rosie.idle.downRight', 96)            // any sheet, any facing
 
-// ANIMATED — any clip in the catalog, no baked strip needed:
+// ANIMATED - any clip in the catalog, no baked strip needed:
 clipActor('brahmaHen', 'peck', 'downRight', x, y, '1.7s', 2, '0.4s')
 clipsOf('brahmaHen')                            // { idle: 1, peck: 9 }
 
@@ -197,7 +197,7 @@ actor('scene.cowGrazeStrip', x, y, w, h, 9, '5.4s')   // the older baked-strip p
 **`clipActor` is the one to reach for.** It composes the animation strip at
 runtime from frames already in the atlas, so every clip the catalog lists is
 animatable with no new art and no atlas growth. The older `actor()` needs a
-strip that was baked ahead of time, and only fifteen of those exist — all
+strip that was baked ahead of time, and only fifteen of those exist - all
 LimeZu-era. The generated cast is packed as individual frames.
 
 It returns the cell size and frame count itself rather than making you type a
@@ -226,7 +226,7 @@ Constraints that are real, not preferences:
 
 Twenty animals generated from his description of his real farm. **Nineteen have
 a blighted twin made with `create_object_state`**, which means each twin is
-provably the *same animal gone wrong* — same pose, same size, same canvas. A
+provably the *same animal gone wrong* - same pose, same size, same canvas. A
 cross-fade between `x.idle.down.0` and `xBlight.idle.down.0` lands with nothing
 to re-register. That is the whole reason the corruption transition is cheap.
 
@@ -236,26 +236,26 @@ Full table with keys is in `DESIGN_BRIEF_HOMESCREEN.md`. In short:
   `beigeMule`, `rosie` (small brown-and-white donkey)
 - **Cats:** `wiz` (black, green eyes), `ouiji` (black, yellow-green eyes),
   `tabbyCat`, `siameseCat`
-- **Joy** — `joy`, the tan-and-white bulldog. **She has a name and a role.**
+- **Joy** - `joy`, the tan-and-white bulldog. **She has a name and a role.**
   She is the companion you pick at level-up. Treat her as a character, not as
   one of the set.
 - **Ten distinct chickens:** `brahmaHen`, `beardedHen`, `buffHen`, `bantamHen`,
   `silkieHen`, `polishHen`, `leghornHen`, `barredHen`, `farmRooster`, `chick`.
-  They differ in size as well as plumage — `chick` packs at 34px, `buffHen` at
-  56 — so a row of them at one scale already reads as a real flock.
+  They differ in size as well as plumage - `chick` packs at 34px, `buffHen` at
+  56 - so a row of them at one scale already reads as a real flock.
 
 Every one is eight directions: `<id>.idle.<dir>.0` where `<dir>` is `down`,
 `downLeft`, `left`, `upLeft`, `up`, `upRight`, `right`, `downRight`. **Use the
 facings.** A yard where every animal faces the camera is a lineup, not a farm.
 
-The `chick` has no blighted twin, deliberately — a rotting baby chick is the
+The `chick` has no blighted twin, deliberately - a rotting baby chick is the
 owner's call to make, not ours. Ask him if you want it.
 
 ### Buildings and yard furniture
 
 Barn, farmhouse, silo, chicken coop, windmill, stone well, bunkhouse, cattle
 chute, hay wagon, crop duster, two scarecrows, rusted tractor. Several exist in
-four variants each. **Check the inventory for exact ids and sizes** — the
+four variants each. **Check the inventory for exact ids and sizes** - the
 generated buildings are a different size to the ones the current scene's
 coordinates were written for (barn is 400x224 where the pack's was 480), so
 every placement wants a nudge rather than a rescale.
@@ -264,7 +264,7 @@ every placement wants a nudge rather than a rescale.
 
 Oil drums, burn barrels, milk cans, feed bins, wheelbarrows, log piles, crates,
 troughs, hay bales, bone piles, stumps, carcasses, grave markers, ploughs, hand
-pumps, split-rail fence. Sixteen genuinely different takes each — the drums come
+pumps, split-rail fence. Sixteen genuinely different takes each - the drums come
 in rust, paint, dents and stencils, not sixteen renders of one drum.
 
 This is more range than you probably expect. Use it: a yard where every barrel
@@ -272,20 +272,20 @@ is the same barrel is the tell that it was placed by a machine.
 
 ### Crops, healthy and rotted
 
-Cabbages, pumpkins, wheat, corn — sixteen variants each, in both states. The
+Cabbages, pumpkins, wheat, corn - sixteen variants each, in both states. The
 rotted set is a ready-made second half for any before/after.
 
 ### Atmosphere pieces
 
-- `cave.branches0-6` — bare dead branches drawn **from directly below**, for
+- `cave.branches0-6` - bare dead branches drawn **from directly below**, for
   layering over a scene as canopy
-- `cave.stalactite0-5`, `cave.web0-5` — for anything underground
+- `cave.stalactite0-5`, `cave.web0-5` - for anything underground
 - The game itself now has drifting ground fog and an overhead layer; if you want
   a scene to match the game's look, that is the look.
 
 ---
 
-## What the yard already does — a worked example
+## What the yard already does - a worked example
 
 `buildYard()` in `src/ui/scene.ts` now places the owner's flock around the coop,
 Joy by her house, two cats, and the five equines at the rail. Read it before
@@ -294,7 +294,7 @@ designing: it is the shortest statement of every convention that matters.
 Three things it does on purpose, worth copying:
 
 - **Ten different birds, not one bird ten times.** They differ in *size* as well
-  as plumage — the chick packs at 34px, the buff Orpington at 56 — so a row of
+  as plumage - the chick packs at 34px, the buff Orpington at 56 - so a row of
   them at one zoom already reads as a flock with no per-bird treatment.
 - **Coprime durations.** `1.7s`, `2.3s`, `1.9s`, `2.7s`… Three animals on the
   same beat read as one machine. The cow/calf/sheep in the pen already followed
@@ -307,10 +307,10 @@ it does not. So it renders a still yard rather than an empty one while
 animations are still being generated. Build the same way and nothing you make
 can break on a missing clip.
 
-## THE ASK — four unique scenes, and no LimeZu
+## THE ASK - four unique scenes, and no LimeZu
 
 The first pass used `scene.barn`, `scene.house` and `scene.silo`. **That was our
-fault, not yours** — the generated buildings were claimed in PixelLab and never
+fault, not yours** - the generated buildings were claimed in PixelLab and never
 downloaded, so those LimeZu keys were the only barn, house and silo in the atlas.
 They are packed now, under `ranch.*`. See `docs/catalog/ranch.png`.
 
@@ -319,20 +319,20 @@ is being retired. Everything you need has a `ranch.*` or a generated equivalent:
 
 | instead of | use |
 |---|---|
-| `scene.barn` | `ranch.barn` — 400x224, weathered red, gambrel roof |
-| `scene.house` | `ranch.farmhouse` — 256x320, two storey clapboard with a porch |
-| `scene.silo` | `ranch.silo` — 224x400, corrugated, domed cap |
+| `scene.barn` | `ranch.barn` - 400x224, weathered red, gambrel roof |
+| `scene.house` | `ranch.farmhouse` - 256x320, two storey clapboard with a porch |
+| `scene.silo` | `ranch.silo` - 224x400, corrugated, domed cap |
 | `scene.coop` | `ranch.coop` (on stilts with a ramp) or `ranch.coopBroken` |
 | `scene.well` | `ranch.well` or `ranch.wellStone` |
 | `scene.trough` | `ranch.waterTrough` |
 | `scene.hay` | `ranch.roundBale`, `ranch.roundBaleRotted`, `ranch.squareBales` |
 | `scene.fenceRail` / `penH` / `penV` | `ranch.fenceRail`, `ranch.fenceRailBroken`, `ranch.fencePost`, `ranch.fenceCorner` |
 | `scene.tractorLeft` | `ranch.tractor` (160x112), `ranch.tractorRed`, `ranch.hayWagon` |
-| — | `ranch.windmill`, `ranch.bunkhouse`, `ranch.biplane`, `ranch.feedBin`, `ranch.feedBucket` |
+| - | `ranch.windmill`, `ranch.bunkhouse`, `ranch.biplane`, `ranch.feedBin`, `ranch.feedBucket` |
 
 The **props** group has sixteen variants each of barrels, drums, crates, milk
 cans, ploughs and pumps. The **crops** group has healthy and rotted versions of
-cabbage, pumpkin, wheat and corn. Use the range — a yard where every barrel is
+cabbage, pumpkin, wheat and corn. Use the range - a yard where every barrel is
 the same barrel is the tell that a machine placed it.
 
 ### The layout is a real ranch, and it is the owner's
@@ -341,20 +341,20 @@ This is the single most important note in this brief. The first pass put every
 animal in one long row behind one fence. **That is a lineup, not a ranch.** The
 owner's actual place is separate paddocks:
 
-- **The pony field** — three Fjords together, with a **round bale**.
-- **The mule field** — the two mules (`blackMule`, `beigeMule`) and the donkey
+- **The pony field** - three Fjords together, with a **round bale**.
+- **The mule field** - the two mules (`blackMule`, `beigeMule`) and the donkey
   (`rosie`) together, with a round bale that is a **different variant** to the
   ponies' one. Two identical bales in two fields is the machine showing again.
-- **Phantom, on his own** — one horse, his own field, no round bale. He gets an
+- **Phantom, on his own** - one horse, his own field, no round bale. He gets an
   **alfalfa bucket / feed** (`ranch.feedBucket`, `ranch.feedBin`) and **loose
-  hay on the ground** (`ranch.squareBales`, or scattered — not a round bale).
+  hay on the ground** (`ranch.squareBales`, or scattered - not a round bale).
 - **The chickens, fenced off in their own run**, with the coop
   (`ranch.coop`). Ten different birds. Not in with the horses.
 
 Fields need real fences between them: `ranch.fenceRail` in runs, with
 `ranch.fencePost` and `ranch.fenceCorner` at the ends.
 
-The cats and Joy are loose — that is what cats and a bulldog do. Joy has a name
+The cats and Joy are loose - that is what cats and a bulldog do. Joy has a name
 and a role (she is the level-up companion); treat her as a character, not set
 dressing.
 
@@ -373,16 +373,16 @@ times, different weather. Some directions worth taking or discarding:
 1. **The yard, clean.** The ranch as it is: separate paddocks as described
    above, warm light, nothing wrong. This is the baseline and the one the
    corruption is measured against.
-2. **The turn.** The same yard going wrong — but *slowly*, animal by animal
+2. **The turn.** The same yard going wrong - but *slowly*, animal by animal
    rather than all at once, palette draining first, the barn sagging last. Every
    animal has a `Blight` twin at the same size and pose, so a cross-fade lands
    with nothing to re-register.
 3. **Under the field.** Your waste-vault pass was the strongest thing in the
-   first round — keep going. `docs/SUBTERRANEAN.md` has five layers, and the
+   first round - keep going. `docs/SUBTERRANEAN.md` has five layers, and the
    coal seam, the flooded level and the bone layer are all unbuilt. Suggestions:
    give it a way IN (a lift cage, a shaft of daylight from far above, a ladder
    the eye can follow) so it reads as *beneath the farm* rather than as a
-   basement; and the drums are the story — stencil them, rank them, let one be
+   basement; and the drums are the story - stencil them, rank them, let one be
    split and weeping. `cave.stalactite*` and `cave.web*` are packed.
 4. **Your call.** Somewhere on this farm we have not thought of. The burnt
    orchard, the flooded low ground, the barn interior at night, the road in.
@@ -394,13 +394,13 @@ Rather than guessing:
 
 - **Which horse is Phantom?** The brief above says he stands alone with feed. The
   packed equines are `fjordPony`, `arabian`, `blackMule`, `beigeMule` and
-  `rosie`, and the owner has not said which one he is — the Arabian is the
+  `rosie`, and the owner has not said which one he is - the Arabian is the
   likely read, but ask rather than assume. There is also only ONE Fjord sprite
   and the pony field wants three, so confirm placing it three times is
   acceptable rather than generating two more.
 - Where should the card/upgrade UI sit? It needs reserved space and that
   constrains the composition.
-- One scene or a rotation? If a rotation, on what — per visit, per session, time
+- One scene or a rotation? If a rotation, on what - per visit, per session, time
   of day?
 - How much motion does he want on a screen he will see hundreds of times?
 - Should Joy and the named animals be *findable* in the scene, or featured?
@@ -416,7 +416,7 @@ A scene mounted in `src/ui/scene.ts` (or a sibling module) that:
 - builds from atlas keys, integer zoom, CSS animation only
 - runs at 60fps on a laptop with no per-frame JS
 - has a `prefers-reduced-motion` path
-- credits **LimeZu (limezu.itch.io)** on the title screen — the UI pack licence
+- credits **LimeZu (limezu.itch.io)** on the title screen - the UI pack licence
   requires it and that has not changed
 
 Push to a branch and open a draft PR. The owner will look at it in motion, which

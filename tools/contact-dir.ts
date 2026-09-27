@@ -5,7 +5,7 @@
  *     npm run contactdir -- assets/pixellab/yard out.png [maxWidth] [zoom]
  *
  * Sibling of `npm run contact`, which reads the PACKED atlas and proves the
- * whole chain. This one reads source files and proves nothing about the game —
+ * whole chain. This one reads source files and proves nothing about the game -
  * it is for choosing between candidates before anything is packed.
  *
  * Candidates are grouped by subject: `barn_0.png`, `barn_1.png` land on the
@@ -19,7 +19,7 @@ import { decodePng, encodePng, blankImage, type Image } from './png.ts'
 const [dir, out = 'contact.png', maxWArg, zoomArg] = process.argv.slice(2).filter((a) => a !== '--')
 if (!dir) { console.error('usage: npm run contactdir -- <dir> [out.png] [maxWidth] [zoom]'); process.exit(1) }
 const MAXW = Number(maxWArg ?? 2400)
-/** Nearest-neighbour only, and integer only — the house rule. A 32px sprite
+/** Nearest-neighbour only, and integer only - the house rule. A 32px sprite
  *  cannot be judged at 1:1 and smoothing it would hide exactly the pixel-level
  *  faults this sheet exists to catch. */
 const Z = Math.max(1, Math.round(Number(zoomArg ?? 1)))

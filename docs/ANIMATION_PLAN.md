@@ -1,4 +1,4 @@
-# Animation states — what exists, what is left, what it costs
+# Animation states - what exists, what is left, what it costs
 
 Written session 18 so that a session with credits can start work in the first
 minute instead of spending twenty rediscovering the shape of the job.
@@ -16,8 +16,8 @@ enemy's recoil is a complete change on its own. That is the property to protect:
 do not batch these into an all-or-nothing pass.
 
 Content knobs are `combat.hitClipSeconds` and `combat.injuredBelowPct` in
-`tuning.json`. Both are render-only — neither changes damage, speed, or any
-decision the sim makes — so they can be tuned without a balance session.
+`tuning.json`. Both are render-only - neither changes damage, speed, or any
+decision the sim makes - so they can be tuned without a balance session.
 
 ## How to add one
 
@@ -26,7 +26,7 @@ decision the sim makes — so they can be tuned without a balance session.
 grep -i "<the animal>" docs/PIXELLAB_INVENTORY.md
 
 # 2. generate (MCP): animate_object with a description whose FIRST WORD
-#    the classifier recognises — see tools/object-manifest.ts
+#    the classifier recognises - see tools/object-manifest.ts
 #      reeling / recoiling / flinching / jerking / taking  -> hit
 #      limping / staggering / hobbling / dragging          -> walkHurt
 #      walking                                             -> walk
@@ -42,14 +42,14 @@ npm run catalog
 ```
 
 **Check the directions landed.** v3 loses some silently and reports them as
-covered — see `docs/PIXELLAB.md`. `objman` warns when a combat clip is short.
+covered - see `docs/PIXELLAB.md`. `objman` warns when a combat clip is short.
 Filling a gap needs `directions=[...]` AND `replace_existing: true`.
 
 ## What is left, costed
 
 At the measured **$0.0104 per direction**, so $0.083 for an eight-direction clip.
 
-### Tier 1 — the animal enemies — **DONE**
+### Tier 1 - the animal enemies - **DONE**
 
 All ten animal enemies carry `hit` and `walkHurt` in eight directions:
 arabianCursed, blownSheep, donkeyCursed, draftMuleCursed, feralDog,
@@ -66,7 +66,7 @@ south-west). Both keep their ordinary walk in that one facing. Chasing the last
 direction was not worth a third round trip; the fallback chain is what makes it
 a cosmetic gap rather than a missing sprite.
 
-### Tier 1 — as originally planned ($1.41, ~70 min serial)
+### Tier 1 - as originally planned ($1.41, ~70 min serial)
 
 These are PixelLab *objects*, so `animate_object` works directly and the
 pipeline above is exactly what to run.
@@ -78,57 +78,57 @@ pipeline above is exactly what to run.
 
 Done already: `hit` on infectedHen, feralDog, arabianCursed.
 
-**Do this tier first.** It is the visible half — these are the enemies that fill
+**Do this tier first.** It is the visible half - these are the enemies that fill
 a late wave, and the recoil is what makes a hit read as a hit.
 
-### Tier 2 — the humanoid enemies — **PIPELINE UNBLOCKED, 3 of 5 done**
+### Tier 2 - the humanoid enemies - **PIPELINE UNBLOCKED, 3 of 5 done**
 
 `farmhand`, `acidZombie` and `bloatedFarmhand` now carry idle / walk / hit /
 death. `maskedHauler` and `maskedSprayer` remain.
 
 **The blocker was tooling, not budget.** `tools/pixellab-character.ts` looked for
 one hardcoded animation folder called `walk`, so hit and death art for these five
-could be generated and would never be cut — the pipeline appeared to work and
+could be generated and would never be cut - the pipeline appeared to work and
 produced nothing. It scans now, reads frame counts per clip, and prints the
 manifest block so the template lengths are never hand-typed.
 
 **Template presets are far cheaper than the animal path.** `taking-punch` and
 `falling-back-death` cost 1 generation per direction, and the humanoid rig is
-four-way rather than eight — so a humanoid state runs about a SIXTH of an animal
+four-way rather than eight - so a humanoid state runs about a SIXTH of an animal
 one. Actual spend for three humanoids, six clips: well under $0.20.
 
-Frame counts come back at the template's own length — taking-punch 6,
-falling-back-death 7, walk 8 — NOT a uniform 9. `pixellabStrips` slices a strip
+Frame counts come back at the template's own length - taking-punch 6,
+falling-back-death 7, walk 8 - NOT a uniform 9. `pixellabStrips` slices a strip
 by the manifest number, and a wrong one does not error: it slices at the wrong
 width and the animation slides instead of stepping.
 
-### Tier 2 — as originally planned ($1.66, ~80 min serial)
+### Tier 2 - as originally planned ($1.66, ~80 min serial)
 
 acidZombie, bloatedFarmhand, farmhand, maskedHauler, maskedSprayer. These are
-PixelLab **characters**, not objects, so they need `animate_character` — and
+PixelLab **characters**, not objects, so they need `animate_character` - and
 that has a TEMPLATE mode with presets, including **`taking-punch`**, which is
 the recoil as a preset rather than a written description. Cheaper and more
 consistent than describing it.
 
 They currently have `walk` and nothing else: no attack, no death, no recoil. So
-they are also the roster's biggest quality gap — five enemies that pop out of
+they are also the roster's biggest quality gap - five enemies that pop out of
 existence instead of dying.
 
 | clip | count | cost |
 |---|---|---|
 | `hit`, `attack`, `death`, `walkHurt` × 5 | 20 | $1.66 |
 
-### Tier 3 — the player classes (~$0.50)
+### Tier 3 - the player classes (~$0.50)
 
 The six playable classes have `walk` and `idle` only. A recoil on the player is
-worth more than a recoil on any single enemy — it is on screen every second of
+worth more than a recoil on any single enemy - it is on screen every second of
 every run.
 
-### Tier 4 — the blighted farm roster as enemies ($6.30, several hours)
+### Tier 4 - the blighted farm roster as enemies ($6.30, several hours)
 
 The nineteen blighted twins are packed and drawable but wired to nothing. To
 field them as enemies they each need `walk`, `attack`, `death`, `hit`,
-`walkHurt` — 19 × 5 clips ≈ $7.90, less the ten flock walks already generated,
+`walkHurt` - 19 × 5 clips ≈ $7.90, less the ten flock walks already generated,
 so roughly **$6.30**.
 
 **This is a balance change as well as an art job.** Nineteen new enemies is more
@@ -156,7 +156,7 @@ the spin is the stand-in the generated animals were bought to replace.
 So the order is: nine `death` clips (~$0.75, plus refills), THEN wire `sheets`.
 Eight of the nine walks are already packed; `farmRoosterBlight` still needs one.
 
-### Tier 5 — the clean cast — **THE ONE THAT WAS UNDERESTIMATED**
+### Tier 5 - the clean cast - **THE ONE THAT WAS UNDERESTIMATED**
 
 Filed as "$0.53, scene-only, nice to have". That was wrong, and the title
 screens are what proved it.
@@ -183,17 +183,17 @@ Costed against the measured v3 rate (~$0.01/direction at 68x68, 8 frames):
 
 | | dirs | each | count | total |
 |---|---|---|---|---|
-| equines + dog — walk | 8 | $0.083 | 6 | $0.50 |
-| cats — walk | 4 | $0.042 | 4 | $0.17 |
-| hens + rooster — peck | 4 | $0.042 | 9 | $0.38 |
-| chick — peck | 4 | $0.042 | 1 | $0.04 |
+| equines + dog - walk | 8 | $0.083 | 6 | $0.50 |
+| cats - walk | 4 | $0.042 | 4 | $0.17 |
+| hens + rooster - peck | 4 | $0.042 | 9 | $0.38 |
+| chick - peck | 4 | $0.042 | 1 | $0.04 |
 | | | | | **$1.09** |
 
 Done so far: `fjordPony` walk (8/8), `arabian` walk (8/8), `blackMule` walk.
 
-### Tier 6 — ambient motion for the title screen (~$0.30)
+### Tier 6 - ambient motion for the title screen (~$0.30)
 
-Not creatures — the WORLD. A title screen lives on the things that move without
+Not creatures - the WORLD. A title screen lives on the things that move without
 being looked at, and every one of these is a 1-direction object that already
 exists, so it is an animate call and not a generation.
 
@@ -213,8 +213,8 @@ sitting unclaimed, and `animate_object` refuses a source that is not
 
 | tier | planned | actual | note |
 |---|---|---|---|
-| 1 — animal hit + injured | $1.41 | **~$1.90** | the 1.3x direction-loss multiplier |
-| 2 — humanoids (3 of 5) | $1.00 | **<$0.20** | template presets, four-way rig |
+| 1 - animal hit + injured | $1.41 | **~$1.90** | the 1.3x direction-loss multiplier |
+| 2 - humanoids (3 of 5) | $1.00 | **<$0.20** | template presets, four-way rig |
 
 The two numbers move in opposite directions and both are worth carrying
 forward: **animal states cost more than they look** because v3 loses directions
@@ -225,12 +225,12 @@ because templates are 1 gen/direction on a four-way rig.
 
 | tier | cost | why it is in this order |
 |---|---|---|
-| 1 — animal enemy hit + injured | $1.41 | the enemies you actually fight |
-| 2 — humanoid enemies, full set | $1.66 | five enemies currently pop out of existence |
-| 3 — player recoil | $0.50 | on screen every second |
-| 5 — clean cast walk cycles | $1.09 | **raised from $0.53** — see above |
-| 6 — ambient world motion | $0.30 | windmill, wheat, scarecrow, fire |
-| 4 — blighted roster as enemies | $6.30 | biggest, and needs a balance session |
+| 1 - animal enemy hit + injured | $1.41 | the enemies you actually fight |
+| 2 - humanoid enemies, full set | $1.66 | five enemies currently pop out of existence |
+| 3 - player recoil | $0.50 | on screen every second |
+| 5 - clean cast walk cycles | $1.09 | **raised from $0.53** - see above |
+| 6 - ambient world motion | $0.30 | windmill, wheat, scarecrow, fire |
+| 4 - blighted roster as enemies | $6.30 | biggest, and needs a balance session |
 | | **$11.26** | |
 
 ## The thing to not do

@@ -1,8 +1,8 @@
 /**
  * Read the built atlas from `public/`, for the offline tools.
  *
- * The atlas is PAGED — `public/atlas-0.png … atlas-N.png` plus one
- * `public/atlas.json` — because a single 4096x8192 sheet measured twice the
+ * The atlas is PAGED - `public/atlas-0.png … atlas-N.png` plus one
+ * `public/atlas.json` - because a single 4096x8192 sheet measured twice the
  * per-frame cost of a 2048x2048 one and was re-decoded from PNG about once a
  * second during play. See the comment on `PAGE_MAX` in `tools/build-atlas.ts`.
  *

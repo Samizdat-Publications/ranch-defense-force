@@ -1,4 +1,4 @@
-# Ranch Defense Force — second brief for Claude Design
+# Ranch Defense Force - second brief for Claude Design
 
 **From the engineering side, answering your handoff.**
 
@@ -6,7 +6,7 @@ Short version: the package was excellent and most of it is in. This document is
 what I could not build from what you sent, what I had to decide myself, and what
 I would like next.
 
-Read `DESIGN_LANGUAGE.md` first if you need to reload context — it is now
+Read `DESIGN_LANGUAGE.md` first if you need to reload context - it is now
 committed at `docs/DESIGN_LANGUAGE.md`, along with `docs/PIXELLAB.md` and
 `docs/PIXELLAB_MANIFEST.md`.
 
@@ -17,13 +17,13 @@ committed at `docs/DESIGN_LANGUAGE.md`, along with `docs/PIXELLAB.md` and
 | Pass | State |
 |---|---|
 | `rarity.json` | In, unchanged. The five-tier contract drives everything. |
-| `items.json` — 40 items | In. Mockup fields stripped as instructed. |
-| `weapons-additions.json` — 16 weapons | In. All four new ones reuse shipped behaviours; no new code, exactly as you said. |
+| `items.json` - 40 items | In. Mockup fields stripped as instructed. |
+| `weapons-additions.json` - 16 weapons | In. All four new ones reuse shipped behaviours; no new code, exactly as you said. |
 | The ten `special` branches | **All ten implemented**, including the four legendaries. |
 | The card | Built as one component, reused by the level-up and class select. |
 | Paper & Pin tokens | Built. The old panel language is gone, `fill` bug included. |
 | Fonts | Self-hosted. Rye, Silkscreen, IBM Plex Mono, latin only, 100KB. |
-| Home screen | Built — see caveats below. |
+| Home screen | Built - see caveats below. |
 | PixelLab art | 24 icons packed. Atlas is at 1,233 frames. |
 
 **Balance note you will want.** Your roster was authored against the file's
@@ -45,7 +45,7 @@ ran away. 131 tests pass.
 
 `README.md` refers to them as "the four `.dc.html` files in the project root",
 but the archive contains only `handoff/`. I built from `DESIGN_LANGUAGE.md`,
-which was written to make that possible and did — but it means **every visual
+which was written to make that possible and did - but it means **every visual
 judgement below is mine, not yours**, and the mockups are the thing that would
 settle them.
 
@@ -55,7 +55,7 @@ the HUD, pause, results or Homestead layouts.
 ### 2. The home screen has no barn
 
 The design is "the yard at dusk, with the barn doors as the Homestead entrance."
-There is no barn, no farmhouse and no outbuilding art in the atlas — the packs
+There is no barn, no farmhouse and no outbuilding art in the atlas - the packs
 are characters, terrain, props and animals. I built the yard from what exists: a
 dusk sky, a treeline of tree sprites at 1x, a ground band of real terrain tiles,
 three actors at 2x, and the porch light on its 11s cycle.
@@ -82,7 +82,7 @@ light is currently the only motion on the screen, which is *more* faithful to
    height wrapped to two rows and pushed the buttons 260px below the fold at
    1400x900. I shortened the art window to 96px, dropped the min-heights, clamped
    the blurb to three lines and made the rail scroll horizontally. The card is
-   still the same object — but the class-select proportions are no longer yours.
+   still the same object - but the class-select proportions are no longer yours.
 3. **Eight items are wearing borrowed art.** Marked `_standInArt` in
    `items.json`: Work Boots, Feed Sack, Boot Knife, Straw Hat, Ditch Light,
    Threshing Floor, Crop Duster, Whitacre Bull. They are in the generation queue.
@@ -90,7 +90,7 @@ light is currently the only motion on the screen, which is *more* faithful to
    pickaxe and axe tier ladders as stand-ins, chosen because they are genuine
    four-step progressions so tier still reads.
 5. **The Seed Drill got its own round.** It was assigned `proj.glob`, which the
-   Tar Bomb already uses — two weapons on one bullet is the exact thing the
+   Tar Bomb already uses - two weapons on one bullet is the exact thing the
    distinctness test exists to stop.
 
 ---
@@ -105,7 +105,7 @@ gives me the HUD rail positions but not the pause, results or Homestead layouts.
 
 ### 2. The Homestead, designed properly
 
-It is currently four buttons and a grid of purchase cards — functional, mine,
+It is currently four buttons and a grid of purchase cards - functional, mine,
 and the least considered screen in the game. Four buildings, acres top-right,
 locked classes as nailed packets. It wants your pass.
 
@@ -118,12 +118,12 @@ the strips. I do not want to guess the timing.
 ### 4. A card back, or a deal-from-somewhere
 
 The deal animation currently slides cards up from nothing. If cards came off a
-stack — a seed packet box, a pinned board — the level-up would have a place
+stack - a seed packet box, a pinned board - the level-up would have a place
 rather than being four cards that appear.
 
 ### 5. The two things you listed as open that I did not touch
 
-Infected livestock (still ordinary animals with a CSS filter — you were right
+Infected livestock (still ordinary animals with a CSS filter - you were right
 that it looks like it) and class portraits. Both are in the generation queue at
 priorities 2 and 3; I have not spent on either, because the art direction for
 "infected" is a judgement call and I would rather you made it.

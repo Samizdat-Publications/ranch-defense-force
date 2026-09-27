@@ -1,8 +1,8 @@
 /* ===================================================================
-   THE HUD — Paper & Pin, v2
+   THE HUD - Paper & Pin, v2
    ===================================================================
-   Everything on the edges (docs/V2.md D6). The middle and the bottom
-   centre belong to the fight.
+   Everything on the edges (docs/V2.md D6). The middle belongs to the fight;
+   the bottom centre holds only the boss bar, and only while a boss lives.
 
      top-left      status tag: portrait, HP + chaser, level on XP, armour
      top-centre    the day dial: sun or moon on its arc, clock, wave
@@ -94,7 +94,11 @@
   transition: width 0.15s linear;
 }
 
-.hud-armour { display: flex; gap: calc(3 * var(--u)); min-height: calc(7 * var(--u)); }
+.hud-armour { display: flex; align-items: center; gap: calc(6 * var(--u)); min-height: calc(12 * var(--u)); }
+.hud-armour-text {
+  font-family: var(--label); font-size: calc(16 * var(--u)); letter-spacing: 0.06em;
+  color: #c9d2d6; text-shadow: 0 1px 0 #000;
+}
 .hud-armour-pip {
   width: calc(7 * var(--u)); height: calc(7 * var(--u));
   background: #b9c3c9; transform: rotate(45deg) scale(0.8);
@@ -155,13 +159,17 @@
 }
 .hud-wave-fill { height: 100%; background: #d9a441; transform-origin: left center; }
 
+/* Bottom centre since round 13: under the clock, the dial, the bar and the
+   name stacked into one tall block over exactly the ground a boss is framed
+   on. Down here it is clear of the fight and of both corners. */
 .hud-boss {
-  margin-top: calc(8 * var(--u));
-  width: calc(460 * var(--u));
-  display: flex; flex-direction: column; align-items: center; gap: calc(3 * var(--u));
+  position: absolute; left: 50%; bottom: calc(24 * var(--u));
+  transform: translateX(-50%);
+  width: calc(620 * var(--u));
+  display: flex; flex-direction: column; align-items: center; gap: calc(4 * var(--u));
 }
 .hud-boss-track {
-  width: 100%; height: calc(14 * var(--u));
+  width: 100%; height: calc(22 * var(--u));
   background: #1b0f0c; border: calc(2 * var(--u)) solid #0c0605;
   box-shadow: var(--plate-shadow);
   overflow: hidden;
@@ -238,7 +246,7 @@
   display: flex; align-items: flex-end; gap: calc(6 * var(--u));
 }
 .hud-weapons {
-  display: grid; grid-template-columns: repeat(3, calc(44 * var(--u)));
+  display: grid; grid-template-columns: repeat(3, calc(60 * var(--u)));
   gap: calc(4 * var(--u));
   padding: calc(6 * var(--u));
   background: var(--plate); border: calc(2 * var(--u)) solid var(--plate-rule);
@@ -246,10 +254,14 @@
   direction: rtl;
 }
 .hud-weapons:empty { display: none; }
+/* 60 units on a light tile, the art at 2x: at 44 on a dark tile the six
+   weapons were dark icons on dark squares, told apart only by "T4"
+   (round 13). */
 .hud-slot {
   position: relative; direction: ltr;
-  width: calc(44 * var(--u)); height: calc(44 * var(--u));
-  background: var(--window); box-shadow: var(--window-in);
+  width: calc(60 * var(--u)); height: calc(60 * var(--u));
+  background: radial-gradient(circle at 50% 40%, #e3d2ab, #bba27a 75%);
+  box-shadow: inset 0 0 0 calc(2 * var(--u)) rgba(58, 42, 24, 0.55);
   border: calc(1 * var(--u)) solid #120d08;
   overflow: hidden;
 }
@@ -257,23 +269,21 @@
 .hud-slot.tier-3 { border-color: #3f7cc0; }
 .hud-slot.tier-4 { border-color: #d6a33a; }
 .hud-slot-art { position: absolute; inset: 0; display: grid; place-items: center; }
-.hud-slot-art > * { transform: scale(var(--s)); }
+.hud-slot-art > * { transform: scale(calc(var(--s) * 2)); }
 .hud-slot-art-fallback { font-size: calc(9 * var(--u)); color: var(--muted); }
 .hud-slot-cd {
   position: absolute; left: 0; right: 0; bottom: 0; top: 0;
   background: rgba(0, 0, 0, 0.55);
   transform-origin: bottom center; transform: scaleY(0);
 }
+/* The tier as a number: four 4px pips could not be read (critic round 11). */
 .hud-slot-pips {
-  position: absolute; left: calc(3 * var(--u)); bottom: calc(3 * var(--u));
-  display: flex; gap: calc(2 * var(--u));
-}
-.hud-slot-pips i {
-  width: calc(4 * var(--u)); height: calc(4 * var(--u));
-  background: #f2d9a8; box-shadow: 0 0 0 calc(1 * var(--u)) #1a120a;
+  position: absolute; left: calc(2 * var(--u)); bottom: calc(1 * var(--u));
+  font-family: var(--label); font-size: calc(14 * var(--u)); font-weight: 700; line-height: 1;
+  color: #f2d9a8; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
 }
 .hud-load {
-  width: calc(44 * var(--u)); height: calc(44 * var(--u));
+  width: calc(60 * var(--u)); height: calc(60 * var(--u));
   border: calc(2 * var(--u)) solid #7b4fb3;
 }
 .hud-load-stacks {
@@ -291,9 +301,12 @@
   /* A band of dusk behind the card, so it never prints straight over the
      player or a crowd. */
   padding: calc(14 * var(--u)) calc(90 * var(--u)) calc(16 * var(--u));
-  background: linear-gradient(90deg, rgba(12, 9, 6, 0) 0%, rgba(12, 9, 6, 0.58) 20%, rgba(12, 9, 6, 0.58) 80%, rgba(12, 9, 6, 0) 100%);
+  /* Near-solid (round 13 read the old 0.58 band as a layering bug: the
+     crowd showed through "WASD move"). */
+  background: linear-gradient(90deg, rgba(12, 9, 6, 0) 0%, rgba(12, 9, 6, 0.88) 14%, rgba(12, 9, 6, 0.88) 86%, rgba(12, 9, 6, 0) 100%);
 }
-.hud-banner.show { animation: hud-banner 3.6s var(--ease-out) both; }
+/* 2.6 s: at 3.6 the card still covered the first wave arriving (round 15). */
+.hud-banner.show { animation: hud-banner 2.6s var(--ease-out) both; }
 .hud-banner-wave {
   font-family: var(--display); font-size: calc(46 * var(--u)); line-height: 1;
   color: #fbecc8;

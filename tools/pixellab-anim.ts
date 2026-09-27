@@ -13,7 +13,7 @@
  * THE STRIP IS WRITTEN UNTRIMMED AND ON A UNIFORM CELL, which is the whole
  * point. `stripActor` animates with `steps(n)` and divides the strip's width by
  * n, so a trimmed frame makes that division fractional and the walk slides
- * instead of stepping — the same trap that cost this project a six-frame strip,
+ * instead of stepping - the same trap that cost this project a six-frame strip,
  * a 32px tile and a stepped walk cycle. Frames are composited onto a fixed cell
  * taken from the largest frame, so they stay registered to each other.
  *
@@ -22,7 +22,7 @@
  *
  * Judge the CONTACT SHEET, never a single frame. The failure mode of a
  * generated animation is not a bad pixel, it is one frame that belongs to a
- * different animal — invisible one frame at a time, obvious in a row.
+ * different animal - invisible one frame at a time, obvious in a row.
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { blankImage, blit, decodePng, encodePng, type Image } from './png.ts'
@@ -58,7 +58,7 @@ for (let i = 0; i < total; i++) {
 }
 
 if (frames.length === 0) {
-  console.error('no frames downloaded — is the job id right, and has it finished?')
+  console.error('no frames downloaded - is the job id right, and has it finished?')
   process.exit(1)
 }
 

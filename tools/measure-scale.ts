@@ -5,7 +5,7 @@
  *
  * **The bug this fixes.** `art/scene-scale.json` gave buildings a WIDTH and
  * assumed height could be inferred from the canvas. It cannot, because the
- * `ranch.*` group is packed UNTRIMMED — the frame rect is the generation canvas
+ * `ranch.*` group is packed UNTRIMMED - the frame rect is the generation canvas
  * and the art floats inside it with padding. `ranch.farmhouse` is a 256x320
  * canvas holding 194x165 of house, so inferring height from the canvas made a
  * 330-wide house 413 tall instead of 281, and the farmhouse ended up taller
@@ -17,7 +17,7 @@
  * fifty sprites is a number that goes stale the first time one is regenerated.
  *
  * **This honours the art, not the world.** The `tallOverrides` this replaces
- * were derived from real dimensions — a real Aermotor windmill is about 10m
+ * were derived from real dimensions - a real Aermotor windmill is about 10m
  * tall and 2.5m wide, so 100 wide implied 366 tall. The SPRITE is 68x115, a
  * ratio of 1.7 rather than 4. Drawing it at 366 stretched it. Where the art and
  * the world disagree the art wins, every time: a stretched sprite is a visible

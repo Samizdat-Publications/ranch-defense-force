@@ -1,6 +1,6 @@
 /**
  * Uniform spatial hash over the arena, 64px cells (CLAUDE.md: no AABB trees, no
- * physics library). Rebuilt every tick from scratch — clearing and refilling
+ * physics library). Rebuilt every tick from scratch - clearing and refilling
  * flat typed arrays is cheaper than incremental maintenance at these counts.
  *
  * Storage is a counting-sort layout: `cellStart[c]` .. `cellStart[c+1]` indexes
@@ -64,7 +64,7 @@ export class SpatialGrid {
 
   /**
    * Collect indices within `radius` of (x, y) into `out`, returning how many
-   * were written. Broad phase only — it returns everything in the overlapping
+   * were written. Broad phase only - it returns everything in the overlapping
    * cells, so the caller still does the circle test. `out` is caller-owned and
    * reused; nothing is allocated here.
    */

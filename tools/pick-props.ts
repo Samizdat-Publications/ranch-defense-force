@@ -6,7 +6,7 @@
  *     npm run pick -- --write      # also cut the picks into assets/pixellab/picked/
  *     npm run pick -- --set corn_rows_rotted=7 --write
  *
- * 76 props arrived with 4 to 64 candidates each — around 1,900 images. Opening
+ * 76 props arrived with 4 to 64 candidates each - around 1,900 images. Opening
  * every contact sheet is not a good use of a session, and frame 0 is not a good
  * default: the failure modes are a nearly-empty cell and one that overflows its
  * box, and frame 0 is as likely to be either as any other.
@@ -17,7 +17,7 @@
  * subject: an empty cell is far below the median, a cell where the model drew
  * a whole scene is far above, and the cluster in the middle is the set of
  * candidates that drew the thing that was asked for. It is a starting point to
- * be overridden, not a judgement — `--set <name>=<index>` is the override, and
+ * be overridden, not a judgement - `--set <name>=<index>` is the override, and
  * every choice is recorded in art/prop-picks.json so it survives a re-run.
  */
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs'
@@ -61,14 +61,14 @@ for (const p of props) {
     const img = decodePng(readFileSync(`${SHEETS}/${p.name}/${f}`))
     const b = contentBounds(img, 0, 0, img.width, img.height)
     /*
-       Reject a candidate drawn on a CARD — an opaque rectangle behind the
+       Reject a candidate drawn on a CARD - an opaque rectangle behind the
        subject, usually white, left when background removal did not take.
 
        These are glaring to a human and invisible to an area heuristic, because
        a card is a perfectly ordinary area. The test is the four corners of the
        content box: a cleanly cut-out prop has transparent corners, a card has
        opaque ones. It costs four pixel reads and catches the whole class,
-       including the case where the card is smaller than the frame — which the
+       including the case where the card is smaller than the frame - which the
        first attempt at this (full-frame only) missed on dig_in_fx and
        milk_cans.
 
@@ -89,8 +89,8 @@ for (const p of props) {
   /*
      A prop that already has art in `picked/` was chosen by hand in an earlier
      session, and this heuristic must not overwrite it. Roughly thirty of these
-     sets predate this pass — the tool ladders, the item icons, the yard rooster
-     — and they were picked by eye against the item they serve. Replacing a
+     sets predate this pass - the tool ladders, the item icons, the yard rooster
+     - and they were picked by eye against the item they serve. Replacing a
      considered choice with a median is a silent downgrade.
 
      Only an explicit `--set` overrides an existing pick.

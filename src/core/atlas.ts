@@ -1,5 +1,5 @@
 /**
- * The packed atlas, built offline by `tools/build-atlas.ts`. One draw path —
+ * The packed atlas, built offline by `tools/build-atlas.ts`. One draw path -
  * the game never reads `assets/`.
  *
  * ## Pages
@@ -7,8 +7,8 @@
  * The art arrives as several images of at most 2048x2048 rather than one big
  * sheet, and that is a measured decision, not a tidy one. A 4096x8192 source
  * cost twice a 2048x2048 one per frame at the game's own draw load, seven
- * times the JS self-time inside `drawImage`, and — because ~134MB decoded is
- * far past what Chrome's image-decode cache will hold — was re-decoded from
+ * times the JS self-time inside `drawImage`, and - because ~134MB decoded is
+ * far past what Chrome's image-decode cache will hold - was re-decoded from
  * compressed PNG about once a second for the whole run. `tools/atlas-bench.ts`
  * and `tools/play-trace.ts` are the instruments; the numbers are in NOTES.
  *
@@ -31,7 +31,7 @@ import { directionIndex } from './facing'
  */
 export { directionIndex } from './facing'
 export interface AtlasFrame {
-  /** Which page holds it — index into `Atlas.images` / `Atlas.flash`. */
+  /** Which page holds it - index into `Atlas.images` / `Atlas.flash`. */
   page: number
   x: number
   y: number
@@ -47,12 +47,12 @@ interface AtlasData {
   pages: { w: number; h: number }[]
   rig: { directions: string[]; clips: Record<string, { framesPerDirection: number }> }
   /**
-   * Per-sheet direction lists for sheets that are not on the humanoid rig —
+   * Per-sheet direction lists for sheets that are not on the humanoid rig -
    * the generated animals, which have eight. A sheet absent from here uses the
    * rig's four, so this is additive and no existing sheet changes.
    */
   dirSets?: Record<string, string[]>
-  /** Frames per direction per sheet — species differ, so this cannot be one number. */
+  /** Frames per direction per sheet - species differ, so this cannot be one number. */
   clipLengths: Record<string, Record<string, number>>
   frames: Record<string, AtlasFrame>
 }
@@ -90,7 +90,7 @@ export class Atlas {
      The manifest is fetched first and the pages after it, which is one round
      trip in series and deliberate: the manifest is what says how many pages
      there are. The pages themselves then load in PARALLEL, which is where the
-     time is — several small PNGs decode concurrently on separate raster
+     time is - several small PNGs decode concurrently on separate raster
      threads where one big one decodes on a single thread.
   */
   static async load(base: string): Promise<Atlas> {

@@ -10,14 +10,14 @@
 
 /* M0-M3 UI. Deliberately plain: the LimeZu panel frames land in M4/M6 as
    border-image on these same elements, so the structure here is the structure
-   then. Everything hugs the edges — the centre 70% stays clear (§12). */
+   then. Everything hugs the edges - the centre 70% stays clear (§12). */
 
 /*
    THE M0-M3 :root BLOCK IS GONE, AND SO IS THE PANEL LANGUAGE ONE BELOW IT.
 
    `@import` is only legal at the top of a stylesheet, so tokens.css is always
    the FIRST thing in the cascade and any `:root` written further down this file
-   silently outranks it. Both legacy blocks redefined names tokens.css owns —
+   silently outranks it. Both legacy blocks redefined names tokens.css owns -
    fourteen of them, including `--ink`, which they flipped from #33261a (dark ink
    for paper) to #f0e4d2 (cream, for the dark field that Paper & Pin replaced).
 
@@ -26,8 +26,8 @@
    class-select hero names and the HUD feed counter into cream text on cream
    paper. Nothing errored. Every rule that consumed it named the right token.
 
-   tokens.css already carries the legacy names as deliberate aliases — see
-   "Legacy aliases" there — precisely so these blocks could be deleted rather
+   tokens.css already carries the legacy names as deliberate aliases - see
+   "Legacy aliases" there - precisely so these blocks could be deleted rather
    than maintained. The one rule that genuinely wanted cream is `.btn`, which is
    a dark wood button rather than paper, and it asks for `--cream` by name now.
 
@@ -79,7 +79,7 @@ html, body {
 
 /* Opt in per layer, never with a blanket `#ui > *` rule. The HUD is a
    full-viewport overlay created after the screens, so it paints on top of
-   them — and a blanket ID-specificity rule beat `.hud { pointer-events: none }`
+   them - and a blanket ID-specificity rule beat `.hud { pointer-events: none }`
    and made the HUD swallow every click on the shop and level-up cards. */
 #ui > .screen { pointer-events: auto; }
 #ui > .hud { pointer-events: none; }
@@ -154,6 +154,13 @@ button.btn {
 button.btn:hover:not(:disabled) { border-color: var(--straw); }
 button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 button.btn.primary { border-color: var(--gold); color: var(--gold); }
+/* `button.btn` above outranks a bare `.btn-primary`, so "Run it back" drew
+   as a dark plank like its neighbours (round 13: "small dark buttons on a
+   dark background"). The primary button is gold on every screen. */
+button.btn.btn-primary {
+  background: var(--gold-btn); color: #241c10; border-color: #6b4a12;
+  box-shadow: 0 3px 0 #33271a;
+}
 
 .sheet {
   background: var(--panel); border: 2px solid var(--edge);
@@ -171,7 +178,7 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
    CAPPED TO THE WINDOW, because it is shrink-to-fit and its width is DATA.
 
    `#dev` has no width of its own: it is as wide as its widest child, and the
-   widest child is a `<select>` carrying every id in `ENEMY_IDS` — so the panel
+   widest child is a `<select>` carrying every id in `ENEMY_IDS` - so the panel
    grows whenever the roster gains a longer name, and the pool lines grow with
    the pool names. Anchored to `right: 0` inside a `#stage` that now clips, an
    overrun stops being visible at all rather than merely being wide. The cap
@@ -200,19 +207,19 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 }
 .dev-warn { color: #ffb454; }
 
-/* Boss health bar — pinned to the top centre (§9), never over the sprite. */
+/* Boss health bar - pinned to the top centre (§9), never over the sprite. */
 
 /* ===================================================================
    THE PANEL LANGUAGE
    ===================================================================
-   One vocabulary shared by every screen — pause, level-up, shop,
+   One vocabulary shared by every screen - pause, level-up, shop,
    results. Before this each screen invented its own box, so the game
    read as four UIs that happened to ship together.
 
    Three rules:
      0. NEVER use the `fill` keyword on the border-image. `fill` paints the
         frame's centre slice across the element, which tiles the wood's inner
-        edging over the whole card and puts cream text on a tan background —
+        edging over the whole card and puts cream text on a tan background -
         unreadable, and the precise opposite of rule 2. The centre must stay
         transparent so `background` shows through.
      1. Every floating surface is `.panel`: LimeZu's carved wood frame
@@ -227,7 +234,7 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
         can make, grey is one you cannot afford, red is danger.
 
    If the UI pack is missing the border-image simply does not apply and
-   the colour underneath carries it — chrome degrades, the game does not.
+   the colour underneath carries it - chrome degrades, the game does not.
    =================================================================== */
 
 /* The PANEL LANGUAGE :root block is deleted; see the note at the top of this
@@ -299,7 +306,7 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
    The cards had their own 3px flat border and the screens their own
    backdrop, which is how the game ended up looking like four separate
    UIs. They take the carved frame now, and rarity moves from the border
-   (which the frame occupies) to a colour bar along the top edge — which
+   (which the frame occupies) to a colour bar along the top edge - which
    reads better anyway, because it survives the frame's own colour. */
 
 .card {
@@ -372,11 +379,11 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
    THE HOMESTEAD
    ===================================================================
    Four buildings you click into, then a grid of purchase cards. Uses
-   the panel language above unchanged — `.panel` for every surface,
+   the panel language above unchanged - `.panel` for every surface,
    wood as chrome only, the dark field behind all text.
 
    The one addition is `.affordable`: a warm outline on anything you
-   can buy right now. It is doing real work, not decoration — §12 asks
+   can buy right now. It is doing real work, not decoration - §12 asks
    this screen to answer "what can I buy" without reading a word, and
    a gold edge is the only thing on it that scans at a glance.
    =================================================================== */
@@ -445,7 +452,7 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 }
 
 /* The frame is a border-image, so there is no colour to hover. Lift the
-   card instead — same trick the buttons use for their press. */
+   card instead - same trick the buttons use for their press. */
 .building:hover { transform: translateY(-2px); }
 .building:active { transform: translateY(0); }
 .building-name { font-size: 17px; color: var(--ink); }
@@ -483,7 +490,7 @@ button.btn.primary { border-color: var(--gold); color: var(--gold); }
 }
 
 /*
-   A locked class is a dark silhouette with a price, never an empty slot —
+   A locked class is a dark silhouette with a price, never an empty slot -
    you should be able to see what is up there from your first run. The
    sprite is knocked to black rather than hidden, so the shape still reads.
 */

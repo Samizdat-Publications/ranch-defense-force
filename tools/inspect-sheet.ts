@@ -4,7 +4,7 @@
  * first frame in each row.
  *
  * Used to derive the generator's row layout without guessing, and worth keeping
- * — every new Farmer Generator export can be checked against the rig with it.
+ * - every new Farmer Generator export can be checked against the rig with it.
  *
  *   npm run inspect -- assets/generated/characters/farmer-01.png
  */
@@ -30,7 +30,7 @@ for (let r = 0; r < rows; r++) {
   const count = filled.filter(Boolean).length
   totalFilled += count
 
-  // Length of the leading contiguous run — an animation is a run of frames
+  // Length of the leading contiguous run - an animation is a run of frames
   // from column 0, so a gap means the row holds more than one clip.
   let run = 0
   while (run < cols && filled[run]) run++

@@ -1,11 +1,11 @@
-# Paper &amp; Pin — the design language
+# Paper &amp; Pin - the design language
 
 Every screen in this redesign is built from one idea: **the game's UI is printed
 matter on a farm.** Kraft seed packets, stamped tin plates, wood type, dotted
 paper, and a bulldog clip when something is held. Nothing is a glass panel and
 nothing glows for decoration.
 
-This document is the spec for `src/ui/style.css`. Values are literal — copy them.
+This document is the spec for `src/ui/style.css`. Values are literal - copy them.
 
 ---
 
@@ -19,13 +19,13 @@ it.** Paper &amp; Pin replaces it on every surface.
 Two consequences worth noting:
 
 - The `border-image` goes away entirely, and with it the hard-won `fill` keyword
-  bug. There is no 9-slice in this design — borders are plain 2–3px solid ink.
+  bug. There is no 9-slice in this design - borders are plain 2–3px solid ink.
 - LimeZu's UI pack is no longer used for chrome. Its **gamepad glyphs** are still
   useful and the licence credit is still required regardless.
 
 **Three things earned their place and are kept:**
 
-1. **The HP chaser** — the delayed white band draining behind the red. Best thing
+1. **The HP chaser** - the delayed white band draining behind the red. Best thing
    in the current HUD. Same CSS transition, now on cream paper instead of grey.
 2. **The `scaleY` cooldown wipe** on weapon slots. Cheap, no layout, already wired.
 3. **Affordable gets a warm outline** on every purchase surface. It is what lets
@@ -38,10 +38,10 @@ Two consequences worth noting:
 | Role | Family | Notes |
 |---|---|---|
 | Display | **Rye** | Card names, screen titles, big numbers. Wood type. Never below 18px, never for body copy. |
-| Labels &amp; UI | **Silkscreen** | Everything stencilled: kind bands, tier plates, buttons, stat labels, footers. Always uppercase, always letter-spaced 0.1–0.34em. Small sizes are correct here — 7.5px to 13px. |
+| Labels &amp; UI | **Silkscreen** | Everything stencilled: kind bands, tier plates, buttons, stat labels, footers. Always uppercase, always letter-spaced 0.1–0.34em. Small sizes are correct here - 7.5px to 13px. |
 | Body | **IBM Plex Mono** | Blurbs, stat values, notes. 11–15px. |
 
-All three are Google Fonts. **Self-host them** — a webfont link is a network
+All three are Google Fonts. **Self-host them** - a webfont link is a network
 dependency on a game that should run offline, and it is not a runtime JS
 dependency, so it does not touch the no-new-deps rule.
 
@@ -65,7 +65,7 @@ IBM Plex Mono · 400, 500, 600
 --paper-edge-gold:#6b4a12;   /* legendary and selected only */
 ```
 
-Two textures, both cheap, both required — paper without them reads as flat tan:
+Two textures, both cheap, both required - paper without them reads as flat tan:
 
 ```css
 /* dotted stock, 0.12 opacity, over the whole surface */
@@ -121,7 +121,7 @@ Lives in `content/rarity.json`, not here. The UI reads `colour` / `dark` / `ink`
 
 ## The card
 
-One silhouette for every card in the game — level-up, shop, Homestead, class
+One silhouette for every card in the game - level-up, shop, Homestead, class
 select. A kraft seed packet with a punched hang tab.
 
 ```
@@ -131,7 +131,7 @@ body          3px solid var(--paper-edge), var(--paper)
 kind band     Silkscreen 8.5px / 0.14em, ink-band, 2px bottom border, 7px padding
 art window    132px tall, 3px border, var(--window) + var(--window-in)
               sprite centred, top: -9px (clears the plate), integer zoom only
-rarity plate  see below — margin: -17px -7px 0, overlaps the window's bottom edge
+rarity plate  see below - margin: -17px -7px 0, overlaps the window's bottom edge
 name          Rye 20px, min-height 44px (two lines)
 blurb         IBM Plex Mono 11.5px / 1.5, min-height 52px
 perforation   var(--perf)
@@ -140,7 +140,7 @@ footer        2px top border, rgba(64,49,31,0.09) fill, LOT nn · SOURCE
 ```
 
 Card width 210px on a level-up, 196px on the class rail. Do not scale the whole
-card — the sprite is the only thing that scales, and only by integers.
+card - the sprite is the only thing that scales, and only by integers.
 
 ### The rarity plate
 
@@ -177,7 +177,7 @@ value changes.
 | What | Timing |
 |---|---|
 | Card deal | 560ms `cubic-bezier(.16,1,.3,1)`, **110ms stagger** per card |
-| Rarity plate stamp | 380ms `cubic-bezier(.2,1.5,.4,1)` at **+340ms** after the card lands — a separate beat, so the tier is the last thing you read. 1.55× overshoot, settles at `rotate(-0.8deg)` |
+| Rarity plate stamp | 380ms `cubic-bezier(.2,1.5,.4,1)` at **+340ms** after the card lands - a separate beat, so the tier is the last thing you read. 1.55× overshoot, settles at `rotate(-0.8deg)` |
 | Legendary foil | 2.6s linear infinite |
 | Sprite breathe | 3.4s ease-in-out infinite, ±2px |
 | Panel in (pause, results, signs) | 420–520ms `cubic-bezier(.16,1,.3,1)`, translateY 26px |
@@ -211,9 +211,9 @@ you need to read it.
 
 Plain, dry, and about the work. Never explain a mechanic in marketing language.
 
-> Feed Sack — *More of you to lose before the field takes you.*
-> Salt Circle — *Nothing crosses it twice. Whatever tries, comes apart at the line.*
-> Whetstone — *Everything you own hits harder.*
+> Feed Sack - *More of you to lose before the field takes you.*
+> Salt Circle - *Nothing crosses it twice. Whatever tries, comes apart at the line.*
+> Whetstone - *Everything you own hits harder.*
 
 Screen titles are farm nouns: *The Day's Sheet*, *The Homestead*, *Taking the
 Field*, *Give Up the Field*. Buttons are verbs somebody would say out loud.

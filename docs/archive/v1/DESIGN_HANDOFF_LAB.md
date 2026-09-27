@@ -1,7 +1,7 @@
 # The fourth scene is a LAB, not a barn
 
 **Owner's call, and it is the right one:** scrap the barn scene and replace it
-with an underground laboratory layer. The reasoning is asset reality — the barn
+with an underground laboratory layer. The reasoning is asset reality - the barn
 was always going to be CSS rectangles and hand-built stall geometry, while the
 sci-fi cast is already fully rigged and packed. Build with what exists.
 
@@ -9,21 +9,21 @@ sci-fi cast is already fully rigged and packed. Build with what exists.
 
 ## What already exists for this scene
 
-### The cast — 8 directions, walk cycles in 4
+### The cast - 8 directions, walk cycles in 4
 
 | sheet | who | clips |
 |---|---|---|
-| `baseTech` | lab technician — stained white coat, cracked goggles, clipboard | `idle`, `walk` (8f) |
-| `baseGuard` | facility security — olive uniform, webbing belt, peaked cap | `idle`, `walk` (8f) |
-| `baseHazmat` | containment crew — orange suit, round visor, air hose | `idle`, `walk` (8f) |
-| `baseOperator` | response operator — black tactical kit, helmet | `idle`, `walk` (8f) |
-| `baseBreacher` | riot breacher — heavy armour and a ballistic shield | rotations |
+| `baseTech` | lab technician - stained white coat, cracked goggles, clipboard | `idle`, `walk` (8f) |
+| `baseGuard` | facility security - olive uniform, webbing belt, peaked cap | `idle`, `walk` (8f) |
+| `baseHazmat` | containment crew - orange suit, round visor, air hose | `idle`, `walk` (8f) |
+| `baseOperator` | response operator - black tactical kit, helmet | `idle`, `walk` (8f) |
+| `baseBreacher` | riot breacher - heavy armour and a ballistic shield | rotations |
 
 All five are enemies in `enemies.json` at `weight: 0`, so they spawn only where
 a map asks. They are the scene's population.
 
 Also usable: every blighted farm animal (`*Blight`), and `rosie`/`arabian`/the
-mules, which is the point — **an animal from the field, down here, in a tank.**
+mules, which is the point - **an animal from the field, down here, in a tank.**
 
 ### The room
 
@@ -59,7 +59,7 @@ They are in `docs/SCENE_ASSETS.md` and they apply here:
 2. **Everything gets a contact shadow and a foot line.** `groundActor` does both
    and derives `z-index` from `footY`.
 3. **`draw at` comes from `art/scene-scale.json`**, at *a grown person is 64px
-   tall*. Both dimensions, measured — never inferred from the canvas.
+   tall*. Both dimensions, measured - never inferred from the canvas.
 4. **Strips are in `art/strips/`** with `index.json`. 699 of them.
 
 ---
@@ -79,19 +79,19 @@ From the owner, watching the current build:
 
 ---
 
-## Pens — the depth answer
+## Pens - the depth answer
 
 Design measured it and is right: **0.113 is too flat.** Interior depths on
 screen were 52 / 65 / 72 / 36px against ponies 96-100px tall, so a pen is
 shallower than one pony is tall and reads as a pair of parallel rails.
 
-**Target 0.20-0.22.** A reshoot is generating on a 400x200 canvas — the
+**Target 0.20-0.22.** A reshoot is generating on a 400x200 canvas - the
 canvas-constraint trick is what works, not words about camera angle. The old
 0.457 lozenge pens stay packed until it lands.
 
 ---
 
-## The LimeZu credit — audited, and my count was wrong
+## The LimeZu credit - audited, and my count was wrong
 
 I said "64 LimeZu `scene.*` keys" from a `grep -c`. Claude Design audited it
 properly: **44 keys** (25 `scene` + 19 `sceneStrips`), 36 replaceable, **8 still
@@ -102,7 +102,7 @@ Two corrections worth carrying:
 - **Never sweep by prefix.** `scene.oak` and `scene.rooster` are already
   GENERATED art sitting under the `scene.` prefix. Counting the prefix counts
   them as LimeZu and they are not.
-- **Retiring beats regenerating** for the six pen animals — the owner's real
+- **Retiring beats regenerating** for the six pen animals - the owner's real
   farm has no cow, calf or sheep, so they are set dressing nobody asked for.
   Cutting them from the scene clears six of the eight blockers for free.
 
@@ -116,4 +116,4 @@ But `src/ui/scene.ts` still references **64 LimeZu `scene.*` keys**, and the
 generated `ranch.*` / `pen.*` / `base.*` set now covers nearly all of it. If the
 scenes migrate off those keys entirely, the attribution can move to a credits
 screen instead of the corner of every scene. That is an audit worth doing and it
-has not been done yet — do not remove the credit before it is.
+has not been done yet - do not remove the credit before it is.

@@ -9,7 +9,7 @@ name: Deploy
 #
 # `npm run atlas` is NOT optional here. It slices `assets/` into
 # `public/atlas-*.png` + `atlas.json`, gitignored precisely so generated art never
-# lands in a commit — which means a checkout has no atlas at all, and a build
+# lands in a commit - which means a checkout has no atlas at all, and a build
 # that skips this step deploys a game that renders every sprite as a coloured
 # square. Only `dist/` is published, and it contains the packed atlas rather
 # than the source packs.

@@ -1,4 +1,4 @@
-# Session state — read this first if you are picking up cold
+# Session state - read this first if you are picking up cold
 
 Written mid-session against a hard time limit. **Everything below is pushed to
 `claude/rdf-merge-session-l7ta2j`** (PR #4, open, draft, mergeable). 204 tests
@@ -9,10 +9,10 @@ pass. Atlas 8029 frames at 4096x8192.
 | file | what |
 |---|---|
 | `docs/SCENE_ASSETS.md` | **the five standing rules** for scene art and every trap that cost a generation |
-| `DESIGN_HANDOFF_LAB.md` | the fourth scene is a LAB now, not a barn — what exists for it |
+| `DESIGN_HANDOFF_LAB.md` | the fourth scene is a LAB now, not a barn - what exists for it |
 | `NOTES.md` (session 19) | why the title screens were wrong, and it was not Design |
 
-## Commands — everything is generated, nothing is hand-edited
+## Commands - everything is generated, nothing is hand-edited
 
 ```
 npm run atlas      pack public/atlas-*.png       npm test        205 tests
@@ -27,26 +27,26 @@ Order after generating art: `atlas` → `scale` → `pens` → `strips` → `cat
 
 - **The character cut tool was cutting the heads off, and PixelLab was
   innocent.** All five base humanoids were clipped on all four sides. Three
-  diagnoses were wrong first — the exporter, then "lost at generation", then my
+  diagnoses were wrong first - the exporter, then "lost at generation", then my
   own first fix. Cause: the base cast was generated on a 92px canvas (figures
   35-46 x 64-70) and cut into a fixed 32x64 cell. Measured: PixelLab source has
   10-13px of headroom and a rounded 6-10px top row; the cut had 0 and a flat
   17-22px. Size-64 cast 0/8 frames touch row 0, size-92 cast 8/8. The cell is
   DERIVED now (44x75 to 48x79, per sheet in the manifest) and re-cutting cost
   zero generations. Feet verified unmoved.
-- **`npm run scene`** — the live title screen can be photographed for the first
+- **`npm run scene`** - the live title screen can be photographed for the first
   time. See below; this is the biggest change here.
-- **`npm run placements`** — Design's artboards become a coordinate table.
-- **`npm run decard`** — strips PixelLab's opaque card offline and free, instead
+- **`npm run placements`** - Design's artboards become a coordinate table.
+- **`npm run decard`** - strips PixelLab's opaque card offline and free, instead
   of `rmbg` at a generation an image. A card is a SCALE bug, not a cosmetic one:
   100% opaque means the alpha box is the canvas, so `npm run scale` measures the
   card. `vault.drumRank` published 210x126 against a true 210x48.
-- **`baseOperator` and `baseBreacher` had no art at all** — wired into
+- **`baseOperator` and `baseBreacher` had no art at all** - wired into
   `enemies.json` with spawn weights in two maps and never declared in
   `art/sprites.json`, so both would have walked into the lab as coloured
   rectangles. Now packed. `tests/content.test.ts` asserts every enemy a map can
   roll has `idle` and `walk` packed for every direction.
-- **A red test was fixed that had been reported as green** — the scale-entry
+- **A red test was fixed that had been reported as green** - the scale-entry
   guard knew stills and cast sheets but not ambient loops.
 - All five underground humanoids carry `drawAt` 64; none did.
 
@@ -69,12 +69,12 @@ extracted for you:
 npm run placements -- "docs/mockups/Yard Grounding Fix.dc.html" "docs/mockups/Lab at Depth.dc.html"
 ```
 
-writes `docs/mockups/PLACEMENTS.md` — 52 yard placements and 44 lab, every path
+writes `docs/mockups/PLACEMENTS.md` - 52 yard placements and 44 lab, every path
 resolved to an atlas key or a packed clip, in DOM/paint order, in 1920x1080
 stage space. **Do not hand-type any of those numbers**; if the artboard changes,
 re-run the tool.
 
-The artboards are reference documents, not code to lift — `docs/mockups/
+The artboards are reference documents, not code to lift - `docs/mockups/
 README.md` is explicit that the inline styles, the `<x-dc>` machinery and
 `support.js` never ship. Implement with the helpers already in `src/ui/scene.ts`
 (`sprite`, `groundActor`, `stripActor`, `clipActor`, `tileBand`, `travelling`).
@@ -102,7 +102,7 @@ claiming a scene is done.**
 The first shot found: the home screen renders the FIELD scene; the farmhouse and
 barn stand on a hard horizon with the wheat band cutting their footings; the
 distant treeline is small sprites on that line; the class cards cover the lower
-third. There is also an unexplained 404 on load — worth five minutes.
+third. There is also an unexplained 404 on load - worth five minutes.
 
 ### Still open, unchanged
 
@@ -110,7 +110,7 @@ third. There is also an unexplained 404 on load — worth five minutes.
   cleared it, then reversed itself: `ranch.fenceRun` is drawn RECEDING (tall
   near post, panels shrinking away), so tiling it sideways repeats the vanishing
   point every 108px. The near fence is LimeZu's picket tile again. What closes
-  it is one wide shallow generation asked for as a THING — "a long low wooden
+  it is one wide shallow generation asked for as a THING - "a long low wooden
   rail fence filling the frame edge to edge", 400x64. **I have not verified
   either of Design's two opposite calls by measurement.**
 - **`ranch.well` and `ranch.wellStone` are named BACKWARDS.** `well` is the ruin
@@ -120,7 +120,7 @@ third. There is also an unexplained 404 on load — worth five minutes.
   is `drawAt` 78. The silhouette is 57% of the tube at any size, so: 78 -> tube
   206, figure 117 (1.8x a person); 43 -> tube 113, figure 64 (exactly a person);
   38 -> tube 100, figure 57. Nothing changed pending the owner.
-- **`pen.chickenRunFlat` is a known partial failure** — the wire mesh reads as
+- **`pen.chickenRunFlat` is a known partial failure** - the wire mesh reads as
   interior to the flood, so the quad came back degenerate. Do not use it.
 - **Balance on the base cast has still never been played.** Five enemies, all
   numbers interpolated. This is the joint-activity item, it is the largest
@@ -134,14 +134,14 @@ git clone https://github.com/Samizdat-Publications/ranch-defense-force
 cd ranch-defense-force
 git checkout claude/rdf-merge-session-l7ta2j
 npm install
-npm run atlas          # REQUIRED — a fresh clone renders coloured squares without it
+npm run atlas          # REQUIRED - a fresh clone renders coloured squares without it
 npm run dev
 ```
 
 Two things do not come with the repo:
 
 1. **`.mcp.json` is gitignored** (that is what keeps the PixelLab key out of a
-   public repo). Recreate it locally. **Rotate the key while you are at it** —
+   public repo). Recreate it locally. **Rotate the key while you are at it** -
    it has been through a chat transcript.
 2. **Design access is TWO commands and they are not the same thing.** Read out
    of the installed CLI rather than guessed, because `DesignSync`'s own error
@@ -150,18 +150,18 @@ Two things do not come with the repo:
    | command | description | non-interactive |
    |---|---|---|
    | `/design-consent` | Grant Claude agent access to your Design projects | **yes** (`supportsNonInteractive: true`, and `isHidden`) |
-   | `/design-login` | Authorize design-system access for `/design-sync` with your claude.ai account | no — interactive only |
-   | `/design-revoke` | Revoke it | — |
+   | `/design-login` | Authorize design-system access for `/design-sync` with your claude.ai account | no - interactive only |
+   | `/design-revoke` | Revoke it | - |
 
    `/design-login` is stored PER MACHINE, so running it locally does nothing for
-   a cloud session — that is what the error means by "on this machine".
+   a cloud session - that is what the error means by "on this machine".
    `/design-consent` is the one that can run in a non-interactive session, so
    **try it before assuming Design access needs a local terminal at all.**
 
 ## Object IDs generated late and NOT yet in the ledger
 
 The ledger in `art/pixellab-queue.json` predates most of this session, which is
-a real gap — `base.tank0-4`'s ids could not be found when they needed animating.
+a real gap - `base.tank0-4`'s ids could not be found when they needed animating.
 These are the late ones, recorded here so the same thing does not happen again:
 
 ```
@@ -190,7 +190,7 @@ above and only three of them were ever cut into the repo; `baseOperator` and
 `baseBreacher` had spawn weights in two maps and not one packed frame, so both
 would have appeared as coloured rectangles. This ledger says what exists on the
 account. `tests/content.test.ts` says what exists in the game. When they
-disagree, believe the test — it reads the built atlas.
+disagree, believe the test - it reads the built atlas.
 
 All five are now cut, packed and walking (four cardinals, eight frames,
 `scary-walk`), and all five carry a `drawAt` of 64.

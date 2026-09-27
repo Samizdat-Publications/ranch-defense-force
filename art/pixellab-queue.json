@@ -1,7 +1,7 @@
 {
- "_note": "What to generate next, in priority order. `npm run pixellab -- --list` prices a run without spending anything; a run generates every subject that has no sheet yet. Descriptions are THE SUBJECT ONLY — the style anchor carries palette, outline weight, shading and colour count, and a long style suffix actively fights it.",
+ "_note": "What to generate next, in priority order. `npm run pixellab -- --list` prices a run without spending anything; a run generates every subject that has no sheet yet. Descriptions are THE SUBJECT ONLY - the style anchor carries palette, outline weight, shading and colour count, and a long style suffix actively fights it.",
  "_budget": "THE SUBSCRIPTION IS BEING CANCELLED. Tier 2 (Pixel Artisan), cap 4,710 generations/month, 10 concurrent jobs, 512px max. Session 13 opened at 2,096 remaining and spent about 1,760. Check the live figure with GET /v2/balance -> subscription.generations; do not trust this line. MEASURED COSTS: animate_object(mode=v3) is 1 PER DIRECTION (8 for a full ring, the best value on the price list); create-1-direction-object and create_image_pro are 20; create_8_direction_object 20; create_character(pro) 20; the utilities (unzoom, reduce colors, pixel art correction, remove background) are free. SIZE DECIDES CANDIDATE COUNT AND THE PRICE DOES NOT CHANGE: 32px returns 64 candidates, 64px returns 16, 96-128px returns 4, all for the same 20. Generate small and draw at an integer zoom unless the subject needs the pixels.",
- "_fieldRule": "Anything that reaches the game FIELD must end up 32x32; generate larger and use PixelLab's Unzoom, or generate at 32 directly. Card icons are exempt and 64px is better — a card window zooms by integers and wants the detail.",
+ "_fieldRule": "Anything that reaches the game FIELD must end up 32x32; generate larger and use PixelLab's Unzoom, or generate at 32 directly. Card icons are exempt and 64px is better - a card window zooms by integers and wants the detail.",
  "_next": "For directional field art the pipeline is: generate one side view here, then 'Generate 8 rotations', then 'Animate with text' for the walk. Those are separate tools and are not automated by this script yet.",
  "subjects": [
   {
@@ -30,13 +30,13 @@
    "serves": "Boot Knife item, currently a cow bell"
   },
   {
-   "_priority": "6 — TERRAIN AND MAPS. The point of the subscription: we are no longer limited to one field. Each of these is a biome the arena could be, using PixelLab's tileset tools rather than this script — listed here so the plan lives in one place.",
+   "_priority": "6 - TERRAIN AND MAPS. The point of the subscription: we are no longer limited to one field. Each of these is a biome the arena could be, using PixelLab's tileset tools rather than this script - listed here so the plan lives in one place.",
    "name": "_biome_note",
-   "description": "SKIP — see _priority. Use 'Create tiles (Pro)' for tilesets, not generate-with-style-v2.",
+   "description": "SKIP - see _priority. Use 'Create tiles (Pro)' for tilesets, not generate-with-style-v2.",
    "serves": "planning only"
   },
   {
-   "_priority": "7 — props to dress new maps. Cheap, high variety, all card-or-field objects.",
+   "_priority": "7 - props to dress new maps. Cheap, high variety, all card-or-field objects.",
    "name": "hay_bale_round",
    "description": "a large round hay bale",
    "serves": "field prop / cover"
@@ -117,7 +117,7 @@
    "serves": "harvest node"
   },
   {
-   "_priority": "8 — pickups and feedback, so the ground reads at a glance.",
+   "_priority": "8 - pickups and feedback, so the ground reads at a glance.",
    "name": "xp_seed",
    "description": "a glowing green seed",
    "serves": "the XP pickup, currently a flat coloured square"
@@ -246,9 +246,9 @@
   "_whatWorks": "The farmhand was made with Characters -> Create from Text, Humanoid, Pro, character size 40 custom, camera Low Top-Down, with limezu_character_ref.png and limezu_style_char_128.png as references, then the Scary Walk 8-frame preset. Full recipe in docs/PIXELLAB.md. Use the FARMHAND ITSELF as the Style Character for everything infected that follows -- that is what makes a cast rather than a collection.",
   "_order": "Do the animals the player meets most first. The infected side views for hen, rooster, hog and sheep are generated and staged; they are references for the 8-direction pass, not shippable enemies.",
   "_pairing": "Every horror version should be generated FROM its healthy counterpart as a reference image, so the two read as the same animal before and after. That is the whole horror premise of the game and it does not survive generating them independently.",
-  "_theToolIsCreateObjectState": "SOLVED, and this is the tool: create_object_state(object_id, edit_description) takes a finished 8-direction object, applies the edit and returns a NEW object with all eight rotations intact. That is the pairing requirement above, satisfied by construction — the cursed animal is literally derived from the healthy one. About 30-90s each and they can be fired ten at a time.",
+  "_theToolIsCreateObjectState": "SOLVED, and this is the tool: create_object_state(object_id, edit_description) takes a finished 8-direction object, applies the edit and returns a NEW object with all eight rotations intact. That is the pairing requirement above, satisfied by construction - the cursed animal is literally derived from the healthy one. About 30-90s each and they can be fired ten at a time.",
   "_nameTheColourNotTheSymptoms": "THE LESSON, and it explains why session 9's infected livestock 'came back only mildly diseased'. An edit that only ADDS detail is resisted by the base image; an edit that RESTATES THE BASE COLOUR replaces it. 'matted patchy coat, ribs showing, green staining' left the white fjord pony pure white and the brown barn dog friendly and brown. 'the whole white coat turned filthy grey-green and diseased, fur sloughing away in bald patches showing raw grey skin beneath' worked on the retry for both. Dark animals curse easily because the disease palette is already near their coat; pale ones have to be told to change colour.",
-  "_cursedStaged": "Generated, downloaded to assets/pixellab/object/<name>/, NOT packed: bull_cursed, donkey_cursed, arabian_cursed, draft_mule_cursed (all four strong, first try), plus fjord_pony_cursed2 and barn_dog_cursed2 (the retries, after the colour lesson above — the first attempts are kept as *_cursed and are NOT usable). Each has 8 rotations and no animation yet; animate_object(mode='v3') is 1 generation per direction if they need to walk.",
+  "_cursedStaged": "Generated, downloaded to assets/pixellab/object/<name>/, NOT packed: bull_cursed, donkey_cursed, arabian_cursed, draft_mule_cursed (all four strong, first try), plus fjord_pony_cursed2 and barn_dog_cursed2 (the retries, after the colour lesson above - the first attempts are kept as *_cursed and are NOT usable). Each has 8 rotations and no animation yet; animate_object(mode='v3') is 1 generation per direction if they need to walk.",
   "staged": [
    "infected_hen",
    "infected_rooster",
@@ -323,7 +323,7 @@
    "balance": "GET /v2/balance -> subscription.generations is the remaining figure.",
    "listing": "GET /v2/objects, /v2/tilesets, /v2/characters all enumerate the account. limit is capped at 100. There is no /v2/images.",
    "objectDownload": "GET /mcp/objects/<id>/download returns a ZIP for a multi-direction object and a BARE PNG for a 1-direction one. tools/pixellab-object.ts assumes the zip and dies on the png; 1-direction objects are saved straight to assets/pixellab/env/.",
-   "tilesetRecovery": "GET /v2/tilesets/<id> does NOT return a spritesheet or bounding boxes — only 16 loose base64 tiles. tools/pixellab-tileset.ts composes the sheet and synthesises the boxes. That is the only way to recover a set generated in an earlier session."
+   "tilesetRecovery": "GET /v2/tilesets/<id> does NOT return a spritesheet or bounding boxes - only 16 loose base64 tiles. tools/pixellab-tileset.ts composes the sheet and synthesises the boxes. That is the only way to recover a set generated in an earlier session."
   },
   "objects": {
    "env/dead_tree_snapped_96": {
@@ -593,9 +593,9 @@
    "rdf-kid": "e3a297ab-f2d8-4a5a-8f66-113e22d0d0c2",
    "rdf-hand-anchor-64": "60e8b5d1-5322-482c-b48d-f719a9e09e4c",
    "rdf-hand-anchor": "71960a9f-e8b2-4c4d-92b1-5f19302669e8",
-   "a farmhand who has gone wrong. brown dungarees with both shoulder straps on, a dirty straw hat, a grubby cream shirt. grey-green skin, milky white eyes with no pupils, both arms hanging limp and long at his sides, head level. still clearly a farm worker, not a monster — someone the player would recognise as a neighbour. muted earthy palette, soft dark brown outline, symmetrical\n\n": "9bcb41fd-4abc-497b-b0c0-3922d239519e"
+   "a farmhand who has gone wrong. brown dungarees with both shoulder straps on, a dirty straw hat, a grubby cream shirt. grey-green skin, milky white eyes with no pupils, both arms hanging limp and long at his sides, head level. still clearly a farm worker, not a monster - someone the player would recognise as a neighbour. muted earthy palette, soft dark brown outline, symmetrical\n\n": "9bcb41fd-4abc-497b-b0c0-3922d239519e"
   }
  },
- "_concurrency": "10 jobs on Tier 2. An animate_object call queues one job PER DIRECTION and so consumes 8 of the 10 by itself — animals animate one at a time, about four minutes each. Map objects batch 8 at a time comfortably.",
+ "_concurrency": "10 jobs on Tier 2. An animate_object call queues one job PER DIRECTION and so consumes 8 of the 10 by itself - animals animate one at a time, about four minutes each. Map objects batch 8 at a time comfortably.",
  "_reviewState": "A 1-DIRECTION OBJECT NEVER REACHES status=completed. It parks in `review` holding its candidates in frame_urls until a frame is selected. Anything polling for completed waits forever on work that is already finished and paid for. npm run frames -- <object-id> <name> pulls every candidate plus a contact sheet."
 }

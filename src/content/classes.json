@@ -16,9 +16,11 @@
   },
   "passive": {
    "id": "braced",
-   "desc": "Standing still 1s grants +9% damage reduction per second to 45% -- but the ceiling drops to 20% if Dig In hasn't been pressed in the last 20s. Resets on move.",
+   "desc": "Standing still 1s grants +9% damage reduction per second to 45% -- but the ceiling drops to 20% if Dig In hasn't been pressed in the last 20s. Drains fast when you move.",
    "stillDelay": 1,
    "drPerSec": 9,
+   "drDecayPerSec": 60,
+   "_decayNote": "v2: moving drains it at this many points a second (45 to nothing in 0.75s) instead of zeroing it. The horde surrounds you now, and a single step inside it used to throw away the whole of Braced.",
    "drMax": 45,
    "abilityGraceSeconds": 20,
    "drMaxStale": 20,
@@ -43,7 +45,7 @@
    "speed": 24,
    "reach": 46
   },
-  "cardPassive": "Braced — standing still stacks damage reduction to 45%.",
+  "cardPassive": "Braced: standing still stacks damage reduction to 45%.",
   "_flatNote": "maxHp 140 -> 160 and hpRegen 0.8 -> 0.9 are the second half, and they are deliberately small. Braced alone restored the STANDING PREFERENCE (run.test.ts's \"each class does better at its own game\" passes on drMax 45 with the flat stats untouched) but not the raw clear rate, and \"completes all 25 waves on most seeds\" flies him KITING, where Braced never applies at all. Flat stats reliably favour the kiter over the brawler in this harness -- a kiter converts hp into runway, a brawler standing in a crowd takes damage that scales with the crowd -- so the flat half is kept to the minimum that clears the bar. hpRegen 2.5 was measured and is NOT the answer: kiting went to 14/24 and standing fell to 9/24, which is the gap reopening the wrong way round."
  },
  "kid": {
@@ -83,7 +85,7 @@
    "speed": 94,
    "reach": 52
   },
-  "cardPassive": "Momentum — up to +50% damage at full speed, nothing standing."
+  "cardPassive": "Momentum: up to +50% damage at full speed, nothing standing."
  },
  "_abilityNote": "All six classes now carry their own passive and their own ability; the four unlockables no longer borrow `braced`/`momentum` and `digIn`/`bolt`. Each owns a different axis of a system the game already had, because The Hand and The Kid between them had already taken the MOVEMENT axis and a third variation on standing-still-versus-running would have been another stat spread. Widow: attrition (damage arrives on a delay and killing cancels it). Veteran: spacing (damage is a function of range to the target). Agronomist: status (the burns, bleeds and slows she applies hit harder and last longer). Drifter: tempo (a kill streak that a single hit ends). Abilities dispatch on `a.id` in the `tryAbility`/`updateAbility` pair in world.ts and in `updatePassive`/`onKill`/`takeWound` in player.ts; an id with no branch is a button that silently does nothing, so add both halves together.",
  "_animRowNote": "`animRow` is read by NOTHING. It is a leftover from a plan to play a clip on the ability, and the clip names in The Hand's and The Kid's entries -- `dig` and `run` -- do not exist: the shared humanoid rig in art/sprites.json declares exactly two clips, `idle` and `walk`, and only those are packed (checked against the built atlas.json, not the design doc). The four unlockables name real clips so the field is at least honest where it is new; the two originals are left alone because their entries are not this change's to edit and nothing reads either value.",
@@ -127,7 +129,7 @@
    "speed": 40,
    "reach": 70
   },
-  "cardPassive": "Grit — damage arrives slowly, and killing cancels it."
+  "cardPassive": "Grit: damage arrives slowly, and killing cancels it."
  },
  "vet": {
   "name": "The Veteran",
@@ -174,7 +176,7 @@
    "speed": 58,
    "reach": 88
   },
-  "cardPassive": "Overwatch — paid for range, charged for contact."
+  "cardPassive": "Overwatch: paid for range, charged for contact."
  },
  "agronomist": {
   "name": "The Agronomist",
@@ -219,7 +221,7 @@
    "speed": 66,
    "reach": 84
   },
-  "cardPassive": "Cultivar — everything she leaves behind bites harder."
+  "cardPassive": "Cultivar: everything she leaves behind bites harder."
  },
  "drifter": {
   "name": "The Drifter",
@@ -271,7 +273,7 @@
    "speed": 98,
    "reach": 76
   },
-  "cardPassive": "Hot Streak — kills compound, and one hit ends them."
+  "cardPassive": "Hot Streak: kills compound, and one hit ends them."
  },
  "_cardNote": "`tag`, `bars` and `cardPassive` are the class card's presentation, from the design's Home Screen mockup. Bars are 0-100 for the BODY/SPEED/REACH meters and are a READ of the class rather than a derivation from its stats -- Reach has no single stat behind it, and a computed bar would fight the design's intent every time balance moved.",
  "_regenNote": "hpRegen is an ABSOLUTE number and enemy contact damage was cut to 55% by the density pass in enemies.json, so every point of regen silently became almost twice as valuable. That is invisible in the class sheet and it broke `treats both classes comparably`: The Hand (regen 1.5, armour, and damage reduction to 30%) tanked a denser field comfortably while The Kid, whose only mitigation is avoidance, did not -- a 10-seed gap against a limit of 8. Raising The Kid's dodge was tried first and moved nothing, because the gap was never about avoidance. Regen is rescaled by the same 0.55 the damage was. Percentage defences -- armour, which is armor/(armor+k), and braced damage reduction -- are scale-free and deliberately untouched."

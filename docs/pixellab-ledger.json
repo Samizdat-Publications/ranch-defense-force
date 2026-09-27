@@ -109,17 +109,17 @@
   {
    "id": "906717d3-1a15-4a44-989a-c668f5863e1d",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon — weapon.seedSpitter packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon - weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "d1a2982b-46b4-4272-8f22-09891bc0a74a",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon — weapon.seedSpitter packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon - weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "4be6836f-fe1e-448c-921d-40dafbcc8854",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon — weapon.seedSpitter packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when slingBands took its own icon - weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "f4acc609-aa27-428a-b412-84711a0e9c1e",
@@ -264,47 +264,47 @@
   {
    "id": "329b8273-c639-4e4d-99e1-26707573d18b",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.chiliShot packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.chiliShot packed, drawn by nothing"
   },
   {
    "id": "3b279571-1939-4a45-895d-c07768ee2295",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.chiliShot packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.chiliShot packed, drawn by nothing"
   },
   {
    "id": "713504d2-f9c3-45ed-b21f-251bc3dfe5c5",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.chiliShot packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.chiliShot packed, drawn by nothing"
   },
   {
    "id": "55fc178f-1056-4e6b-bdbc-cc4597d55696",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "65a9b1f2-09bc-4f65-84fd-28b63d7b41ae",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "6159cf53-7043-42a2-b0ed-0c76ed0ec434",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "6648658d-7900-4b03-a7a3-07cb173c5a9d",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.wheatRot"
+   "where": "blighted crop - nothing packed under crop.wheatRot"
   },
   {
    "id": "759596c5-ba3f-4ea1-8415-b2e700274f60",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.wheatRot"
+   "where": "blighted crop - nothing packed under crop.wheatRot"
   },
   {
    "id": "a2471fe6-b215-47d5-9104-ff365da4b381",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.wheatRot"
+   "where": "blighted crop - nothing packed under crop.wheatRot"
   },
   {
    "id": "38eb36ee-ee7f-4a20-910a-e5cfdafa4bab",
@@ -439,22 +439,22 @@
   {
    "id": "1ef364ae-4590-4682-b488-e78f05e24492",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred, node.treeDead"
+   "where": "burnt-map trees - nothing packed under node.treeCharred, node.treeDead"
   },
   {
    "id": "5825df1b-f470-4efb-ae56-0f40a3031228",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred, node.treeDead"
+   "where": "burnt-map trees - nothing packed under node.treeCharred, node.treeDead"
   },
   {
    "id": "cb7f2931-de99-4ed5-a4c7-831f10bd9b13",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred, node.treeDead"
+   "where": "burnt-map trees - nothing packed under node.treeCharred, node.treeDead"
   },
   {
    "id": "adc720a6-3cfc-4d1e-a858-74332df5e182",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred, node.treeDead"
+   "where": "burnt-map trees - nothing packed under node.treeCharred, node.treeDead"
   },
   {
    "id": "23a7c26f-15da-4fcf-98ab-6da940d55a9e",
@@ -649,17 +649,17 @@
   {
    "id": "1da2f389-6b13-4c8f-8dc6-668c235112c4",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "104da5f3-20db-4e8f-a3ca-fd255d418873",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "d7597c07-da8e-4034-b4b9-54ce78d38997",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "55763793-010d-458c-b2db-58c3ca95d6dc",
@@ -714,7 +714,7 @@
   {
    "id": "bb7e613c-c105-4c0a-abec-695e58a18c98",
    "verdict": "unclaimed",
-   "where": "blighted map trees — nothing packed under node.treeDead"
+   "where": "blighted map trees - nothing packed under node.treeDead"
   },
   {
    "id": "24a0ccf0-30c0-4a55-ba40-5005f1f7d9cb",
@@ -739,12 +739,12 @@
   {
    "id": "472011fd-623f-4de4-97a8-d922138bc6d1",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred"
+   "where": "burnt-map trees - nothing packed under node.treeCharred"
   },
   {
    "id": "5637d19c-c6dc-4563-b37b-ad4287499fc2",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred"
+   "where": "burnt-map trees - nothing packed under node.treeCharred"
   },
   {
    "id": "a1530fa6-6cb8-4968-92be-d93cfebc22c4",
@@ -829,7 +829,7 @@
   {
    "id": "b4f0be5e-289f-431f-b629-c94d95519468",
    "verdict": "unclaimed",
-   "where": "title screen horizon (the corn wall is the default; this is the alternative) — nothing packed under sceneBg.treeline"
+   "where": "title screen horizon (the corn wall is the default; this is the alternative) - nothing packed under sceneBg.treeline"
   },
   {
    "id": "a1d48aa4-de4e-4a51-a931-6ce154f7b16a",
@@ -949,12 +949,12 @@
   {
    "id": "d1581bad-6127-4a2e-8b9b-da68e827467c",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred"
+   "where": "burnt-map trees - nothing packed under node.treeCharred"
   },
   {
    "id": "e29d7386-b52c-46a4-ac73-b918d7a2d58c",
    "verdict": "unclaimed",
-   "where": "burnt-map trees — nothing packed under node.treeCharred"
+   "where": "burnt-map trees - nothing packed under node.treeCharred"
   },
   {
    "id": "e41ee5fa-2861-495c-aa03-f9dafdaf7bf5",
@@ -1009,17 +1009,17 @@
   {
    "id": "719f95ad-39c5-453c-89a2-2e267e1e8ad9",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon — weapon.slopBucket packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon - weapon.slopBucket packed, drawn by nothing"
   },
   {
    "id": "597036c2-32aa-42db-a2bd-e1752d65fa3c",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon — weapon.slopBucket packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon - weapon.slopBucket packed, drawn by nothing"
   },
   {
    "id": "5a11ffa0-f3b3-4849-968e-cf243c24e869",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon — weapon.slopBucket packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; freed when keroseneCan took its own icon - weapon.slopBucket packed, drawn by nothing"
   },
   {
    "id": "bad6ca10-d4f7-42dd-875f-32f428f46a82",
@@ -1309,22 +1309,22 @@
   {
    "id": "e1955319-5fa2-4e7d-bb1a-8d7c00f6a9a7",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower - weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "b2d9355b-acc2-4bfe-baab-b31605080000",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower - weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "98bf779e-a2f6-43fb-bc5a-f3c8e4c72ef5",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower - weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "eaf1c61c-76f6-41e4-943a-75c6a795270a",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower — weapon.seedSpitter packed, drawn by nothing"
+   "where": "HELD for roster batch 2, tagged rdf-hold-batch2; another roll of the seed blower - weapon.seedSpitter packed, drawn by nothing"
   },
   {
    "id": "e539f07d-b254-49d2-a5c2-97859c6b8bb3",
@@ -1434,17 +1434,17 @@
   {
    "id": "e6e62f24-5388-4925-95d6-0d5db92f1bbc",
    "verdict": "unclaimed",
-   "where": "harvest node — nothing packed under node.scrap"
+   "where": "harvest node - nothing packed under node.scrap"
   },
   {
    "id": "c928387b-5127-4036-a357-04da80d8e2ca",
    "verdict": "unclaimed",
-   "where": "harvest node — nothing packed under node.scrap"
+   "where": "harvest node - nothing packed under node.scrap"
   },
   {
    "id": "85615487-9fbf-4e4f-9389-b3d0c1838d25",
    "verdict": "unclaimed",
-   "where": "harvest node — nothing packed under node.scrap"
+   "where": "harvest node - nothing packed under node.scrap"
   },
   {
    "id": "d8c2bbbe-a785-4a51-af62-cb2f5f95b952",
@@ -1589,17 +1589,17 @@
   {
    "id": "1940faaf-d646-4d0b-bc06-0fb46fd3763e",
    "verdict": "unclaimed",
-   "where": "harvest node — nothing packed under node.crystal"
+   "where": "harvest node - nothing packed under node.crystal"
   },
   {
    "id": "fd115532-d388-43ab-abee-bd05c92d9c98",
    "verdict": "unclaimed",
-   "where": "harvest node — nothing packed under node.crystal"
+   "where": "harvest node - nothing packed under node.crystal"
   },
   {
    "id": "a4c89e07-ba4f-49c4-b451-4da560e6dcaa",
    "verdict": "unclaimed",
-   "where": "harvest node — nothing packed under node.crystal"
+   "where": "harvest node - nothing packed under node.crystal"
   },
   {
    "id": "1597da81-71fe-430b-9e17-4353004e2d60",
@@ -1769,7 +1769,7 @@
   {
    "id": "2d863647-f4a6-4596-9331-2391022520e1",
    "verdict": "unclaimed",
-   "where": "title screen horizon alternative — nothing packed under sceneBg.treeline"
+   "where": "title screen horizon alternative - nothing packed under sceneBg.treeline"
   },
   {
    "id": "66625599-1400-4702-a6bd-c79df5607fb1",
@@ -1799,7 +1799,7 @@
   {
    "id": "3c171754-7819-4483-a443-bb655581c5cf",
    "verdict": "unclaimed",
-   "where": "title screen yard — nothing packed under ranch.eggs"
+   "where": "title screen yard - nothing packed under ranch.eggs"
   },
   {
    "id": "ac3639cf-d0b2-447d-81d1-6dda9371bbf2",
@@ -1964,32 +1964,32 @@
   {
    "id": "624626d1-bd52-46a7-b523-a0dcbb9f61f2",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.melonLob packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.melonLob packed, drawn by nothing"
   },
   {
    "id": "8d56e57f-4c64-4c38-a40d-1d9197ac7c0d",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.melonLob packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.melonLob packed, drawn by nothing"
   },
   {
    "id": "f2d67865-95b7-4d74-83c8-b0bc1c20d81a",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.melonLob packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.melonLob packed, drawn by nothing"
   },
   {
    "id": "a0ecfd76-b81a-43b7-a745-5d40da25ce8b",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.cabbageRot"
+   "where": "blighted crop - nothing packed under crop.cabbageRot"
   },
   {
    "id": "a701af1b-0251-4fa8-bf3e-005a3edd15b9",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.cabbageRot"
+   "where": "blighted crop - nothing packed under crop.cabbageRot"
   },
   {
    "id": "c59d8f1f-a3c1-472d-afb0-b55a731cd855",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.cabbageRot"
+   "where": "blighted crop - nothing packed under crop.cabbageRot"
   },
   {
    "id": "896b3f81-5645-4c16-8a56-3b020739190b",
@@ -2009,22 +2009,22 @@
   {
    "id": "b740b95c-02e8-4aa9-b4bb-42dffcc3fc4e",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "a95340cf-33ca-4d25-b32b-34393c537dd4",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "9f07eafc-530a-450b-a1be-e3e921c84267",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "815d9e84-1130-45ae-b2fb-63597013c65d",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "8a6fff06-737a-41eb-ac55-8b2dbfa80ab8",
@@ -2894,17 +2894,17 @@
   {
    "id": "28579c97-7fe4-496a-9ea9-fa9b888ab2b5",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.eggToss packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.eggToss packed, drawn by nothing"
   },
   {
    "id": "61c93bed-8227-4497-9f18-5ed8c679f238",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.eggToss packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.eggToss packed, drawn by nothing"
   },
   {
    "id": "cdf2f538-2eba-437c-bfff-71d46b2eabd5",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.eggToss packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.eggToss packed, drawn by nothing"
   },
   {
    "id": "80de7537-72c6-497e-9ea4-73003ab938a0",
@@ -3014,22 +3014,22 @@
   {
    "id": "f1b951ce-ed4b-4cc2-811f-fe9e231f8980",
    "verdict": "unclaimed",
-   "where": "orchard trees — nothing packed under nodeTree, node.tree"
+   "where": "orchard trees - nothing packed under nodeTree, node.tree"
   },
   {
    "id": "27eba59c-c5c6-410e-bec9-44fb459347cc",
    "verdict": "unclaimed",
-   "where": "orchard trees — nothing packed under nodeTree, node.tree"
+   "where": "orchard trees - nothing packed under nodeTree, node.tree"
   },
   {
    "id": "d44f084a-05ff-44c0-bd57-d3ecab7a009b",
    "verdict": "unclaimed",
-   "where": "orchard trees — nothing packed under nodeTree, node.tree"
+   "where": "orchard trees - nothing packed under nodeTree, node.tree"
   },
   {
    "id": "9adf2773-b04b-4daa-bf88-4bae495f50cf",
    "verdict": "unclaimed",
-   "where": "orchard trees — nothing packed under nodeTree, node.tree"
+   "where": "orchard trees - nothing packed under nodeTree, node.tree"
   },
   {
    "id": "c91d43ec-a162-499b-adad-f9de5a6319d4",
@@ -3414,82 +3414,82 @@
   {
    "id": "2171668b-091a-4467-a8bd-799175b26e3f",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "909a3393-a114-41f7-98e4-cc40d9fca335",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "1c429e48-dfb6-45a5-81fd-94e74cd37f9c",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "e28dc795-18c8-4eb2-8881-60431f6d954f",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "da36e118-7771-43c9-a996-1ca2c052e50f",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "bc588812-d29a-4431-a9d5-73c6c977d447",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "54757790-7f9b-40a4-8cef-7a1b18672f8d",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "dde09770-cdf7-4afd-86aa-46d68300c6b2",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "601e7df9-dfa9-422a-971f-7338451051ee",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "042239ca-6eb0-4db5-b117-4e04e3ff72ae",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "e6548c1c-747e-432e-87ff-85c4b0eededb",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "62240172-e046-46ba-8304-bbe0b21d05a5",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "1d7632c2-1c9e-4cc8-b184-c50c98cbbd27",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "dde4171a-6d5a-457d-80a8-e79462152382",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "d39cf485-63c7-451c-922f-1059c7c22520",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "8fc94ba2-45b1-40b9-937a-aa58bdad5956",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.wheat"
+   "where": "harvestable crop - nothing packed under crop.wheat"
   },
   {
    "id": "1b0329b5-c402-4672-89ab-802f2ecc9515",
@@ -3544,17 +3544,17 @@
   {
    "id": "4a81775b-c0fe-4d24-8abb-3b12e91f32cc",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.framingHammer packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.framingHammer packed, drawn by nothing"
   },
   {
    "id": "2e4d5320-8a59-4d4f-827f-edf8c215058d",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.framingHammer packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.framingHammer packed, drawn by nothing"
   },
   {
    "id": "b4989a9a-5335-42b0-91a3-cebfcf699224",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.framingHammer packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.framingHammer packed, drawn by nothing"
   },
   {
    "id": "1d6d5189-efcb-43a6-853a-c666ab95592b",
@@ -3629,17 +3629,17 @@
   {
    "id": "2c904f9b-bfa3-473d-9419-497120357244",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.melon"
+   "where": "harvestable crop - nothing packed under crop.melon"
   },
   {
    "id": "ce0e2f1c-17f9-4906-8942-15881c28654f",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.melon"
+   "where": "harvestable crop - nothing packed under crop.melon"
   },
   {
    "id": "5426a140-c05f-44cd-a942-0b412e7df306",
    "verdict": "unclaimed",
-   "where": "harvestable crop — nothing packed under crop.melon"
+   "where": "harvestable crop - nothing packed under crop.melon"
   },
   {
    "id": "9cec25de-305d-4c15-84ca-24e062e19eb9",
@@ -4139,17 +4139,17 @@
   {
    "id": "6e94f7db-3f2a-404d-bc15-a8a5c9759d09",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.cornRot"
+   "where": "blighted crop - nothing packed under crop.cornRot"
   },
   {
    "id": "de4636cd-d4d2-410e-b23f-801c66b46efc",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.cornRot"
+   "where": "blighted crop - nothing packed under crop.cornRot"
   },
   {
    "id": "f3d796d3-1752-4e8c-9f3a-cdbcc5835932",
    "verdict": "unclaimed",
-   "where": "blighted crop — nothing packed under crop.cornRot"
+   "where": "blighted crop - nothing packed under crop.cornRot"
   },
   {
    "id": "d24bcb2b-7fb4-47ab-a4d0-87f7305555ab",
@@ -4304,17 +4304,17 @@
   {
    "id": "20a2a303-14ee-41b9-953d-829587bbee63",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.shovel packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.shovel packed, drawn by nothing"
   },
   {
    "id": "d1edb7d4-46ca-431a-b577-a912bcebb63e",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.shovel packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.shovel packed, drawn by nothing"
   },
   {
    "id": "d42317ff-472a-466b-99d1-161633f2a17e",
    "verdict": "packed-unused",
-   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account — weapon.shovel packed, drawn by nothing"
+   "where": "HELD for roster batch 2 (docs/UPGRADE_ROSTER.md), tagged rdf-hold-batch2 on the account - weapon.shovel packed, drawn by nothing"
   },
   {
    "id": "3907c135-3ddc-4331-85b0-180ea7b58b64",
@@ -4334,7 +4334,7 @@
   {
    "id": "82aa7caa-0d48-4fcb-8ce3-6e137c7134dd",
    "verdict": "packed-unused",
-   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md - pen.chickenRunDirt, …"
   },
   {
    "id": "8454c535-eec3-42a5-8134-d689ee9c4592",
@@ -4344,17 +4344,17 @@
   {
    "id": "407abd7f-0188-4555-829a-47974cdbedb4",
    "verdict": "packed-unused",
-   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md - pen.chickenRunDirt, …"
   },
   {
    "id": "8c798908-f85f-4df9-a5a6-cf9823d5ea8f",
    "verdict": "packed-unused",
-   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md - pen.chickenRunDirt, …"
   },
   {
    "id": "0d388dd8-f233-4ccd-898c-130e4c4fb7a5",
    "verdict": "packed-unused",
-   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md — pen.chickenRunDirt, …"
+   "where": "DESIGN'S CALL, same as the paddocks: a 300-400px enclosure with its own ground quad re-composes a scene rather than dressing it. Reports packed-unused. See docs/SCENE_ASSETS.md - pen.chickenRunDirt, …"
   },
   {
    "id": "f81b86a5-1b15-409b-b5a1-b795167fcfa8",
@@ -4624,87 +4624,87 @@
   {
    "id": "8e0256f5-07cf-424a-841e-7d80c8d27e5f",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "56a11ed8-e2fa-4d19-8032-2659c5f325b2",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "085d9ec4-d703-4119-8baf-a3440918cf38",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "2d97a7f8-fb18-4c16-aabd-3c32f4972ddb",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "6b7cd4b7-a8f2-448a-8f76-bbb1747c3612",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "224b1395-07d5-4b10-a8e5-5eeb4ed6e670",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "03c90d50-19df-482d-b0e5-ff90d86eca59",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "abbf0634-4fbb-442a-ba6c-a8a0e73c5df3",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "5fd9996d-5dd6-49d9-a0b7-fad39cb22cb8",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "c89520ee-58de-4ed1-bd49-63b2c6a0292a",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "572b4b0a-fdbb-4cfa-abf1-98e04aaf6b02",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "0123e086-f571-44e6-9d2b-8cc62061f8e4",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "2da5916c-a64a-4d7f-a20f-df429d2da8db",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "17a2cefe-fc5f-47ad-9593-6ce9fcdab8ae",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "6ff166ea-4330-47bf-b85d-4cf22eecae2c",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "1d1df2aa-b04c-4327-a48d-8c662efedd91",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.cabbageRot"
+   "where": "blighted crop variant - nothing packed under crop.cabbageRot"
   },
   {
    "id": "f7924bc8-3aea-404e-a1aa-7699b4dcd0a8",
    "verdict": "unclaimed",
-   "where": "projectile art — nothing packed under proj.fireball"
+   "where": "projectile art - nothing packed under proj.fireball"
   },
   {
    "id": "399bc764-2978-4655-9f28-7db44152af1b",
@@ -4739,82 +4739,82 @@
   {
    "id": "05d0ad86-b980-4e6a-871e-e6fab35c69e0",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "cdc88b02-2336-49e6-bd64-aba4e1b585c8",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "d52a1102-1cf1-418b-8f7d-32720409a583",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "0613a61f-52fa-4bf4-a130-e516d5db5ea3",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "f999ea43-8725-400d-9dcc-b7fd9e14467a",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "74b3de4f-6bc1-48a5-a33d-b2719c26d399",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "00fa03c3-1112-4bb9-a5f7-d9cd081dbf64",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "6a70ddc2-4711-490e-9753-2c47067cfc58",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "263b08b1-e4d7-497d-8554-a603757ae8ec",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "fe68db5b-0f47-4b5f-afd9-bed7ffdb52c7",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "8ff880be-eb0f-4b9c-9839-a6cbb42f0c67",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "79cd678e-090e-4eee-a89b-142e232a7d8b",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "ad4eddab-b57d-443c-ad4a-a5a107cdc4af",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "4ad645ab-ef31-4cd1-9d58-2eb90a15a35f",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "6dd5e425-2681-46ec-84ee-1a9af45cb1e1",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "652782be-e96c-4ec8-9167-464367dd55cc",
    "verdict": "unclaimed",
-   "where": "blighted crop variant — nothing packed under crop.pumpkinRot"
+   "where": "blighted crop variant - nothing packed under crop.pumpkinRot"
   },
   {
    "id": "a6dd78ca-875e-47ee-a76a-5f2a4675daf9",
@@ -4999,12 +4999,12 @@
   {
    "id": "6c61e1bb-cc4a-4545-8970-9f6a7d47abb9",
    "verdict": "unclaimed",
-   "where": "bunker ground — nothing packed under terrain.concrete"
+   "where": "bunker ground - nothing packed under terrain.concrete"
   },
   {
    "id": "a0afc497-5292-44ed-9954-ac21b8eaba04",
    "verdict": "unclaimed",
-   "where": "bunker ground — nothing packed under terrain.concrete"
+   "where": "bunker ground - nothing packed under terrain.concrete"
   },
   {
    "id": "4d178556-f30e-44d1-874f-d708b691ea63",
@@ -5266,12 +5266,12 @@
   {
    "id": "60e8b5d1-5322-482c-b48d-f719a9e09e4c",
    "verdict": "wired",
-   "where": "STYLE ANCHOR at 64px — the input every later character was generated from. Being unpacked is correct."
+   "where": "STYLE ANCHOR at 64px - the input every later character was generated from. Being unpacked is correct."
   },
   {
    "id": "71960a9f-e8b2-4c4d-92b1-5f19302669e8",
    "verdict": "wired",
-   "where": "STYLE ANCHOR, not a sprite — every generated character was made against it. Being unpacked is correct."
+   "where": "STYLE ANCHOR, not a sprite - every generated character was made against it. Being unpacked is correct."
   },
   {
    "id": "9bcb41fd-4abc-497b-b0c0-3922d239519e",

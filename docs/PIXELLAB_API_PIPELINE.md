@@ -1,4 +1,4 @@
-# Generating the rest of the art — the pipeline that works
+# Generating the rest of the art - the pipeline that works
 
 Everything learned generating 24 item icons and one full character. Read this
 before spending a generation, and read `PIXELLAB.md` for what the tools are and
@@ -6,7 +6,7 @@ what they cost.
 
 The short version: **PixelLab never returns art on the game's grid.** Generation
 is half the job; the other half is a deterministic post-process, and it is
-already written — `tools/pixellab-cut.ts`, zero new dependencies, built on the
+already written - `tools/pixellab-cut.ts`, zero new dependencies, built on the
 same `tools/png.ts` the atlas builder uses.
 
 ---
@@ -19,7 +19,7 @@ Do not re-derive these. Each one cost real generations to find.
 
 | Setting | Value |
 |---|---|
-| Tool | Create from style reference (Pro) — 20 generations |
+| Tool | Create from style reference (Pro) - 20 generations |
 | Style image | `assets/pixellab/limezu_style_256.png` |
 | Style image instruction | `use this art style, palette, outline weight, shading and colour count` |
 | Description | **the subject only**, plain words, one line |
@@ -31,7 +31,7 @@ suffix (palette, outline, "no text", view angle) *fights* the reference and the
 output drifts cold and grey. `a brass cow bell with a worn leather strap` is the
 correct level of detail.
 
-Item icons are exempt from the 32×32 rule — they only ever appear on cards,
+Item icons are exempt from the 32×32 rule - they only ever appear on cards,
 which draw at any integer zoom. Field art is not exempt.
 
 ### Characters
@@ -39,7 +39,7 @@ which draw at any integer zoom. Field art is not exempt.
 | Setting | Value |
 |---|---|
 | Tool | Characters → Create from Text, Humanoid, **Pro** |
-| Character Size | **40px custom** — not the 32px preset |
+| Character Size | **40px custom** - not the 32px preset |
 | Camera View | Low Top-Down |
 | Reference images | `limezu_character_ref.png` (walk sheet) + `limezu_style_char_128.png` |
 | Style Character | **the farmhand**, for anything infected that follows |
@@ -49,7 +49,7 @@ player's 37px. 40px lands the body at 38px. The size field is the *figure*
 height; the canvas comes back roughly 40% larger.
 
 **The description must state chibi proportions explicitly.** Without them the
-model returns near-realistic proportions — better pixel art, wrong game, and no
+model returns near-realistic proportions - better pixel art, wrong game, and no
 style image fixes it because proportion is not style. The block that works:
 
 > very large head taking up about one third of the total height, an oversized
@@ -62,7 +62,7 @@ style image fixes it because proportion is not style. The block that works:
 |---|---|
 | Preset | Walking → **Scary Walk** (8 frames) for infected things |
 | Directions | all 8 if budget allows, else S/E/N/W and mirror in code |
-| Canvas | leave at the default — bigger canvas means more frames means more cost |
+| Canvas | leave at the default - bigger canvas means more frames means more cost |
 
 **Custom Animation (Pro) is priced per direction.** 20–40 generations × 8
 directions is 160–320 for one walk cycle. Use the presets. Only reach for Custom
@@ -70,7 +70,7 @@ on something singular, like a boss attack, and then generate south only.
 
 ### Never resize the canvas in PixelLab before exporting
 
-It crops hats and squashes figures. Export at whatever native size it offers —
+It crops hats and squashes figures. Export at whatever native size it offers -
 the post-process handles placement, and it is better at it.
 
 ---
@@ -123,7 +123,7 @@ The two numbers that define character placement, both from LimeZu's sheets:
 else in the pipeline should know them.
 
 `scale` exists because PixelLab occasionally returns a coarser pixel grid than
-its canvas — a "64px" image that is really 32px at 2×. Packing that puts
+its canvas - a "64px" image that is really 32px at 2×. Packing that puts
 half-pixels in the atlas. `icon` runs the check automatically; run `scale` by
 hand on anything that looks soft.
 
@@ -131,7 +131,7 @@ hand on anything that looks soft.
 
 ## 4. Wiring the result in
 
-1. Land files under `assets/pixellab/` — `sheets/` (source, keep all 16 cells),
+1. Land files under `assets/pixellab/` - `sheets/` (source, keep all 16 cells),
    `picked/` (what the atlas packs), `character/<name>/`.
 2. One `art/sprites.json` entry per sprite. That is still the only place file
    paths appear.
@@ -169,13 +169,13 @@ field names are not reproduced here rather than guess at them and send you
 debugging a 400.
 
 **The key is not in this repo and must not be committed.** Read it from the
-environment — `PIXELLAB_API_KEY`.
+environment - `PIXELLAB_API_KEY`.
 
 The loop worth building, in this order:
 
 1. `POST` the generation with the §1 settings, style image included as base64.
 2. Write the raw response to `assets/pixellab/sheets/<name>.png`. **Always keep
-   the full sheet** — the other 15 cells are already paid for, and several
+   the full sheet** - the other 15 cells are already paid for, and several
    sheets contain a better cell than the one first picked.
 3. Run `pixellab-cut.ts grid` and pick a cell, or pick programmatically by
    largest content box, then `icon` to produce the trimmed sprite.
@@ -199,7 +199,7 @@ with directions spelled `south`, `south-east`, `east`, … The item key in
 ## 7. The rejection bar
 
 Reject anything you cannot identify at thumbnail size. That is the entire job of
-an item icon, and it is the only quality gate that matters — palette drift and
+an item icon, and it is the only quality gate that matters - palette drift and
 soft edges are fixable in post, an unreadable silhouette is not.
 
 For characters, the gate is different: **stand it next to the player before

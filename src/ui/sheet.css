@@ -1,12 +1,12 @@
 /* ===================================================================
-   THE SHEET — a paper panel, for pause / results / signs
+   THE SHEET - a paper panel, for pause / results / signs
    ===================================================================
    The same kraft stock as a card, at panel scale: dotted paper, a
    3px ink edge, an inner hairline, and a perforated rule between
    sections. Used by every screen that is a piece of paper rather than
    a place.
 
-   Stat rows use a DOTTED LEADER — label left, dots, value right, the
+   Stat rows use a DOTTED LEADER - label left, dots, value right, the
    way a printed tally sheet does it. That is what stops six numbers
    reading as a database table.
    =================================================================== */
@@ -60,9 +60,9 @@
   to { opacity: 1; transform: none; }
 }
 
-/* Dotted stock and the inner hairline — paper without them is flat tan. */
+/* Dotted stock and the inner hairline - paper without them is flat tan. */
 /* No `opacity` here: `--paper-dots` carries the design's 0.12 itself now, and
-   dimming it a second time would land on 0.014 — invisible. */
+   dimming it a second time would land on 0.014 - invisible. */
 .psheet::before {
   content: '';
   position: absolute;
@@ -135,8 +135,8 @@
 
 .psheet-stat-label {
   font-family: var(--label);
-  font-size: 8.5px;
-  letter-spacing: 0.12em;
+  font-size: 15px;
+  letter-spacing: 0.06em;
   color: var(--ink-label);
   white-space: nowrap;
   text-transform: uppercase;
@@ -155,8 +155,8 @@
 
 .psheet-section {
   font-family: var(--label);
-  font-size: 8.5px;
-  letter-spacing: 0.14em;
+  font-size: 15px;
+  letter-spacing: 0.08em;
   color: var(--ink-label);
   text-transform: uppercase;
   margin: 16px 0 0;
@@ -174,7 +174,9 @@
 */
 .psheet-chips {
   display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;
-  max-height: 168px; overflow-y: auto; overflow-x: hidden;
+  /* Tall enough for a full late-run build: at 168 the win screen's list sat
+     in a scroll box that cut its last row in half (round 16). */
+  max-height: 260px; overflow-y: auto; overflow-x: hidden;
   padding-right: 4px; scrollbar-width: thin;
   scrollbar-color: var(--paper-flat) var(--wood-dark);
 }
@@ -187,7 +189,7 @@
 
 .psheet-chip {
   font-family: var(--label);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   color: var(--cream-2);
   background: var(--wood-chip, linear-gradient(180deg, #5d4b33, #3f3121));
@@ -196,7 +198,7 @@
   text-transform: uppercase;
 }
 
-/* A class card reads differently from an ordinary carry — gold edge, same
+/* A class card reads differently from an ordinary carry - gold edge, same
    chip shape, so "this changed how the class itself plays" is legible at a
    glance in the pause ledger. */
 .psheet-chip.is-class { border-color: var(--gold-edge, #a9781f); }
@@ -213,8 +215,8 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--label);
-  font-size: 8.5px;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  letter-spacing: 0.06em;
   color: var(--ink-label);
   text-transform: uppercase;
 }
@@ -245,7 +247,7 @@
 }
 
 /*
-   Sticky, not just relative — `.psheet` is the scrolling element (`overflow-y:
+   Sticky, not just relative - `.psheet` is the scrolling element (`overflow-y:
    auto`, `sheet.css`), so `bottom: 0` here pins Resume / Sound / Give up the
    field to the bottom of the VISIBLE panel as it scrolls, the same fix the
    shop applies to "BACK TO THE FIELD" with a fixed foot outside its scrolling
@@ -269,11 +271,11 @@
 .psheet-foot .spacer { flex: 1; }
 
 /* ===================================================================
-   RESULTS — the day's sheet
+   RESULTS - the day's sheet
    ===================================================================
    Two columns: the tally on the left, the acres stamp and the build
    on the right. The stamp lands 700ms after the sheet, so it reads as
-   a separate beat — the number you were waiting for arrives last.
+   a separate beat - the number you were waiting for arrives last.
    =================================================================== */
 
 /*
@@ -281,7 +283,7 @@
 
    `#ui` is `pointer-events: none` and each layer opts back in; the rule in
    style.css is `#ui > .screen`, and this root is `.results-wrap`. So every
-   button on the results screen — Run it back, The Homestead, Menu — took its
+   button on the results screen - Run it back, The Homestead, Menu - took its
    click on the CANVAS behind it. Proved with `elementFromPoint` at each
    button's centre: it returned the canvas, never the button.
 
@@ -290,7 +292,7 @@
    survivable; results simply never did.
 
    This is the third screen in this project to ship unreachable. If you add a
-   screen, hit-test a control before calling it done — `assertUiLayersClickable`
+   screen, hit-test a control before calling it done - `assertUiLayersClickable`
    in main.ts now shouts about it in dev, which is the cheaper version.
 */
 .results-wrap {
@@ -299,7 +301,7 @@
   display: grid;
   place-items: center;
   overflow-y: auto;
-  background: rgba(10, 8, 6, 0.72);
+  background: rgba(10, 8, 6, 0.84);
   z-index: 6;
   pointer-events: auto;
   scrollbar-width: thin;
@@ -319,7 +321,7 @@
 
    `.screen-inner` is the level-up screen's scroll box: `max-width: min(1000px,
    92vw)` with `overflow: auto`. `.results` is 1080px wide. Nesting one in the
-   other gave a 1080px child in a 1000px clipping parent — a horizontal
+   other gave a 1080px child in a 1000px clipping parent - a horizontal
    scrollbar you had to drag by hand, and the "Banked at the Homestead" panel
    cut off 84px past the right edge with the acres count sliced in half.
 
@@ -445,7 +447,7 @@
   .results-grid { grid-template-columns: 1fr; }
 }
 
-/* The acres stamp: brighter stock, gold edge — this is the good news. */
+/* The acres stamp: brighter stock, gold edge - this is the good news. */
 .results-acres {
   position: relative;
   background: var(--paper-bright);
@@ -502,11 +504,12 @@
 
 .results-actions {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 22px;
   flex-wrap: wrap;
 }
+.results-actions button.btn { font-size: 17px; padding: 12px 24px; letter-spacing: 0.06em; }
 
 /* The seed, as a reference under the sheet (it used to be a stat row). */
 .results-seed {
@@ -514,3 +517,7 @@
   font-family: var(--label); font-size: 12px; letter-spacing: 0.08em;
   color: rgba(64, 49, 31, 0.6);
 }
+
+/* Build chips carry their card's icon (results.ts). */
+.psheet-chip { display: inline-flex; align-items: center; gap: 6px; }
+.psheet-chip .card-sprite { flex: none; }

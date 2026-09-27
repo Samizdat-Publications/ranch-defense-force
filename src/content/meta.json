@@ -2,7 +2,9 @@
   "acres": {
     "perWaveCleared": 2,
     "perBossKill": 25,
-    "firstTimeThisTier": 10
+    "firstTimeThisTier": 10,
+    "feedPerAcre": 150,
+    "_feedNote": "Feed still in the purse when the day ends is sold, one acre for every feedPerAcre. v2 critic rounds 11 to 15 counted thousands of feed banked at the end with shop prices under 50: money that bought nothing. Sold, a thrifty run still pays."
   },
   "bunkhouse": {
     "costs": [

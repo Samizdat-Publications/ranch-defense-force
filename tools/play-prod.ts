@@ -9,13 +9,13 @@
  * `play.ts` drives `window.rdf`, which only a dev build exposes, and it sets a
  * 1600x900 viewport at deviceScaleFactor 1. The owner plays the DEPLOYED build
  * in a normal window on a normal Windows laptop, where `devicePixelRatio` is
- * usually 1.25 or 1.5 — and `src/main.ts` sizes the canvas backing store by
+ * usually 1.25 or 1.5 - and `src/main.ts` sizes the canvas backing store by
  * dpr (capped at 2), so the owner's canvas is a quarter again bigger in each
  * axis than every measurement this repo has taken. A production-only or
  * dpr-only cost would be invisible to all of them.
  *
  * So this one takes a URL, starts the run by CLICKING (a `.hero` card selects,
- * a second click on the selected card takes the field — `src/ui/menu.ts`),
+ * a second click on the selected card takes the field - `src/ui/menu.ts`),
  * holds a movement key, and reports frames per second measured in the page.
  * It works against the live site and against a local dev server, and the point
  * is running it against both.
@@ -183,10 +183,10 @@ try {
   const fps = samples.map((s) => s.fps)
   const sorted = [...fps].sort((a, b) => a - b)
   const lines = [
-    `# Play-by-clicking — ${url}`,
+    `# Play-by-clicking - ${url}`,
     '',
     `${seconds}s, viewport 1920x1080 at deviceScaleFactor ${DPR} (canvas backing `
-    + `${Math.round(1920 * DPR)}x${Math.round(1080 * DPR)}). Run started: ${started ? 'yes' : 'NO — no canvas found'}.`,
+    + `${Math.round(1920 * DPR)}x${Math.round(1080 * DPR)}). Run started: ${started ? 'yes' : 'NO - no canvas found'}.`,
     COVER
       ? `A second Chrome window (${COVER_SIZE}) covered the game window from t=${COVER_AT}s. `
         + 'The anti-throttling flags were NOT passed for this run.'

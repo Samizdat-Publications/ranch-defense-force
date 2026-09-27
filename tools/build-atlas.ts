@@ -1,6 +1,6 @@
 /**
  * Slices every source named in `art/sprites.json` and packs it into
- * `public/atlas-0.png … atlas-N.png` + one `public/atlas.json`. Runs offline —
+ * `public/atlas-0.png … atlas-N.png` + one `public/atlas.json`. Runs offline -
  * the game never sees `assets/`, which is also what keeps the licensed art out
  * of a deployed build.
  *
@@ -8,8 +8,8 @@
  *
  * Pages, not one sheet, and the size of a page is measured: see the comment on
  * `PAGE_MAX` down in the pack section. Every frame in `atlas.json` carries the
- * `page` it sits on, and every reader — the renderer, the DOM sprites, the
- * offline tools — indexes by it.
+ * `page` it sits on, and every reader - the renderer, the DOM sprites, the
+ * offline tools - indexes by it.
  *
  * Each frame is trimmed to its content bounds and records a bottom-centre
  * pivot, so the renderer positions by the character's feet and never has to
@@ -28,7 +28,7 @@ import { loadPalette, makeQuantiser } from './conform-fx.ts'
 import { wangKey, wangKeysFor, type Corner } from '../src/render/wang.ts'
 
 interface Frame {
-  /** Which atlas page holds it — `public/atlas-<page>.png`. */
+  /** Which atlas page holds it - `public/atlas-<page>.png`. */
   page: number
   /** Position on that page. */
   x: number
@@ -106,7 +106,7 @@ interface Manifest {
    * humanoid grid.
    *
    * `slug` is PixelLab's own folder name, which is the animation DESCRIPTION
-   * slugified and truncated — "walking_with_a_heavy_dragging_stagger_head_swingi".
+   * slugified and truncated - "walking_with_a_heavy_dragging_stagger_head_swingi".
    * It is per-animal and unguessable, so it is declared here rather than
    * derived. The game-facing clip name (walk/attack/death) is the key.
    */
@@ -170,7 +170,7 @@ interface Manifest {
    * Generated FX, animated from a still and delivered as one PNG per frame.
    *
    * Same frame keys and the same CENTRE pivot as the pack `fx` group, so the
-   * renderer cannot tell them apart — an effect is centred on a point in the
+   * renderer cannot tell them apart - an effect is centred on a point in the
    * world, it does not stand on the ground. A clip declared here REPLACES the
    * pack clip of that name, which is why the pack entry has to be deleted
    * rather than left alongside.
@@ -178,7 +178,7 @@ interface Manifest {
   pixellabFx?: { _base: string; clips: Record<string, { dir: string }> }
   sceneClips?: { _base: string; sheets: Record<string, string[]> }
   /**
-   * Ambient loops for FIELD objects — nodes, crops, props, hazards, pickups.
+   * Ambient loops for FIELD objects - nodes, crops, props, hazards, pickups.
    *
    * Packed as `<key>.<n>` under a `play` clip, which is the shape
    * `Renderer.propFrame` already reads: it asks `clipLength(sprite, 'play')`
@@ -186,7 +186,7 @@ interface Manifest {
    * animates and a key left out keeps drawing its still, with no renderer
    * change either way.
    *
-   * The pivot is deliberately IDENTICAL to the singles group above —
+   * The pivot is deliberately IDENTICAL to the singles group above -
    * bottom-centre of the FULL source image, not of the trimmed box. The frames
    * come from `animate-with-text-v3` fed the very still the singles group
    * packs, so they share its dimensions; any other pivot would make a prop jump
@@ -223,7 +223,7 @@ interface Pending {
 
 const pending: Pending[] = []
 const errors: string[] = []
-/** Frames per direction, per sheet — a rooster walks in 6 and a pig in 12, so
+/** Frames per direction, per sheet - a rooster walks in 6 and a pig in 12, so
  *  the renderer cannot assume one number. */
 /**
  * How mirror-identical the left and right bands must be.
@@ -232,7 +232,7 @@ const errors: string[] = []
  * near-perfect, the zombies less so because torn clothing is not symmetric. A
  * WRONG order measures 10-12%, because it is comparing a side view against a
  * front or back one. The gap is enormous, so the threshold only has to sit
- * inside it — 45% is well clear of both edges and does not need retuning every
+ * inside it - 45% is well clear of both edges and does not need retuning every
  * time a new sheet lands.
  */
 const SIDE_MIRROR_MIN = 0.45
@@ -244,7 +244,7 @@ const clipLengths: Record<string, Record<string, number>> = {}
 /**
  * Pack a generated character that has already been cut to the game's grid.
  *
- * The raw PixelLab export needs real work first — rotations land on 40x40,
+ * The raw PixelLab export needs real work first - rotations land on 40x40,
  * animation frames on 56x56, and the feet sit at a different y in every frame,
  * so dropped in as-is a character bobs and does not line up with LimeZu's
  * cells. `tools/pixellab-cut.ts` is what does that; by the time a sheet gets
@@ -287,7 +287,7 @@ if (manifest.pixellabStrips) {
             img,
             sx: b.x, sy: b.y, sw: b.w, sh: b.h,
             // Bottom-centre of the CELL, the same convention as every other
-            // sheet — which is why the renderer needs no special case.
+            // sheet - which is why the renderer needs no special case.
             ox: b.x - (sx + sheet.cellWidth / 2),
             oy: b.y - sheet.cellHeight,
           })
@@ -301,7 +301,7 @@ if (manifest.pixellabStrips) {
    The eight-direction order, and it is ANGLE-SORTED on purpose.
 
    The humanoid rig's `directions` is `[down, up, left, right]`, which is not
-   sorted by angle — `directionIndex` picks it apart with a comparison that also
+   sorted by angle - `directionIndex` picks it apart with a comparison that also
    biases toward the side views. That does not generalise to eight, so the
    eight-direction sheets declare their own list in this order and the renderer
    indexes it with a single `round(facing / 45deg)`.
@@ -317,7 +317,7 @@ const dirSets: Record<string, string[]> = {}
 //
 // The animals. Same frame-key convention as every other sheet
 // (`id.clip.direction.frame`) and the same bottom-centre offset, so the
-// renderer needs no special case for them — only a direction list with eight
+// renderer needs no special case for them - only a direction list with eight
 // entries instead of four.
 //
 // Trimmed to content, deliberately: an animal is drawn from a pivot, not from
@@ -328,7 +328,7 @@ if (manifest.pixellabObjects) {
   const named = new Set(Object.values(cfg.compassToDirection))
   const missing = EIGHT_ORDER.filter((d) => !named.has(d))
   if (missing.length) {
-    errors.push(`pixellabObjects.compassToDirection is missing ${missing.join(', ')} — the renderer indexes the eight-direction list by angle and cannot tolerate a gap.`)
+    errors.push(`pixellabObjects.compassToDirection is missing ${missing.join(', ')} - the renderer indexes the eight-direction list by angle and cannot tolerate a gap.`)
   }
   for (const [id, sheet] of Object.entries(cfg.sheets)) {
     dirSets[id] = EIGHT_ORDER
@@ -338,13 +338,13 @@ if (manifest.pixellabObjects) {
        An IDLE clip, from `rotations/`.
 
        PixelLab generates an object as eight rotations and then animates them,
-       so the rotation IS the standing pose — the same drawing every clip starts
+       so the rotation IS the standing pose - the same drawing every clip starts
        from. Packing it as `idle` costs eight frames an animal and makes these
        sheets shaped like every other sheet in the atlas, which matters well
        beyond the renderer: `items.json` and `weapons.json` both address card
        art as `<sheet>.idle.down.0`, and a sheet with no idle silently loses its
-       card. The alternative — teaching every reader to fall back to walk frame
-       0 — is the same fix spread over more places.
+       card. The alternative - teaching every reader to fall back to walk frame
+       0 - is the same fix spread over more places.
     */
     clipLengths[id].idle = 1
     for (const [compass, dir] of Object.entries(cfg.compassToDirection)) {
@@ -452,7 +452,7 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
   if (sheet.width !== rig.sheetWidth || sheet.height !== rig.sheetHeight) {
     errors.push(
       `${path}: expected ${rig.sheetWidth}x${rig.sheetHeight}, got ${sheet.width}x${sheet.height}. ` +
-      `This is almost certainly a ${sheet.width === 896 ? '16px' : 'wrong-scale'} export — re-export at 32x32.`,
+      `This is almost certainly a ${sheet.width === 896 ? '16px' : 'wrong-scale'} export - re-export at 32x32.`,
     )
     continue
   }
@@ -463,7 +463,7 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
   // THE SECOND ASSERTION: the direction bands really are where directionOrder
   // says they are.
   //
-  // A wrong band order has no symptom the build can otherwise see — every
+  // A wrong band order has no symptom the build can otherwise see - every
   // frame is present, every frame is non-empty, and the game renders a
   // confident, wrong sprite. It shipped from M0 to M7 with `down` drawing the
   // right-facing pose and `right` drawing the front-facing one, and was found
@@ -502,14 +502,14 @@ for (const [id, path] of Object.entries(manifest.humanoids)) {
     const frontBack = match(bandX('up'), bandX('down'), false)
     if (sides < SIDE_MIRROR_MIN) {
       errors.push(
-        `${path}: directionOrder looks wrong — the "left" and "right" bands are only ` +
+        `${path}: directionOrder looks wrong - the "left" and "right" bands are only ` +
         `${(sides * 100).toFixed(0)}% mirror-identical (expected >${SIDE_MIRROR_MIN * 100}%). The bands are ` +
         `probably not [${rig.directionOrder.join(', ')}].`,
       )
     }
     if (frontBack > 0.9) {
       errors.push(
-        `${path}: directionOrder looks wrong — the "up" and "down" bands are ` +
+        `${path}: directionOrder looks wrong - the "up" and "down" bands are ` +
         `${(frontBack * 100).toFixed(0)}% identical, so at least one of them is not a ` +
         `front or back view.`,
       )
@@ -571,7 +571,7 @@ for (const [id, cfg] of Object.entries(manifest.animals?.sheets ?? {})) {
 
   // These sheets are NOT on the 32px cell grid the humanoids use. Each walk
   // band is four direction clips of six frames, and on the two-row sheets a
-  // frame is 64px wide with the animal centred in it — a side-view pig is 54px
+  // frame is 64px wide with the animal centred in it - a side-view pig is 54px
   // across and would be cut in half by a 32px slice. See art/sprites.json.
   const fw = cfg.frameWidth
   const fh = manifest.cell * cfg.rows
@@ -685,7 +685,7 @@ if (vehicles) {
  * contains files named *_Load_* and *_Stack_* that are multi-tile piles, and
  * `Bucket_Load` (58x64 of stacked buckets) sailed into the weapon ring and
  * rendered as an unreadable brown slab twice the size of the player. Nothing
- * else about it looked wrong — it was just a bucket that was actually nine
+ * else about it looked wrong - it was just a bucket that was actually nine
  * buckets. The shovel is 30x48 and legitimately tall, so height is the looser
  * bound.
  */
@@ -701,8 +701,8 @@ interface SingleGroup {
    *
    * That assertion catches multi-tile "_Load_" piles in the LimeZu packs, where
    * an oversized icon means the WRONG FILE was picked. Generated card art is
-   * legitimately 44-62px — a card window zooms by integers and wants the detail
-   * — so the same number would be measuring a different thing and rejecting
+   * legitimately 44-62px - a card window zooms by integers and wants the detail
+   * - so the same number would be measuring a different thing and rejecting
    * correct art. Scoped by group rather than loosened for everyone, because the
    * pack assertion is still worth having.
    */
@@ -713,7 +713,7 @@ interface SingleGroup {
    * A strip animated with `steps(n)` divides its width by n, so the packed
    * width MUST be an exact multiple of the cell. Trimming a 192px six-frame
    * strip down to its content leaves 188px, 188/6 is not an integer, and every
-   * step lands a fraction off — the character slides instead of stepping. Only
+   * step lands a fraction off - the character slides instead of stepping. Only
    * strips need this; a trimmed single sprite is strictly better.
    */
   noTrim?: boolean
@@ -723,8 +723,8 @@ const singleGroups = [
   manifest.singles, manifest.singlesExtra, manifest.weapons, manifest.weaponsFarmTools,
   manifest.nodes, manifest.biome, manifest.crops, manifest.nodeTrees, manifest.tools, manifest.weaponTiers,
   // Not `cardArt`: these ARE field art and want the size assertion, and their
-  // keys start `carry.` rather than `weapon.` so the assertion's other half —
-  // the "_Load_ pile" check — does not apply to them either way.
+  // keys start `carry.` rather than `weapon.` so the assertion's other half -
+  // the "_Load_ pile" check - does not apply to them either way.
   manifest.carry,
   manifest.pixellab ? { ...manifest.pixellab, cardArt: true } : undefined,
   // `cardArt` because these are 64px, well over the field's 32x32 rule -- and
@@ -762,7 +762,7 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
     errors.push(`${path}: ${(e as Error).message}`)
     continue
   }
-  // A group can ask to be conformed — used for the icon pack, which is a
+  // A group can ask to be conformed - used for the icon pack, which is a
   // different artist's palette entirely.
   if (group.conform) {
     try {
@@ -782,7 +782,7 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
     errors.push(
       `${path}: weapon icon is ${b.w}x${b.h}, over the ${WEAPON_MAX_W}x${WEAPON_MAX_H} limit. ` +
       `This is almost certainly a multi-tile "_Load_" or "_Stack_" pile rather than a single ` +
-      `object — pick the "_Single_" variant.`,
+      `object - pick the "_Single_" variant.`,
     )
     continue
   }
@@ -800,7 +800,7 @@ for (const [name, file] of Object.entries(group.files ?? {})) {
 // ----------------------------------------------------------------------- fx
 
 // Conformed to the LimeZu palette on the way in (§10 step 3). The pack is drawn
-// by a different hand — more saturated, more arcade — and quantising here rather
+// by a different hand - more saturated, more arcade - and quantising here rather
 // than shipping a second copy of the art means there is exactly one generated
 // artefact to keep track of.
 const fx = manifest.fx
@@ -848,7 +848,7 @@ if (fx && Object.keys(fx.clips ?? {}).length > 0) {
     for (let f = 0; f < clip.frames; f++) {
       const sx = f * cell
       const b = contentBounds(conformed, sx, rowY, cell, cell)
-      // A tail frame that has faded to nothing is normal, not an error — the
+      // A tail frame that has faded to nothing is normal, not an error - the
       // clip just ends early. clipLengths records what was actually packed.
       if (b.empty) break
       pending.push({
@@ -875,7 +875,7 @@ if (fx && Object.keys(fx.clips ?? {}).length > 0) {
 //
 // Conforming exists to drag a bought sheet onto our palette. These were
 // generated in the house style already, and the palette is authored for
-// terrain and creatures — it has no coverage for an electric blue arc, so
+// terrain and creatures - it has no coverage for an electric blue arc, so
 // quantising would send those pixels to the nearest thing it does have. That
 // is the "explosion turning magenta" failure ART_STYLE records, and the fix is
 // not to quantise art that never left the palette.
@@ -905,14 +905,14 @@ if (manifest.pixellabFx) {
          Drop a frame that has COLLAPSED INTO A SOLID BLOCK.
 
          The animator's failure mode is a final frame that comes back as a flat
-         rectangle of colour — the muzzle flash returned eight good frames and a
+         rectangle of colour - the muzzle flash returned eight good frames and a
          tan square. It is not transparent, so the empty check above misses it,
          and it would flash a filled rectangle over the game on the last frame
          of every shot.
 
          Bounds alone cannot catch it: an effect legitimately fills its canvas,
          and frames 0-2 of that same muzzle flash do. What separates them is
-         measured — the good frames are 43-56% transparent with ~20 colours, the
+         measured - the good frames are 43-56% transparent with ~20 colours, the
          bad one is 7% transparent with 4. Both conditions together, so a dense
          explosion is never mistaken for a failure.
       */
@@ -939,13 +939,13 @@ if (manifest.pixellabFx) {
 }
 
 /**
- * Ambient loops for the title scenes — a windmill turning, wheat swaying.
+ * Ambient loops for the title scenes - a windmill turning, wheat swaying.
  *
  * These are ONE-DIRECTION objects, which nothing else here handles: the animal
  * pipeline wants eight compass folders and the fx pipeline emits `fx.name.i`
  * with a centre pivot. A scene wants neither. It wants the same
  * `sheet.clip.dir.frame` keys everything else uses, so `clipsOf`, `stripUrl`
- * and `groundActor` work on them with no special case — hence the single
+ * and `groundActor` work on them with no special case - hence the single
  * direction is spelled `down`, which is what a scene asks for anyway.
  *
  * **Packed UNTRIMMED, and that is the whole point.** `stripUrl` composes its
@@ -994,7 +994,7 @@ if (sceneClips) {
 
 /*
    Ambient field loops. One directory of frames per key, written by
-   `npm run animate` — `frame_000.png` IS the original still, because
+   `npm run animate` - `frame_000.png` IS the original still, because
    animate-with-text-v3 keeps its input as frame 0, so the loop contains the
    sprite the singles group already packs and the two cannot disagree.
 
@@ -1027,7 +1027,7 @@ if (fieldClips) {
         name: `${key}.${packed}`,
         img,
         sx: b.x, sy: b.y, sw: b.w, sh: b.h,
-        // Bottom-centre of the FULL image — the singles convention, so the
+        // Bottom-centre of the FULL image - the singles convention, so the
         // loop sits exactly where the still sat.
         ox: b.x - img.width / 2,
         oy: b.y - img.height,
@@ -1044,7 +1044,7 @@ if (fieldClips) {
 /**
  * The gun sheet: six category columns of 22, sliced on measured bands.
  *
- * Not a uniform grid — the columns sit 85.2px apart and the guns inside them
+ * Not a uniform grid - the columns sit 85.2px apart and the guns inside them
  * vary from 14 to 25px wide. Cells are cut generously from the measured band
  * origins and trimmed to content, which is why only the origins need listing.
  */
@@ -1095,18 +1095,18 @@ if (gunSheet) {
  * single assumed cell size would have been wrong for nine of the twelve.
  *
  * The BASE (no-element) clip is conformed to the LimeZu palette on the way in,
- * like the fx clips — the whole point of §10 step 3 is that a second artist's
+ * like the fx clips - the whole point of §10 step 3 is that a second artist's
  * work should not read as a second artist's work.
  *
  * The `.fire`/`.acid`/`.frost` variants are deliberately left OUT of that
  * conform. `art/palette.json` holds 32 colours pulled from the farm tileset,
- * characters and animals — nothing warm-vs-hot or cold-vs-corrosive was ever a
+ * characters and animals - nothing warm-vs-hot or cold-vs-corrosive was ever a
  * source for it, so the nearest-Oklab match for "orange" and the nearest match
  * for "yellow" turned out to be the SAME palette entry: `proj.pellet.fire.0`
  * packed 0 pixels different from `proj.pellet.0`, which is the literal
  * "fire round draws as the plain round" bug reported after a full run.
  * `elements.json`'s own `_designNote` says an element must be "visible
- * everywhere, which is what makes it read as a build decision" — a bullet
+ * everywhere, which is what makes it read as a build decision" - a bullet
  * that has to stay legible at a ~20px on-screen size against green grass needs
  * the saturation the source pack already drew it in, not the muted farm ramp.
  * The un-conformed frame is still built through `contentBounds` off the same
@@ -1195,7 +1195,7 @@ if (terrainTiles.length > 0) {
         errors.push(`terrain ${name}: cell ${col},${row} is outside ${sheet.width}x${sheet.height}`)
         continue
       }
-      // Tiles are not trimmed — they must stay exactly cell-sized to tile.
+      // Tiles are not trimmed - they must stay exactly cell-sized to tile.
       pending.push({
         name: `terrain.${name}`,
         img: sheet,
@@ -1253,14 +1253,14 @@ if (existsSync(TILESET_DIR)) {
        CONFORMED TO THE HOUSE PALETTE, and the palette is why it works now.
 
        `create_topdown_tileset` has a hard prior for bright saturated green and
-       will not be talked out of it — "dry muted sage green, dusty, desaturated"
+       will not be talked out of it - "dry muted sage green, dusty, desaturated"
        still came back arcade. Quantising was the obvious answer and it FAILED
        the first time, making the grass flatter and more saturated: conform
        matches a palette, it cannot shift one, and the palette was sampled from
        the LimeZu sheets, which are full of saturated green.
 
        `art/palette.json` is authored now (see its own note). Muted daylight is
-       in the palette, so conform delivers it whatever the model returns — which
+       in the palette, so conform delivers it whatever the model returns - which
        is the only way to get a consistent look out of a generator that has its
        own opinions.
     */
@@ -1289,7 +1289,7 @@ if (existsSync(TILESET_DIR)) {
     // missing sprite in the middle of the ground. Better to fail the build.
     const missing = wangKeysFor(set).filter((k) => !got.has(k))
     if (missing.length) {
-      errors.push(`${png}: tileset is incomplete — missing ${missing.length} of 16 corner combinations (${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ', …' : ''})`)
+      errors.push(`${png}: tileset is incomplete - missing ${missing.length} of 16 corner combinations (${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ', …' : ''})`)
     }
   }
 }
@@ -1456,8 +1456,8 @@ pending.sort((a, b) => b.sh - a.sh || b.sw - a.sw)
    PAGES OF 2048, AND THE NUMBER IS MEASURED RATHER THAN CHOSEN FOR TASTE.
 
    This used to emit one sheet and pick the narrowest width that kept both
-   dimensions under 8192. That produced 4096x8192 — 8,176 frames, 12.7MB of
-   PNG, ~134MB decoded — and `tools/atlas-bench.ts` measured what it cost on
+   dimensions under 8192. That produced 4096x8192 - 8,176 frames, 12.7MB of
+   PNG, ~134MB decoded - and `tools/atlas-bench.ts` measured what it cost on
    the owner's machine, blitting the game's own draw load out of six different
    sources in the same headed Chrome:
 
@@ -1485,7 +1485,7 @@ pending.sort((a, b) => b.sh - a.sh || b.sw - a.sw)
      sheet's frames on one page; grouping below is tidiness, not a win.
    - **A second surface is free.** The white-silhouette flash copy tracked the
      colour atlas exactly at both loads, and alternating source every single
-     draw — which is what the hit flash does — cost the same again. Pages
+     draw - which is what the hit flash does - cost the same again. Pages
      inherit that: the flash copy splits with them at no charge.
 */
 const PAGE_MAX = 2048
@@ -1493,15 +1493,15 @@ const PAGE_MAX = 2048
 /**
  * Groups the DOM home screen draws and the game loop never does.
  *
- * These are the biggest frames in the atlas by a wide margin — whole barns,
- * complete pens, backdrop strips up to 810px across, all `noTrim` — and they
+ * These are the biggest frames in the atlas by a wide margin - whole barns,
+ * complete pens, backdrop strips up to 810px across, all `noTrim` - and they
  * are drawn once into a static scene rather than per frame in a camera. Giving
  * them their own page means the pages the renderer samples every frame carry
  * only field art.
  *
  * Verified against the source rather than assumed: every name here is reached
  * from `src/ui/scene.ts` and from nothing under `src/render/` or
- * `src/content/*.json`. `base.*` is deliberately NOT here — `maps.json` uses it
+ * `src/content/*.json`. `base.*` is deliberately NOT here - `maps.json` uses it
  * for the lab map's scenery and wall panels as well as the home screen. Nor is
  * `item.*`: `drawPickups` draws an item's card art as its ground pickup.
  *
@@ -1527,7 +1527,7 @@ function nextPowerOfTwo(v: number): number {
    Width is a power of two because the shelf packer fills it: every page but
    the last runs the full 2048 across. Height is whatever the shelves happened
    to reach, and rounding that up to a power of two is what turns a page that
-   needed 1100 rows into a 2048-row texture 43% full of transparent pixels —
+   needed 1100 rows into a 2048-row texture 43% full of transparent pixels -
    measured on the first paged build, which shipped 25.3M pixels where 20.6M
    held all the art.
 
@@ -1545,7 +1545,7 @@ interface Page { w: number; h: number; placed: Placed[] }
 /**
  * Shelf-pack one bucket into as many `PAGE_MAX` pages as it needs.
  *
- * Same shelf packer as before — tallest first, rows of whatever fits — with
+ * Same shelf packer as before - tallest first, rows of whatever fits - with
  * one extra rule: when a new shelf would run off the bottom of the page, the
  * page is closed and the next one starts. Each finished page is then shrunk to
  * fit what actually landed on it, so a page holding a handful of frames does
@@ -1594,7 +1594,7 @@ for (const p of pending) {
   if (p.sw + PAD * 2 > PAGE_MAX || p.sh + PAD * 2 > PAGE_MAX) {
     errors.push(
       `${p.name}: ${p.sw}x${p.sh} does not fit a ${PAGE_MAX}x${PAGE_MAX} page. `
-      + `Either the source is wrong or the page size has to grow — and growing it `
+      + `Either the source is wrong or the page size has to grow - and growing it `
       + `past 2048 is what tools/atlas-bench.ts measured as expensive.`,
     )
   }
@@ -1631,7 +1631,7 @@ const pageImages: Image[] = pages.map((page, i) => {
 
 // ------------------------------------------------------------------- ui
 //
-// The UI is DOM, not canvas, so its art cannot live in the atlas — CSS needs
+// The UI is DOM, not canvas, so its art cannot live in the atlas - CSS needs
 // real files. LimeZu's Modern UI pack is the same hand as the farm tiles, so
 // the screens can match the game exactly with no conforming at all.
 //
@@ -1654,8 +1654,8 @@ try {
    The rarity plate, emitted as a FILE rather than packed.
 
    The UI is DOM and CSS needs a real URL, which is the same reason panel.png
-   is emitted above. Generated at 192x32 against the real destination — a
-   banner spanning a 210px card at 30px tall — after a first attempt produced
+   is emitted above. Generated at 192x32 against the real destination - a
+   banner spanning a 210px card at 30px tall - after a first attempt produced
    24x30 badges for it and cost about 120 generations for art nothing could
    use. Measure the destination before generating chrome.
 */
@@ -1664,7 +1664,7 @@ try {
   writeFileSync('public/ui/plate.png', encodePng(plate))
   console.log(`ui: public/ui/plate.png ${plate.width}x${plate.height}`)
 } catch (e) {
-  // A missing UI pack costs the chrome, not the game — the CSS has colour
+  // A missing UI pack costs the chrome, not the game - the CSS has colour
   // fallbacks for every border-image.
   console.warn('ui pack unavailable, screens fall back to flat panels:', (e as Error).message)
 }
@@ -1677,7 +1677,7 @@ mkdirSync('public', { recursive: true })
    Two things have to go: the single `atlas.png` this tool used to emit, and
    any `atlas-N.png` from a build that needed more pages than this one does.
    Either left behind is a file the game will never ask for and a reader might
-   — `public/` is gitignored and nothing else prunes it.
+   - `public/` is gitignored and nothing else prunes it.
 */
 if (existsSync('public/atlas.png')) unlinkSync('public/atlas.png')
 for (const f of readdirSync('public')) {

@@ -7,7 +7,7 @@
  * relationship between a sprite and a body, and a shot of a run catches
  * exactly one facing per screenshot. Three weapons stacked on the farmhand's
  * chin, a pitchfork through his hat, a rifle that swings its stock through him
- * as it tracks — every one of those was found by looking at four facings at
+ * as it tracks - every one of those was found by looking at four facings at
  * once, and none of them is visible in a single frame of play.
  *
  * It draws through `tools/draw-world.ts`, the second painter, for the reason
@@ -53,7 +53,7 @@ const held = process.env.RDF_HELD ?? ''
 const KIT = (process.env.RDF_KIT ?? 'scattergun,varmintRifle,drumGun,harpoon,pitchfork,chemSprayer')
   .split(',').filter(Boolean)
 
-/** down, up, left, right — as `directionIndex` reads them, not as it lists them. */
+/** down, up, left, right - as `directionIndex` reads them, not as it lists them. */
 const FACINGS: [string, number][] = [
   ['DOWN', Math.PI / 2],
   ['UP', -Math.PI / 2],
@@ -81,7 +81,7 @@ const PAD = 6
  * The composite is enlarged before it is written, and only here.
  *
  * The game already draws at an integer zoom and this multiplies that again by
- * an integer, nearest-neighbour, so no pixel is invented — it is a magnifying
+ * an integer, nearest-neighbour, so no pixel is invented - it is a magnifying
  * glass over the shot, not a resample. Every anchor bug this sheet is for is a
  * two-or-three pixel relationship on a 52px body, and at 1:1 they are all
  * below the threshold at which anyone can see them.

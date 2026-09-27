@@ -42,7 +42,7 @@ const classId = process.argv[2] ?? 'hand'
 const seconds = Number(process.argv[3] ?? 180)
 const outDir = process.argv[4] ?? 'tools/play'
 const seed = process.argv[5] ?? 'playtest'
-/** `WIDTHxHEIGHT`, e.g. `1366x768` — the second of the two viewports the
+/** `WIDTHxHEIGHT`, e.g. `1366x768` - the second of the two viewports the
  *  shop's ledger fix (shop.css `.pshop-counter`) is sized against. Defaults
  *  to the tool's long-standing 1600x900 so every existing call is unchanged. */
 const [viewportW, viewportH] = (process.argv[6] ?? '1600x900').split('x').map(Number)
@@ -310,8 +310,8 @@ try {
        Photograph the card screens BEFORE dismissing them.
 
        This tool could report that a level-up happened and never show one. The
-       cards are most of what an upgrade change is — the delta line, the stack
-       counter, what four cards look like side by side — and a run that closes
+       cards are most of what an upgrade change is - the delta line, the stack
+       counter, what four cards look like side by side - and a run that closes
        every board before the shutter opens can only ever prove the run
        advanced. Capped so a long run does not write forty of them.
     */

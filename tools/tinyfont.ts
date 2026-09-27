@@ -10,7 +10,7 @@
  * the flat form is one miscounted character away from smearing every glyph
  * after it and there is no visual diff to catch that.
  *
- * Lowercase folds to uppercase — there is no descender room, and weapon ids are
+ * Lowercase folds to uppercase - there is no descender room, and weapon ids are
  * camelCase, so `varmintRifle` renders as VARMINTRIFLE. Anything unmapped
  * renders as a space rather than throwing: a label is not worth failing on.
  */
@@ -83,7 +83,7 @@ export function textWidth(text: string, scale = 1): number {
 /**
  * Draw `text` at `x,y` (top-left), in `rgb`, scaled by whole pixels.
  *
- * Nearest-neighbour blocks, not antialiased — everything else on these sheets
+ * Nearest-neighbour blocks, not antialiased - everything else on these sheets
  * is pixel art, and a smooth label next to hard-edged sprites reads as a bug.
  */
 export function drawText(img: Image, text: string, x: number, y: number, rgb: number, scale = 1): void {

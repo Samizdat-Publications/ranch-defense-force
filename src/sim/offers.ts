@@ -1,6 +1,6 @@
 /**
  * The upgrade pool. Level-ups and the shop draw from **exactly the same pool**
- * (§3) — the difference is agency and cost, not contents. A level-up is free,
+ * (§3) - the difference is agency and cost, not contents. A level-up is free,
  * fast and random; the shop is slow and paid but rerollable and lockable, which
  * is what makes it the place you go hunting for the item that finishes a build.
  *
@@ -12,8 +12,8 @@
  *
  *  - **§7.2** `drawLevelUp` used to fill its boosted slot from the
  *    uncommon-or-better cards and then fill *every remaining slot from commons
- *    alone*. A merge's rarity is its next tier, never `common`, so a merge —
- *    or an element, or a special — could not appear in slots 2, 3 or 4 of a
+ *    alone*. A merge's rarity is its next tier, never `common`, so a merge -
+ *    or an element, or a special - could not appear in slots 2, 3 or 4 of a
  *    level-up at any point in any run. 100.0% of the 6,090 uncommon+ level-up
  *    cards measured were the one boosted slot, and the eleven common stat items
  *    inherited 46.3% of every card the player ever saw. All four slots now draw
@@ -27,12 +27,12 @@
  *
  * **§7.8, stated out loud:** this changes how many `next()` calls a run
  * consumes, so every recorded seed replays as a different run. The map pick is
- * untouched — it is still the first draw off the stream and still exactly one
+ * untouched - it is still the first draw off the stream and still exactly one
  * draw (see `maps.json` `_rngNote`), so the arena a seed produces has not
  * moved. Everything after it has.
  */
 import {
-  CLASSES, ELEMENTS, ITEMS, RARITY, TUNING, WEAPON_IDS, WEAPONS, elementStat, weaponCardSprite,
+  CLASSES, ELEMENTS, ITEMS, RARITY, TUNING, WAVES, WEAPON_IDS, WEAPONS, elementStat, weaponCardSprite,
   type ItemDef, type StatMods, type WeaponDef,
 } from '../content'
 import type { Rng } from '../core/rng'
@@ -43,13 +43,13 @@ import { sinkCost } from './formulas'
  * `'swap'` is §7.5's answer to a full loadout: shop-only, and it trades the
  * player's own lowest-tier weapon for one drawn fresh rather than naming a
  * target when the card is dealt. Naming one at draw time would mean building
- * the candidate list — otherwise RNG-free, see `draw()` — had to spend a
+ * the candidate list - otherwise RNG-free, see `draw()` - had to spend a
  * `next()` whether or not the card is ever taken; picking it at `applySwap`
  * time means the cost is paid only when the trade actually happens.
  */
 export type OfferKind = 'weapon' | 'item' | 'swap'
 /**
- * Five tiers, rarest last. Every offer carries one — there is no unrated card.
+ * Five tiers, rarest last. Every offer carries one - there is no unrated card.
  *
  * The weights and the per-tier colour live in `src/content/rarity.json`, not
  * here: a rarity is a balance knob and a visual language at the same time, and
@@ -69,7 +69,7 @@ export type OfferSource = 'levelup' | 'shop' | 'both'
  * field. `items.json` states it per card; a weapon's is the only one computed,
  * because whether a weapon is a merge or a new pickup depends on the player.
  *
- * `weaponMod` and `class` are declared here and unused until batches 2 and 4 —
+ * `weaponMod` and `class` are declared here and unused until batches 2 and 4 -
  * the quota that asks for them already falls through cleanly when none exist.
  */
 export type OfferCategory =
@@ -139,7 +139,7 @@ export function rarityWeight(rarity: Rarity, luck: number): number {
 /**
  * Draw structure, from `tuning.offers`.
  *
- * These are the numbers §8 calls "draw structure rather than balance" — and
+ * These are the numbers §8 calls "draw structure rather than balance" - and
  * they still live in content, beside `weaponOfferWeight`, because the rule the
  * project runs on does not have an exception for numbers that feel structural.
  */
@@ -175,7 +175,7 @@ export interface Offer {
   tags: readonly string[]
   /**
    * §5's kind band, when it is not the offer's own `kind`: a weapon-upgrade
-   * card names the weapon it belongs to (`ItemDef.requiresWeapon` drives it —
+   * card names the weapon it belongs to (`ItemDef.requiresWeapon` drives it -
    * batch 4's class cards will do the same off `requiresClass`). Undefined
    * means the UI falls back to `kind`, which is every card before this batch.
    */
@@ -191,14 +191,14 @@ export interface Offer {
    */
   stacks: { n: number; max: number } | null
   /** Doubled magnitude. The level-up screen always has exactly one, and it is
-   *  always the uncommon-or-better card — so the choice is a smaller boost to
+   *  always the uncommon-or-better card - so the choice is a smaller boost to
    *  the stat you want against a double boost to one you want less. */
   boosted: boolean
   /** Tiers a weapon merge jumps: 2 when boosted, 1 otherwise. */
   tierJump: number
   locked?: boolean
   /**
-   * §7.7: true for a card a level-up can never deal — `source: 'shop'` in
+   * §7.7: true for a card a level-up can never deal - `source: 'shop'` in
    * content, or `swap`, which only ever exists in shop mode (`draw`'s
    * `mode === 'shop'` guard on `swapOffer`). Declared on the offer rather
    * than re-derived in the UI so the shop screen's "why stop here" badge and
@@ -215,7 +215,7 @@ export class OfferPool {
    *
    * Boards, not seconds. Level-ups arrive every ~30s early and every ~90s
    * late, so a 90-second memory meant "the last three boards" at level 5 and
-   * "the last board" at level 30 — and, against shops 200 seconds apart, it
+   * "the last board" at level 30 - and, against shops 200 seconds apart, it
    * meant nothing at all.
    */
   private readonly offeredAt = new Map<string, number>()
@@ -230,17 +230,21 @@ export class OfferPool {
   /** Ids unlocked via the Homestead's Seed Catalog; empty means "all". */
   private unlocked: Set<string> | null = null
   /**
-   * The Trade-In's answer to "the new weapon can never come back" — see
+   * The Trade-In's answer to "the new weapon can never come back" - see
    * `applySwap`'s doc comment. Set the instant a swap resolves, named by the
    * weapon that just arrived at tier 1, and consumed (whether or not it
    * lands) by the very next `draw()` in `'levelup'` mode.
    */
   private pendingMergeGuarantee: string | null = null
+  /** The highest tier a merge may reach on the board being drawn (see `mergeTierCap`). */
+  private tierCap = 4
+  /** Shop price multiplier for the board being drawn (see `priceMultiplier`). */
+  private priceMul = 1
 
   constructor(private readonly rng: Rng) {}
 
   /**
-   * Called after a swap resolves — see `applySwap` — so the weapon that just
+   * Called after a swap resolves - see `applySwap` - so the weapon that just
    * arrived at tier 1 is guaranteed on the run's next level-up board rather
    * than left to the ordinary weighted draw, which is exactly the case that
    * made a Trade-In read as a dead end: a T1 weapon competing for slot B
@@ -253,7 +257,7 @@ export class OfferPool {
 
   /**
    * Redeem (or drop) the one-shot flag above. `applyMergeGuarantee` rather
-   * than folding this into `drawBoard` because it is not a quota — it is a
+   * than folding this into `drawBoard` because it is not a quota - it is a
    * post-hoc override the same shape as `guaranteeOneAboveCommon`, and unlike
    * that one it costs no `next()` call: the target weapon is already named,
    * so there is nothing left to roll.
@@ -264,16 +268,16 @@ export class OfferPool {
     if (id === null) return
     this.pendingMergeGuarantee = null // one-shot regardless of outcome
     const slot = player.weapons.find((w) => w.id === id)
-    // Traded away again, or merged up on its own, since the swap landed —
+    // Traded away again, or merged up on its own, since the swap landed -
     // nothing left to guarantee.
-    if (!slot || slot.tier >= 4) return
+    if (!slot || slot.tier >= 4 || slot.tier + 1 > this.tierCap) return
     if (picked.some((o) => o.kind === 'weapon' && o.id === id)) return // already on the board
     const def = WEAPONS[id] as WeaponDef | undefined
     if (!def) return
     const offer = this.weaponOffer(id, def, player)
     /*
        Overwrite another WEAPON slot if the board has one, never the
-       behavioural/stat slot — §7.2's slot D exists specifically to cover
+       behavioural/stat slot - §7.2's slot D exists specifically to cover
        whatever category the rest of the board is missing, and a bot that
        leans on defensive stat cards (`tests/run.test.ts`'s hand/kite ladder)
        measurably suffers if the guarantee is the thing paying for itself by
@@ -322,7 +326,8 @@ export class OfferPool {
     luck: number,
     mode: DrawMode = 'shop',
   ): Offer[] {
-    void now
+    this.tierCap = mergeTierCap(now)
+    this.priceMul = priceMultiplier(now)
     const candidates: Offer[] = []
 
     let anyUnownedWhileFull = false
@@ -331,11 +336,13 @@ export class OfferPool {
       const owned = player.hasWeapon(id)
       // A weapon you can neither take nor merge is not an offer.
       if (owned && player.weaponAtMaxTier(id)) continue
+      // Not yet: the next tier opens later in the day (tuning.merge.tierOpensAt).
+      if (owned && (player.weapons.find((w) => w.id === id)?.tier ?? 0) + 1 > this.tierCap) continue
       if (!owned && player.slotsFull) { anyUnownedWhileFull = true; continue }
       candidates.push(this.weaponOffer(id, def, player))
     }
     /*
-       §7.5: slots full. New-weapon offers are still filtered out above — the
+       §7.5: slots full. New-weapon offers are still filtered out above - the
        six owned weapons instead contribute up to 18 weapon-upgrade cards
        (via `itemOffer`'s `requiresWeapon` gate below), which is the bigger
        pool the doc measures against the six merges this replaces. `swap` is
@@ -349,7 +356,7 @@ export class OfferPool {
     for (const [id, def] of Object.entries(ITEMS) as [string, ItemDef][]) {
       if (!this.isAvailable(id)) continue
       // The shop sinks (§ below) never compete in the ordinary weighted draw
-      // — they are a FLOOR, not a fifth-through-ninth candidate on every
+      // - they are a FLOOR, not a fifth-through-ninth candidate on every
       // visit from wave one.
       if (def.sink === true) continue
       // Shop-only items are the reason a shop visit is worth stopping for: the
@@ -369,16 +376,16 @@ export class OfferPool {
 
     /*
        The shop-sink pass (docs/NOTES.md "the shop never shows fewer than
-       four cards"). Five items in `items.json` carry `sink: true` — Field
-       Ration, Tier-Up Token, Reroll Chit, Acre Bond, Second Harvest — and
+       four cards"). Five items in `items.json` carry `sink: true` - Field
+       Ration, Tier-Up Token, Reroll Chit, Acre Bond, Second Harvest - and
        none of them has a `maxStacks`, so they are ALWAYS takeable. They
        exist purely as a floor: only added when the ordinary pool above
        could not fill the board on its own, which in practice means never,
        until a build has taken (or maxed out) everything else there is.
 
        This is a deliberate choice over making them permanent candidates.
-       The first version of this fix did exactly that — five more weighted
-       entries in every shop draw from wave one — and `tests/run.test.ts`'s
+       The first version of this fix did exactly that - five more weighted
+       entries in every shop draw from wave one - and `tests/run.test.ts`'s
        hand/kite acceptance ladder (24 seeds, a razor's-edge 12/24 before
        this batch touched anything, per classes.json's own `_flatNote`)
        dropped to 10/24: diluting the FIRST shop's weighted pick, at a point
@@ -386,7 +393,7 @@ export class OfferPool {
        thin, still shifts which card wins the draw, and that shift cascades
        through the rest of the run's shared RNG stream. Gating the sinks
        behind "the real pool ran out" means an early, healthy shop draws
-       BYTE-IDENTICAL to a build with no shop-sink pass at all — the fix
+       BYTE-IDENTICAL to a build with no shop-sink pass at all - the fix
        only spends a `next()` differently on the visit it exists for.
     */
     if (mode === 'shop' && candidates.length < count) {
@@ -413,7 +420,7 @@ export class OfferPool {
       this.offeredAt.set(o.id, this.boardIndex)
       if (mode === 'shop') this.thisShopSeen.add(o.id)
     }
-    // Shuffle so the boosted card is not always in the same slot — it should
+    // Shuffle so the boosted card is not always in the same slot - it should
     // have to be read for, not learned by position.
     return mode === 'levelup' ? this.rng.shuffle(picked) : picked
   }
@@ -421,7 +428,7 @@ export class OfferPool {
   /**
    * Whether a gated card's precondition is met (§3).
    *
-   * `requiresItem` is the only gate batch 1 needs — the four Load Riders are
+   * `requiresItem` is the only gate batch 1 needs - the four Load Riders are
    * meaningless without a Load on, and offering them to a run that has never
    * seen the shop is exactly the kind of dead card the rebuild exists to
    * remove. `requiresWeapon` and `requiresClass` are read here so batches 2
@@ -434,7 +441,7 @@ export class OfferPool {
     if (typeof needsClass === 'string' && player.classId !== needsClass) return false
     const needsItem = def.requiresItem
     if (typeof needsItem === 'string' && player.itemCount(needsItem) === 0) return false
-    // "any load" — the four riders, which care that you have one, not which.
+    // "any load" - the four riders, which care that you have one, not which.
     if (def.requiresLoad === true && player.element === 'none') return false
     /*
        "any weapon of this type". A card that only ever touches a bullet is
@@ -451,7 +458,7 @@ export class OfferPool {
     /*
        The shop-sink pass: a Tier-Up Token that redeems on "whichever weapon
        is lowest" is dead weight the instant every owned weapon is already
-       tier 4 — there is nothing left for it to do, and offering it anyway is
+       tier 4 - there is nothing left for it to do, and offering it anyway is
        exactly the "same five things over and over" complaint this file
        exists to answer. Gated on the SHAPE of the loadout, not on any one
        weapon, which is why it is its own field rather than another
@@ -478,7 +485,7 @@ export class OfferPool {
 
   /**
    * §4: bias toward tags the build already holds, so a build FORMS rather than
-   * accumulating. Deterministic — a weight, never a draw, so it consumes no
+   * accumulating. Deterministic - a weight, never a draw, so it consumes no
    * RNG and cannot move a seed. §7.6 scales it with luck, which is a far
    * better luck fantasy than "slightly more epics": a lucky run's cards agree
    * with each other.
@@ -520,18 +527,18 @@ export class OfferPool {
 
   /**
    * The board (§7.2). Four slots, filled in quota order, from the WHOLE
-   * candidate set — no commons-only pool anywhere.
+   * candidate set - no commons-only pool anywhere.
    *
    *  A. the doubled slot: the highest-rarity card drawn, at double magnitude.
    *     Kept exactly as it was. It was a good rule; it was just carrying the
    *     entire non-common roster on its own.
-   *  B. gated — a weapon upgrade or a class card, if any exists.
-   *  C. behavioural — a load, rider, on-hit, on-kill, ally, body or ledger card.
+   *  B. gated - a weapon upgrade or a class card, if any exists.
+   *  C. behavioural - a load, rider, on-hit, on-kill, ally, body or ledger card.
    *  D. free.
    *
    * Plus three board-level caps, applied as filters while filling: at most one
    * `stat`, at most one `merge`, and at most `maxPerGroup` of any one reported
-   * group. The third is not in §7.2 — it is what stops "slot B has no gated
+   * group. The third is not in §7.2 - it is what stops "slot B has no gated
    * card to draw, so B, C and D are all behavioural" reproducing the very
    * shape the rebuild is measured against, in a different colour. It is stated
    * in the instrument's own buckets because the §2 targets are.
@@ -571,7 +578,7 @@ export class OfferPool {
 
     /**
      * Fill one slot. The quota first, then any slot-specific second choice,
-     * then §7.2's fallback chain — behavioural, gated, merge, stat, anything.
+     * then §7.2's fallback chain - behavioural, gated, merge, stat, anything.
      * Only after all of those does it give up the caps, and only after those
      * the memory. A slot is never left empty and an id is never repeated
      * within a board.
@@ -587,7 +594,7 @@ export class OfferPool {
         () => true,
       ]
       /*
-         Caps OUTSIDE, memory inside — and that order is the whole rule.
+         Caps OUTSIDE, memory inside - and that order is the whole rule.
 
          Written the other way round it surrenders the board caps before it
          surrenders the recency memory, which means a board whose good cards
@@ -621,22 +628,24 @@ export class OfferPool {
     // doubles there too would flatten the difference between the two systems.
     if (want > 0) {
       const before = picked.length
-      fill((o) => o.rarity !== 'common')
-      if (boost && picked.length > before) picked[before] = boosted(picked[before])
+      // A merge whose doubled jump would pass the day's tier cap cannot be
+      // the boosted card, so it is not a candidate for this slot.
+      fill((o) => o.rarity !== 'common' && !(boost && o.mergesTo !== null && o.mergesTo + 1 > this.tierCap))
+      if (boost && picked.length > before) picked[before] = boosted(picked[before], this.tierCap)
     }
     /*
-       Slot B — "the card that exists because of what you are already
+       Slot B - "the card that exists because of what you are already
        holding". Batch 1 read that as gated-or-else-a-weapon, because there
-       were no gated cards yet. Batch 2 tried "gated, full stop" — SS7.2's own
-       words, "must be a weaponMod or class card if any is available" — and
-       `tests/run.test.ts`'s hand/kite acceptance run (24 seeds, pickSmart —
+       were no gated cards yet. Batch 2 tried "gated, full stop" - SS7.2's own
+       words, "must be a weaponMod or class card if any is available" - and
+       `tests/run.test.ts`'s hand/kite acceptance run (24 seeds, pickSmart -
        merge what it owns, then defence, then whatever is first) found the
        same failure batch 1's comment already described, in a new shape: 12+
        of 24 clearing fell to 4, dying by mid-run with weapons stuck at tier
        1-2 across the board instead of the tier 4 a clearing run reaches.
 
        The cause is the same mechanism as before, not a new one. Once the
-       Pitchfork's first upgrade exists — level 1, always — GATED never comes
+       Pitchfork's first upgrade exists - level 1, always - GATED never comes
        back empty, so the "or a weapon" fallback that used to fill slot B
        every time now never fires AT ALL. A merge lost the one slot the
        redesign had quietly been guaranteeing it (slot A only offers
@@ -647,7 +656,7 @@ export class OfferPool {
        So a weapon card is back in the SAME quota rather than a fallback
        behind it: gated and a merge (or an unowned weapon) compete on ONE
        weighted draw, not gated-else-weapon in strict priority. That alone
-       recovered 4/24 -> 7/24 — real, not enough. `weaponOfferWeight` is what
+       recovered 4/24 -> 7/24 - real, not enough. `weaponOfferWeight` is what
        closed the rest: it had been 1.6 since batch 1, tuned against a
        forty-item roster with no gated competition for this slot; batch 2
        both adds another ~85 candidates AND gives slot B's OWN quota a real
@@ -656,7 +665,7 @@ export class OfferPool {
        Re-measured empirically against this exact test rather than assumed:
        1.6-4 still failed (4-8/24), 6 passed all eight `run.test.ts` cases
        including the six-class parity and both crossover tests, 8-15 were no
-       better and sometimes worse (noise at n=24, not a further trend) — see
+       better and sometimes worse (noise at n=24, not a further trend) - see
        `_weaponWeightNote`.
     */
     if (want > 1) {
@@ -664,7 +673,7 @@ export class OfferPool {
     }
     if (want > 2) fill((o) => BEHAVIOURAL.has(o.category))
     /*
-       Slot D — free, and it deals the board's ONE stat card.
+       Slot D - free, and it deals the board's ONE stat card.
 
        §11's sentence about the stat cards is the whole rule: "they are still
        the reliable filler a player wants when nothing else on the board fits
@@ -676,7 +685,7 @@ export class OfferPool {
        hand/brawler went 79% -> 13% cleared, dying on wave 6 having taken less
        total damage than the old build shrugged off, because a bot whose whole
        survival is max HP and armour was being handed one stat card every
-       third board. A HUMAN would spend a behavioural card instead — but the
+       third board. A HUMAN would spend a behavioural card instead - but the
        harness is the instrument and the instrument said the board had stopped
        being playable in the most ordinary way there is.
 
@@ -692,7 +701,12 @@ export class OfferPool {
       if (picked.length === before) break // pool exhausted; nothing left to deal
     }
 
-    if (mode === 'shop') this.guaranteeOneAboveCommon(candidates, taken, picked, luck)
+    if (mode === 'shop') {
+      this.guaranteeOneAboveCommon(candidates, taken, picked, luck)
+      // Prices climb with the day (waves.json economy.pricePerWave), so feed
+      // earned late still buys something that matters.
+      if (this.priceMul !== 1) for (const o of picked) o.cost = Math.round(o.cost * this.priceMul)
+    }
     return picked
   }
 
@@ -701,7 +715,7 @@ export class OfferPool {
    *
    * Kept for the shop only. On a level-up slot A already draws from the
    * uncommon-or-better candidates, so §7.2 is right that the special case can
-   * go there — an all-common level-up became arithmetically rare rather than
+   * go there - an all-common level-up became arithmetically rare rather than
    * something to patch after the fact. The shop's board has no boosted slot
    * and still wants the floor.
    *
@@ -732,9 +746,15 @@ export class OfferPool {
     // A new weapon leads with what it DOES; the numbers are the second line.
     // Leading with numbers produced "utility · 0 damage / 6s" for the Bait
     // Drum, which is a card nobody would ever pick and says nothing about the
-    // fact that it gathers the crowd for everything else you own.
-    const stats = `${def.type} · ${def.base > 0 ? `${def.base} damage` : 'no damage'}` +
-      `${def.cooldown > 0 ? ` / ${def.cooldown}s` : ''}`
+    // fact that it gathers the crowd for everything else you own. No
+    // "ranged ·"/"melee ·" prefix either (the kind band already says that),
+    // and cadence reads as hits per second, never seconds per hit, since
+    // that is what a player actually compares two weapons on. A weapon that
+    // deals no damage has no cadence worth printing.
+    const hitsPerSecond = def.cooldown > 0 ? 1 / def.cooldown : 0
+    const stats = def.base > 0
+      ? `${Math.round(def.base)} damage${hitsPerSecond > 0 ? `, ${hitsPerSecond.toFixed(1)} hits/s` : ''}`
+      : 'no damage'
     const detail = nextTier
       ? mergeDetail(def, nextTier, nextTier)
       : typeof def.blurb === 'string' ? `${def.blurb}
@@ -782,7 +802,7 @@ ${stats}` : stats
 
     /*
        §5/§10: a weapon-upgrade card names its weapon in the band and shows
-       the weapon's OWN tier art rather than anything drawn for the card —
+       the weapon's OWN tier art rather than anything drawn for the card -
        "zero new art" for all 48+3 of them. `requiresWeapon` is the single
        field that drives both, so a card that gates on a weapon always reads
        as belonging to it without a second field to keep in sync.
@@ -797,14 +817,14 @@ ${stats}` : stats
         ? weaponCardSprite(requiresWeapon, ownedTier) || undefined
         : undefined
     // §5/H13: a class card names its class in the kind band, off
-    // `requiresClass` — the same `ItemDef.requiresWeapon` already drives for
+    // `requiresClass` - the same `ItemDef.requiresWeapon` already drives for
     // the 48+3 weapon-upgrade cards above.
     const requiresClass = typeof def.requiresClass === 'string' ? def.requiresClass : undefined
 
     /*
        The shop sinks (fieldRation, tierUpToken, rerollChit, acreBond,
-       secondHarvest) carry no `maxStacks` — they must never be the reason a
-       board falls short of four cards — so their price has to do the work a
+       secondHarvest) carry no `maxStacks` - they must never be the reason a
+       board falls short of four cards - so their price has to do the work a
        cap usually does. `scalesWithStacks` opts an item into that curve; `n`
        is already "the copy this offer would be", so `n - 1` is how many the
        run already holds.
@@ -835,7 +855,7 @@ ${stats}` : stats
 
   /**
    * §7.5: the `swap` offer. Shop-only, `rare`, and it does not name its
-   * target until it is bought (see the `OfferKind` doc comment) — the card
+   * target until it is bought (see the `OfferKind` doc comment) - the card
    * says what the trade IS, and `applySwap` resolves WHICH weapon it hands
    * back, weighted by rarity exactly as a fresh pickup would be.
    *
@@ -850,8 +870,8 @@ ${stats}` : stats
     /*
        The first human playtest: "the late shop offered one card, a Trade-In
        whose T1 weapon could never tier up again." Two things answer that now
-       — a Tier-Up Token in the shop's own sink pool, and the guarantee below
-       — and the card says both, so the trade never reads as a dead end while
+       - a Tier-Up Token in the shop's own sink pool, and the guarantee below
+       - and the card says both, so the trade never reads as a dead end while
        you are deciding whether to take it.
     */
     const guarantee = 'Its merge card is guaranteed on your next level-up, '
@@ -880,9 +900,9 @@ ${stats}` : stats
 }
 
 /**
- * §7.5: apply a bought `swap` offer. Picks the weapon that comes BACK —
+ * §7.5: apply a bought `swap` offer. Picks the weapon that comes BACK -
  * weighted by rarity, off the sim's own stream, exactly as a fresh pickup's
- * rarity would be — then does the trade: the lowest-tier weapon leaves,
+ * rarity would be - then does the trade: the lowest-tier weapon leaves,
  * the new one arrives at tier 1.
  *
  * Exported rather than inlined at each of the offer's six call sites
@@ -892,7 +912,7 @@ ${stats}` : stats
  * project keeps finding in its own art manifest.
  *
  * Returns the id that arrived (or `null` if there was nothing left to trade
- * for), so a caller can feed it straight to `OfferPool.guaranteeMergeNext` —
+ * for), so a caller can feed it straight to `OfferPool.guaranteeMergeNext` -
  * the answer to "the T1 weapon can never tier up again" from the first human
  * playtest. Every call site opts in by doing exactly that; none is required
  * to, so a tool that only cares about the trade itself is unaffected.
@@ -931,10 +951,17 @@ export function categoryOf(def: ItemDef): OfferCategory {
 /**
  * The merge card's concrete delta (§5).
  *
- * The whole card used to be `Tier 3: +2 pellets (+60% damage)` — a rider name,
+ * The whole card used to be `Tier 3: +2 pellets (+60% damage)` - a rider name,
  * a hardcoded percentage, no before and no after. The "+60%" is now the tier
  * multiplier in `tuning.merge` and the rest comes out of the weapon's own
  * `tiers[n].delta`, which is authored beside the numbers it describes.
+ *
+ * `tiers[n].delta` is written in engine terms (`"puddle 90 → 144px"`,
+ * `"51.2 → 81.9 damage"`) because it is authored beside the numbers it
+ * quotes: see this file's own header on why that content stays as-is.
+ * `humanizeDelta` is the seam that turns it into what the card prints: no
+ * player ever reads a pixel figure, and damage always reads as a rounded
+ * whole number, damage-word first.
  */
 export function mergeDetail(def: WeaponDef, fromTier: number, toTier: number): string {
   const tier = (t: number): { name: string; delta: string } | null => {
@@ -945,7 +972,8 @@ export function mergeDetail(def: WeaponDef, fromTier: number, toTier: number): s
   if (toTier <= fromTier) {
     const t = tier(toTier)
     if (!t) return `Tier ${toTier}: stronger`
-    return t.delta ? `Tier ${toTier}: ${t.name} — ${t.delta}` : `Tier ${toTier}: ${t.name}`
+    const delta = t.delta ? withoutRepeats(humanizeDelta(t.delta), t.name) : ''
+    return delta ? `Tier ${toTier}: ${t.name} · ${delta}` : `Tier ${toTier}: ${t.name}`
   }
   // Two tiers at once (the boosted slot). The riders are both named, and the
   // damage step is computed across the whole jump rather than quoted from one
@@ -958,20 +986,91 @@ export function mergeDetail(def: WeaponDef, fromTier: number, toTier: number): s
   const mul = MERGE_TIER_MULTIPLIER
   const from = def.base * Math.pow(mul, fromTier - 2)
   const to = def.base * Math.pow(mul, toTier - 1)
-  const dmg = def.base > 0 ? ` · ${fmtDamage(from)} → ${fmtDamage(to)} damage` : ''
+  const dmg = def.base > 0 ? ` · damage ${Math.round(from)} → ${Math.round(to)}` : ''
   return `Tier ${fromTier} → ${toTier}, two tiers: ${names.join(', ')}${dmg}`
+}
+
+/**
+ * Turn one tier's raw JSON delta into what the card prints. Purely textual,
+ * and only two rewrites:
+ *  - a segment that is nothing but a "from → to damage" or "… dps" arrow is
+ *    rounded to whole numbers and read word-first ("damage 51 → 82"), the
+ *    way a player scans a stat rather than finds it tucked at the end of a
+ *    line of engine notation.
+ *  - any pixel measurement never reaches the card as "px": a range
+ *    ("90 → 144px") is exactly a percentage change, so it becomes one
+ *    ("+60%"); a lone size mention (no arrow to take a percentage of) just
+ *    loses the unit rather than the number.
+ * Everything else in the string (seconds, degrees, plain percentages,
+ * counts) is already how a player reads it and passes through untouched.
+ */
+function humanizeDelta(raw: string): string {
+  return raw
+    .split(' · ')
+    .map((segment) => {
+      const stat = /^([\d.]+)\s*→\s*([\d.]+)\s*(damage|dps)$/.exec(segment)
+      if (stat) {
+        const [, from, to, label] = stat
+        return `${label} ${Math.round(Number(from))} → ${Math.round(Number(to))}`
+      }
+      return segment
+        .replace(/([\d.]+)\s*→\s*([\d.]+)px\b/g, (_all, from: string, to: string) => {
+          const pct = Math.round(((Number(to) - Number(from)) / Number(from)) * 100)
+          return `${pct >= 0 ? '+' : ''}${pct}%`
+        })
+        .replace(/([\d.]+)px\b/g, (_all, n: string) => n)
+    })
+    .join(' · ')
+}
+
+/**
+ * Drop the delta segments that only restate the tier's own name: a card read
+ * "Tier 2: +25% sweep · sweep +24% · damage 13 → 21" (round 15, "explains
+ * nothing"). A segment goes when every word in it is already in the name.
+ */
+function withoutRepeats(delta: string, name: string): string {
+  const words = (s: string): string[] => s.toLowerCase().replace(/[^a-z ]/g, ' ').split(/\s+/).filter((w) => w.length > 2)
+  const named = new Set(words(name))
+  return delta
+    .split(' · ')
+    .filter((seg) => {
+      const w = words(seg)
+      return w.length === 0 || !w.every((x) => named.has(x))
+    })
+    .join(' · ')
+}
+
+/**
+ * The highest tier a merge may reach `now` seconds into the run. Round 17 saw
+ * all six weapons at T4 by wave 12 of 24: the build was finished halfway
+ * through and every later card meant nothing. Tiers 3 and 4 open at set
+ * points in the day instead (tuning.merge.tierOpensAt, in run seconds).
+ */
+/** Shop prices at `now` run seconds: 1 at dawn, plus `pricePerWave` a wave. */
+export function priceMultiplier(now: number): number {
+  const w = WAVES as unknown as { waveDuration: number; economy: { pricePerWave?: number } }
+  const per = w.economy.pricePerWave ?? 0
+  return per > 0 ? 1 + per * Math.floor(Math.max(0, now) / w.waveDuration) : 1
+}
+
+export function mergeTierCap(now: number): number {
+  const opens = (TUNING as unknown as { merge: { tierOpensAt?: Record<string, number> } }).merge.tierOpensAt ?? {}
+  let cap = 4
+  for (const t of [4, 3]) {
+    const at = opens[String(t)]
+    if (typeof at === 'number' && now < at) cap = t - 1
+  }
+  return cap
 }
 
 /** §7: each tier is base damage × this. Content, not a constant in code. */
 const MERGE_TIER_MULTIPLIER =
   (TUNING as unknown as { merge: { tierDamageMultiplier: number } }).merge.tierDamageMultiplier
 
-function fmtDamage(v: number): string {
-  return Number.isInteger(v) ? String(v) : v.toFixed(1)
-}
-
 /** Double an offer's magnitude for the level-up screen's guaranteed slot. */
-function boosted(offer: Offer): Offer {
+function boosted(offer: Offer, tierCap = 4): Offer {
+  // A doubled merge jumps two tiers; not past the tier the day has opened.
+  if (offer.mergesTo !== null && offer.mergesTo + 1 > tierCap) return offer
   const mods: StatMods = {}
   for (const [k, v] of Object.entries(offer.mods)) {
     mods[k as keyof StatMods] = (v as number) * 2
@@ -1016,13 +1115,13 @@ export function describeMods(mods: StatMods): string {
 }
 
 /**
- * A Load's primary number, worded, at consecutive stacks — "burn 7 → 10 dps".
+ * A Load's primary number, worded, at consecutive stacks - "burn 7 → 10 dps".
  *
  * Only fire/acid/frost have anything to show: they are the only elements with
  * a `<field>PerStack` in `elements.json` (`_stackNote`), because they are the
  * only Loads `maxStacks` lets past 1 copy. Reads the same `elementStat` the
  * sim applies in `World.applyElementTo`, so the card can never quote a number
- * the sim does not also produce. Returns `null` below stack 2 — there is
+ * the sim does not also produce. Returns `null` below stack 2 - there is
  * nothing to compare the first copy against, and the footer's `1/3` already
  * says a second will do something.
  */
@@ -1055,7 +1154,7 @@ export function loadStatDelta(elementId: string, stack: number): string | null {
  * being offered, not the copy already held.
  *
  * `currentElement` is `player.element` at offer time, only ever passed for a
- * card that carries its own `element` (the nine Loads, now one family — see
+ * card that carries its own `element` (the nine Loads, now one family - see
  * items.json `_familyNote`). Two things follow from it, both part of Part 2's
  * "say so": a card offering a DIFFERENT element than the one already active
  * states that taking it replaces the current Load, and a card offering the
@@ -1070,7 +1169,7 @@ export function describeItem(def: ItemDef, stack = 1, currentElement: string | n
     const curName = (ELEMENTS[currentElement] as { name?: string } | undefined)?.name ?? currentElement
     parts.push(`Replaces your current load (${curName}).`)
   }
-  // An item whose whole effect is behavioural — an element, a tool tier — has
+  // An item whose whole effect is behavioural - an element, a tool tier - has
   // no stat mods to describe, and was rendering a completely blank card. The
   // blurb IS the description for those.
   const stackBlurb = def.stackBlurb
@@ -1080,18 +1179,20 @@ export function describeItem(def: ItemDef, stack = 1, currentElement: string | n
   if (base) parts.push(base)
   if (def.special === 'reflect') parts.push(`reflects ${def.reflectDamage} to attackers`)
   if (def.special === 'auraDamageReduction') {
-    parts.push(`enemies within ${def.radius}px deal ${def.reductionPct}% less`)
+    // No raw engine radius on the card: a player cannot judge "60px" at a
+    // glance, and the reduction percentage is the number that matters.
+    parts.push(`nearby enemies deal ${def.reductionPct}% less`)
   }
   if (def.special === 'gasGrace') parts.push(`immune to gas for ${def.graceSeconds}s of contact`)
   if (element) {
     const max = typeof def.maxStacks === 'number' ? def.maxStacks : 1
-    // `stack` is `itemCount(id) + 1` — the count THIS specific item id will
-    // reach if taken — which is exactly what `Player.addItem` sets
+    // `stack` is `itemCount(id) + 1` - the count THIS specific item id will
+    // reach if taken - which is exactly what `Player.addItem` sets
     // `loadStacks` to afterwards, switch or no: each element maps to exactly
     // one item id, so a run that switches away and back resumes at the depth
     // already bought rather than restarting at 1. See `Player.loadStacks`.
     const delta = loadStatDelta(element, stack)
-    if (delta) parts.push(`${stack}/${max} — ${delta}`)
+    if (delta) parts.push(`${stack}/${max} - ${delta}`)
   }
   return parts.join(' · ')
 }
@@ -1100,12 +1201,12 @@ export function describeItem(def: ItemDef, stack = 1, currentElement: string | n
  * Substitute a stack blurb's placeholders.
  *
  * `{n}` is the copy being offered. `{total}` is what the player will HAVE if
- * they take it — `n × stackPer` — and it is the one that matters: "15% of
+ * they take it - `n × stackPer` - and it is the one that matters: "15% of
  * kills drop a feed token" is a different card on your first copy and your
  * fourth, and §5's contract is that the card says which one you are looking
  * at. A card with a `{total}` and no `stackPer` prints its stack count rather
  * than the placeholder, so a missing field is a wrong number and never a
- * literal `{total}` on the face of a card — which is exactly what a real run
+ * literal `{total}` on the face of a card - which is exactly what a real run
  * photographed before this existed.
  */
 function fillStack(template: string, def: ItemDef, stack: number): string {

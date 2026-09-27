@@ -1,7 +1,7 @@
 /**
  * Fixed-capacity object pool.
  *
- * Entities are allocated once at construction and never again — the hot loop
+ * Entities are allocated once at construction and never again - the hot loop
  * must not allocate. Live objects occupy [0, live); freeing swaps the freed
  * slot with the last live one and decrements. That makes `free` O(1) but means
  * **iteration order is not stable**, so always iterate in reverse when you may
@@ -31,7 +31,7 @@ export class Pool<T extends { active: boolean }> {
 
   /**
    * Returns the next free item, already marked active, or null if full.
-   * The caller is responsible for resetting every field it cares about —
+   * The caller is responsible for resetting every field it cares about -
    * pooled objects keep their previous values.
    */
   acquire(): T | null {

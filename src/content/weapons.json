@@ -35,15 +35,15 @@
     "tiers": {
       "2": {
         "name": "tighter choke",
-        "delta": "spread 14° → 11.2° · 6 → 9.6 damage"
+        "delta": "spread 14° → 11.2° · 6 → 10.2 damage"
       },
       "3": {
         "name": "+2 pellets",
-        "delta": "1 → 3 pellets · 9.6 → 15.4 damage"
+        "delta": "1 → 3 pellets · 10.2 → 17.3 damage"
       },
       "4": {
         "name": "pellets punch through",
-        "delta": "pierce 0 → 1 · 15.4 → 24.6 damage"
+        "delta": "pierce 0 → 1 · 17.3 → 29.5 damage"
       }
     },
     "projectileScale": 1.09,
@@ -86,15 +86,15 @@
     "tiers": {
       "2": {
         "name": "+2s burn",
-        "delta": "burn 3s → 5s at 4 dps · 8 → 12.8 damage"
+        "delta": "burn 3s → 5s at 4 dps · 8 → 13.6 damage"
       },
       "3": {
         "name": "burn jumps on death",
-        "delta": "the burn jumps 90px on death at 60% · 12.8 → 20.5 damage"
+        "delta": "the burn jumps 90px on death at 60% · 13.6 → 23.1 damage"
       },
       "4": {
         "name": "pierces four",
-        "delta": "pierce 2 → 4 · 20.5 → 32.8 damage"
+        "delta": "pierce 2 → 4 · 23.1 → 39.3 damage"
       }
     },
     "projectileScale": 1.24,
@@ -138,15 +138,15 @@
     "tiers": {
       "2": {
         "name": "+30% blast",
-        "delta": "blast 50 → 65px · 15 → 24 damage"
+        "delta": "blast 50 → 65px · 15 → 25.5 damage"
       },
       "3": {
         "name": "leaves burning ground",
-        "delta": "a 70px rind, 4s, 40% slow · 24 → 38.4 damage"
+        "delta": "a 70px rind, 4s, 40% slow · 25.5 → 43.3 damage"
       },
       "4": {
         "name": "fires a three-round salvo",
-        "delta": "1 → 3 shells at 70% · 38.4 → 61.4 damage"
+        "delta": "1 → 3 shells at 70% · 43.3 → 73.7 damage"
       }
     },
     "projectileScale": 0.69,
@@ -189,15 +189,15 @@
     "tiers": {
       "2": {
         "name": "+1 ricochet",
-        "delta": "2 → 3 wall bounces · 11 → 17.6 damage"
+        "delta": "2 → 3 wall bounces · 11 → 18.7 damage"
       },
       "3": {
         "name": "bursts into four",
-        "delta": "0 → 4 shards at 55% · 17.6 → 28.2 damage"
+        "delta": "0 → 4 shards at 55% · 18.7 → 31.8 damage"
       },
       "4": {
         "name": "fragments ricochet too",
-        "delta": "shards bounce 0 → 1 · 28.2 → 45.1 damage"
+        "delta": "shards bounce 0 → 1 · 31.8 → 54 damage"
       }
     },
     "projectileScale": 0.85,
@@ -238,15 +238,15 @@
     "tiers": {
       "2": {
         "name": "+2s slick",
-        "delta": "slick 5s → 7s · 20 → 32 damage"
+        "delta": "slick 5s → 7s · 20 → 34 damage"
       },
       "3": {
         "name": "the tar burns",
-        "delta": "the puddle ticks at 25% · 32 → 51.2 damage"
+        "delta": "the puddle ticks at 25% · 34 → 57.8 damage"
       },
       "4": {
         "name": "+60% spread",
-        "delta": "puddle 90 → 144px · 51.2 → 81.9 damage"
+        "delta": "puddle 90 → 144px · 57.8 → 98.3 damage"
       }
     },
     "projectileScale": 0.82,
@@ -287,15 +287,15 @@
     "tiers": {
       "2": {
         "name": "+damage on landing",
-        "delta": "lands again for 80% · 26 → 41.6 damage"
+        "delta": "lands again for 80% · 26 → 44.2 damage"
       },
       "3": {
         "name": "three lines",
-        "delta": "1 → 3 lines · 41.6 → 66.6 damage"
+        "delta": "1 → 3 lines · 44.2 → 75.1 damage"
       },
       "4": {
         "name": "hauled targets take +25%",
-        "delta": "hauled targets marked +25%, 4s · 66.6 → 106.5 damage"
+        "delta": "hauled targets marked +25%, 4s · 75.1 → 127.7 damage"
       }
     },
     "projectileScale": 1.93,
@@ -334,15 +334,15 @@
     "tiers": {
       "2": {
         "name": "+50% choke",
-        "delta": "choke 30% → 45% · 4 → 6.4 damage"
+        "delta": "choke 30% → 45% · 4 → 6.8 damage"
       },
       "3": {
         "name": "strips gas from the air",
-        "delta": "washes 70px/s of gas out of the air · 6.4 → 10.2 damage"
+        "delta": "washes 70px/s of gas out of the air · 6.8 → 11.6 damage"
       },
       "4": {
         "name": "+40% reach",
-        "delta": "reach 130 → 182px · 10.2 → 16.4 damage"
+        "delta": "reach 130 → 182px · 11.6 → 19.7 damage"
       }
     },
     "rarity": "uncommon",
@@ -430,15 +430,15 @@
     "tiers": {
       "2": {
         "name": "+30% arc",
-        "delta": "arc 110° → 143° · 18 → 28.8 damage"
+        "delta": "arc 110° → 143° · 18 → 30.6 damage"
       },
       "3": {
         "name": "hits twice",
-        "delta": "a second pass 0.13s later · 28.8 → 46.1 damage"
+        "delta": "a second pass 0.13s later · 30.6 → 52 damage"
       },
       "4": {
         "name": "the shove stuns",
-        "delta": "the shove stuns 0 → 0.4s · 46.1 → 73.7 damage"
+        "delta": "the shove stuns 0 → 0.4s · 52 → 88.4 damage"
       }
     },
     "_presentationNote": "Everything above the blurb is UNCHANGED and deliberately so -- 18 damage, 0.7s cooldown, a 110-degree arc at 78px, the same three riders. What changed is only what you see. It used to fire `fx.slash`, a white crescent, over `swingClip: proj.claw`, which is the FX pack's demon-bite loop stretched to the full 78px of the hitbox: a sword's swing and a monster's mouth on a tool that stabs. `swingStyle: thrust` turns both off and turns on the lunge (`carryThrustPixels`), the tine streak and the spark. `carrySprite` is the side-on fork drawn for the body, which is what makes `carryAim` legal on it -- the 3/4 icon it used to wear could not point anywhere. See tuning.json `_jabNote` and art/sprites.json `carry._seventhNote`.",
@@ -474,15 +474,15 @@
     "tiers": {
       "2": {
         "name": "+25% sweep",
-        "delta": "sweep 74 → 92px · 13 → 20.8 damage"
+        "delta": "sweep 74 → 92px · 13 → 22.1 damage"
       },
       "3": {
         "name": "second blade",
-        "delta": "1 → 2 blades · 20.8 → 33.3 damage"
+        "delta": "1 → 2 blades · 22.1 → 37.6 damage"
       },
       "4": {
         "name": "blades cut through",
-        "delta": "hit interval 0.35s → 0.18s · 33.3 → 53.2 damage"
+        "delta": "hit interval 0.35s → 0.18s · 37.6 → 63.9 damage"
       }
     },
     "projectileClip": "proj.crescent",
@@ -521,15 +521,15 @@
     "tiers": {
       "2": {
         "name": "+stun",
-        "delta": "stun 0.6s → 0.9s · 34 → 54.4 damage"
+        "delta": "stun 0.6s → 0.9s · 34 → 57.8 damage"
       },
       "3": {
         "name": "shockwave ring",
-        "delta": "a 136px ring at 40% · 54.4 → 87.0 damage"
+        "delta": "a 136px ring at 40% · 57.8 → 98.3 damage"
       },
       "4": {
         "name": "the ring throws them",
-        "delta": "the ring throws for 220 · 87.0 → 139.3 damage"
+        "delta": "the ring throws for 220 · 98.3 → 167 damage"
       }
     },
     "swingClip": "fx.shockwave",
@@ -566,15 +566,15 @@
     "tiers": {
       "2": {
         "name": "+50% speed",
-        "delta": "dog speed 240 → 360 · 10 → 16 damage"
+        "delta": "dog speed 240 → 360 · 10 → 17 damage"
       },
       "3": {
         "name": "two dogs",
-        "delta": "1 → 2 dogs · 16 → 25.6 damage"
+        "delta": "1 → 2 dogs · 17 → 28.9 damage"
       },
       "4": {
         "name": "bites bleed",
-        "delta": "bites bleed 6 dps for 3s · 25.6 → 41.0 damage"
+        "delta": "bites bleed 6 dps for 3s · 28.9 → 49.1 damage"
       }
     },
     "rarity": "epic",
@@ -616,15 +616,15 @@
     "tiers": {
       "2": {
         "name": "+40% bite",
-        "delta": "bite 40° → 56° · 7 → 11.2 damage"
+        "delta": "bite 40° → 56° · 7 → 11.9 damage"
       },
       "3": {
         "name": "double bite",
-        "delta": "a second bite 0.06s later · 11.2 → 17.9 damage"
+        "delta": "a second bite 0.06s later · 11.9 → 20.2 damage"
       },
       "4": {
         "name": "the bite holds them",
-        "delta": "the bite holds 0 → 0.2s · 17.9 → 28.7 damage"
+        "delta": "the bite holds 0 → 0.2s · 20.2 → 34.4 damage"
       }
     }
   },
@@ -663,15 +663,15 @@
     "tiers": {
       "2": {
         "name": "carries further",
-        "delta": "the ring carries 150px · 16 → 25.6 damage"
+        "delta": "the ring carries 150px · 16 → 27.2 damage"
       },
       "3": {
         "name": "a second ring",
-        "delta": "a 225px second ring at 50% · 25.6 → 41.0 damage"
+        "delta": "a 225px second ring at 50% · 27.2 → 46.2 damage"
       },
       "4": {
         "name": "the ring shoves",
-        "delta": "the ring shoves for 180 · 41.0 → 65.5 damage"
+        "delta": "the ring shoves for 180 · 46.2 → 78.6 damage"
       }
     }
   },
@@ -708,15 +708,15 @@
     "tiers": {
       "2": {
         "name": "+3s in the ground",
-        "delta": "patch 6s → 9s · 12 → 19.2 damage"
+        "delta": "patch 6s → 9s · 12 → 20.4 damage"
       },
       "3": {
         "name": "the patch bites",
-        "delta": "the patch ticks at 90% · 19.2 → 30.7 damage"
+        "delta": "the patch ticks at 90% · 20.4 → 34.7 damage"
       },
       "4": {
         "name": "+50% spread",
-        "delta": "patch 84 → 126px · 30.7 → 49.2 damage"
+        "delta": "patch 84 → 126px · 34.7 → 59 damage"
       }
     },
     "projectileScale": 0.98
@@ -756,15 +756,15 @@
     "tiers": {
       "2": {
         "name": "wider still",
-        "delta": "arc 190° → 209° · 46 → 73.6 damage"
+        "delta": "arc 190° → 209° · 46 → 78.2 damage"
       },
       "3": {
         "name": "two passes",
-        "delta": "a second pass 0.2s later · 73.6 → 117.8 damage"
+        "delta": "a second pass 0.2s later · 78.2 → 132.9 damage"
       },
       "4": {
         "name": "the pass stuns",
-        "delta": "the pass stuns 0 → 0.5s · 117.8 → 188.4 damage"
+        "delta": "the pass stuns 0 → 0.5s · 132.9 → 226 damage"
       }
     }
   },
@@ -801,15 +801,15 @@
     "tiers": {
       "2": {
         "name": "the smoke spreads",
-        "delta": "ring 96 → 125px · 10 → 16 dps"
+        "delta": "ring 96 → 125px · 10 → 17 dps"
       },
       "3": {
         "name": "it burns and it shoves",
-        "delta": "+60% damage and a 110 shove every pass · 16 → 41 dps"
+        "delta": "+60% damage and a 110 shove every pass · 17 → 46.2 dps"
       },
       "4": {
         "name": "the dust settles on them",
-        "delta": "ring 125 → 156px, and it slows 35% for 1.2s · 41 → 65.5 dps"
+        "delta": "ring 125 → 156px, and it slows 35% for 1.2s · 46.2 → 78.6 dps"
       }
     },
     "_auraNote": "The genre staple the roster was missing, asked for by the owner: a damaging ring you carry. cooldown 0 puts it on the SUSTAIN table beside the Scythe, so it is ONE attached projectile repositioned every tick rather than a stream of pulses. `base` is damage PER PASS and `hitInterval` is how often a pass lands, so the card quotes a dps of base/hitInterval; the interval is also what stops a ring grinding one enemy sixty times a second. carry: \"none\" because it is already on the field in its own right, exactly like the Scythe and the Barn Dog -- assignCarrySlots skips it and the loadout never tries to hang a smoking pot off his belt."
@@ -817,5 +817,5 @@
   "_carrySpriteNote": "`carrySprite` is the art the BODY draws, and it is a different question from `sprite`/`tierSprites`, which are what a CARD draws. The six firearms borrow the bundled 132-gun sheet for their cards, and that sheet is drawn to be held by a 32px character: at our 52px a rifle across the back read as a carbine and `gun.pistol.0` -- the Harpoon Gun at T1 -- is three pixels by two. The `carry.*` family is purpose-drawn at 28-31px for exactly this and draws at NATIVE size, which is why every `carryHeight` here now equals its art's own longest side: fit is exactly 1, nothing is resampled, and the number is a statement of intent rather than a shrink. The tier still lives on the card; a carried gun does not change shape when it merges, and six guns that each changed shape four times is 24 more generations for a difference nobody would read at 30px in a fight.",
   "_carryPivotNote": "`carryPivot` is where the HAND is along the art's own length -- 0 at the left edge, 1 at the right, 0.5 (the default) at the centre. It exists because a gun that turns about its centre swings its stock through the farmhand's chest as it tracks a target, which is the tell that the sprite is being spun rather than held. Set it at the trigger. It is also the one number the muzzle flash needs: the muzzle is the far end, `(1 - carryPivot)` of the drawn length forward along the aim.",
   "_upgradeNote": "docs/UPGRADE_ROSTER.md batch 2, H12: 48 weapon-upgrade cards, three per weapon, uncommon/rare/epic. Each card's magnitude lives here as a flat field named `<modId><Field>` -- `chokeTubeSpreadMul` beside `t2SpreadMultiplier`, the same shape the tier riders already use -- and `behaviours/weapons.ts` reads it with `hasMod(slot, 'chokeTube')` beside the `tier >= n` checks. `items.json` carries the card: name, cost, rarity, `requiresWeapon` (the gate) and `weaponMod` (the short id `hasMod` reads). The Smudge Pot is the seventeenth weapon and postdates this doc, which only ever named sixteen; its three -- `biggerBatch`/`oldRags`/`damperPlate` -- were authored for this batch in the same spirit as the rest (a radius rider, a damage rider, and an epic that gives an early tier a taste of what T4 already does), not transcribed from SS6.",
-  "_tierNote": "Each tier entry is `{name, delta}`: `name` is the short rider the card headline uses, `delta` is the CONCRETE before -> after the card body prints. The delta is authored, not derived, because half of it is a rider no formula can see (a second blade, a ring, a bleed) -- but the damage half is exactly base x 1.6^(tier-1), which is the merge formula in world.ts, so the two cannot drift without this file being wrong on its face. Before this the card said \"Tier 3: +2 pellets (+60% damage)\" with the 60% hardcoded in offers.ts, no before and no after, which is the \"it is not clear what buying the same weapon three times does\" complaint written out."
+  "_tierNote": "Each tier entry is `{name, delta}`: `name` is the short rider the card headline uses, `delta` is the CONCRETE before -> after the card body prints. The delta is authored, not derived, because half of it is a rider no formula can see (a second blade, a ring, a bleed) -- but the damage half is exactly base x M^(tier-1), M being tuning.merge.tierDamageMultiplier (1.7 since v2 round 16; the numbers were regenerated from it then), which is the merge formula in world.ts, so the two cannot drift without this file being wrong on its face. Before this the card said \"Tier 3: +2 pellets (+60% damage)\" with the 60% hardcoded in offers.ts, no before and no after, which is the \"it is not clear what buying the same weapon three times does\" complaint written out."
 }

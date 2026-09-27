@@ -9,7 +9,7 @@ import { World } from '../src/sim/world'
 import { Spawner } from '../src/sim/spawner'
 import { OfferPool, applySwap, describeItem, loadStatDelta, type Offer } from '../src/sim/offers'
 import { Rng } from '../src/core/rng'
-import { CLASSES, ELEMENTS, ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES, elementStat } from '../src/content'
+import { CLASSES, ELEMENTS, ENEMIES, ITEMS, MAPS, TUNING, RARITY_ORDER, WAVES, elementStat } from '../src/content'
 import { loadItemFor } from '../src/ui/hud'
 
 describe('stat resolution', () => {
@@ -93,7 +93,7 @@ describe('formulas', () => {
 
        formulas.ts says the JSON strings are documentation and the code is the
        truth, "if you change one, change both". So evaluate the STRING and
-       compare it to the function — now the pair cannot drift silently, which is
+       compare it to the function - now the pair cannot drift silently, which is
        what the test was always named for.
     */
     /*
@@ -330,7 +330,7 @@ describe('Loads', () => {
     expect(describeItem(frostDef, 1, 'fire')).toMatch(/Replaces your current load \(Fire\)\./)
     // Taking a SECOND Fire while Fire is already active is a deepen, not a
     // replace, and states the concrete delta instead.
-    expect(describeItem(fireDef, 2, 'fire')).toMatch(/2\/3 — burn 7 → 10 dps/)
+    expect(describeItem(fireDef, 2, 'fire')).toMatch(/2\/3 - burn 7 → 10 dps/)
   })
 
   it('names the right item for the HUD\'s Load slot, one per element', () => {
@@ -352,7 +352,7 @@ describe('OfferPool', () => {
   it('always includes at least one uncommon or better', () => {
     const p = new Player()
     p.init('hand')
-    // Many draws across many seeds — a guarantee that holds only usually is
+    // Many draws across many seeds - a guarantee that holds only usually is
     // not a guarantee, and this is the card screen every level-up shows.
     for (let seed = 1; seed <= 300; seed++) {
       const pool = new OfferPool(new Rng(seed))
@@ -377,8 +377,8 @@ describe('OfferPool', () => {
       /*
          What this assertion USED to say, and why it does not any more.
 
-         It read `filter(rarity !== 'common').length === 1` — one non-common
-         card on the whole board — and it passed for the same reason the game
+         It read `filter(rarity !== 'common').length === 1` - one non-common
+         card on the whole board - and it passed for the same reason the game
          was boring: `drawLevelUp` filled its boosted slot from the
          uncommon-or-better cards and every other slot from `commonIdx` ALONE.
          A merge's rarity is its next tier, so a merge, an element, a special
@@ -393,7 +393,7 @@ describe('OfferPool', () => {
   })
 
   /*
-     docs/UPGRADE_ROSTER.md §7.2 — the board's quotas and caps.
+     docs/UPGRADE_ROSTER.md §7.2 - the board's quotas and caps.
 
      These three are the regression guard for the measured complaint. The
      numbers they assert are the §2 targets restated as a pass/fail: never four
@@ -405,7 +405,7 @@ describe('OfferPool', () => {
        The player TAKES what it is dealt, which is the half that matters.
 
        The first version of this test drew against a fresh Player over 300
-       seeds and passed — while a real run photographed a board of four
+       seeds and passed - while a real run photographed a board of four
        commons at level 6. A build that has taken twenty cards has a different
        candidate set and a full recency memory, and that is the state the
        fallback chain was surrendering its caps in.
@@ -498,7 +498,7 @@ describe('OfferPool', () => {
     expect(checked).toBeGreaterThan(0)
   })
 
-  it('never boosts a shop card — the shop is where you pay for what you want', () => {
+  it('never boosts a shop card - the shop is where you pay for what you want', () => {
     const p = new Player()
     p.init('kid')
     for (let seed = 1; seed <= 200; seed++) {
@@ -545,7 +545,7 @@ describe('OfferPool', () => {
     }
     // Assert the CONTRACT, not three ids. Pinning ids meant this test failed
     // the moment the roster was redesigned, while telling us nothing about
-    // whether rarity still worked — and it had to be read to discover that the
+    // whether rarity still worked - and it had to be read to discover that the
     // real cause was `whetstone` becoming level-up-only, which is correct.
     expect(seen.size).toBeGreaterThan(8)
     for (const [id, rarity] of seen) {
@@ -584,7 +584,7 @@ describe('OfferPool', () => {
   })
 
   /*
-     docs/UPGRADE_ROSTER.md batch 2, H12 — the 48 weapon-upgrade cards (plus
+     docs/UPGRADE_ROSTER.md batch 2, H12 - the 48 weapon-upgrade cards (plus
      the Smudge Pot's own three) never appear before the weapon they belong
      to, and always do once it is owned.
   */
@@ -603,7 +603,7 @@ describe('OfferPool', () => {
       }
     }
     // And the gate opens the instant the weapon is owned, rather than the
-    // card being lost entirely — the whole point of a gate over an omission.
+    // card being lost entirely - the whole point of a gate over an omission.
     p.addWeapon('scattergun')
     const pool2 = new OfferPool(new Rng(3))
     const seenAfter = new Set<string>()
@@ -627,7 +627,7 @@ describe('OfferPool', () => {
   })
 
   /*
-     docs/UPGRADE_ROSTER.md §7.5 — slots full.
+     docs/UPGRADE_ROSTER.md §7.5 - slots full.
   */
   it('fills a full loadout with weapon-upgrade cards and a swap, not new weapons', () => {
     const p = new Player()
@@ -676,7 +676,7 @@ describe('OfferPool', () => {
      The shop-sink pass (docs/NOTES.md "the shop never shows fewer than four
      cards"). The first human playtest reached wave 24 with six weapons at T4
      and every common item at LAST, and the shop's takeable pool ran dry to
-     exactly one card — the swap. This is that state, built directly rather
+     exactly one card - the swap. This is that state, built directly rather
      than played into, because the point is the DRAW's floor, not whether a
      bot can reach it.
   */
@@ -688,11 +688,11 @@ describe('OfferPool', () => {
     for (const id of [p.weapons[0].id, ...sixGuns]) p.addWeapon(id, 3) // 1 -> 4
     expect(p.weapons.every((w) => w.tier === 4)).toBe(true)
     // Every capped item pushed straight to its ceiling, bypassing gates and
-    // the draw entirely — `canTakeItem` only looks at the count, so this is a
+    // the draw entirely - `canTakeItem` only looks at the count, so this is a
     // faithful stand-in for "a run that has taken everything it can".
     for (const [id, def] of Object.entries(ITEMS)) {
       const max = typeof def.maxStacks === 'number' ? def.maxStacks : 0
-      if (max <= 0) continue // no ceiling — never the thing going stale
+      if (max <= 0) continue // no ceiling - never the thing going stale
       for (let i = 0; i < max; i++) p.items.push({ id, boosted: false })
     }
     p.resolve()
@@ -706,7 +706,7 @@ describe('OfferPool', () => {
       pool.beginShopVisit()
       const board = pool.draw(p, 4, 0, 0, 'shop')
       expect(board.length, `seed ${seed}`).toBeGreaterThanOrEqual(4)
-      // And a reroll of that same dry board holds too — the sinks are never
+      // And a reroll of that same dry board holds too - the sinks are never
       // banned by the shop's own repeat-visit memory the way a real card is,
       // because there is nothing else left to fall back to.
       const reroll = pool.draw(p, 4, 5, 0, 'shop')
@@ -743,14 +743,14 @@ describe('OfferPool', () => {
 
     // One-shot: the flag is spent the instant the first level-up draws from
     // it, whether or not the card actually landed on the board (§ the doc
-    // comment on `applyMergeGuarantee`) — inspected directly rather than
+    // comment on `applyMergeGuarantee`) - inspected directly rather than
     // inferred from a second board's odds, which is not a guarantee either
     // way.
     const flag = pool as unknown as { pendingMergeGuarantee: string | null }
     expect(flag.pendingMergeGuarantee).toBeNull()
   })
 
-  it('never guarantees a merge on a shop board — only the next level-up', () => {
+  it('never guarantees a merge on a shop board - only the next level-up', () => {
     const p = new Player()
     p.init('hand')
     for (const id of ['scythe', 'chemSprayer', 'harpoon', 'scattergun', 'grenadeLauncher']) {
@@ -799,7 +799,7 @@ describe('shop sinks (batch 6)', () => {
     // `addWeapon`'s tierJump only applies on a MERGE (the id already owned);
     // a brand-new weapon always starts at tier 1, so this is two calls.
     p.addWeapon('scythe')
-    p.addWeapon('scythe', 3) // tier 4 — NOT the lowest
+    p.addWeapon('scythe', 3) // tier 4 - NOT the lowest
     expect(p.weapons.find((w) => w.id === 'pitchfork')?.tier).toBe(1)
 
     p.addItem('tierUpToken')
@@ -818,7 +818,7 @@ describe('shop sinks (batch 6)', () => {
 
   it('prices every later copy of an uncapped sink higher than the last', () => {
     // A board wide enough to draw the WHOLE candidate pool in one go is
-    // deterministic where a normal four-card board is chance — see
+    // deterministic where a normal four-card board is chance - see
     // `drawBoard`'s fallback chain, which never leaves a slot empty while
     // any untaken candidate carries positive weight.
     const wide = Object.keys(ITEMS).length + 20
@@ -843,7 +843,7 @@ describe('shop sinks (batch 6)', () => {
     expect(second).toBeGreaterThan(first)
   })
 
-  it('never caps the five sinks — canTakeItem always allows another copy', () => {
+  it('never caps the five sinks - canTakeItem always allows another copy', () => {
     const p = new Player()
     p.init('hand')
     for (const id of ['fieldRation', 'rerollChit', 'acreBond', 'secondHarvest']) {
@@ -854,7 +854,7 @@ describe('shop sinks (batch 6)', () => {
 })
 
 /*
-   docs/UPGRADE_ROSTER.md batch 4, H13 — the 18 class cards.
+   docs/UPGRADE_ROSTER.md batch 4, H13 - the 18 class cards.
 */
 describe('class cards (H13)', () => {
   const CLASS_IDS = Object.keys(CLASSES).filter((k) => !k.startsWith('_'))
@@ -899,7 +899,7 @@ describe('class cards (H13)', () => {
   })
 
   /*
-     "Each overlay changes the number it claims to" — for every one of the 18
+     "Each overlay changes the number it claims to" - for every one of the 18
      cards, taking it must move every field its own `classBonus` block names,
      by exactly the value declared, on the player of the class it is gated
      to. This is the wiring check: `resolveClassBonus` reading the right key
@@ -935,7 +935,7 @@ describe('class cards (H13)', () => {
     const p = new Player()
     p.init('hand')
     // Class pass (this session): Braced's CEILING now depends on `sinceAbility`
-    // — see classes.json's `_inputNote` on the Hand's passive — so a bare
+    // - see classes.json's `_inputNote` on the Hand's passive - so a bare
     // Player that never presses Dig In sits at `drMaxStale`, not `drMax`. This
     // test is about Deep Rooted's own +10 delta on the ceiling, not about the
     // input gate (that is covered by tests/run.test.ts's idle-buy bar), so it
@@ -1009,12 +1009,19 @@ describe('Spawner', () => {
   })
 
   it('only offers enemies unlocked at the current wave', () => {
+    // The rule itself, not the roster it produced once: wave 1 was all
+    // farmhands until v2 opened it with hens and roosters as well.
     const s = new Spawner(new Rng(4), MAPS.homeField)
     s.beginWave(1)
+    const seen = new Set<string>()
     for (let i = 0; i < 200; i++) {
       s.update(0.2, 0)
-      for (const p of s.pending) expect(p.typeId).toBe('farmhand')
+      for (const p of s.pending) {
+        seen.add(p.typeId)
+        expect(ENEMIES[p.typeId].firstWave, p.typeId).toBeLessThanOrEqual(1)
+      }
     }
+    expect(seen.has('farmhand')).toBe(true)
   })
 
   it('keeps spawn points away from the player when it can', () => {

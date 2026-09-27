@@ -5,7 +5,7 @@
  *   ELEVENLABS_API_KEY=... npm run sfx -- --force # regenerate everything
  *
  * Only the effects marked `"source": "elevenlabs"` in `src/content/audio.json`
- * are fetched. The rest stay synthesised on purpose — an XP pickup and a
+ * are fetched. The rest stay synthesised on purpose - an XP pickup and a
  * level-up flourish are not real-world sounds, and a realistic recording of one
  * would fight the pixel art rather than serve it.
  *
@@ -24,7 +24,7 @@ const ENDPOINT = 'https://api.elevenlabs.io/v1/sound-generation'
 const OUT_DIR = 'public/audio'
 /**
  * Higher than the 0.3 default. These are utilitarian game sounds with precise
- * briefs — "no music", "no tail" — and variety is worth less here than getting
+ * briefs - "no music", "no tail" - and variety is worth less here than getting
  * the thing that was asked for.
  */
 const PROMPT_INFLUENCE = 0.7
@@ -53,7 +53,7 @@ async function generate(name: string, spec: SfxSpec): Promise<void> {
     body: JSON.stringify({
       text: spec.prompt,
       // The API floor is 0.5s; several of these want to be 70ms, so the file
-      // carries trailing silence. Harmless — playback is one-shot.
+      // carries trailing silence. Harmless - playback is one-shot.
       duration_seconds: Math.max(0.5, spec.durationSeconds ?? 0.5),
       prompt_influence: PROMPT_INFLUENCE,
     }),
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
       '"is not recognized as the name of a cmdlet" means. Use the $env: form.\n\n' +
       `This would generate ${specs.length} effects; the other ` +
       `${Object.keys(audio.sfx).length - specs.length} are synthesised and need nothing.\n` +
-      'The game is fully audible without this — every effect has a synth\n' +
+      'The game is fully audible without this - every effect has a synth\n' +
       'fallback, so this is an upgrade rather than a dependency.\n',
     )
     process.exit(1)

@@ -7,7 +7,7 @@
  * a +8% boot is worth the same whether it is your first or your fifth.
  *
  * Derived values (actual move speed in px/s, actual pickup radius) are computed
- * from that sum against the base constants in tuning.json — also once.
+ * from that sum against the base constants in tuning.json - also once.
  */
 import { STAT_KEYS, TUNING, type StatBlock, type StatMods } from '../content'
 import { cappedAttackSpeed, cappedDodge } from './formulas'

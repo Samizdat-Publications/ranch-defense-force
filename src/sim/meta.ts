@@ -6,7 +6,7 @@
  * numbers in `meta.json` are balance, and balance changes.
  *
  * Three of the four tracks make the game *wider* rather than easier. The Seed
- * Catalog is the important one — it puts more of the roster in the pool, so
+ * Catalog is the important one - it puts more of the roster in the pool, so
  * runs get more varied, not stronger. Only the Feed Store is power, and §4 caps
  * its total effect near +25% on purpose.
  */
@@ -120,7 +120,7 @@ function startingSet(
  * The slice was `Object.keys(ITEMS).slice(0, 12)`, and the first twelve keys
  * of that file in authoring order are eleven common stat cards and one
  * uncommon. So a fresh save's whole item pool WAS the eleven percentages, and
- * every board a new player saw was four of them — the exact complaint
+ * every board a new player saw was four of them - the exact complaint
  * docs/UPGRADE_ROSTER.md was written to answer, surviving the rebuild
  * untouched and invisible to both harnesses, because neither `balance.ts` nor
  * `offer-stream.ts` calls `setUnlocked` and both therefore measure a pool no
@@ -229,10 +229,13 @@ export interface RunResult {
   bossKills: number
   tier: number
   cleared: boolean
-  /** Acres bought mid-run with feed via the Acre Bond shop sink — see
+  /** Acres bought mid-run with feed via the Acre Bond shop sink - see
    *  `World.bonusAcres`. Optional so every existing caller (and every
    *  measurement tool that never touches the shop's specials) is unchanged. */
   bonusAcres?: number
+  /** Feed left in the purse at the end, sold at `acres.feedPerAcre`. Optional
+   *  for the same reason as `bonusAcres`. */
+  feedLeft?: number
 }
 
 /**
@@ -242,12 +245,13 @@ export interface RunResult {
  * was actually banked, rather than recomputing it and risking the two drifting.
  */
 export function bankRun(s: Save, r: RunResult, seed: number, classId: string): number {
-  const acres = (META as unknown as { acres: { perWaveCleared: number; perBossKill: number; firstTimeThisTier: number } }).acres
+  const acres = (META as unknown as { acres: { perWaveCleared: number; perBossKill: number; firstTimeThisTier: number; feedPerAcre?: number } }).acres
   const firstTime = !s.tiersPaid.includes(r.tier)
   const base = acres.perWaveCleared * r.wavesCleared
     + acres.perBossKill * r.bossKills
     + (firstTime && r.cleared ? acres.firstTimeThisTier : 0)
     + (r.bonusAcres ?? 0)
+    + feedAcres(r.feedLeft ?? 0, acres.feedPerAcre)
   const earned = Math.round(base * tierAcreMultiplier(r.tier))
 
   s.acres += earned
@@ -257,6 +261,11 @@ export function bankRun(s: Save, r: RunResult, seed: number, classId: string): n
     s.bestRun = { wave: r.wavesCleared, seed, classId, tier: r.tier }
   }
   return earned
+}
+
+/** Acres the leftover feed sells for: whole acres only. */
+export function feedAcres(feed: number, perAcre = 0): number {
+  return perAcre > 0 ? Math.floor(Math.max(0, feed) / perAcre) : 0
 }
 
 /** Spend, if affordable. Returns whether the purchase happened. */

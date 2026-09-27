@@ -5,7 +5,7 @@
  * touches `requestAnimationFrame` and is therefore DOM-typed, and the tools
  * tsconfig has no DOM lib. `src/content` needs the step to turn a world-tick
  * stamp into seconds (`thrustPhase`), and `tools/draw-world.ts` imports the
- * same content — so importing the loop to get one number broke the headless
+ * same content - so importing the loop to get one number broke the headless
  * typecheck. One number, one owner, no lib.
  *
  * CLAUDE.md, non-negotiable: the simulation always advances in whole 1/60s

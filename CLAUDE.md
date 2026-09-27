@@ -1,4 +1,4 @@
-# Ranch Defense Force — project conventions
+# Ranch Defense Force - project conventions
 
 Wave-based pixel-art bullet-heaven. TypeScript + Vite, a hand-written WebGL2
 renderer, no engine. A run is one day on a cursed farm, dawn to full dark.
@@ -74,7 +74,7 @@ and tests pass happily while a screen renders wrong.
   over crowds.
 - **Nothing in the bottom centre of the HUD.** The HUD hugs the edges.
 
-## Tick order — do not reorder
+## Tick order - do not reorder
 
 1. input sample
 2. player move + clamp to arena

@@ -10,8 +10,10 @@ the last one on the property with a job to do.
 A run is **one day**. The first wave comes at first light; the sun crosses the
 sky, the shadows swing and lengthen, the light goes gold and then red, and the
 last waves are fought by lantern light in the rain, with eyes shining in the
-corn, until the Duster comes in with its lamps on. The blight creeps in from
-the fences as the day goes.
+corn, until the Duster comes over low with its lamps on: the crop duster
+itself, with nobody flying it. Something big comes out of the field every
+third wave, and the crowd grows with the day. The blight creeps in from the
+fences as the day goes.
 
 TypeScript, Vite and a hand-written WebGL2 renderer. No engine.
 

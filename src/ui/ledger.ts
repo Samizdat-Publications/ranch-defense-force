@@ -1,12 +1,12 @@
 /**
  * The ledger: a run's owned upgrades, read the way docs/UPGRADE_ROSTER.md §5
- * says a card itself should be read — stacks as n/N, a merge's mods named
+ * says a card itself should be read - stacks as n/N, a merge's mods named
  * per slot, a class card by name. Part 1 of batch 5's UI work asks for this
  * "readable from the pause screen and the shop"; one data builder here means
  * the two screens cannot drift into two different ledgers the way the shop
  * and the level-up screen once drifted into two different cards.
  *
- * Pure data, no DOM — `pause.ts` renders it in `.psheet-*` chrome and
+ * Pure data, no DOM - `pause.ts` renders it in `.psheet-*` chrome and
  * `shop.ts` in `.pshop-*` chrome, because §7's panel language keeps the two
  * screens visually distinct even while they agree on what a ledger is.
  */
@@ -25,7 +25,7 @@ export interface LedgerWeaponRow {
 export interface LedgerItemRow {
   id: string
   name: string
-  /** `3/5`, `ONE ONLY`, or `4/4 · LAST` — the same footer the card prints. */
+  /** `3/5`, `ONE ONLY`, or `4/4 · LAST` - the same footer the card prints. */
   stack: string
 }
 

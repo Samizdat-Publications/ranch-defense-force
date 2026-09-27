@@ -5,24 +5,24 @@
  *     const key = pixellabKey()
  *
  * Order:
- *   1. `process.env.PIXELLAB_API_KEY`, if set — unchanged from every other
+ *   1. `process.env.PIXELLAB_API_KEY`, if set - unchanged from every other
  *      tool, and still the way to override or to run outside this repo.
  *   2. the repo's gitignored `.mcp.json`, at
  *      `mcpServers.pixellab.headers.Authorization` (`"Bearer <key>"`, prefix
- *      stripped) — the key the PixelLab MCP server already holds, so a worktree
+ *      stripped) - the key the PixelLab MCP server already holds, so a worktree
  *      or a fresh shell does not need the env var re-typed by hand.
  *   3. neither is available: throws, naming both places.
  *
  * `.mcp.json` is searched for by walking up from THIS FILE's own directory
  * (not `process.cwd()`, which a worktree or a differently-invoked script
  * cannot be trusted to set) to the filesystem root. A worktree checkout
- * under `.claude/worktrees/<name>/` has no `.mcp.json` of its own — it lives
+ * under `.claude/worktrees/<name>/` has no `.mcp.json` of its own - it lives
  * inside the main checkout, so the walk reaches the main checkout's copy
  * without special-casing worktrees at all. If the walk finds nothing (this
  * file moved, or is running from somewhere the walk cannot see the repo),
  * this falls back to `git rev-parse --show-toplevel` and checks there too.
  *
- * Never logs, echoes, or returns anything but the bare key string — masking
+ * Never logs, echoes, or returns anything but the bare key string - masking
  * printed values is the caller's job, not this function's, but this function
  * never prints one itself.
  */

@@ -26,7 +26,7 @@ export class LevelUpScreen {
   private pool: OfferPool | null = null
 
   /**
-   * Spare Choke (batch 5): one free reroll per stack, per LEVEL — not per
+   * Spare Choke (batch 5): one free reroll per stack, per LEVEL - not per
    * board, so rerolling twice on the same level does not refund a third
    * free spin from a card that grants only two. `lastLevel` is how "per
    * level" is detected without the sim carrying a counter of its own; reset
@@ -114,7 +114,7 @@ export class LevelUpScreen {
     const built = this.offers.map((offer, i) => {
       const c = card({
         // §5: a weapon-upgrade card (batch 4's class cards will follow) names
-        // what it belongs to instead of the generic kind — `offer.band`,
+        // what it belongs to instead of the generic kind - `offer.band`,
         // driven off `ItemDef.requiresWeapon`/`requiresClass` in content.
         kind: `[${i + 1}]  ${offer.band ?? offer.kind}${offer.boosted ? ' · 2x' : ''}`,
         category: categoryLabel(offer.category),

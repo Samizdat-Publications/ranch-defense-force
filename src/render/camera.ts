@@ -80,7 +80,7 @@ export class Camera {
     else if (this.y > maxY) this.y = maxY
   }
 
-  /** Total offset including shake — what the renderer translates by. */
+  /** Total offset including shake - what the renderer translates by. */
   get offsetX(): number {
     return this.x + this.shakeX
   }

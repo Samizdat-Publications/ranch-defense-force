@@ -71,9 +71,9 @@ function categorise(o: Offer): Category {
 
      The sniff is kept underneath as the fallback, and it is not decoration: it
      is what makes the before and after columns comparable. Every card that
-     existed before batch 1 buckets identically either way — the elements and
+     existed before batch 1 buckets identically either way - the elements and
      the tool upgrades were `special` by the sniff and are `load` / `ledger` by
-     declaration, and both of those fold into `special` here — so a change in
+     declaration, and both of those fold into `special` here - so a change in
      these numbers is a change in the DRAW and never in the ruler.
   */
   const def = ITEMS[o.id] as Record<string, unknown> | undefined
@@ -103,7 +103,7 @@ function candidateIds(player: Player, mode: 'levelup' | 'shop'): string[] {
     if (!owned && player.slotsFull) { anyUnownedWhileFull = true; continue }
     out.push(id)
   }
-  // §7.5: the shop's `swap` offer, mirroring `OfferPool.draw` — one
+  // §7.5: the shop's `swap` offer, mirroring `OfferPool.draw` - one
   // candidate, shop-only, once the loadout is full and something is left
   // unowned.
   if (mode === 'shop' && anyUnownedWhileFull) out.push('swap')

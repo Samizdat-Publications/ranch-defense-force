@@ -6,7 +6,7 @@
  * half the time, so it shows the run at a glance and gets out of the way.
  *
  * It reads the same `.panel` and `.btn` vocabulary as every other surface, so
- * adding it cost no new visual language — that is the point of having one.
+ * adding it cost no new visual language - that is the point of having one.
  *
  * Freezes the sim by setting `world.paused`, the same lever the level-up and
  * shop screens pull, so the renderer keeps drawing the frozen field behind it.
@@ -114,7 +114,7 @@ export class PauseScreen {
     /*
      * The ledger (docs/UPGRADE_ROSTER.md batch 5, part 1): weapons with the
      * mods each slot has taken, class cards, and everything else with its
-     * stack printed n/N — the same footer the card itself shows. One builder
+     * stack printed n/N - the same footer the card itself shows. One builder
      * in `ledger.ts` shared with the shop, so the two cannot say two
      * different things about the same run.
      */
@@ -123,7 +123,7 @@ export class PauseScreen {
     for (const w of ledger.weapons) {
       chips.append(el('span', {
         class: 'psheet-chip',
-        text: w.mods.length > 0 ? `${w.name} T${w.tier} — ${w.mods.join(', ')}` : `${w.name} T${w.tier}`,
+        text: w.mods.length > 0 ? `${w.name} T${w.tier}: ${w.mods.join(', ')}` : `${w.name} T${w.tier}`,
       }))
     }
     for (const name of ledger.classCards) {

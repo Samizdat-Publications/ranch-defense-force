@@ -2,12 +2,14 @@
  * Results (§12). Wave reached, time, kills, damage, the build you ended with,
  * acres earned and the seed.
  *
- * "Run it back" restarts immediately with the same class — never make the
+ * "Run it back" restarts immediately with the same class - never make the
  * player walk back through a menu. The Homestead button lands in M7.
  */
-import { ITEMS, WEAPONS } from '../content'
+import { ITEMS, META, WAVES, WEAPONS, itemCardSprite, weaponCardSprite } from '../content'
+import { feedAcres } from '../sim/meta'
 import type { World } from '../sim/world'
 import { el } from './dom'
+import { spriteEl } from './sprite'
 
 export class ResultsScreen {
   private readonly root: HTMLElement
@@ -25,7 +27,7 @@ export class ResultsScreen {
   }
 
   /**
-   * @param acres what was actually banked, passed in rather than recomputed —
+   * @param acres what was actually banked, passed in rather than recomputed -
    *              two independent calculations of the same number drift, and the
    *              one the player reads must be the one they were paid.
    */
@@ -41,7 +43,9 @@ export class ResultsScreen {
     // note under the sheet rather than at the size of the kill count.
     const n = (v: number): string => Math.round(v).toLocaleString('en-US')
     const rows: [string, string][] = [
-      ['Wave reached', String(world.spawner.wave)],
+      // Wave 25 is the Duster, not a numbered wave: "25" beside "24 waves"
+      // read as a contradiction (critic round 10).
+      ['Wave reached', world.spawner.wave >= WAVES.waveCount ? 'Duster' : String(world.spawner.wave)],
       ['Time survived', `${mins}:${String(secs).padStart(2, '0')}`],
       ['Kills', n(world.kills)],
       ['Crops harvested', n(world.cropsHarvested)],
@@ -69,20 +73,26 @@ export class ResultsScreen {
     // chip beside "Chalk Line x4" read as a duplicate (critic round 3). A
     // `Map` preserves the order each name was first seen.
     const counts = new Map<string, number>()
+    // Each chip carries its card's icon: a wall of identical text pills was
+    // unreadable as a build (critic round 10).
+    const icons = new Map<string, string>()
     for (const w of p.weapons) {
       const label = `${WEAPONS[w.id]?.name ?? w.id} T${w.tier}`
       counts.set(label, (counts.get(label) ?? 0) + 1)
+      icons.set(label, weaponCardSprite(w.id, w.tier))
     }
     for (const it of p.items) {
       const label = ITEMS[it.id]?.name ?? it.id
       counts.set(label, (counts.get(label) ?? 0) + (it.boosted ? 2 : 1))
+      icons.set(label, itemCardSprite(it.id))
     }
     const chips = el('div', { class: 'psheet-chips' })
     for (const [label, n] of counts) {
-      chips.append(el('span', {
-        class: 'psheet-chip',
-        text: n > 1 ? `${label} ×${n}` : label,
-      }))
+      const icon = spriteEl(icons.get(label), 18)
+      chips.append(el('span', { class: 'psheet-chip' }, [
+        ...(icon ? [icon] : []),
+        el('span', { text: n > 1 ? `${label} ×${n}` : label }),
+      ]))
     }
     if (!counts.size) {
       chips.append(el('span', { class: 'psheet-chip', text: 'nothing' }))
@@ -93,8 +103,10 @@ export class ResultsScreen {
     const parts: string[] = []
     if (world.wavesCleared > 0) parts.push(`${world.wavesCleared} waves`)
     if (world.bossKills > 0) parts.push(`${world.bossKills} boss${world.bossKills > 1 ? 'es' : ''}`)
+    const sold = feedAcres(world.player.feed, (META as { acres: { feedPerAcre?: number } }).acres.feedPerAcre)
+    if (sold > 0) parts.push(`${sold} for the feed you sold`)
     const note = parts.length
-      ? `${parts.join(' and ')}${world.tier > 1 ? `, at Tier ${world.tier}` : ''}.`
+      ? `${parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1] : parts[0]}${world.tier > 1 ? `, at Tier ${world.tier}` : ''}.`
       : 'Nothing banked. Clear a wave to earn.'
 
     // Win and lose shared one look before this: same dark field, same copy
@@ -149,7 +161,7 @@ export class ResultsScreen {
         ]),
         el('div', { class: 'results-actions' }, [
           el('button', { class: 'btn btn-primary', text: 'Run it back', onClick: () => { this.close(); onRunItBack() } }),
-          // Only offered when there is something to spend — §12 says never make
+          // Only offered when there is something to spend - §12 says never make
           // the player walk through a menu, and an empty Homestead is a menu.
           acres > 0 && onHomestead
             ? el('button', { class: 'btn', text: 'The Homestead', onClick: () => { this.close(); onHomestead() } })

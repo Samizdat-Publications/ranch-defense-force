@@ -1,5 +1,5 @@
 /* ===================================================================
-   THE HOME SCREEN — the Whitacre place at dusk
+   THE HOME SCREEN - the Whitacre place at dusk
    ===================================================================
    The scene itself is built in `scene.ts`, layer for layer from
    `docs/reference/Whitacre Yard at Dusk.html` and `Whitacre Field at
@@ -39,7 +39,7 @@
    wider window rather than as bars.
 
    Everything inside is then absolute pixels in stage space. No
-   percentages, no breakpoints — the interface scales with the scene
+   percentages, no breakpoints - the interface scales with the scene
    because it lives in the same coordinate space.
 */
 .home-stagewrap {
@@ -57,12 +57,12 @@
 .home-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 
 /* ===================================================================
-   THE COLUMN — the farm, the ground under it, and the lab under that
+   THE COLUMN - the farm, the ground under it, and the lab under that
    ===================================================================
    The lab is not a fourth backdrop you cut to. It is *secretly right
    under the farm*, so the screen holds all three at once in one tall
    strip and travels down it: surface at 0, soil from 1080, lab below
-   the soil. Both scenes stay live the whole way, which is the point —
+   the soil. Both scenes stay live the whole way, which is the point -
    a cut would have been a tenth of the code and none of the idea.
 
    `--soil` is published from scene.ts (`SOIL_H`) so the depth is a
@@ -95,7 +95,7 @@
    THE FLASH WHITENS THE SCENE AND NEVER THE INTERFACE.
 
    It is a child of `.home-scene`, which sits UNDER `.home-ui` in the
-   stage — so the sky goes white and the print, the cards, the seed box
+   stage - so the sky goes white and the print, the cards, the seed box
    and the Homestead button stay exactly as readable as they were. A
    flash over the whole stage would have been one line shorter and would
    have made the interface unreadable three times in six tenths of a
@@ -112,7 +112,7 @@
 }
 
 /* Three strikes in six tenths, each shorter than the last, and the sky
-   carries more of it than the ground does — that is the gradient above.
+   carries more of it than the ground does - that is the gradient above.
    `steps`-free on purpose: lightning is not a square wave. */
 .home-flash.is-striking { animation: y-lightning 640ms linear 1; }
 
@@ -141,7 +141,7 @@
    leftover space reads as more room rather than as black bars.
 
    BOTH LAYERS ARE BEHIND THE STAGE. `::after` is generated as the last
-   child, so at equal z-index it paints last — the first version of this
+   child, so at equal z-index it paints last - the first version of this
    covered the bottom half of the scene with a flat green rectangle and
    took the foreground and the whole card rail with it.
 */
@@ -158,7 +158,7 @@
 
 /*
    The sky belongs to the SCENE, not to the page. It used to be a gradient
-   on `.home`, and pointing that at the flat bleed colour deleted it — the
+   on `.home`, and pointing that at the flat bleed colour deleted it - the
    scene rendered against a solid navy rectangle with no dusk in it at all.
 
    Both gradients are Design's, stop for stop. They are the single largest
@@ -190,8 +190,8 @@
    the eye reads first in the calm scene, so that is the band that has
    to change: the orange goes to a bad green-yellow and the whole thing
    loses two thirds of its value. Everything standing in front of it is
-   handled in scene.ts — either swapped for its blighted twin or graded
-   — and the wash over the top ties the two together.
+   handled in scene.ts - either swapped for its blighted twin or graded
+   - and the wash over the top ties the two together.
 */
 .home-yard.is-yard.is-blight {
   background: linear-gradient(180deg,
@@ -223,14 +223,14 @@
    ONE keyframe for every strip, whatever its width.
 
    The named `y-strip-<width>` pattern needs a new block per strip width, and the
-   generated actors arrive at 224, 288, 468, 486, 540 and 810 — six more blocks
+   generated actors arrive at 224, 288, 468, 486, 540 and 810 - six more blocks
    that all say the same thing, each a chance to typo a number that fails
    silently by sliding the animation instead of stepping it. Reading a custom
    property inside the keyframe collapses them to this: `stripActor` publishes
    `--strip-w` and the animation scrolls exactly that far.
 
    PIXELS, NEVER PERCENT. `-100%` on a six-frame strip lands frame 0 and then
-   five blanks — HANDOFF rule 2, and it has cost this project real time twice.
+   five blanks - HANDOFF rule 2, and it has cost this project real time twice.
 */
 @keyframes y-strip {
   from { background-position: 0 0; }
@@ -245,7 +245,7 @@
    period, so the windows below are the score.
 
    `translateX` and `scaleX` are written together in EVERY stop of the path.
-   They are one property — a keyframe naming only the translate silently drops
+   They are one property - a keyframe naming only the translate silently drops
    the flip and he moonwalks the return leg.
 
    Visibility stops sit 0.1% apart rather than sharing a value so each swap is a
@@ -262,7 +262,7 @@
 /*
    THE HANDOFFS MUST ABUT EXACTLY, and mine did not.
 
-   Each layer switched OFF a couple of percent before the next switched ON —
+   Each layer switched OFF a couple of percent before the next switched ON -
    walk ended at 64% and peck did not begin until 66%. Two percent of a 24s
    cycle is 0.48s with NO LAYER VISIBLE, three times a loop, so the rooster
    blinked out of existence and back. Reported as "the animation resets and
@@ -332,8 +332,8 @@
 
    DELIBERATE ADDITION. Design's yard scene animates this `doorPulse` and
    never defines the keyframe, so in their own bundle the glow is static.
-   The intent is not ambiguous — it is the Homestead entrance and the only
-   affordance on the screen — so it breathes here rather than sitting dead.
+   The intent is not ambiguous - it is the Homestead entrance and the only
+   affordance on the screen - so it breathes here rather than sitting dead.
    Renamed to the y* family so it cannot collide.
 */
 @keyframes y-door {
@@ -425,7 +425,7 @@
 
 /*
    Everything above moves. Somebody who has asked their machine to stop
-   moving things gets a still evening rather than no evening — the scene
+   moving things gets a still evening rather than no evening - the scene
    is composed to hold as a single frame, which is why the placements are
    fixed and nothing depends on where an animation happens to be.
 */
@@ -436,7 +436,7 @@
      THE SEQUENCE STILL HAPPENS; IT STOPS BEING A CAMERA MOVE.
 
      Somebody who has asked their machine to stop moving things still
-     gets the farm, the blight and the lab under it — they get them as
+     gets the farm, the blight and the lab under it - they get them as
      cuts. The flash never plays at all (three white strikes is the one
      effect on this screen that is a genuine hazard rather than a
      preference), and the three-second descent becomes a short fade, so
@@ -486,7 +486,7 @@
    THE `-path` WINDOWS MATCH THE `-wl`/`-wr` WINDOWS TO THE PERCENT.
 
    The wrapper animates `linear` now (it was `step-end`, which is why the lab's
-   figures walked on the spot and then teleported — see `patrol()` in scene.ts).
+   figures walked on the spot and then teleported - see `patrol()` in scene.ts).
    With real travel, any percent where the transform moves and no walking layer
    is opaque shows as a figure SLIDING while standing, so the two sets have to
    agree. Two of the three did not: `haz` began its return at 62% while its
@@ -495,7 +495,7 @@
 /*
    The hazmat tech, re-cut so the walk is worth playing.
 
-   Design gave him 6.1% of the clock to cover 300px — 2.5 seconds, 120px a
+   Design gave him 6.1% of the clock to cover 300px - 2.5 seconds, 120px a
    second, which is a jog in a sealed suit. With the transform actually
    travelling now, the leg is 10% instead, so he covers the same aisle at 73px a
    second and the eight-frame cycle has room to read. The two long stands are at
@@ -510,7 +510,7 @@
    THE SCIENTIST GOES AND CHECKS A VAT.
 
    Design's original gave him 3.8% of a 47-second clock walking and the other
-   96% standing — 1.8 seconds of movement in three quarters of a minute, which
+   96% standing - 1.8 seconds of movement in three quarters of a minute, which
    the owner called "a bit" and meant as a complaint. He is retimed here rather
    than merely sped up, because speeding it up would have made him pace faster
    in the same small box.
@@ -518,7 +518,7 @@
    The loop is now an errand, and it is legible as one: he stands at the console
    bank, walks LEFT the 280px to the specimen vats, stands there long enough to
    have looked at one, turns, walks back, and stays at the consoles longest of
-   all. Thirty-six percent of the clock is travel — nine times Design's — and
+   all. Thirty-six percent of the clock is travel - nine times Design's - and
    the two long stands are at the two ends, which is what makes it read as going
    somewhere rather than as fidgeting. `patrol('baseTech', ..., '26s')` in
    scene.ts sets the clock; the vats are at x 386-673 and he starts at 861. */

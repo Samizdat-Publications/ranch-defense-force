@@ -33,7 +33,7 @@ const STEP = 1 / 60
  *
  * What decides whether two bullets are tellable apart is SCREEN pixels per
  * world pixel, not how much world is in frame. On a 1080p screen `zoomFor`
- * picks 3, so the tile uses 3 — anything less understates the round and
+ * picks 3, so the tile uses 3 - anything less understates the round and
  * anything more flatters it. The view is then cropped to 300x170 world pixels
  * purely to keep twelve tiles to a page; it is the middle of a 604x340 view,
  * not a zoom-in.
@@ -95,7 +95,7 @@ function build(ids: { id: string; tier: number }[], element: string): World {
 /**
  * Keep the subject alive, so a slow weapon gets to reach its own best moment.
  *
- * Max HP is `player.stats.maxHp`, NOT `player.maxHp` — which does not exist.
+ * Max HP is `player.stats.maxHp`, NOT `player.maxHp` - which does not exist.
  * Writing the wrong one sets hp to undefined, `alive()` goes false, `world.over`
  * latches, and every later `step()` returns immediately. The range then paints
  * a world frozen at tick one and reports, very confidently, that four weapons
@@ -133,7 +133,7 @@ function busyness(world: World): number {
  *
  * The two passes are the whole point. The first version of this took whatever
  * happened to be on screen when the loop ended, and duly reported that the
- * Grenade Launcher, Harpoon, Sledge and Bait Drum draw nothing at all — when
+ * Grenade Launcher, Harpoon, Sledge and Bait Drum draw nothing at all - when
  * what it had actually measured was that all four have long cooldowns and the
  * photo was taken between shots. That is the same failure this project has now
  * hit four times: the instrument was wrong before the game was. A weapon is
@@ -206,7 +206,7 @@ if (mode === 'solo') {
   const els = Object.keys(ELEMENTS).filter((k) => !k.startsWith('_'))
   for (const el of els) {
     // Six ranged weapons at once, so the sheet shows whether an element keeps
-    // them distinguishable — the exact thing that was broken before.
+    // them distinguishable - the exact thing that was broken before.
     const load = WEAPON_IDS.slice(0, 6).map((id) => ({ id, tier }))
     const c = shoot(load, el, el, 'six ranged')
     cells.push(c)

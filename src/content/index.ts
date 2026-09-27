@@ -103,8 +103,8 @@ export interface WeaponDef {
   type: WeaponType
   sprite: string
   /**
-   * The icon at each tier, T1 first. Merging changes the weapon — guns step up
-   * their category, melee steps up its material — and this is where that is
+   * The icon at each tier, T1 first. Merging changes the weapon - guns step up
+   * their category, melee steps up its material - and this is where that is
    * recorded. Authored in `weapons.json` for all sixteen weapons at all four
    * tiers and read by the HUD's weapon slots; `sprite` is the T1 fallback.
    */
@@ -145,7 +145,7 @@ export interface ItemDef {
  * A `cardSprite` pointing at something that is NOT this item's own icon is a
  * stand-in, and a stand-in outlives its excuse silently. Seven of them did:
  * `saltLick` and `saltCircle` both drew `node.rockSmall`, `barbedWire` drew a
- * silver ore node, `keroseneCan` drew a slop bucket — while `item.saltLick`,
+ * silver ore node, `keroseneCan` drew a slop bucket - while `item.saltLick`,
  * `item.barbedWire` and the rest sat packed in the atlas, generated and paid
  * for, drawn by nothing. The audit that found them is the reason
  * `docs/PIXELLAB_LEDGER.md` exists. If you add a stand-in, say so in a
@@ -188,6 +188,9 @@ export interface EnemyDef {
   xp: number
   teaches: string
   separation?: boolean
+  /** Drawn as a single top-down sprite rotated to its heading, flying
+   *  `altitude` art px above its own shadow (the Duster). */
+  plane?: { sprite: string; altitude: number }
   knockbackImmune?: boolean
   frontalReductionPct?: number
   special?: Record<string, unknown>
@@ -201,7 +204,7 @@ export interface EnemyDef {
  * iterates the object has to know that. Twice now one has not: a `_tierNote`
  * crashed the tool layer at module load, and a `_projectileNote` put a bare
  * string into the weapon roster where the offer pool read `.tiers` off it. The
- * filter belongs here, once, at the boundary — not in each caller.
+ * filter belongs here, once, at the boundary - not in each caller.
  */
 function defsOf<T>(raw: unknown): Record<string, T> {
   const out: Record<string, T> = {}
@@ -252,7 +255,7 @@ export interface RarityTier {
   colour: string
   dark: string
   ink: string
-  /** Legendary only — the foil sweep, so the animation means one thing. */
+  /** Legendary only - the foil sweep, so the animation means one thing. */
   foil: boolean
 }
 
@@ -301,8 +304,8 @@ export interface ElementDef {
   /**
    * The six Loads added by docs/UPGRADE_ROSTER.md batch 1 are not all
    * damage-over-time, so a Load's payload now includes a vulnerability mark
-   * and a knockback — both fields `World.applyHit` already carried for the
-   * weapon riders — and a set of riders the world reads off the ACTIVE
+   * and a knockback - both fields `World.applyHit` already carried for the
+   * weapon riders - and a set of riders the world reads off the ACTIVE
    * element rather than off the item that granted it. See `elements.json`
    * `_riderNote` for why that distinction is load-bearing.
    */
@@ -418,7 +421,7 @@ export const FIELD_GEAR_POOL: string[] = Object.entries(ITEMS)
   .map(([id]) => id)
 
 /**
- * Where a run happens. See maps.json — a map owns the ground it bakes from, the
+ * Where a run happens. See maps.json - a map owns the ground it bakes from, the
  * node and enemy mix standing on it, the arena's size and shape, and whatever
  * hazards vent out of it.
  */
@@ -458,7 +461,7 @@ export interface MapOverhead {
 }
 export interface MapHazards {
   kind: HazardKindName
-  /** Atlas frame drawn under the hazard circle. Optional — a hazard without
+  /** Atlas frame drawn under the hazard circle. Optional - a hazard without
    *  art still reads, because the circle is what carries the warning. */
   sprite?: string
   fromWave: number
@@ -635,7 +638,7 @@ export const MAP_IDS = Object.keys(MAPS)
 /**
  * Pick a run's map.
  *
- * The caller MUST call this as the first draw off a run's RNG — see the
+ * The caller MUST call this as the first draw off a run's RNG - see the
  * `_rngNote` in maps.json. It takes the raw `next()` rather than an Rng method
  * so the cost in stream position is exactly one draw, whatever the map count.
  */
@@ -657,7 +660,7 @@ export const WEAPON_IDS = Object.keys(WEAPONS)
  * How much to multiply the base projectile scale by for this weapon.
  *
  * Lives here rather than in the renderer so the number stays in content, and so
- * the headless painter reads the identical value — a screenshot tool that
+ * the headless painter reads the identical value - a screenshot tool that
  * scales projectiles differently to the game is worse than no screenshot tool.
  */
 export function projectileScaleFor(weaponId: string): number {
@@ -672,7 +675,7 @@ export function projectileScaleFor(weaponId: string): number {
  * Shared by `World.applyElementTo` (what the sim actually does) and
  * `offers.ts`' `loadStatDelta` (what the card says it does), so the two
  * cannot drift the way a hand-copied formula could. A field with no matching
- * `<key>PerStack` — every field on the six Loads that are `maxStacks: 1` —
+ * `<key>PerStack` - every field on the six Loads that are `maxStacks: 1` -
  * returns exactly `base` regardless of `stacks`, which is what makes this one
  * rule rather than a fire/acid/frost special case.
  */
@@ -685,7 +688,7 @@ export function elementStat(el: ElementDef | undefined, key: string, stacks: num
 }
 export const ITEM_IDS = Object.keys(ITEMS)
 /**
- * The spawner's roster — every enemy EXCEPT bosses.
+ * The spawner's roster - every enemy EXCEPT bosses.
  *
  * Bosses are placed explicitly by `World.spawnBoss` on their wave. Leaving them
  * in here let the wave director pick the Prize Bull like any other enemy, and
@@ -718,7 +721,7 @@ export const ALL_ENEMY_IDS = Object.keys(ENEMIES)
  *
  * `beltR`/`beltL` are NOT weapon slots and are deliberately outside
  * `CARRY.fallbackOrder`: the pickaxe and the axe hang there, and they are not
- * weapons — they never aim and they never fire, and letting them into the six
+ * weapons - they never aim and they never fire, and letting them into the six
  * would have cost a third of the loadout to two things that only ever dangle.
  * No weapon names them and the assignment loop cannot reach them.
  */
@@ -729,7 +732,7 @@ export type CarrySlot =
 export interface CarryAnchor {
   /** World pixels right of the player's centre. */
   dx: number
-  /** World pixels up from his BOOTS — see `CARRY.bootOffsetY`. */
+  /** World pixels up from his BOOTS - see `CARRY.bootOffsetY`. */
   dy: number
   /** Draw behind the character sprite for this facing. */
   behind: boolean
@@ -757,14 +760,14 @@ const FACINGS = ['down', 'up', 'left', 'right'] as const
 /**
  * Every anchor a class can ask for, merged once, at load.
  *
- * `byClass` in tuning.json names only the fields it changes — `{ "dy": -40 }`
- * raises a shoulder without restating its dx, its depth or its angle — and
+ * `byClass` in tuning.json names only the fields it changes - `{ "dy": -40 }`
+ * raises a shoulder without restating its dx, its depth or its angle - and
  * merging that against the default is an object built per lookup, which is a
  * per-frame allocation for every weapon the player owns. So it is done here
  * instead, once, into complete anchors: `carryAnchorOf` stays a lookup.
  *
  * Keyed `slot|classId` with `slot|` as the default row. A string key rather
- * than nested maps because the miss case has to be as cheap as the hit — five
+ * than nested maps because the miss case has to be as cheap as the hit - five
  * of the six classes have no override for most slots.
  */
 const CARRY_ANCHORS: Record<string, CarryAnchor> = (() => {
@@ -790,7 +793,7 @@ const CARRY_ANCHORS: Record<string, CarryAnchor> = (() => {
 /**
  * The resting slot a weapon asks for, or `none` if it is not carried at all.
  *
- * A class may override it — the Veteran shoulders the drum gun that every
+ * A class may override it - the Veteran shoulders the drum gun that every
  * other class wears on its back. The override cannot conjure a slot for a
  * weapon that declared `none`: the Scythe is already orbiting him and the Barn
  * Dog is already running about, and no class carries either.
@@ -813,7 +816,7 @@ export function carryHeightOf(weaponId: string): number {
  *
  * A carried weapon and a carded weapon are two different pictures and this is
  * the seam between them. The six firearms card off the bundled 132-gun sheet,
- * which is drawn to be held by a 32px character — at our 52px a rifle across
+ * which is drawn to be held by a 32px character - at our 52px a rifle across
  * the back reads as a carbine, and `gun.pistol.0` is 3x2. `carry.*` is drawn
  * for the body at 28-31px and has no tiers, because a carried gun does not
  * change shape when it merges. Everything without one falls through to the
@@ -828,7 +831,7 @@ export function carrySpriteOf(weaponId: string): string {
  * Where the hand grips the art, as a fraction of its own length. Default 0.5.
  *
  * A gun rotated about its centre sweeps its stock through the farmhand's chest
- * as it tracks — the tell that a sprite is being spun rather than held. This
+ * as it tracks - the tell that a sprite is being spun rather than held. This
  * moves the turning point to the trigger, and it is also what tells the muzzle
  * flash where the muzzle is: `1 - carryPivot` of the length, forward.
  */
@@ -838,18 +841,18 @@ export function carryPivotOf(weaponId: string): number {
 }
 
 /**
- * The atlas frame a weapon's CARD draws at a tier — HUD slot, offer, shop.
+ * The atlas frame a weapon's CARD draws at a tier - HUD slot, offer, shop.
  *
  * Here rather than in the HUD because three callers ask the same question and
  * answering it three times is how they drift; `itemCardSprite` exists for the
  * same reason. `cardSprite` opts a weapon out of the tier ladder entirely, and
  * ALL SIX FIREARMS now do. The Harpoon Gun went first because `gun.pistol.*` is
- * three pixels by two at T1 and eleven by four at T4 — a blank rectangle at
+ * three pixels by two at T1 and eleven by four at T4 - a blank rectangle at
  * every tier. The other five are the same argument with less arithmetic:
  * `gun.shotgun.0` is 8x4 and `gun.smg.0` is 8x6, drawn to be held by a 32px
  * character, and a card window is 96px. Their `carry.*` art is 28-31px long and
  * purpose-drawn. A crisp gun at one tier beats a smear at four, and the tier is
- * not lost — the card's tin plate and its rank pips carry it, which is what
+ * not lost - the card's tin plate and its rank pips carry it, which is what
  * they are for.
  */
 export function weaponCardSprite(weaponId: string, tier: number): string {
@@ -908,8 +911,8 @@ export function carryAngleOf(weaponId: string): number {
 /**
  * How a melee weapon PRESENTS its attack: `'sweep'` (the default) or `'thrust'`.
  *
- * The sim is identical either way — `arcSwing` spawns the same attached disc,
- * with the same radius, damage, arc and cooldown — so this is a drawing
+ * The sim is identical either way - `arcSwing` spawns the same attached disc,
+ * with the same radius, damage, arc and cooldown - so this is a drawing
  * instruction and nothing else. It exists because the pitchfork was being drawn
  * as a sword: a white crescent (`fx.slash`) over the FX pack's demon-bite loop
  * (`proj.claw`) stretched to the swing's 78px diameter. The owner's words for
@@ -917,8 +920,8 @@ export function carryAngleOf(weaponId: string): number {
  * `pj3_demon_bite_loop_large_orange` is. A pitchfork stabs; a sledge and a
  * scythe do not, and they keep what they have.
  *
- * `'thrust'` turns off BOTH — the clip and the tinted wedge it would otherwise
- * fall back to — and turns on the lunge, the jab streak and the tine spark.
+ * `'thrust'` turns off BOTH - the clip and the tinted wedge it would otherwise
+ * fall back to - and turns on the lunge, the jab streak and the tine spark.
  */
 export function swingStyleOf(weaponId: string): 'sweep' | 'thrust' {
   return (WEAPONS[weaponId] as { swingStyle?: string } | undefined)?.swingStyle === 'thrust'
@@ -928,7 +931,7 @@ export function swingStyleOf(weaponId: string): 'sweep' | 'thrust' {
 
 /**
  * How far the HELD art lunges forward along its aim as the weapon fires, in
- * world pixels. Zero — the default — leaves the recoil kick exactly as it was.
+ * world pixels. Zero - the default - leaves the recoil kick exactly as it was.
  *
  * The recoil pulls a gun BACKWARD along its aim, which is what a gun does. A
  * thrust weapon does the opposite, and the difference is the whole animation:
@@ -946,8 +949,8 @@ export function carryThrustOf(weaponId: string): number {
  *
  * Derived from `slot.firedAt`, the world-tick stamp the sim already writes for
  * the hand slot, and a duration in `tuning.json`. Deliberately NOT new sim
- * state: nothing here can change an outcome, and both painters — the renderer
- * and `tools/draw-world.ts` — read the same function, for the reason
+ * state: nothing here can change an outcome, and both painters - the renderer
+ * and `tools/draw-world.ts` - read the same function, for the reason
  * `assignCarrySlots` lives in content rather than in the renderer.
  */
 export function thrustPhase(firedAt: number, tick: number): number {
@@ -962,7 +965,7 @@ export function thrustPhase(firedAt: number, tick: number): number {
  * The anchor for a slot and a facing name (`down`/`up`/`left`/`right`).
  *
  * `classId` picks the class's own version of that anchor where it has one and
- * the shared one where it does not — the Kid's hand is six pixels lower than
+ * the shared one where it does not - the Kid's hand is six pixels lower than
  * everyone's, her back is exactly everyone's. Pre-merged; see `CARRY_ANCHORS`.
  */
 export function carryAnchorOf(
@@ -984,13 +987,13 @@ export function carryAnchorOf(
  * content, and the alternative was the SIM reaching into the renderer to ask
  * where it had drawn something. The sim owns `aimAngle` and the tick that
  * stamps `firedAt`, so the weapon that is firing is by definition the weapon
- * that will be in his hands on the next frame — the `hand` anchor is the right
+ * that will be in his hands on the next frame - the `hand` anchor is the right
  * one without having to run the slot assignment.
  *
  * The geometry: the hand anchor gives the grip; the muzzle is the far end of
  * the art, `1 - carryPivot` of its drawn length forward along the aim. `dy` is
  * from the boots, so `bootOffsetY` converts it back to the origin the sim
- * works in — the same one conversion the painters make.
+ * works in - the same one conversion the painters make.
  *
  * Nothing here is allowed to reach the simulation. It moves a decoration; see
  * `playFx`, which takes no RNG for exactly this reason.
@@ -1014,8 +1017,8 @@ const CARRY_MUZZLE_FALLBACK =
 /**
  * Decide where every owned weapon is carried this frame.
  *
- * Writes into `out` — one entry per weapon, `null` for the ones that are not
- * carried — rather than returning an array, because this runs once a frame and
+ * Writes into `out` - one entry per weapon, `null` for the ones that are not
+ * carried - rather than returning an array, because this runs once a frame and
  * the hot loop allocates nothing. `out` may be longer than `weapons`; only the
  * first `weapons.length` entries are written.
  *
@@ -1027,7 +1030,7 @@ const CARRY_MUZZLE_FALLBACK =
  *  2. A weapon whose CLASS names a slot for it takes that slot, ahead of
  *     everyone. This pass exists because without it the feature is invisible:
  *     the Veteran's drum gun declares `back`, so does the Varmint Rifle, and
- *     whichever was picked up first won — the Veteran shouldered his rifle only
+ *     whichever was picked up first won - the Veteran shouldered his rifle only
  *     on the runs where he happened not to own one. A class's own posture is
  *     not a preference to be outranked by pickup order.
  *  3. Everything else claims the slot it declared in weapons.json, in pickup
@@ -1109,14 +1112,14 @@ export function assignCarrySlots(
  *
  * Shared by BOTH painters on purpose, and it is the only part of the blighted
  * crop swap that is shared. `src/render/renderer.ts` and `tools/draw-world.ts`
- * are deliberately independent implementations — a second painter that agrees
- * with itself proves nothing — but the two things this decides are one event in
+ * are deliberately independent implementations - a second painter that agrees
+ * with itself proves nothing - but the two things this decides are one event in
  * the fiction: the ground turning and the crops turning. Deriving that from two
  * copies of the same comparison is how they come apart, and a screenshot whose
  * ground is dead over a healthy field would be a picture of a different game.
  *
- * What stays local to each painter is the ATLAS lookup — whether a
- * `<key>Blight` counterpart is actually packed — because each reaches its
+ * What stays local to each painter is the ATLAS lookup - whether a
+ * `<key>Blight` counterpart is actually packed - because each reaches its
  * frames differently. That is also the part that can differ harmlessly: a crop
  * with no blighted art falls through to its healthy sprite either way.
  */

@@ -26,7 +26,7 @@ export function waveIncome(wave: number): number {
  * Threat points the spawn director may spend across wave n.
  *
  * UNCHANGED, AND THE ATTEMPT TO CHANGE IT IS THE POINT. The owner reported the
- * waves as far too slow — "I have to generate 100+ over and over" — and the
+ * waves as far too slow - "I have to generate 100+ over and over" - and the
  * harness agreed: **19 enemies alive at the average death**, ~76 kills a wave,
  * which is one every half-second, the same rate they arrive at. The field never
  * builds.
@@ -41,7 +41,7 @@ export function waveIncome(wave: number): number {
  * That last line is the finding: **the game has no headroom at all.** Spawn
  * rate alone, with the identical budget, drops `run.test.ts` below "clears 25
  * waves on most seeds". Density and player power are coupled, and the honest
- * fix is not a bigger number here — it is more enemies that are individually
+ * fix is not a bigger number here - it is more enemies that are individually
  * weaker, which is a design change to enemies.json (HP, contact damage,
  * threatCost together) and wants the balance session it was deferred to.
  *
@@ -205,13 +205,13 @@ export function interestOn(feed: number): number {
 
 /**
  * Price of the Nth copy of an uncapped shop sink (`items.json`'s
- * `scalesWithStacks: true` — the field ration, tier-up token, reroll chit,
+ * `scalesWithStacks: true` - the field ration, tier-up token, reroll chit,
  * acre bond and second harvest). `stacksOwned` is how many the run already
  * holds, so the FIRST copy always sells at the card's own listed `cost`.
  *
- * These five have no `maxStacks` on purpose — a late shop with every capped
+ * These five have no `maxStacks` on purpose - a late shop with every capped
  * item at LAST and every weapon at tier 4 must still have somewhere to put
- * unspent feed — so without a growth curve the fifth copy would cost the same
+ * unspent feed - so without a growth curve the fifth copy would cost the same
  * as the first and a run sitting on thousands of feed would never feel the
  * price at all.
  */
@@ -221,7 +221,7 @@ export function sinkCost(baseCost: number, stacksOwned: number): number {
 
 /**
  * §5 damage pipeline. `typePct` is the melee/ranged bonus for this weapon's
- * type — the caller picks which, because only it knows the weapon.
+ * type - the caller picks which, because only it knows the weapon.
  *
  * One pass: percentages are already summed additively by the resolver, so this
  * multiplies exactly once. No multiplicative stacking, ever (CLAUDE.md).
@@ -237,7 +237,7 @@ export function resolveDamage(
   scalar: number,
   /** Vulnerability on the target itself (M5 marks), in percent. It joins the
    *  same additive sum as every other percentage rather than multiplying on
-   *  top — the single-pass rule is about the whole formula, not just the
+   *  top - the single-pass rule is about the whole formula, not just the
    *  player's own stats. */
   targetVulnPct = 0,
 ): number {

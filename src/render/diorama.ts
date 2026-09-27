@@ -39,6 +39,26 @@ const CURSED_CLASS: Record<string, string> = {
   vet: 'maskedSprayer', agronomist: 'maskedHauler', drifter: 'farmhandBlight',
 }
 
+/**
+ * The foreground band: the six big props generated for the old home screen's
+ * near band and never placed (art/sprites.json `_foregroundNote`). They stand
+ * along the bottom edge of the title shot, cropped by it, and slide past a
+ * little faster than the farm behind them, which is what makes them near.
+ * [sprite, x offset from the shot's centre line, y]
+ */
+const FOREGROUND: [string, number, number][] = [
+  ['scene.fgWeeds', -590, 196],
+  ['scene.fgMilkChurns', -350, 176],
+  ['scene.fgFenceRun', -120, 168],
+  ['scene.fgTrough', 170, 166],
+  ['scene.fgFeedSacks', 390, 178],
+  ['scene.fgCartWheel', 600, 190],
+  ['scene.fgWeeds', 820, 198],
+]
+/** How much faster than the farm the foreground slides as the camera drifts. */
+const FOREGROUND_PARALLAX = 0.3
+const SHOT_CENTRE = 1180
+
 const SUNDOWN = 0.795
 const DARK = 0.97
 const STRIKE_EVERY = 13
@@ -52,6 +72,7 @@ export class Diorama {
   private readonly flyLights: LightExtra[] = []
   private readonly fixedLights: LightExtra[] = []
   private readonly barrel: DrawExtra | null = null
+  private readonly foreground: { extra: DrawExtra; offset: number }[] = []
   private time = 0
   private selected = 'hand'
   /** The title shoots the yard round the barrel; the Homestead drifts along the buildings. */
@@ -74,6 +95,15 @@ export class Diorama {
         frame: f, x: 1300, y: -14, w: 0, h: 0, colour: [1, 1, 1, 1],
         flipX: false, alpha: 1, emissive: 0, casts: true,
       }
+    }
+    for (const [sprite, offset, y] of FOREGROUND) {
+      const fg = atlas?.get(sprite)
+      if (!fg) continue
+      // Near the camera and out of the firelight: a little darker than the yard.
+      this.foreground.push({
+        offset,
+        extra: { frame: fg, x: 0, y, w: 0, h: 0, colour: [1, 1, 1, 1], tint: [0.74, 0.7, 0.68, 1], flipX: false, alpha: 1, emissive: 0, casts: false },
+      })
     }
     this.fixedLights.push(
       { x: 1300, y: -40, radius: 130, r: 1, g: 0.55, b: 0.22, intensity: 1.1, squash: 0.8 },
@@ -211,6 +241,13 @@ export class Diorama {
         frame, x: Math.round(x), y: Math.round(y), w: 12, h: 24, colour: [0.8, 0.7, 0.6, 1],
         flipX: false, alpha: 1, emissive: cursed ? -1 : 0, casts: true,
       })
+    }
+    if (this.mode === 'title') {
+      const drift = (vw / 2 + (r.holdCamera?.x ?? 0)) - SHOT_CENTRE
+      for (const f of this.foreground) {
+        f.extra.x = Math.round(SHOT_CENTRE + f.offset - drift * FOREGROUND_PARALLAX)
+        extras.push(f.extra)
+      }
     }
     if (this.barrel) {
       const atlas = this.atlas

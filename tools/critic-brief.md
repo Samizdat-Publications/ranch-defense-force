@@ -5,7 +5,8 @@ The reviewer sees ONLY this brief and the images: never the code, the notes,
 or the plan. Keep the pitch and the rubric identical from round to round so
 the scores are comparable. (One factual edit, round 3: "green gems" became
 "seeds" when the XP pickup was re-tinted cyan; the pitch must not describe
-a colour the game no longer uses.)
+a colour the game no longer uses.) Second factual edit, round 10: the boss
+schedule and the Duster as a plane, when the game changed to match.
 
 ---
 
@@ -25,8 +26,8 @@ fails wave by wave until the last waves are fought at night by lantern
 light. You move with WASD; your weapons (farm tools and guns) fire on their
 own; you collect seeds (experience) and feed (money); you pick upgrade
 cards when you level up and buy from a shop between waves; you survive 24
-waves and then a final boss, the Duster, an unmanned rusted crop-dusting
-machine. Tone: cute, with real stakes and pixel gore; rural gothic. The goal
+waves, with a boss every third wave, and then the final boss, the Duster:
+the crop duster itself, a rusted plane with nobody flying it. Tone: cute, with real stakes and pixel gore; rural gothic. The goal
 is a polished game that could sit next to commercial indie releases.
 
 SCREENSHOTS: listed by the caller, each with a one-line caption saying what

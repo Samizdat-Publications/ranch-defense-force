@@ -8,7 +8,7 @@ and a between-runs meta layer.
 ## What this package is
 
 **Not UI mocks.** This is a game design and build specification. There is no
-HTML to recreate — `Build Spec.dc.html` is a readable presentation of the same
+HTML to recreate - `Build Spec.dc.html` is a readable presentation of the same
 content in `GAME_DESIGN.md`, included so a human can review it. Build from the
 markdown and JSON.
 
@@ -28,7 +28,7 @@ Read in this order:
 Private repo, art already staged: **Samizdat-Publications/ranch-defense-force**
 
 Read `ASSETS.md` at the repo root before anything. The art is commercially
-licensed and **must not be redistributed** — the repo stays private, and only
+licensed and **must not be redistributed** - the repo stays private, and only
 the packed `atlas.png` ever ships, never `assets/`.
 
 There is no application code yet. Start at M0.
@@ -37,7 +37,7 @@ There is no application code yet. Start at M0.
 
 TypeScript + Vite + Canvas 2D. No game engine, no physics library, no UI
 framework. Dependencies: `vite`, `typescript`, `vitest`, and nothing else.
-Rationale is in GAME_DESIGN.md §1 — the short version is that a bullet-heaven
+Rationale is in GAME_DESIGN.md §1 - the short version is that a bullet-heaven
 needs pooling, a fixed timestep, and one atlas blitted in one pass, and an
 engine helps with none of those while adding API surface.
 
@@ -63,12 +63,12 @@ Everything renders from one atlas built offline by `tools/build-atlas.ts` from
 Two things to know before you touch art:
 
 1. **Everything is 32×32.** The packs ship 16, 32 and 48. Read only the 32
-   directories. Assert it in the atlas builder — every humanoid sheet must be
+   directories. Assert it in the atlas builder - every humanoid sheet must be
    exactly 1792×704 or the build fails loudly with the filename. This has
    already gone wrong once silently.
 
 2. **All thirteen character sheets share one rig:** 56 columns × 22 rows.
-   Player, zombies, gas-mask enemies — identical layout, order and pivot. One
+   Player, zombies, gas-mask enemies - identical layout, order and pivot. One
    slicer config and one animation state machine serves every humanoid in the
    game. This is the most important structural fact in the project.
 
@@ -85,7 +85,7 @@ produces bad calls about what is fun.
 
 **The FX pack is the one visual risk.** It was drawn by a different artist and
 is more saturated than LimeZu's muted palette. Run `tools/conform-fx.ts` before
-judging whether any effect works — plenty look wrong raw and right conformed.
+judging whether any effect works - plenty look wrong raw and right conformed.
 Dropping it in unconformed is the single most likely way this game ends up
 looking assembled rather than made.
 
@@ -102,5 +102,5 @@ decisions now needed. That file is the handoff back for the next design pass.
 - **Audio is unsourced.** Neither pack ships sound. Sixteen effects and three
   music layers still need a decision: another purchase, or synthesised in
   WebAudio. Everything else is covered by files that exist.
-- `assets/generated/` may not yet contain the character sheets — confirm they
+- `assets/generated/` may not yet contain the character sheets - confirm they
   are pushed before M4.

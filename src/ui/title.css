@@ -1,5 +1,5 @@
 /* ===================================================================
-   THE TITLE — over the live diorama
+   THE TITLE - over the live diorama
    ===================================================================
    The farm behind is rendered by the game (render/diorama.ts). This
    layer is the name, the start button, the class you are taking out,
@@ -126,8 +126,9 @@
   position: absolute; left: 0; right: 0; bottom: 64px;
   display: flex; justify-content: center; align-items: flex-end; gap: 22px;
 }
-.title-rail .hero { width: 188px; }
-.title-rail .hero.is-selected { transform: translateY(-18px); }
+.title-rail .hero { width: 226px; }
+/* Raised AND lit: raised alone read as a card sitting out of line (round 15). */
+.title-rail .hero.is-selected { transform: translateY(-18px); filter: drop-shadow(0 0 10px rgba(224, 170, 60, 0.75)); }
 .title-rail .hero.is-selected:hover { transform: translateY(-24px); }
 
 /*
@@ -147,7 +148,7 @@
 .title-foot {
   position: absolute; left: 0; right: 0; bottom: 0; height: 36px;
   display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
-  font-family: var(--label); font-size: 13px; letter-spacing: 0.14em; color: #b9a47a;
+  font-family: var(--label); font-size: 16px; letter-spacing: 0.08em; color: #c9b48a;
   background: rgba(8, 6, 4, 0.7);
 }
 
@@ -165,10 +166,14 @@
 }
 .screen.levelup h2 {
   margin: 0 0 34px;
-  font-family: var(--label); font-size: 14px; letter-spacing: 0.24em;
-  color: #d9c7a2; text-transform: uppercase;
+  font-family: var(--label); font-size: 18px; letter-spacing: 0.14em;
+  color: #e3d2ad; text-transform: uppercase;
 }
 
 /* The hero cards' trait tags ("SLOW · ARMOURED · IMMOVABLE") were 6.5px under
    a 0.83 stage scale: 5.4px on screen. home-ui.css owns the base rule. */
-.title-rail .hero-tag { font-size: 12px; letter-spacing: 0.02em; white-space: normal; line-height: 1.25; }
+.title-rail .hero-tag { font-size: 15px; letter-spacing: 0.02em; white-space: normal; line-height: 1.25; }
+/* The foot ("DIG IN ... PITCHFORK") was still 6.5px, 5.4 on screen (round 13). */
+.title-rail .hero-foot { font-size: 12px; letter-spacing: 0; white-space: nowrap; }
+/* The locked card's price was 8.5px, about 7 on screen (round 16). */
+.title-rail .hero-price { font-size: 13px; letter-spacing: 0.06em; }

@@ -6,7 +6,7 @@
  * The key comes from `PIXELLAB_API_KEY` if set, else from `.mcp.json` (see
  * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run rmbg -- ...`.
  *
- * **Needs a live key**, and costs **1 generation per image** — the API docs
+ * **Needs a live key**, and costs **1 generation per image** - the API docs
  * claim `remove-background` is free; it is not, it was measured. See
  * docs/PIXELLAB.md.
  *

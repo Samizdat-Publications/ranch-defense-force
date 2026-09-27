@@ -8,7 +8,7 @@
  *
  * v3 animation redraws every frame rather than displacing pixels, so it can
  * lose the subject entirely partway through a loop. The `vatAlien` clip came
- * back with the glass cylinder gone in eight frames of nine — the creature left
+ * back with the glass cylinder gone in eight frames of nine - the creature left
  * standing on the base and the lid floating in mid-air. That was caught.
  *
  * What was NOT caught: `vatSpecimen` was unwired at the same moment, on the
@@ -22,7 +22,7 @@
  * **Scoped to `sceneClips` only, and that scoping is the whole design.** The
  * first version measured all 706 clips and reported 152 as broken, which is
  * the same as reporting none: nobody reads a list that long. They were false
- * positives, and obviously so once looked at — `farmhand.death` legitimately
+ * positives, and obviously so once looked at - `farmhand.death` legitimately
  * compacts its body as the figure falls, and `agronomist.walk` has five
  * saturated pixels total, so noise in a detail swamps the ratio.
  *
@@ -44,7 +44,7 @@ import { readAtlas } from './atlas-read.ts'
 const atlas = readAtlas()
 type Frame = (typeof atlas.frames)[string]
 
-/** The ambient scene objects — the only clips that must hold their shape. */
+/** The ambient scene objects - the only clips that must hold their shape. */
 const manifest = JSON.parse(readFileSync('art/sprites.json', 'utf8')) as {
   sceneClips?: { sheets: Record<string, string[]> }
 }

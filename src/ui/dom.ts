@@ -1,5 +1,5 @@
 /**
- * Tiny DOM helpers. The UI builds nodes rather than assigning innerHTML — the
+ * Tiny DOM helpers. The UI builds nodes rather than assigning innerHTML - the
  * content is ours, but card names and stat labels flow in from JSON, and
  * building nodes means no string ever gets parsed as markup.
  */

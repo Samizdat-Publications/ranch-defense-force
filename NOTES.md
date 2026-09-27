@@ -22,7 +22,7 @@ The v1 state is tagged `v1-final`.
 | Title | Rebuilt as a live diorama: `src/ui/title.ts`, `title.css`, `src/render/diorama.ts`. `menu.ts` is deleted. `scene.ts` and `home*.css` remain: the class-card CSS lives in `home-ui.css`, and the Homestead's painted barn is its fallback without WebGL2. |
 | Homestead | Stands over the diorama in its `homestead` framing; signs show prices. `src/ui/homestead.ts` `useLiveScene`. |
 | Ambience | Synthesised birds, wind, crickets, owl, thunder: `src/core/ambience.ts`. |
-| Sim | Unchanged from v1 so far. The replay and bot tests still describe it. |
+| Sim | Rebalanced for a horde (docs/V2.md D16-D20): off-screen spawn ring, a `horde` block in waves.json, seed merging, a boss every third wave, the Duster as a flying plane. The replay and bot tests still describe it, re-measured. |
 
 ## How the renderer works, in one screen
 
@@ -73,7 +73,7 @@ mattered most, in the order they were found:
   scattered inside a place's fence (`fieldSceneryExcluded`).
 - **Light.** A knee above 1 in the composite so the lantern pools warm
   instead of bleaching the player; dawn has cool shade and warm sun.
-- **Readability.** View 450; damage numbers self-lit, big digits from 40,
+- **Readability.** View 450; damage numbers self-lit, big digits for crits only (round 11),
   ticks under 3 not drawn; HUD pixel-caps at 13-15 px; telegraphs are a faint
   fill with a hard edge; hit sparks warmed off pure white.
 - **The Homestead** had an opaque painted-ground panel and a generic screen
@@ -85,9 +85,42 @@ mattered most, in the order they were found:
   lawn; tar is a glossy slick; the tour bot holds a fighting distance so the
   crowd stays in frame; locked heroes are silhouettes; the Homestead has a
   real "Head out" button. The damage-number glyphs are trimmed to their ink.
-- **The label font is Pixelify Sans** (OFL, self-hosted in `public/fonts/`
-  with its licence). Silkscreen is an 8 px grid font and at label sizes its
-  C closed into an O. Silkscreen stays for the in-world damage digits.
+- **The label font is IBM Plex Mono** at 500/600 (`RDF Label` in
+  `tokens.css`), the body's family. Two pixel faces failed first: Silkscreen
+  (an 8 px grid font) closed C into O at label sizes, and Pixelify Sans, which
+  replaced it in round 9, drew C as O and B as 8 in round 12's screenshots.
+  Silkscreen stays for the in-world damage digits, drawn at exactly 8 and 16 px.
+
+## The horde and the bosses (2026-09-26, after the owner lifted D13)
+
+- **Where enemies come from.** `Spawner.pickSpawnPoint`: 85% step on from a
+  ring just outside a 16:9 view round the player (`waves.json` spawn.ring),
+  the rest over the fence. Before this, 6 to 17 enemies were ever on screen.
+- **How many.** `waves.json` horde: budget x (1.6 + 0.16 per wave; 1.5 + 0.12 before round 15), groups
+  x sqrt of that; each ordinary enemy's hp x(0.5 + 0.024 per wave), contact
+  damage x0.6, xp x0.35 (0.45 before the horde grew), feed x0.15 (0.3 until round 11 counted 11,215 banked); feed left at the end sells at 150 an acre. Below about 0.5 hp every hit overkills and merging stops
+  paying (run.test.ts caught it). Bosses are exempt from all of it. `npm run probe -- 8 density`
+  now prints an on-screen count per wave: that is the number to watch.
+- **Seeds and feed.** `World.dropMerged` merges a drop into one of its kind
+  already lying within 40 px; a seed worth 3+ draws as a pile of three
+  seeds (the big seed art read as an egg, round 15), feed worth 8+ as the
+  full token (`pickup.feedBig`). Feed the Birds tokens merge the same way.
+- **Braced** drains over 0.75 s on a move instead of resetting (`drDecayPerSec`).
+- **Pickups draw on the ground layer** (under actors), with a dark outline;
+  feed is warmed toward gold so a sack does not read as a clod on tilled soil.
+- **Orbiting weapons** (the Scythe) draw their own tier art spinning, not the
+  pack's "death wave" clip, which read as ghost skulls.
+- **Bosses.** Cockerel 6, Thing in the North Pasture 9, Prize Bull 12, Sow 15,
+  Combine 18, Spray Rig 21, Duster 25. A boss's hp is base x the wave's hp
+  curve, so base values are set per slot.
+- **The Duster** (`behaviours/enemies.ts` duster, `enemies.json` plane): a
+  heading with a turn rate, so every change of course is an arc. Phase 1
+  flies lanes; phase 2 strafes through the player. Drawn by
+  `GLRenderer.drawPlanes`: a drop shadow on the ground layer and the plane
+  above the canopy, rotated on its centre. The Spray Rig is the same behaviour
+  at tractor speed on the old tractor sheet.
+- **The probe knobs** for all of this: `hc`, `hcw`, `hhp`, `hdmg`, `hxp`,
+  `ring` (tools/difficulty-probe.ts).
 
 ## The self-test loop
 
@@ -109,6 +142,44 @@ an empty field), the camera (snapped to the player on held frames), and the
 blood (a fast-forward keeps only its last fifteen seconds; nothing weathers
 while nothing draws). The autopilot collects its pickups and drifts to the
 middle. None of it touches the sim or a test.
+
+## Round 11, followed (2026-09-26)
+
+The owner asked for the reviewer's suggestions to be followed, so round 11's
+list was worked item by item (V2.md D21):
+
+- **The farmhand wears three looks**, cycled per spawn: `farmhandBlight`, and
+  `farmhandCoat` and `farmhandFlannel`, which are PixelLab STATES of the same
+  character (7418d20d), so they share its rig, height and every clip. Cut
+  with one translation per direction from the idle rotation (feet on row 57),
+  never per frame, so a clip keeps its motion. Two older 44x44 characters were
+  tried first and dropped: 32 px tall beside 52.
+- **Loose crops** stand on a soil mound (`GLRenderer.drawCropBeds`,
+  `tuning.render.cropBed`) and sit back a shade; the Home Field lost its
+  single cabbages, cauliflowers and strawberries and a quarter of its crops.
+- **`decard` trusts a transparent corner.** `node_milk_cans.png` had a white
+  card inside a transparent margin and passed `--check`. Look at the alpha
+  inside the frame, not the corner.
+- The night outline is a dim violet at a lower glow, the Duster has a
+  propeller (`drawPropBlur`), and the player ring is stronger (0.42).
+
+## Rounds 12 to 15 (2026-09-26/27)
+
+Each round's list was worked; V2.md D22 to D24 has the what and why. The
+traps worth knowing:
+
+- **The emissive target's alpha is coverage, not glow.** With alpha = glow,
+  anything drawn in front added its small glow over the big glow behind it,
+  so the crowd's eyes shone through the Duster (`gl/sprites.ts`).
+- **`button.btn` outranks `.btn-primary`.** The gold primary button drew dark
+  for sessions; `button.btn.btn-primary` in `style.css` fixes it everywhere.
+- **The HUD sets the weapon grid's columns inline** (`hud.ts`), so a CSS
+  width change does nothing until the inline template changes too.
+- **A reward on the ground is also a lure.** Paying Feed the Birds straight
+  into the purse cost the Hand's smart bot a clear in `run.test.ts`: the
+  pilots walk to tokens. Merge them instead.
+- **The horde is two numbers, not one.** More bodies level the bots faster;
+  raising the count without cutting xp made the never-move pilots clear more.
 
 ## Traps found this session
 
@@ -134,6 +205,16 @@ middle. None of it touches the sim or a test.
 
 ## Open
 
-- The owner has not played v2. D13 in docs/V2.md: the sim's balance is v1's, on purpose.
+- **Pacing, the owner's call.** Critic round 17: every weapon is T4 by wave 12
+  of 24, and thousands of feed sit unspent at the end (they now sell for
+  acres). Two switches exist and are OFF: `tuning.merge.tierOpensAt` (e.g.
+  `{"4": 440}` opens tier 4 at wave 12) and `waves.json` economy.pricePerWave
+  (e.g. 0.04 makes shop prices climb 4% a wave). Every tier gate measured cost
+  `run.test.ts` either "merging beats taking whatever came up" or "a minority
+  of seeds clear"; turning one on means re-tuning around it, ideally after the
+  owner has played.
+
+- The owner has not played v2. D13 (balance frozen) was lifted by the owner; the horde balance (D16-D20) is measured on bots only.
+- **The full test suite takes about an hour now**, most of it tests/run.test.ts: every full-run test simulates the horde, three to five times the enemies of v1. Run the fast files (content, maps, meta, core, sim, specials, world) while iterating and the whole suite once at the end.
 - The critic log and the milestone table are in docs/V2.md.
 - The resize rule: the diorama and a run share one GPU device and its view height. Only the renderer that owns the canvas may be resized (`resize(forRun)` in main.ts), or a run inherits the title's closer framing.

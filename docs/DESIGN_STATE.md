@@ -4,7 +4,7 @@
 old styling, what is wearing borrowed art, and what is open.
 
 Kept current on every design pass. If it disagrees with a handoff, this is
-right — a handoff is a snapshot of what was asked for, this is what exists.
+right - a handoff is a snapshot of what was asked for, this is what exists.
 
 Last updated: after the two reference scenes were ported and the last two
 screens converted.
@@ -22,7 +22,7 @@ and its `fill` bug with it. Fonts are self-hosted (Rye, Silkscreen, IBM Plex
 Mono, latin subset, ~100KB).
 
 Rarity is five tiers from `src/content/rarity.json`. Nothing hardcodes a tier
-colour — `installRarityTheme` publishes them as CSS custom properties at boot.
+colour - `installRarityTheme` publishes them as CSS custom properties at boot.
 
 ## Screens
 
@@ -45,7 +45,7 @@ order, which is paint order. 43 layers in the yard, 38 in the field. Both the
 home screen and the Homestead mount it, so there is one yard.
 
 **Do not build a scene from `docs/mockups/PLACEMENTS.md`.** That table lists the
-scenes' `<img>` placements and nothing else — no sky, no sun, no ground, no
+scenes' `<img>` placements and nothing else - no sky, no sun, no ground, no
 barn, no farmhouse, no walking actors, no vignette, because those are CSS
 layers. A build made faithfully from it measures correct and is missing two
 thirds of the picture. That is exactly what happened, and it is why the owner
@@ -53,7 +53,7 @@ said "it's not even close". Read the reference documents.
 
 The `scene` sprite group is packed **`noTrim`** and must stay that way. Design's
 coordinates are the top-left of each sprite's FULL box, so a trimmed frame draws
-at the right place with the wrong offset — silently, on every prop at once.
+at the right place with the wrong offset - silently, on every prop at once.
 
 ## The card
 
@@ -66,7 +66,7 @@ Homestead all use it. Anything that needs to differ per screen is a flag on
 rarity, because your third rank of the Feed Store is not rare, it is your third
 one.
 
-The class rail uses a **compact variant** — a 96px art window, no min-heights,
+The class rail uses a **compact variant** - a 96px art window, no min-heights,
 blurb clamped to three lines.
 
 ## Content
@@ -93,13 +93,13 @@ Flagged `_standInArt` in the content files, and queued in
 | Threshing Floor | a shockwave FX frame | the only one left; nothing generated for it |
 
 **One item is still borrowing, down from eight.** The Post Auger and the Combine
-Head each have a real four-rung ladder — rusted iron, clean steel, blackened
-steel, polished chrome — generated rung-from-rung so they read as one tool at
+Head each have a real four-rung ladder - rusted iron, clean steel, blackened
+steel, polished chrome - generated rung-from-rung so they read as one tool at
 four qualities rather than four unrelated tools.
 
 Work Boots, Feed Sack, the Straw Hat, the Ditch Light, the Boot Knife and **all
 four Homestead building signs** are real art now. So is the yard's rooster, and
-so are the oaks — the field's treeline was a band of CSS mounds standing in for
+so are the oaks - the field's treeline was a band of CSS mounds standing in for
 trees that did not exist yet, and it is real trees at 1x now.
 
 **The soundtrack is three CC-0 tracks by Abstraction** (Music Loop Bundle),
@@ -111,25 +111,25 @@ title screen and in the README.
 prizeBull draw from generated eight-direction sheets with walk, attack and death
 (`pixellabObjects` in `art/sprites.json`, built by `npm run objman`). The LimeZu
 entries for those keys were deleted, not left alongside. duckFlight is still
-LimeZu — no duck was generated.
+LimeZu - no duck was generated.
 
 **The harvest nodes are ours.** All eleven rock, ore and tree sprites come from
 the environment objects recovered off the PixelLab account. The two huge oaks
 and two larger trees are deliberately unpacked, for scenery.
 
-**The ground degrades with the wave** — `tuning.terrain.blight`, pasture through
+**The ground degrades with the wave** - `tuning.terrain.blight`, pasture through
 withered grass and rot to cold ash. Re-bakes on a band change, never per frame.
 
 **The pickups are real art** at 16px. `pickup.heal` is still LimeZu's apple.
 
-**`_standInArt` is now ZERO across the whole content set** — Threshing Floor,
+**`_standInArt` is now ZERO across the whole content set** - Threshing Floor,
 the last one, has the generated chain lightning arc.
 
 **Walk, attack and death all play** for the generated roster. The fence is real
 art, flat decals are baked into the terrain, and eighteen props are scattered as
 y-sorted scenery in a band near the arena edges.
 
-**The FX are generated and animated** — muzzle, gas, dust, explosion and slash,
+**The FX are generated and animated** - muzzle, gas, dust, explosion and slash,
 one generation each via `animate-with-text-v3`. Not conformed: the authored
 palette has no coverage for an electric arc. hitSpark, critStar and shock are
 still pack art.

@@ -6,8 +6,8 @@
  * ## Why this exists
  *
  * Session 21's lesson, twice over. A document saying art exists is not evidence
- * that it does — `DESIGN_BRIEF_HOMESCREEN.md` blocked on a barn that had been
- * generated and paid for sessions earlier — and the reverse is just as true: a
+ * that it does - `DESIGN_BRIEF_HOMESCREEN.md` blocked on a barn that had been
+ * generated and paid for sessions earlier - and the reverse is just as true: a
  * table of sheet names in `src/ui/scene.ts` is a claim, not a fact, and a
  * missing key there fails SILENTLY. `stripUrl` returns null, `patrolLayer`
  * returns null, the layer is skipped, and the blighted farm quietly has one
@@ -21,7 +21,7 @@
  * `blightStrip` in scene.ts falls back by clip: the same clip on the blighted
  * sheet, then the spare sheet, then `walk`, then `idle`. This walks the same
  * ladder and reports WHICH rung each actor lands on, because that is the
- * interesting part — `joyBlight` is idle-only, so the blighted Joy is a still,
+ * interesting part - `joyBlight` is idle-only, so the blighted Joy is a still,
  * and that is a design fact worth seeing rather than a failure.
  *
  * Exits non-zero if any actor resolves to nothing at all.
@@ -39,7 +39,7 @@ let atlas: Atlas
 try {
   atlas = JSON.parse(readFileSync(atlasPath, 'utf8')) as Atlas
 } catch {
-  console.error(`no atlas at ${atlasPath} — run \`npm run atlas\` first`)
+  console.error(`no atlas at ${atlasPath} - run \`npm run atlas\` first`)
   process.exit(2)
 }
 
@@ -89,7 +89,7 @@ const STRIP: Record<string, { sheet: string; clip: string; dir: string }> = {
  * Every clip the two surface scenes actually ask for, sheet by sheet.
  *
  * Read out of `yard()` and `field()` rather than guessed. If a scene grows an
- * actor, add it here — the check is only as good as the list of things checked.
+ * actor, add it here - the check is only as good as the list of things checked.
  */
 const ASKED: readonly (readonly [string, string, string])[] = [
   ['brahmaHen', 'peck', 'downRight'],
@@ -163,7 +163,7 @@ for (const k of SOIL) {
 
 console.log(`\nno counterpart, graded by filter instead: ${FILTERED.join(', ')}`)
 if (bad) {
-  console.error(`\n${bad} mapping(s) resolve to nothing — the blighted scene is missing actors.`)
+  console.error(`\n${bad} mapping(s) resolve to nothing - the blighted scene is missing actors.`)
   process.exit(1)
 }
 console.log('\nevery blight mapping resolves.')

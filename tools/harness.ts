@@ -8,7 +8,7 @@
  * project produced came from a second implementation held in step with the
  * first by comments reading "Must match src/render/renderer.ts".
  *
- * This module is the other half — the actual renderer, the actual sim, the
+ * This module is the other half - the actual renderer, the actual sim, the
  * actual UI. `scene-shot.ts` photographs a title screen with it and `play.ts`
  * plays a run with it.
  *

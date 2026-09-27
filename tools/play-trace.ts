@@ -7,7 +7,7 @@
  *
  * `tools/play.ts` with `RDF_PROFILE=1` samples the JS stack, and that profile
  * says the main thread is over half idle. That answers "which function" and
- * cannot answer "where did the frame go" — the frame can be spent entirely
+ * cannot answer "where did the frame go" - the frame can be spent entirely
  * outside JS, in raster, in an image upload, in the GPU process, and a CPU
  * profile shows exactly none of it.
  *
@@ -17,7 +17,7 @@
  * per-frame `GpuImageDecodeCache` / decode / upload events, and nowhere else.
  *
  * A trimmed copy of `play.ts` on purpose: it holds the keyboard down and takes
- * level-ups so the world keeps moving, and does nothing else — no screenshots,
+ * level-ups so the world keeps moving, and does nothing else - no screenshots,
  * no per-second world reads, no fps probe. Every one of those is main-thread
  * work that lands IN the trace and would be reported as the game's own cost.
  *
@@ -30,7 +30,7 @@
  * The trace is streamed to disk and aggregated as it arrives, never held whole.
  * Measured: 25s of blink+cc+gpu is a few million events, and
  * `JSON.stringify(events)` on it dies with `RangeError: Invalid string length`
- * — V8's string cap, hit before any node heap limit, so `--max-old-space-size`
+ * - V8's string cap, hit before any node heap limit, so `--max-old-space-size`
  * does not save it.
  */
 import { createWriteStream, mkdirSync, writeFileSync } from 'node:fs'
@@ -43,7 +43,7 @@ const seed = process.argv[5] ?? 'harvest'
 const PORT = 5197
 /** Seconds of play before tracing starts, so waves and enemies exist. */
 const WARMUP = Number(process.env.RDF_TRACE_WARMUP ?? 60)
-/** Keep the raw trace. Off by default — see the header; it is 737MB for 25s. */
+/** Keep the raw trace. Off by default - see the header; it is 737MB for 25s. */
 const RAW = process.env.RDF_TRACE_RAW === '1'
 
 interface TraceEvent {
@@ -107,7 +107,7 @@ try {
   const decodes: [number, number][] = []
   cdp.on('Tracing.dataCollected', (e) => {
     /* Playwright types the payload as `{[key: string]: string}[]`, which a
-       trace event is not — the real shape carries numbers and nested args. Via
+       trace event is not - the real shape carries numbers and nested args. Via
        `unknown` because a direct assertion between the two is rejected. */
     for (const ev of (e as unknown as { value: TraceEvent[] }).value) {
       raw?.write((total ? ',' : '') + JSON.stringify(ev))
@@ -164,7 +164,7 @@ try {
      nobody is reading that by hand and a top-by-total-duration table is what
      the question actually needs. */
   const span = (hi - lo) / 1e6
-  /* Frames actually presented, from the compositor's own draw count — the
+  /* Frames actually presented, from the compositor's own draw count - the
      denominator for anything asked "per frame". */
   const drawn = byName.get('DrawFrame')?.n ?? 0
   const countName = new Map<string, number>()
@@ -220,7 +220,7 @@ try {
   }
 
   const lines = [
-    `# GPU / compositor trace — ${classId}, seed "${seed}"`,
+    `# GPU / compositor trace - ${classId}, seed "${seed}"`,
     '',
     `${total} events over ${span.toFixed(1)}s of trace, taken after ${WARMUP}s of play.`,
     `At trace start: wave ${stats.wave}, level ${stats.level}, ${stats.alive} enemies alive.`,

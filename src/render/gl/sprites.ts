@@ -129,7 +129,13 @@ void main() {
     // crowd past the lantern is a crowd and not an empty field.
     // Scaled by the curse, so a boss (a trace of it) gets a faint rim and a
     // 2x sprite does not wear a neon border.
-    float rim = max(0.0, -vFx.y - 0.5) * 1.8 * min(1.0, curse / 0.3);
+    // 1.8 fixed "invisible at night" (round 5) and then read as an x-ray
+    // selection effect (round 11); the eyes carry the rest.
+    float rim = max(0.0, -vFx.y - 0.5) * 0.5 * min(1.0, curse / 0.3);
+    // The player's outline-only pass (drawn over the crowd) keeps its own
+    // light: in the lit layer it dimmed with the day and round 17 lost the
+    // farmhand under three zombies.
+    if (outlineOnly) rim = max(rim, 0.7);
     oEmissive = vec4(c.rgb * c.a * rim, c.a * rim);
     return;
   }
@@ -138,6 +144,7 @@ void main() {
   // the dark before the lantern reaches it.
   float em = vFx.y;
   float eye = 0.0;
+  float sore = 0.0;
   if (em < 0.0) {
     float yellow = (c.r > 0.72 && c.g > 0.6 && c.b < 0.45 && (c.r + c.g) * 0.5 - c.b > 0.38) ? 1.0 : 0.0;
     float red = (c.r > 0.72 && c.g < 0.3 && c.b < 0.3) ? 1.0 : 0.0;
@@ -149,18 +156,34 @@ void main() {
     // the eyes keep their colour, which is the point of them.
     float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
     // Bruised lilac-grey: the complement of every green the field is made of.
-    vec3 pale = vec3(l) * vec3(1.02, 0.9, 1.1) * 1.16 + vec3(0.04, 0.02, 0.05);
+    vec3 pale = vec3(l) * vec3(1.06, 0.86, 1.18) * 1.18 + vec3(0.05, 0.02, 0.06);
     c.rgb = mix(c.rgb, pale, curse * (1.0 - eye));
     c.rgb = mix(c.rgb, vec3(1.0, 0.86, 0.36), eye * curse * 0.6);
+    // The spray's mark: blotches of chemical green on every cursed body, in
+    // 2x2 art pixels at fixed places in the frame, faintly lit after dark.
+    // Round 13 read the pallor alone as "lavender mannequins" and asked for
+    // one shared cursed mark.
+    vec2 local = floor((vec2(t) - vRect.xy) / 2.0);
+    float hs = fract(sin(dot(local, vec2(12.9898, 78.233))) * 43758.5453);
+    float l2 = dot(c.rgb, vec3(0.3, 0.59, 0.11));
+    if (hs > 0.925 && eye < 0.5 && l2 > 0.2) {
+      float k = min(1.0, curse / 0.3);
+      c.rgb = mix(c.rgb, vec3(0.58, 0.88, 0.2) * (0.5 + l2), 0.8 * k);
+      sore = k;
+    }
   }
   c.rgb = mix(c.rgb, vec3(1.0, 0.96, 0.88), vFx.x);
   c *= vTint;
   oColor = vec4(c.rgb * c.a, c.a);
   // After dark a cursed body gives off a little of its own pallor, so the
   // crowd past the lantern keeps a value gap against the ground.
-  float body = max(0.0, -vFx.y - 0.5) * 0.34 * min(1.0, curse / 0.3);
+  float body = max(0.0, -vFx.y - 0.5) * 0.22 * min(1.0, curse / 0.3);
   em = max(em, body * (1.0 - eye));
-  oEmissive = vec4(c.rgb * c.a * em, c.a * em);
+  em = max(em, sore * max(0.0, -vFx.y - 0.5) * 0.5);
+  // Alpha is the sprite's own coverage, not its glow: a body in front hides
+  // the glow of whatever stands behind it. With alpha = glow, the crowd's
+  // lit eyes showed straight through the Duster's wings (round 14).
+  oEmissive = vec4(c.rgb * c.a * em, c.a);
 }`
 
 export class SpriteBatch {

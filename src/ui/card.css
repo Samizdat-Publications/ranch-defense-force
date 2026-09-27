@@ -1,7 +1,7 @@
 /* ===================================================================
    THE CARD
    ===================================================================
-   One silhouette for every card in the game — level-up, shop,
+   One silhouette for every card in the game - level-up, shop,
    Homestead, class select. A kraft seed packet with a punched hang
    tab. Anatomy and every literal value from docs/DESIGN_LANGUAGE.md.
 
@@ -13,9 +13,10 @@
    means one thing.
    =================================================================== */
 
+/* 232 wide, text a size up (round 15: headers ~9px, body ~12px on screen). */
 .pcard {
   position: relative;
-  width: 210px;
+  width: 232px;
   display: flex;
   flex-direction: column;
   /*
@@ -25,7 +26,7 @@
      `background-image` for the dots. The shorthand puts the paper gradient
      in the IMAGE slot and resets the colour to transparent; the longhand on
      the next line then replaced that gradient with the dot pattern. What was
-     left was a 1px dot on a 4px grid over nothing — a card about 94% see-
+     left was a 1px dot on a 4px grid over nothing - a card about 94% see-
      through, with the game field legible straight through its own blurb.
      Nothing errors, every colour token is correct, and it survived several
      screens' worth of review.
@@ -61,7 +62,7 @@
   border-color: var(--paper-edge-gold);
 }
 
-/* Unaffordable and locked read as UNPRINTED STOCK, not as disabled UI —
+/* Unaffordable and locked read as UNPRINTED STOCK, not as disabled UI -
    greyed-out chrome says "broken", dead paper says "not for you yet". */
 .pcard.is-dead {
   background-color: var(--paper-dead-flat);
@@ -101,8 +102,8 @@
   justify-content: space-between;
   gap: 6px;
   font-family: var(--label);
-  font-size: 11px;
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--ink-band);
   border-bottom: 2px solid var(--paper-edge);
@@ -113,7 +114,7 @@
 
 /*
    docs/UPGRADE_ROSTER.md §7.1/§7.7: the category quota a card was drawn under,
-   and — gold, because it is the one thing on this row worth stopping for — a
+   and - gold, because it is the one thing on this row worth stopping for - a
    flag for a card no level-up can ever deal. Both sit right-aligned so the
    kind band reads NAME, then WHY IT'S HERE, left to right.
 */
@@ -179,7 +180,7 @@
      the atlas build because CSS needs a real URL and cannot read the atlas).
      It is BLENDED over the existing tier gradient rather than replacing it, so
      all five rarities and the plain-steel rank variant keep working off
-     `--tier-colour` with no per-tier art — one plate instead of six.
+     `--tier-colour` with no per-tier art - one plate instead of six.
 
      Longhands, not the `background` shorthand: a shorthand followed by a
      longhand that overwrites its payload is invisible, and that has cost this
@@ -211,8 +212,8 @@
 /*
    A rank plate: the same stamped tin, with no colour claim on it.
 
-   The Homestead's purchases have a RANK, not a rarity — your third rank of the
-   Feed Store is not rare, it is your third one — so the plate carries pips and
+   The Homestead's purchases have a RANK, not a rarity - your third rank of the
+   Feed Store is not rare, it is your third one - so the plate carries pips and
    nothing else. Plain steel, so it cannot be mistaken for a tier.
 */
 .pcard-plate.is-rank {
@@ -288,9 +289,9 @@
 
 .pcard-blurb {
   font-family: var(--body);
-  font-size: 13px;
-  line-height: 1.5;
-  min-height: 52px;
+  font-size: 15px;
+  line-height: 1.45;
+  min-height: 58px;
   color: var(--ink-body);
   padding: 6px 12px 10px;
 }
@@ -324,13 +325,13 @@
 
 .pcard-stat-label {
   font-family: var(--label);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-label);
 }
 
-.pcard-stat-value { font-family: var(--body); font-size: 12px; font-weight: 500; }
+.pcard-stat-value { font-family: var(--body); font-size: 14px; font-weight: 600; }
 .pcard-stat-value.gain { color: var(--gain); }
 .pcard-stat-value.cost { color: var(--cost); }
 
@@ -346,7 +347,7 @@
      stage transform (shop and level-up draw `.pcard` at native size), so
      9px was 9px on every screen. 12px with a tighter tracking keeps the
      stamped-line look at a size that reads. */
-  font-size: 12px;
+  font-size: 15px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-label);

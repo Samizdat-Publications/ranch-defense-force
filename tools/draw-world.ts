@@ -5,7 +5,7 @@
  * twelve times on one sheet. Two copies of the renderer's frame-selection rules
  * was already one more than ideal; three would have guaranteed they drifted.
  *
- * It deliberately reimplements the renderer rather than importing it — the
+ * It deliberately reimplements the renderer rather than importing it - the
  * renderer needs a DOM canvas, and a second independent implementation of "what
  * frame does this entity show" is a check on the first. If the two ever
  * disagree, that is worth knowing. The cost is that changes to frame selection
@@ -28,7 +28,7 @@ import { wangKey, type Corner } from '../src/render/wang.ts'
 export const ZOOM = 2
 /**
  * The wave-banded ground, matching the renderer. Without this a screenshot of
- * wave 20 shows a healthy pasture the game never draws — and a screenshot that
+ * wave 20 shows a healthy pasture the game never draws - and a screenshot that
  * disagrees with the game is the thing this file exists to avoid.
  *
  * Read off the WORLD's map, not off tuning.json, for exactly that reason: once
@@ -110,7 +110,7 @@ const ATTACK_SECONDS = ((TUNING as unknown as { combat?: { attackClipSeconds?: n
  * A frame's rect and the page it was packed onto.
  *
  * The atlas is several images now, not one, so a rect on its own no longer
- * says where to read from — `imageFor(f)` completes it. Re-exported from
+ * says where to read from - `imageFor(f)` completes it. Re-exported from
  * `atlas-read.ts` rather than declared again here so the two cannot drift.
  */
 export type Frame = AtlasFrame
@@ -141,7 +141,7 @@ export function fillRect(img: Image, x: number, y: number, w: number, h: number,
 }
 
 /**
- * Which sprite a projectile draws as — the renderer's rule, restated.
+ * Which sprite a projectile draws as - the renderer's rule, restated.
  *
  * Animated clip if the weapon declares one, else its icon. An element tints the
  * clip rather than replacing it, so a fire scattergun still throws sparks.
@@ -167,7 +167,7 @@ export function projectileSprite(
   }
 
   // docs/UPGRADE_ROSTER.md batch 3, H8: a planted turret/trap/coop is an
-  // item, not a weapon, so the WEAPONS lookup below always misses it — see
+  // item, not a weapon, so the WEAPONS lookup below always misses it - see
   // the matching branch in renderer.ts's own `projectileFrame`.
   if (p.type === 'placeable') {
     const sprite = (ITEMS as Record<string, Record<string, unknown>>)[p.weaponId]?.cardSprite
@@ -215,7 +215,7 @@ export function swingSprite(
  * Draw one atlas frame centred at `cx,cy` in any image, at an arbitrary scale.
  *
  * Standalone rather than a `WorldPainter` method because the rounds sheet has no
- * world and no camera — it just needs a bullet drawn at exactly the size the
+ * world and no camera - it just needs a bullet drawn at exactly the size the
  * game draws it, on a background it can be judged against.
  */
 export function drawSpriteScaled(
@@ -404,7 +404,7 @@ export class WorldPainter {
        `centre` turns the frame about its own middle. That is what the carried
        weapons want and it is what this function was written for.
 
-       `frame` turns it about the DRAW ORIGIN — the point `drawFrame` puts at
+       `frame` turns it about the DRAW ORIGIN - the point `drawFrame` puts at
        (worldX, worldY) by offsetting with `f.ox`/`f.oy`. Since the singles
        pivot is bottom-centre, that origin is the foot of the sprite, so a
        swaying plant pivots at its roots. It also matches what the game does:
@@ -412,7 +412,7 @@ export class WorldPainter {
        offsets by `f.ox`/`f.oy`.
 
        Rotating a prop about its centre instead would lift it by half its own
-       height and slide it sideways — silently, since nothing here can tell a
+       height and slide it sideways - silently, since nothing here can tell a
        floating sprite from a grounded one.
     */
     const ax = anchor === 'frame' ? -f.ox : f.w * pivot
@@ -459,7 +459,7 @@ export class WorldPainter {
    *
    * Fills the whole ZOOM x ZOOM block a world pixel occupies. Setting a single
    * canvas pixel leaves every other one untouched at 2x, which reads as a dither
-   * screen rather than a wash — the reason hazard discs came out as moire.
+   * screen rather than a wash - the reason hazard discs came out as moire.
    */
   /**
    * The pitchfork's tine streaks, restated from `Renderer.drawJabs`.
@@ -514,7 +514,7 @@ export class WorldPainter {
      Kept byte-for-byte in step with `directionIndex` in src/core/atlas.ts.
      This file deliberately holds a second copy of the renderer's
      frame-selection rules (see the header), and the cost of that is that a
-     change there is a change here — a screenshot that picks directions by a
+     change there is a change here - a screenshot that picks directions by a
      different rule than the game is worse than no screenshot, because it looks
      authoritative.
   */
@@ -527,7 +527,7 @@ export class WorldPainter {
   }
 
   /**
-   * The renderer's baked scenery — flat decals and the boundary fence —
+   * The renderer's baked scenery - flat decals and the boundary fence -
    * restated so a headless shot shows them. Neither was drawn here before, so
    * every screenshot so far has been of a field with no fence in it.
    *
@@ -811,7 +811,7 @@ export class WorldPainter {
    * GAME draws rather than a second one that merely resembles it.
    *
    * This is a duplicate of `Renderer.bakeWangGround` and it has to stay in step
-   * with it — the same RNG stream in the same order, or the shot is of a
+   * with it - the same RNG stream in the same order, or the shot is of a
    * different field than the run it claims to picture. The tile KEY is the one
    * thing not restated: `wangKey` is imported from the renderer's own module, so
    * the naming cannot drift even if the field generation does.
@@ -881,7 +881,7 @@ export class WorldPainter {
        `Camera.clamp` in src/render/camera.ts.
 
        Without the clamp a shot near an edge shows ground beyond the fence that
-       the game never lets you see — the arena canvas simply ends and the base
+       the game never lets you see - the arena canvas simply ends and the base
        fill shows through as a flat green band. That is precisely the class of
        divergence this file exists to avoid: a screenshot that looks
        authoritative and is of a view the player cannot have.
@@ -902,7 +902,7 @@ export class WorldPainter {
     const drawList: {
       y: number; f: Frame; x: number
       rot?: number; scale?: number; flip?: boolean; lift?: number; pivot?: number
-      /** `frame` turns about the sprite's own draw origin — see `drawFrameT`. */
+      /** `frame` turns about the sprite's own draw origin - see `drawFrameT`. */
       anchor?: 'centre' | 'frame'
     }[] = []
     // Scenery joins the same sorted list as everything else, as in the game.
@@ -981,7 +981,7 @@ export class WorldPainter {
     }
 
     // Melee sweeps and auras: swept wedges, matching the renderer. These used to
-    // draw as a filled square the size of the whole hitbox — a ~100px white block
+    // draw as a filled square the size of the whole hitbox - a ~100px white block
     // that was the loudest thing on screen.
     for (let i = 0; i < world.projectiles.live; i++) {
       const p = world.projectiles.items[i]
@@ -1029,7 +1029,7 @@ export class WorldPainter {
     // Ground hazards, under the FX. The renderer fills and rims a disc per
     // hazard; this does the same flatly. Without it a Bait Drum or Chem Sprayer
     // paints an empty field, and the range would report a working weapon as
-    // drawing nothing — which is exactly what it did before this existed.
+    // drawing nothing - which is exactly what it did before this existed.
     for (let i = 0; i < world.hazards.live; i++) {
       const h = world.hazards.items[i]
       const [fill, rim] =
@@ -1053,13 +1053,13 @@ export class WorldPainter {
           this.tint(h.x + dx, h.y + dy, onRim ? rim : fill, onRim ? 0.9 : alpha)
         }
       }
-      // The map's own hazards carry art. Same order as the renderer — over the
+      // The map's own hazards carry art. Same order as the renderer - over the
       // fill, under nothing else here, because the painter draws the rim in the
       // same pass above. A screenshot that omitted this would show the Burn's
       // fires as plain orange discs.
       if (h.sprite) {
         // Animated if the atlas has a loop for it, matching the renderer's own
-        // `propFrame` call here — same position-derived phase, so two fires
+        // `propFrame` call here - same position-derived phase, so two fires
         // side by side are not on the same frame in either program.
         const len = clipLengths[h.sprite]?.play ?? 1
         const f = len > 1
@@ -1112,7 +1112,7 @@ export class WorldPainter {
   }
 
   /**
-   * The sprite a projectile draws as — the renderer's rule, restated.
+   * The sprite a projectile draws as - the renderer's rule, restated.
    *
    * Animated clip if the weapon declares one, else its icon. An element tints
    * the clip rather than replacing it, so a fire scattergun still throws sparks.

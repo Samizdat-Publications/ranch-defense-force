@@ -504,7 +504,7 @@
   "blurb": "Every gun you own fires fire. Burns on hit, and lights tar.",
   "mods": {},
   "element": "fire",
-  "cardSprite": "proj.pellet.fire.2",
+  "cardSprite": "item.tracerRounds",
   "category": "load",
   "tags": [
    "fire",
@@ -522,7 +522,7 @@
   "blurb": "Every gun you own fires acid. Corrodes for longer than fire burns.",
   "mods": {},
   "element": "acid",
-  "cardSprite": "proj.glob.acid.2",
+  "cardSprite": "item.etchedRounds",
   "category": "load",
   "tags": [
    "acid",
@@ -540,7 +540,7 @@
   "blurb": "Every gun you own fires ice. Slows hard instead of damaging.",
   "mods": {},
   "element": "frost",
-  "cardSprite": "proj.spear.frost.2",
+  "cardSprite": "item.coldRounds",
   "category": "load",
   "tags": [
    "frost",
@@ -775,7 +775,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires rock salt.",
-  "stackBlurb": "Every gun you own fires rock salt. No damage of its own — every hit MARKS for +30% damage taken, 4s.",
+  "stackBlurb": "Every gun you own fires rock salt. No damage of its own: every hit MARKS for +30% damage taken, 4s.",
   "mods": {},
   "element": "salt",
   "cardSprite": "item.saltRounds"
@@ -831,7 +831,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires kerosene.",
-  "stackBlurb": "Every gun you own fires kerosene. Every hit leaves a 34px burning slick — 3s, 16 dps.",
+  "stackBlurb": "Every gun you own fires kerosene. Every hit leaves a 34px burning slick (3s, 16 dps).",
   "mods": {},
   "element": "kerosene",
   "cardSprite": "item.keroseneCan"
@@ -850,7 +850,7 @@
    "load"
   ],
   "blurb": "Every gun you own fires tar.",
-  "stackBlurb": "Every gun you own fires tar. Slows 35% for 2.5s, and a kill leaves a 46px slick — 4s, 40% slow.",
+  "stackBlurb": "Every gun you own fires tar. Slows 35% for 2.5s, and a kill leaves a 46px slick (4s, 40% slow).",
   "mods": {},
   "element": "tar",
   "cardSprite": "item.tarRounds"
@@ -927,7 +927,7 @@
   ],
   "requiresLoad": true,
   "blurb": "Every slick on the field burns twice as hot.",
-  "stackBlurb": "Every slick on the field — tar, kerosene, gas, rind, Crop Duster — does +{total}% damage.",
+  "stackBlurb": "Every slick on the field (tar, kerosene, gas, rind, Crop Duster) does +{total}% damage.",
   "stackPer": 100,
   "mods": {},
   "special": "slickPotency",
@@ -1109,10 +1109,11 @@
   ],
   "blurb": "Something always gets fed.",
   "stackBlurb": "{total}% of kills drop a feed token.",
-  "stackPer": 15,
+  "stackPer": 12,
   "mods": {},
   "special": "killDrop",
-  "killDropChance": 15,
+  "killDropChance": 12,
+  "_hordeNote": "15% a stack until v2 round 11. The horde kills three to four times what v1 did, and four stacks turned 60% of 15,000 kills into sacks on the ground: the reviewer counted 11,215 feed banked at the Duster with every shop price under 40, and the next saw the sacks carpet the late waves. 12% a stack now, and each token merges into one already lying close by (world.ts dropMerged), so the field holds a few big sacks. Measured on run.test.ts: at 8%, or paid straight into the purse at any rate, the Hand's smart bot clears 3 seeds in 24 and the bar is 4.",
   "killDropKind": "feed",
   "killDropValue": 1,
   "cardSprite": "pickup.feed"
@@ -1130,7 +1131,7 @@
    "ally"
   ],
   "blurb": "She has been sitting on something.",
-  "stackBlurb": "Every 12th kill hatches a chick — 14 damage, 8 seconds. {n} live at a time.",
+  "stackBlurb": "Every 12th kill hatches a chick (14 damage, 8 seconds). {n} live at a time.",
   "mods": {},
   "special": "killHatch",
   "killSpawnEvery": 12,
@@ -1172,7 +1173,7 @@
    "acid"
   ],
   "blurb": "They go down and the ground goes with them.",
-  "stackBlurb": "{total}% of kills leave a 42px acid pool — 3s, 20 dps.",
+  "stackBlurb": "{total}% of kills leave a 42px acid pool (3s, 20 dps).",
   "stackPer": 25,
   "mods": {},
   "special": "killPool",
@@ -1304,7 +1305,7 @@
   ],
   "requiresWeapon": "varmintRifle",
   "weaponMod": "setTrigger",
-  "blurb": "A hair trigger. Fires twice per cooldown — the second round at 60%.",
+  "blurb": "A hair trigger. Fires twice per cooldown, the second round at 60%.",
   "mods": {},
   "cardSprite": "carry.varmintRifle"
  },
@@ -1339,7 +1340,7 @@
   ],
   "requiresWeapon": "grenadeLauncher",
   "weaponMod": "williePete",
-  "blurb": "White phosphorus. The blast leaves fire — 60px, 3s, 12 dps.",
+  "blurb": "White phosphorus. The blast leaves fire: 60px, 3s, 12 dps.",
   "mods": {},
   "cardSprite": "carry.grenadeLauncher"
  },
@@ -1465,7 +1466,7 @@
   ],
   "requiresWeapon": "tarBomb",
   "weaponMod": "sumpOil",
-  "blurb": "Sump oil catches on its own. The puddle burns 10 dps — no fire load needed.",
+  "blurb": "Sump oil catches on its own. The puddle burns 10 dps, no fire load needed.",
   "mods": {},
   "cardSprite": "carry.tarBomb"
  },
@@ -1824,7 +1825,7 @@
   ],
   "requiresWeapon": "barnDog",
   "weaponMod": "bloodUp",
-  "blurb": "The blood is up. +15% dog speed per kill, to +90% — resets each wave.",
+  "blurb": "The blood is up. +15% dog speed per kill, to +90%, reset each wave.",
   "mods": {},
   "cardSprite": "feralDog.idle.down.0"
  },
@@ -2310,7 +2311,7 @@
    "armour"
   ],
   "requiresClass": "hand",
-  "blurb": "Braced comes on faster — standing still for 0.75s starts it, not 1s — and eight more seasons of dirt under him.",
+  "blurb": "Braced comes on faster (standing still for 0.75s starts it, not 1s), and eight more seasons of dirt under him.",
   "mods": {
    "maxHp": 8
   },
@@ -2331,7 +2332,7 @@
    "armour"
   ],
   "requiresClass": "hand",
-  "blurb": "Braced climbs higher — damage reduction caps at 55%, not 45% — and he carries twelve more hard-won pounds.",
+  "blurb": "Braced climbs higher (damage reduction caps at 55%, not 45%), and he carries twelve more hard-won pounds.",
   "mods": {
    "maxHp": 12
   },
@@ -2352,7 +2353,7 @@
    "armour"
   ],
   "requiresClass": "hand",
-  "blurb": "At Braced's cap, anything that reaches you is slowed 30% for 2s — and eighteen more pounds of him to slow it with.",
+  "blurb": "At Braced's cap, anything that reaches you is slowed 30% for 2s, and eighteen more pounds of him to slow it with.",
   "mods": {
    "maxHp": 18
   },
@@ -2390,7 +2391,7 @@
   "maxStacks": 1,
   "tags": [],
   "requiresClass": "kid",
-  "blurb": "Momentum eases off instead of cutting out — it bleeds away over about a second when you stop, rather than dropping to zero.",
+  "blurb": "Momentum eases off instead of cutting out: it bleeds away over about a second when you stop, rather than dropping to zero.",
   "mods": {},
   "classBonus": {
    "momentumDecayPctPerSec": 60
@@ -2409,7 +2410,7 @@
    "dash"
   ],
   "requiresClass": "kid",
-  "blurb": "Bolt's dust trail catches — 8 dps for 3s.",
+  "blurb": "Bolt's dust trail catches: 8 dps for 3s.",
   "mods": {},
   "classBonus": {
    "boltTrailSeconds": 3,
@@ -2429,7 +2430,7 @@
    "bleed"
   ],
   "requiresClass": "widow",
-  "blurb": "Less of a blow lands at once. 45% now, not 55% — the rest is a wound to fight through.",
+  "blurb": "Less of a blow lands at once. 45% now, not 55%. The rest is a wound to fight through.",
   "mods": {},
   "classBonus": {
    "gritImmediatePctDelta": -10
@@ -2488,7 +2489,7 @@
    "armour"
   ],
   "requiresClass": "vet",
-  "blurb": "The far band starts sooner — 140px, not 170 — and two more plates in the vest.",
+  "blurb": "The far band starts sooner (140px, not 170), and two more plates in the vest.",
   "mods": {
    "armor": 2
   },
@@ -2509,7 +2510,7 @@
    "armour"
   ],
   "requiresClass": "vet",
-  "blurb": "The far bonus hits harder — +60% damage, not +40% — and three more plates besides.",
+  "blurb": "The far bonus hits harder (+60% damage, not +40%), and three more plates besides.",
   "mods": {
    "armor": 3
   },
@@ -2530,7 +2531,7 @@
    "armour"
   ],
   "requiresClass": "vet",
-  "blurb": "The near penalty is gone — contact is neutral, not -20% — and five more plates for when it is not.",
+  "blurb": "The near penalty is gone (contact is neutral, not -20%), and five more plates for when it is not.",
   "mods": {
    "armor": 5
   },
@@ -2549,7 +2550,7 @@
   "maxStacks": 1,
   "tags": [],
   "requiresClass": "agronomist",
-  "blurb": "Whatever she leaves behind lasts longer — statuses last +110%, not +70% — and she is knitting a little faster herself.",
+  "blurb": "Whatever she leaves behind lasts longer (statuses last +110%, not +70%), and she is knitting a little faster herself.",
   "mods": {
    "hpRegen": 0.15
   },
@@ -2568,7 +2569,7 @@
   "maxStacks": 1,
   "tags": [],
   "requiresClass": "agronomist",
-  "blurb": "Cultivar bites harder — +110% damage, not +70% — and the same stock keeps her on her feet longer.",
+  "blurb": "Cultivar bites harder (+110% damage, not +70%), and the same stock keeps her on her feet longer.",
   "mods": {
    "hpRegen": 0.25
   },
@@ -2656,12 +2657,12 @@
   },
   "cardSprite": "portrait.drifter"
  },
- "_classCardNote": "docs/UPGRADE_ROSTER.md batch 4, H13 — the 18 class cards, three per class, `requiresClass` gated, `maxStacks: 1`, cost 20/30/44 at uncommon/rare/epic, `category: \"class\"`. Art is zero-generation per SS10: `portrait.<classId>`, the same plate class select already draws. `classBonus` is the overlay `Player.classBonus` sums additively from every owned item's block and the passive/ability code reads beside its own numbers -- see the `ClassBonus` doc comment in player.ts. Two of the doc's own numbers do not survive contact with today's classes.json and are re-derived here, not copied: Deep Rooted's \"caps at 45%, not 30%\" already shipped as base in batch 1 (NOTES.md, \"The Hand, restored the way batch 4 would have\"), so this card instead pushes the cap PAST that base, to 55%; and Set Feet's original \"starts at 0.5s\" measured WORSE in that same session (11/24 -> 9/24 brawling) so this card halves the delta instead, to 0.75s, and stays conservative rather than assuming the smaller version helps -- it is safe rather than proven, and the full verification pass is where that gets checked. Anchor Stone is re-derived for a different reason: the doc's \"90px aura\" would be a second per-tick grid query for one epic card, so it rides the touch-collision loop instead, gated on `Player.bracedAtCap` -- the same simplification Straw Hat's own \"enemies within 60px\" already makes (contact damage only ever fires from something already touching him), and for a class whose whole identity is standing still and letting the crowd arrive, on-touch and in-a-small-ring read the same. Every other card's numbers are the doc's own.",
+ "_classCardNote": "docs/UPGRADE_ROSTER.md batch 4, H13 - the 18 class cards, three per class, `requiresClass` gated, `maxStacks: 1`, cost 20/30/44 at uncommon/rare/epic, `category: \"class\"`. Art is zero-generation per SS10: `portrait.<classId>`, the same plate class select already draws. `classBonus` is the overlay `Player.classBonus` sums additively from every owned item's block and the passive/ability code reads beside its own numbers -- see the `ClassBonus` doc comment in player.ts. Two of the doc's own numbers do not survive contact with today's classes.json and are re-derived here, not copied: Deep Rooted's \"caps at 45%, not 30%\" already shipped as base in batch 1 (NOTES.md, \"The Hand, restored the way batch 4 would have\"), so this card instead pushes the cap PAST that base, to 55%; and Set Feet's original \"starts at 0.5s\" measured WORSE in that same session (11/24 -> 9/24 brawling) so this card halves the delta instead, to 0.75s, and stays conservative rather than assuming the smaller version helps -- it is safe rather than proven, and the full verification pass is where that gets checked. Anchor Stone is re-derived for a different reason: the doc's \"90px aura\" would be a second per-tick grid query for one epic card, so it rides the touch-collision loop instead, gated on `Player.bracedAtCap` -- the same simplification Straw Hat's own \"enemies within 60px\" already makes (contact damage only ever fires from something already touching him), and for a class whose whole identity is standing still and letting the crowd arrive, on-touch and in-a-small-ring read the same. Every other card's numbers are the doc's own.",
  "_categoryNote": "SS7.1: `category` is DECLARED, never sniffed. The draw quotas its board on it (at most one `stat`, at most one `merge`, one gated slot, one behavioural slot), and a draw that guesses its own quotas changes meaning every time a card gains a field. `tags` is SS4: the draw biases toward tags the build already holds, so a build FORMS instead of accumulating. Both are content; offers.ts reads and never infers.",
  "_gateNote": "`requiresLoad`, `requiresWeapon`, `requiresClass` and `requiresItem` are the gates that make the pool GROW through a run instead of shrinking. A gated card costs the early game nothing because it cannot appear yet, and it is where two runs stop looking alike. `requiresLoad` was batch 1's (the four Load Riders). Batch 2 turns on `requiresWeapon` for real: the 48 weapon-upgrade cards below plus the Smudge Pot's own three, each also carrying `weaponMod` -- the short id `Player.addItem` pushes onto that weapon's `WeaponSlot.mods` and `hasMod(slot, id)` reads back in `behaviours/weapons.ts`. `requiresClass` is still batch 4's.",
  "_weaponModNote": "docs/UPGRADE_ROSTER.md batch 2, SS6 (Weapon Upgrades) plus the Smudge Pot's own three, authored here because the doc predates that weapon. Rarity ladder uncommon/rare/epic at cost 20/30/44, `maxStacks: 1`, `source: \"both\"`, `category: \"weaponMod\"` -- all per SS6's table. Each carries a static `cardSprite` at the owning weapon's T1 art (weaponCardSprite(id, 1), computed once and pasted in rather than resolved live) -- zero new generations, exactly as SS10 plans, and it satisfies tests/content.test.ts's own rule that every cardSprite is a packed atlas key. OfferPool.itemOffer still falls back to weaponCardSprite off requiresWeapon for any future item that omits one. The magnitudes are not repeated here -- they live in weapons.json beside the tier riders they sit next to, at `<modId><Field>`, which is what lets behaviours/weapons.ts read hasMod(slot, 'chokeTube') beside tier >= n without a second source of the same number.",
  "_stackNote": "SS5, the card-text contract. `stackBlurb` is the behavioural card's answer to \"what does taking this AGAIN do\": `{n}` is the copy being offered and `{total}` is `n x stackPer`, so a card whose whole effect is prose still prints its number at the stack the player is looking at. A card with no `stackBlurb` falls back to `blurb`, which is what every stat card wants -- its numbers are in the delta line already.",
- "_atlasNote": "_atlas marks the cardSprite values art/sprites.json cannot resolve today. NEW ATLAS KEY (18): needs an itemIcons entry and, for most, new art — see SPRITE_REQUESTS.md. FRAME PICK (7): the clip is already packed and only needs a named frame exported as an icon. Everything unmarked resolves against sprites.json as it stands.",
+ "_atlasNote": "_atlas marks the cardSprite values art/sprites.json cannot resolve today. NEW ATLAS KEY (18): needs an itemIcons entry and, for most, new art - see SPRITE_REQUESTS.md. FRAME PICK (7): the clip is already packed and only needs a named frame exported as an icon. Everything unmarked resolves against sprites.json as it stands.",
  "_artNote": "Items flagged `_standInArt` borrow a sprite that means something else; they are the 'Still open' list in the design handoff and want real art. Everything else points at generated PixelLab card art (see docs/PIXELLAB_MANIFEST.md) or at a sprite the game already owns.",
  "_standInNote": "The 22 cards batch 1 adds all point at art the atlas ALREADY holds -- a salt rock for Rock Salt, an oil drum for Tar Load, a grave marker for Last Rites, a burning barrel for Hot As It Comes. That is deliberate and it is debt, recorded rather than hidden: SS10 lists 19 icons it wants generating for these, and none of them block the cards from shipping legibly. Nothing here borrows a sprite that means something contradictory on the field.",
  "_retuneNote": "docs/UPGRADE_ROSTER.md SS6 authored these numbers; tools/balance.ts then measured them, and they came in UNDER the stat cards they displace. That matters more than it sounds: the redesign deliberately cuts the stat share of the stream from 65% to 25%, so every behavioural card has to be worth roughly the percentage it is standing in front of, or the roster is a downgrade dressed as variety. Raised here: splitShot 45 -> 60%, moonshineJug 15/55 -> 20/70, broadSide 12 -> 15%, weakSeam 20 -> 28%, broodyHen 9 -> 14 damage, bloodMeal 1.2 -> 1.5, rotUnderfoot 14 -> 20 dps, lastRites 40 -> 55%. SS9 reserves a full retune for batch 5; this is the part of it the harness would not let wait.",

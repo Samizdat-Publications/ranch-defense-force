@@ -90,18 +90,28 @@ void main() {
     if (g > 0.18 && !rim) discard;
     c = rim ? vec4(0.92, 0.78, 0.42, 0.55) : vec4(0.86, 0.7, 0.36, 0.9);
   } else if (kind == 2) {
-    float swirl = texture(uNoise, (w + vec2(uTime * 5.0, uTime * 3.0)) / 34.0).r
+    // A billowing cloud, not a disc. Density falls off toward the edge and is
+    // dithered on the art's own pixel grid, so where clouds overlap (the
+    // Duster lays them in chains) they merge into one mass, and the edge is a
+    // thinning scatter rather than a drawn ring. Reviewers read the old ring
+    // as debug circles in six rounds out of nine.
+    float swirl = texture(uNoise, (w + vec2(uTime * 5.0, uTime * 3.0) + seed * 41.0) / 34.0).r
                 * 0.6 + texture(uNoise, (w - vec2(uTime * 4.0, 0.0)) / 13.0).r * 0.4;
     float band = floor(swirl * 4.0) / 4.0;
-    // Murk, not neon: a gas you can see the ground through, with a rim that
-    // says where it stops. Round 2 found the old one the brightest thing on screen.
-    c = vec4(mix(vec3(0.42, 0.46, 0.2), vec3(0.66, 0.7, 0.36), band), 0.12 + band * 0.16);
-    if (rim) c = vec4(0.72, 0.78, 0.42, 0.55 * pulse);
+    // Soft, not dithered: round 14 read the ordered dither as "hard edges
+    // and checkerboard noise". Density fades to nothing at the edge, in four
+    // steps of the swirl so it still sits on the art's pixel grid.
+    float density = clamp((1.0 - d / edge) * 1.8, 0.0, 1.0) * (0.5 + 0.5 * swirl);
+    density = floor(density * 5.0) / 5.0;
+    if (density <= 0.0) discard;
+    c = vec4(mix(vec3(0.44, 0.48, 0.22), vec3(0.7, 0.74, 0.4), band), density * (0.2 + band * 0.12));
     glow = 0.02;
   } else if (kind == 3) {
-    c = vec4(0.28, 0.5, 0.13, 0.44);
+    // A faint wash inside a bright rim: at 0.44 a 220 px pool greened out
+    // everything standing in it (round 16).
+    c = vec4(0.28, 0.5, 0.13, 0.18);
     float bub = hash(floor(w / 3.0) + floor(uTime * 3.0) * 7.0 + seed);
-    if (bub > 0.95) c = vec4(0.6, 0.84, 0.34, 0.7);
+    if (bub > 0.97) c = vec4(0.6, 0.84, 0.34, 0.55);
     if (rim) c = vec4(0.5, 0.76, 0.28, 0.75 * pulse);
     glow = 0.12;
   } else {
@@ -110,6 +120,16 @@ void main() {
     if (ember > 0.9) { c = vec4(1.0, 0.55, 0.15, 0.95); glow = 1.0; }
     else if (ember > 0.8) { c = vec4(0.8, 0.28, 0.08, 0.85); glow = 0.6; }
     if (rim) { c = vec4(1.0, 0.62, 0.25, 0.85 * pulse); glow = 0.8; }
+  }
+  // The player's own clouds and pools (vFx.z): a quarter of the fill and a
+  // crisp one-pixel edge. At full strength a T4 sprayer laid 200 px green
+  // discs over its own feet and read as the Duster's poison (round 12).
+  // And in the player's colour, the lantern gold of his ring: green is the
+  // Duster's, and round 14 could not tell whose a green disc was.
+  if (vFx.z > 0.5 && kind >= 2) {
+    vec3 gold = vec3(0.95, 0.8, 0.45) * (0.7 + 0.3 * dot(c.rgb, vec3(0.33)));
+    if (d > edge - 1.2) { c = vec4(gold * 1.1, 0.5); glow = 0.0; }
+    else { c.rgb = gold; c.a *= 0.24; }
   }
   c.a *= fade;
   oColor = vec4(c.rgb * c.a, c.a);
@@ -151,7 +171,7 @@ export class HazardBatch {
     gl.bindVertexArray(null)
   }
 
-  push(x: number, y: number, radius: number, kind: number, fade: number, seed: number): void {
+  push(x: number, y: number, radius: number, kind: number, fade: number, seed: number, friendly = false): void {
     if (this.count >= this.capacity) {
       this.capacity *= 2
       const next = new Float32Array(this.capacity * STRIDE)
@@ -163,7 +183,7 @@ export class HazardBatch {
     const d = this.data
     let i = this.count * STRIDE
     d[i++] = x; d[i++] = y; d[i++] = radius; d[i++] = kind
-    d[i++] = fade; d[i++] = seed; d[i++] = 0; d[i] = 0
+    d[i++] = fade; d[i++] = seed; d[i++] = friendly ? 1 : 0; d[i] = 0
     this.count++
   }
 

@@ -15,7 +15,7 @@
  * picked first was not the best one on the sheet.
  *
  * The download URLs need no auth, which is why this is a fetch and not a
- * signed request — but the JOB ID is the only thing guarding them, so do not
+ * signed request - but the JOB ID is the only thing guarding them, so do not
  * paste job ids into anything public.
  */
 import { mkdirSync, writeFileSync } from 'node:fs'

@@ -1,7 +1,7 @@
 /**
  * Seeded RNG. Every random decision in the game goes through one of these so a
  * run replays identically from its seed. `Math.random()` must never appear in
- * src/ — see CLAUDE.md.
+ * src/ - see CLAUDE.md.
  */
 export class Rng {
   private s: number
@@ -10,7 +10,7 @@ export class Rng {
     this.s = seed >>> 0
   }
 
-  /** mulberry32 — small, fast, good enough distribution for a game. */
+  /** mulberry32 - small, fast, good enough distribution for a game. */
   next(): number {
     this.s = (this.s + 0x6d2b79f5) >>> 0
     let t = this.s

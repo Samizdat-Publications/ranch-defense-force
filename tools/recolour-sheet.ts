@@ -9,8 +9,8 @@
  *
  * `farmhand` is the enemy the player sees more than anything else in a run, and
  * it wore the player's own clothes: the same straw hat, the same blue dungarees,
- * at the same 32x64. Session 20 and session 21 both filed it — "enemy humanoids
- * share the player's silhouette" — and it is not a cosmetic complaint. In a
+ * at the same 32x64. Session 20 and session 21 both filed it - "enemy humanoids
+ * share the player's silhouette" - and it is not a cosmetic complaint. In a
  * bullet-heaven you find yourself by picking your own sprite out of a crowd, and
  * the density pass put 2.2x as many farmhands on the field.
  *

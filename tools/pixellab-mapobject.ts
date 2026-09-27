@@ -16,7 +16,7 @@
  *
  * `jobs.json` is an array of:
  *   { name, description, width, height, detail?, shading?, guidance?, n? }
- * `n` is how many separate calls to make for that subject — each is its own
+ * `n` is how many separate calls to make for that subject - each is its own
  * generation and its own candidate, because at sizes above ~128px the endpoint
  * returns a single image rather than a grid of candidates.
  */

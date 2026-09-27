@@ -132,26 +132,26 @@
 
   <!-- ============================== NOTES ============================== -->
   <div style="padding: 56px 80px 96px; color: #c9bda6; background: radial-gradient(120% 60% at 50% 0%, #241d15 0%, #14120f 70%);">
-    <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE — DESIGN PASS 2 OF 4</div>
+    <div style="font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 0.22em; color: #8a7c62;">RANCH DEFENSE FORCE - DESIGN PASS 2 OF 4</div>
     <h2 style="font-family: 'Rye', serif; font-size: 42px; margin: 14px 0 8px; color: #f0e2c4; font-weight: 400;">Home screen</h2>
-    <p style="max-width: 90ch; font-size: 14px; line-height: 1.75; color: #a2957c; margin: 0 0 34px;">Not a title and a list — a place you are standing in. Two places, in fact: the scene alternates every load, so the game does not open the same way twice. Every object is real 32px LimeZu art at 2× integer zoom, composited in DOM and animated in CSS only. The UI layer never changes between scenes; only the Homestead call-out moves, because the barn is in a different spot.</p>
+    <p style="max-width: 90ch; font-size: 14px; line-height: 1.75; color: #a2957c; margin: 0 0 34px;">Not a title and a list - a place you are standing in. Two places, in fact: the scene alternates every load, so the game does not open the same way twice. Every object is real 32px LimeZu art at 2× integer zoom, composited in DOM and animated in CSS only. The UI layer never changes between scenes; only the Homestead call-out moves, because the barn is in a different spot.</p>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; max-width: 1640px;">
       <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
         <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">THE ROTATION</div>
-        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">On boot, read the last scene from local storage and mount the other one. Two files today — <b style="color: #ded0b2;">Yard Scene</b> and <b style="color: #ded0b2;">Field Scene</b> — and adding a third is one more entry in the list, no change to <b style="color: #ded0b2;">menu.ts</b>. The button top-right is a reviewer control, not shipped.</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">On boot, read the last scene from local storage and mount the other one. Two files today - <b style="color: #ded0b2;">Yard Scene</b> and <b style="color: #ded0b2;">Field Scene</b> - and adding a third is one more entry in the list, no change to <b style="color: #ded0b2;">menu.ts</b>. The button top-right is a reviewer control, not shipped.</div>
       </div>
       <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
         <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">SPRITE MOTION</div>
-        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">One strip PNG per actor plus <b style="color: #ded0b2;">background-position in pixels</b> with <b style="color: #ded0b2;">steps(n)</b>. Left-facing and right-facing walks are separate strips — never a mirrored sprite, so nothing ever walks backwards. Travel is a second animation on the parent, so cadence and speed tune independently.</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">One strip PNG per actor plus <b style="color: #ded0b2;">background-position in pixels</b> with <b style="color: #ded0b2;">steps(n)</b>. Left-facing and right-facing walks are separate strips - never a mirrored sprite, so nothing ever walks backwards. Travel is a second animation on the parent, so cadence and speed tune independently.</div>
       </div>
       <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
         <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">SCALE AND THE UI SAFE BAND</div>
-        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Scale carries the depth, and every step is integer: distant buildings at <b style="color: #ded0b2;">1×</b>, actors at <b style="color: #ded0b2;">2×</b>, and a foreground building at <b style="color: #ded0b2;">2×</b> cropped by the frame edge — the yard silo is the one that sells it. Everything that moves lives in the band the UI leaves clear: <b style="color: #ded0b2;">y 600–726</b> across the middle, plus the bottom-left corner below the seed box. The right margin is the silo's now, so nothing animates there.</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Scale carries the depth, and every step is integer: distant buildings at <b style="color: #ded0b2;">1×</b>, actors at <b style="color: #ded0b2;">2×</b>, and a foreground building at <b style="color: #ded0b2;">2×</b> cropped by the frame edge - the yard silo is the one that sells it. Everything that moves lives in the band the UI leaves clear: <b style="color: #ded0b2;">y 600–726</b> across the middle, plus the bottom-left corner below the seed box. The right margin is the silo's now, so nothing animates there.</div>
       </div>
       <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
         <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">DEPTH IN THE FIELD SCENE</div>
-        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Four crop rows, each one taller, slower and blurrier than the row behind it — the front row carries a 3px blur, the second 1.2px, and the skyline buildings 0.6px. That is the whole depth trick, and it is what lets a flat DOM stack read as a field going away from you. The tractor works the middle distance on a 46-second pass with two offset exhaust puffs.</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Four crop rows, each one taller, slower and blurrier than the row behind it - the front row carries a 3px blur, the second 1.2px, and the skyline buildings 0.6px. That is the whole depth trick, and it is what lets a flat DOM stack read as a field going away from you. The tractor works the middle distance on a 46-second pass with two offset exhaust puffs.</div>
       </div>
       <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
         <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #e0a02e; margin-bottom: 10px;">LOCKED CLASSES</div>
@@ -159,7 +159,7 @@
       </div>
       <div style="border: 1px solid #3a3226; background: rgba(0, 0, 0, 0.25); padding: 18px;">
         <div style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 0.14em; color: #d78a48; margin-bottom: 10px;">ONE THING TO FLAG</div>
-        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Four of the six classes reuse the two shipped farmer sheets here, because their generated sheets do not exist in the repo yet — <b style="color: #ded0b2;">npm run characters</b> builds them from <b style="color: #ded0b2;">art/characters.json</b>. The Portrait Generator <b style="color: #ded0b2;">does</b> ship at 32×32 (<b style="color: #ded0b2;">assets/modern-ui/32x32/Portrait_Generator_32x32/</b>, 85 accessories alone), so bust portraits are available for these cards whenever you want them — I corrected an earlier note that said otherwise.</div>
+        <div style="font-size: 12px; line-height: 1.85; color: #9a8e76;">Four of the six classes reuse the two shipped farmer sheets here, because their generated sheets do not exist in the repo yet - <b style="color: #ded0b2;">npm run characters</b> builds them from <b style="color: #ded0b2;">art/characters.json</b>. The Portrait Generator <b style="color: #ded0b2;">does</b> ship at 32×32 (<b style="color: #ded0b2;">assets/modern-ui/32x32/Portrait_Generator_32x32/</b>, 85 accessories alone), so bust portraits are available for these cards whenever you want them - I corrected an earlier note that said otherwise.</div>
       </div>
     </div>
 
@@ -174,37 +174,37 @@ const CLASSES = [
     tag: 'SLOW · ARMOURED · IMMOVABLE',
     blurb: 'Thirty years on this ground. Slow, hard to move, and not especially worried.',
     bars: [['BODY', 92], ['SPEED', 24], ['REACH', 46]],
-    passive: 'Braced — standing still stacks damage reduction to 30%.',
+    passive: 'Braced - standing still stacks damage reduction to 30%.',
     ability: 'Dig In', weapon: 'Pitchfork' },
   { id: 'kid', name: 'The Kid', unlocked: true, art: 'art/scene/farmer2_idle.png',
     tag: 'FAST · FRAGILE · MOMENTUM',
     blurb: 'Home from school for the summer. Only ever safe at speed; stopping is the mistake.',
     bars: [['BODY', 38], ['SPEED', 94], ['REACH', 52]],
-    passive: 'Momentum — up to +50% damage at full speed, nothing standing.',
+    passive: 'Momentum - up to +50% damage at full speed, nothing standing.',
     ability: 'Bolt', weapon: 'Scattergun' },
   { id: 'widow', name: 'The Widow', unlocked: false, price: 12, art: 'art/scene/farmer_idle.png',
     tag: 'STEADY · MENDS · UNMOVED',
     blurb: 'Buried a husband and a harvest the same autumn. Nothing out here frightens her.',
     bars: [['BODY', 78], ['SPEED', 40], ['REACH', 70]],
-    passive: 'Braced — a shorter fuse than the Hand, a lower ceiling.',
+    passive: 'Braced - a shorter fuse than the Hand, a lower ceiling.',
     ability: 'Hold the Line', weapon: 'Varmint Rifle' },
   { id: 'vet', name: 'The Veteran', unlocked: false, price: 16, art: 'art/scene/farmer2_idle.png',
     tag: 'EVEN · PRECISE · WATCHFUL',
     blurb: 'Came home, took the back forty, and kept the habit of watching treelines.',
     bars: [['BODY', 64], ['SPEED', 58], ['REACH', 80]],
-    passive: 'Braced — crit-leaning, holds ground well enough.',
+    passive: 'Braced - crit-leaning, holds ground well enough.',
     ability: 'Break Contact', weapon: 'Drum Gun' },
   { id: 'agronomist', name: 'The Agronomist', unlocked: false, price: 20, art: 'art/scene/farmer_idle.png',
     tag: 'CHEMICAL · LUCKY · CURIOUS',
     blurb: 'Sent out to test the soil. Stayed once she worked out what was in it.',
     bars: [['BODY', 46], ['SPEED', 66], ['REACH', 88]],
-    passive: 'Momentum — modest, and +35% off every node she works.',
+    passive: 'Momentum - modest, and +35% off every node she works.',
     ability: 'Field Sample', weapon: 'Chem Sprayer' },
   { id: 'drifter', name: 'The Drifter', unlocked: false, price: 24, art: 'art/scene/farmer2_idle.png',
     tag: 'QUICK · GLASS · MEAN',
     blurb: 'Works a season, moves on. This season he did not get out in time.',
     bars: [['BODY', 30], ['SPEED', 98], ['REACH', 64]],
-    passive: 'Momentum — up to +60%, and nothing at all when standing.',
+    passive: 'Momentum - up to +60%, and nothing at all when standing.',
     ability: 'Light Out', weapon: 'Harpoon Gun' }
 ];
 

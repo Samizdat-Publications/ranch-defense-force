@@ -13,7 +13,7 @@
  *
  * THE DIRECTION MAPPING IS NOT A BAND ORDER. The three sheet families already
  * in the game pack their directions as anonymous bands, so which band is which
- * has to be proved — the humanoid rig note in `art/sprites.json` is the record
+ * has to be proved - the humanoid rig note in `art/sprites.json` is the record
  * of doing exactly that, by pixel-mirroring and skin centroids. A PixelLab
  * object is not that. It comes back as eight files NAMED for their compass
  * points, so the only question is whether the names mean what they say, and
@@ -58,7 +58,7 @@ const CLAIMED: Record<string, string> = {
 
 const atlas = readAtlas()
 
-/** The LimeZu animals already on the field — what these have to stand next to. */
+/** The LimeZu animals already on the field - what these have to stand next to. */
 const LIMEZU = ['sickHog', 'blownSheep', 'feralDog', 'prizeBull'] as const
 
 // ---------------------------------------------------------------- silhouettes
@@ -326,7 +326,7 @@ const limezuCells = LIMEZU.flatMap((k) =>
     return img ? [{ img: scaled(img, ZOOM), caption: `${k} ${d}` }] : []
   }),
 )
-rows.push({ label: 'LimeZu, already in the game, same zoom — THIS IS THE SCALE TO MATCH', cells: limezuCells })
+rows.push({ label: 'LimeZu, already in the game, same zoom - THIS IS THE SCALE TO MATCH', cells: limezuCells })
 
 const cellW = Math.max(...rows.flatMap((r) => r.cells.map((c) => c.img.width))) + PAD * 2
 const rowH = Math.max(...rows.flatMap((r) => r.cells.map((c) => c.img.height))) + PAD * 2 + ROW_LABEL_H * 2
@@ -354,5 +354,5 @@ rows.forEach((row, ri) => {
 })
 
 writeFileSync(OUT, encodePng(sheet))
-console.log(`\nWrote ${OUT} — ${sheetW}x${sheetH}, at the game's ${ZOOM}x zoom, on real grass.`)
+console.log(`\nWrote ${OUT} - ${sheetW}x${sheetH}, at the game's ${ZOOM}x zoom, on real grass.`)
 console.log('The bottom row is the scale to match. Judge the ring, never a single frame.')

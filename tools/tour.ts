@@ -12,7 +12,7 @@
  * be the same picture every time they are asked for. `tools/play.ts` plays a
  * run with real keyboard input over real wall-clock seconds, which is the
  * right tool for "does this feel right" and the wrong one for "the board
- * agrees with the last time we looked" — two runs of it never spawn the same
+ * agrees with the last time we looked" - two runs of it never spawn the same
  * crowd at the same second. `rdf.fastForward` (src/main.ts) steps the sim
  * directly with the autopilot's inputs, so the same scenario list always
  * lands on the same tick.
@@ -65,7 +65,10 @@ const WAVE_COUNT = WAVES.waveCount as number
 const SHOP_AFTER = (WAVES.shopAfterWaves as number[]).slice().sort((a, b) => a - b)
 const BOSS_WAVE_NUMBERS = Object.keys(WAVES.bossWaves as Record<string, string>)
   .map(Number).sort((a, b) => a - b)
-const FIRST_BOSS_WAVE = BOSS_WAVE_NUMBERS[0]
+/** The mid-run boss shot is the Prize Bull, wherever the schedule puts him
+ *  (v2 runs a boss every third wave, and the first is the Cockerel). */
+const FIRST_BOSS_WAVE = Number(Object.entries(WAVES.bossWaves as Record<string, string>)
+  .find(([, id]) => id === 'prizeBull')?.[0] ?? BOSS_WAVE_NUMBERS[0])
 const FINAL_BOSS_WAVE = BOSS_WAVE_NUMBERS[BOSS_WAVE_NUMBERS.length - 1]
 const FIRST_SHOP_WAVE = SHOP_AFTER[0]
 
@@ -191,6 +194,23 @@ async function untilBoss(page: Page): Promise<void> {
 /** Photograph the run at a representative health (see `rdf.stageHp`). */
 async function stageHp(page: Page, frac: number): Promise<void> {
   await page.evaluate(`window.rdf.stageHp(${frac})`)
+}
+
+/** Pick the first card on any open level-up screen, a few times over. */
+async function dismissLevelUps(page: Page): Promise<void> {
+  // The screen's DOM persists while hidden, so ask whether it is SHOWN.
+  for (let i = 0; i < 6; i++) {
+    const picked = await page.evaluate(`(() => {
+      const root = document.querySelector('.screen.levelup')
+      if (!root || getComputedStyle(root).display === 'none' || root.offsetParent === null) return false
+      const card = root.querySelector('.pcard')
+      if (!card) return false
+      card.click()
+      return true
+    })()`)
+    if (!picked) return
+    await page.waitForTimeout(250)
+  }
 }
 
 /** Freeze the loop, draw one frame synchronously, and save it. */
@@ -361,6 +381,12 @@ const SCENARIOS: Scenario[] = [
       `)
       await ff(page, 1 / 60)
       await page.waitForTimeout(700)
+      // A dodge and the hit's own i-frames can eat all five blows (round 11
+      // photographed wave 1 instead of this screen). End the run outright if so.
+      if (await page.evaluate('!!window.rdf.world?.player.alive')) {
+        await page.evaluate('window.rdf.finishRun(false)')
+        await page.waitForTimeout(700)
+      }
       return summary
     },
   },
@@ -437,6 +463,10 @@ async function main(): Promise<void> {
         await page.goto(tourUrl, { waitUntil: 'domcontentloaded', timeout: 180_000 })
         await waitReady(page)
         summary = await scenario.run(page)
+        // A level earned while the tour waited on live frames opens the real
+        // card screen over the shot (the bull, after the round-15 xp change).
+        // Only the level-up scenario wants it open.
+        if (scenario.name !== 'levelup') await dismissLevelUps(page)
         await freezeAndShoot(page, scenario.file)
         console.log(`${scenario.name.padEnd(12)} -> ${scenario.file}  ${JSON.stringify(summary)}`)
       } catch (err) {

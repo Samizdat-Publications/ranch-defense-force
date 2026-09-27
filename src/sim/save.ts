@@ -7,7 +7,7 @@
  * requires touching a save, and never silently makes an old save wrong.
  *
  * Every read goes through `load()`, which migrates, validates and clamps. A
- * corrupt or hand-edited blob yields a fresh save rather than an exception —
+ * corrupt or hand-edited blob yields a fresh save rather than an exception -
  * losing progress is bad, but a save that throws on boot means the game will
  * not start at all, which is worse and unrecoverable without devtools.
  */

@@ -13,7 +13,15 @@ import { Rng } from '../core/rng'
 import { decalKindsFor, mapIsBlighted, sceneryKindsFor, type MapBoundary, type MapTerrain } from '../content'
 import { wangKey, type Corner } from './wang'
 
-export interface Placed { x: number; y: number; frame: AtlasFrame }
+export interface Placed {
+  x: number; y: number; frame: AtlasFrame
+  /** Multiplies the sprite (planted rows sit back behind the fight). */
+  tint?: [number, number, number, number]
+  /** Drawn flat on the ground, under every actor, rather than depth-sorted
+   *  with them: crops planted inside the fight (critic round 12, "waist-high
+   *  wheat hides both the enemies and the player"). */
+  under?: boolean
+}
 
 /** Fog tile edge, in world pixels. A power of two so wrap arithmetic is exact. */
 export const FOG_TILE = 512

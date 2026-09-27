@@ -3,7 +3,7 @@
  *
  * The game is one of five states: menu, playing, level-up, shop, results.
  * Level-up and shop freeze the sim by setting `world.paused` rather than
- * stopping the loop — the renderer keeps drawing the frozen field behind the
+ * stopping the loop - the renderer keeps drawing the frozen field behind the
  * cards, which is what makes a level-up feel like a beat in the run instead of
  * a context switch.
  */
@@ -75,7 +75,7 @@ function makeRenderer(w: World, a: Atlas | null): Renderer | GLRenderer {
   }
   return new Renderer(canvas, w, a)
 }
-/** Null until the atlas resolves, and stays null if it fails — the game then
+/** Null until the atlas resolves, and stays null if it fails - the game then
  *  renders the M0-M3 coloured squares rather than not rendering at all. */
 let atlas: Atlas | null = null
 let offers: OfferPool | null = null
@@ -96,7 +96,7 @@ let profile: Save = loadSave()
 /** County Fair tier for the next run. */
 let currentTier = 1
 /** Shake RNG, separate from the sim's so camera jitter never perturbs a
- *  seeded run — the whole point of the seed is that the sim replays exactly. */
+ *  seeded run - the whole point of the seed is that the sim replays exactly. */
 const shakeRng = new Rng(0xc0ffee)
 const shakeRand = (): number => shakeRng.next()
 
@@ -207,7 +207,7 @@ function startRun(classId: string, seedText: string): void {
   // caught instead of argued about.
   // NOTE: `window.rdf` is built ONCE, at the bottom of this file. It used to be
   // rebuilt here on every `startRun` as well, and the two definitions did not
-  // carry the same keys — so `rdf.screens` existed only after a run had begun
+  // carry the same keys - so `rdf.screens` existed only after a run had begun
   // and `rdf.startRun` only before one had. Which handle you got depended on
   // what you had already done, which is a miserable thing to debug from a
   // console. Everything below is a getter, so one object stays live.
@@ -285,7 +285,7 @@ function openHomestead(): void {
 
 function queueShop(): void {
   if (!world || !offers) return
-  // The arena clears when the shop opens (§3) — survivors do not carry through
+  // The arena clears when the shop opens (§3) - survivors do not carry through
   // a shop, only through a wave boundary.
   for (let i = world.enemies.live - 1; i >= 0; i--) world.enemies.free(i)
   state = 'shop'
@@ -309,7 +309,7 @@ function applyOffer(offer: Offer): void {
   if (offer.kind === 'weapon') world.player.addWeapon(offer.id, offer.tierJump)
   else if (offer.kind === 'swap') {
     // §Trade-In: the weapon that just arrived at tier 1 is guaranteed on the
-    // run's next level-up board — see `OfferPool.guaranteeMergeNext`.
+    // run's next level-up board - see `OfferPool.guaranteeMergeNext`.
     const added = applySwap(world.player, world.rng)
     if (added) offers?.guaranteeMergeNext(added)
   } else {
@@ -319,7 +319,7 @@ function applyOffer(offer: Offer): void {
        Acre Bond (`items.json`, `special: 'acreBond'`): feed spent here is a
        SIM resource, acres are a META one banked only at `bankRun`, so this is
        the one place that bridges them. Applied HERE rather than inside
-       `refreshSpecialItems` — that function recomputes every special from the
+       `refreshSpecialItems` - that function recomputes every special from the
        WHOLE owned-item list on every purchase, so a case there would re-grant
        every existing Acre Bond's acres again each time anything else was
        bought. This runs exactly once per purchase, which is what "bought"
@@ -344,7 +344,7 @@ function finishRun(cleared: boolean): void {
     profile,
     {
       wavesCleared: world.wavesCleared, bossKills: world.bossKills, tier: currentTier, cleared,
-      bonusAcres: world.bonusAcres,
+      bonusAcres: world.bonusAcres, feedLeft: world.player.feed,
     },
     world.seed,
     currentClassId,
@@ -464,7 +464,7 @@ function assertUiLayersClickable(): void {
     if (getComputedStyle(layer).pointerEvents !== 'none') continue
     console.error(
       `[rdf] UI layer .${String((layer as HTMLElement).className).split(' ').join('.')} has ` +
-      `${controls} control(s) but computes pointer-events:none — every click on it will fall ` +
+      `${controls} control(s) but computes pointer-events:none - every click on it will fall ` +
       `through to the canvas. Give the layer \`pointer-events: auto\`.`,
     )
   }
@@ -474,28 +474,28 @@ function assertUiLayersClickable(): void {
    Run it when a layer actually appears, not just at boot.
 
    Screens are built empty and filled on open, so at boot the results layer has
-   no buttons to count — checking once would have missed the exact bug this
+   no buttons to count - checking once would have missed the exact bug this
    exists for. A MutationObserver on `#ui` fires when a screen is shown or
    populated, which is precisely the moment the question is worth asking.
 
    ## Why it is filtered and throttled, and not just observed
 
    The first version watched `subtree: true, attributes: true` and re-checked on
-   a microtask. The HUD LIVES IN `#ui` AND WRITES STYLES EVERY FRAME — hp bar
-   width, xp fill, cooldown sweeps — so every frame fired the observer, and the
+   a microtask. The HUD LIVES IN `#ui` AND WRITES STYLES EVERY FRAME - hp bar
+   width, xp fill, cooldown sweeps - so every frame fired the observer, and the
    check calls `getComputedStyle`, which forces a synchronous style recalc. The
    game was paying a full style flush per frame for a dev assertion.
 
    Measured, in a CPU profile of a real run: `assertUiLayersClickable` 4.05s of
    self time plus 2.54s inside `querySelectorAll`, against roughly 28s of
-   non-idle JS — about a QUARTER of everything the game did, and second only to
+   non-idle JS - about a QUARTER of everything the game did, and second only to
    `drawImage`. It surfaced as 100-400ms frame spikes in bursts, which the owner
    reported as a stutter every 6-10 seconds.
 
    Two changes, neither of which weakens the guard:
 
    - Only mutations that can change the answer count. The check reads
-     `uiRoot.children` — a layer's computed `pointer-events` and how many
+     `uiRoot.children` - a layer's computed `pointer-events` and how many
      controls sit under it. So a `childList` change anywhere matters (controls
      appear), but an ATTRIBUTE change only matters on a layer itself. The HUD
      restyling its own innards cannot make a layer unclickable.
@@ -523,7 +523,7 @@ openTitle()
 loop.start()
 
 // The atlas loads in the background. The menu is up while it does, and a
-// failure is logged and survived rather than thrown — a missing atlas costs
+// failure is logged and survived rather than thrown - a missing atlas costs
 // you the art, not the game.
 Atlas.load(import.meta.env.BASE_URL)
   .then((a) => {
@@ -534,7 +534,7 @@ Atlas.load(import.meta.env.BASE_URL)
     // that exists rather than the single `atlas.png` there no longer is.
     setSpriteAtlas(a, `${import.meta.env.BASE_URL}atlas-0.png`)
     // Screens built at module load asked the atlas for sprites before it
-    // existed and got null for every one of them — the home screen's yard came
+    // existed and got null for every one of them - the home screen's yard came
     // up empty and its class cards came up as text. Anything that draws sprites
     // has to be rebuilt once the art is actually here.
     menu.setUnlocked(unlockedClasses(profile), classPrices(), profile.acres)
@@ -687,13 +687,13 @@ function renderNow(): void {
 
 // Expose for console poking during development. Not referenced by the game.
 // `openLevelUp`/`openShop` exist so the card screens can be inspected without
-// grinding to a level-up first — the same reason the dev overlay has a
+// grinding to a level-up first - the same reason the dev overlay has a
 // wave-skip key.
 Object.assign(window as unknown as Record<string, unknown>, {
   rdf: {
     // Getters, not values. A plain object captures whatever the module locals
     // held at construction, and every later `startRun` leaves the console
-    // holding a dead world — which reads as "the game is broken" rather than
+    // holding a dead world - which reads as "the game is broken" rather than
     // "the handle is stale".
     get world() { return world },
     get renderer() { return renderer },

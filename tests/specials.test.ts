@@ -6,7 +6,7 @@
  * only symptom was the balance harness getting quietly harder. A card that
  * reads "Nothing crosses it twice" and has no effect is worse than no card.
  *
- * Each test measures the world, not the flag — "is `saltRingRadius` set" would
+ * Each test measures the world, not the flag - "is `saltRingRadius` set" would
  * have passed on the day the feature did not exist.
  */
 import { describe, it, expect } from 'vitest'
@@ -23,10 +23,17 @@ function arena(itemId?: string): World {
   return w
 }
 
-function ringOfEnemies(w: World, n: number, dist: number): void {
+/**
+ * `hp` pins each enemy's health. The horde (waves.json) made a farmhand die
+ * to any single hit, so a test measuring damage THROUGHPUT would otherwise be
+ * measuring how many one-hit kills fit in the window, and the spawner's own
+ * arrivals round the player swamp the difference.
+ */
+function ringOfEnemies(w: World, n: number, dist: number, hp?: number): void {
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2
-    w.spawnEnemy('farmhand', w.player.x + Math.cos(a) * dist, w.player.y + Math.sin(a) * dist, false)
+    const e = w.spawnEnemy('farmhand', w.player.x + Math.cos(a) * dist, w.player.y + Math.sin(a) * dist, false)
+    if (e && hp !== undefined) { e.maxHp = hp; e.hp = hp }
   }
 }
 
@@ -69,13 +76,13 @@ describe('every declared special is dispatched', () => {
          `refreshSpecialItems`'s switch: that function recomputes every
          special from the WHOLE owned-item list on every purchase, which is
          right for a persistent modifier (a shield cap, a stun multiplier)
-         and wrong for a one-time effect — a re-run on every later purchase
+         and wrong for a one-time effect - a re-run on every later purchase
          would re-heal, re-tier-up or re-grant acres each time. `healFull`
          and `tierUpLowest` dispatch once, in `Player.addItem` (see its doc
-         comment); `freeReroll` in `ShopScreen.buy` (a UI-only effect — the
+         comment); `freeReroll` in `ShopScreen.buy` (a UI-only effect - the
          board it redraws is not the sim's to own); `acreBond` in `main.ts`'s
          `applyOffer` (it bridges feed, a sim resource, to acres, a meta
-         one — see `World.bonusAcres`). Each has its own direct test:
+         one - see `World.bonusAcres`). Each has its own direct test:
          tests/sim.test.ts's "shop sinks (batch 6)" describe block.
       */
       'healFull', 'tierUpLowest', 'freeReroll', 'acreBond',
@@ -98,7 +105,7 @@ describe('the legendaries are not dead cards', () => {
 
   it('Sunday Best eats the first hit of a wave instead of the player', () => {
     // H9 (docs/UPGRADE_ROSTER.md batch 3) generalised this from a one-hit
-    // counter-attack into a numeric shield pool Fence Row also pays into —
+    // counter-attack into a numeric shield pool Fence Row also pays into -
     // see World.damagePlayer. The counter-attack is gone, so the assertion
     // that used to read `damageDealt` now reads the shield itself.
     const suited = arena('sundayBest')
@@ -127,11 +134,11 @@ describe('the legendaries are not dead cards', () => {
   it("The Reaper's Own stops melee being spent on the first thing it touches", () => {
     const w = arena('reapersOwn')
     expect(ITEMS.reapersOwn.special).toBe('pierceAllAndReswing')
-    ringOfEnemies(w, 12, 40)
-    run(w, 120)
+    ringOfEnemies(w, 12, 40, 400)
+    run(w, 480)
     const plain = arena()
-    ringOfEnemies(plain, 12, 40)
-    run(plain, 120)
+    ringOfEnemies(plain, 12, 40, 400)
+    run(plain, 480)
     expect(w.damageDealt).toBeGreaterThan(plain.damageDealt)
   })
 })
@@ -412,7 +419,7 @@ describe('docs/UPGRADE_ROSTER.md batch 5: the Field & Ledger cards', () => {
     collectOne(withCorn, 'xp', 10)
     // xpPct is additive with harvestPct in World.collect's 'xp' case, so a
     // higher xp value moves the level-progress bar further for the same
-    // pickup — read through `xp` directly rather than levels, which round.
+    // pickup - read through `xp` directly rather than levels, which round.
     expect(withCorn.player.xp).toBeGreaterThan(bare.player.xp)
   })
 })

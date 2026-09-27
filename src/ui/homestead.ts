@@ -2,7 +2,7 @@
  * The Homestead (§4, §12): four buildings you spend acres in.
  *
  * Design draws it as **the yard at dusk with the four buildings standing in
- * it, each fronted by a staked sign** — so it is a place, like the title
+ * it, each fronted by a staked sign** - so it is a place, like the title
  * screen, rather than a menu with a picture behind it.
  *
  * The backdrop is `scene.ts`'s BARN INTERIOR, and it used to be the yard.
@@ -48,9 +48,9 @@ import { buildScene } from './scene'
 
 type Building = 'bunkhouse' | 'catalog' | 'feed' | 'fair'
 
-// All four signs are generated art now. They used to borrow — a grain lure for
+// All four signs are generated art now. They used to borrow - a grain lure for
 // the catalog, a feed pickup for the store, the player's own head for the
-// bunkhouse and a tier-3 scythe for the fair — which meant the Homestead read
+// bunkhouse and a tier-3 scythe for the fair - which meant the Homestead read
 // as four inventory items rather than four places you can walk into.
 const BUILDINGS: { id: Building; name: string; blurb: string; icon: string }[] = [
   { id: 'catalog', name: 'The Seed Catalog', blurb: 'More of the roster in every run.', icon: 'meta.seedCatalog' },
@@ -127,7 +127,7 @@ export class HomesteadScreen {
 
   /**
    * Fit the 1920x1080 stage inside the window, exactly as the home screen
-   * does — `contain`, bled with the yard's own edge colours.
+   * does - `contain`, bled with the yard's own edge colours.
    */
   private fit(): void {
     this.root.style.setProperty(
@@ -214,7 +214,7 @@ export class HomesteadScreen {
   /**
    * The four staked signs, standing in the yard.
    *
-   * A sign is "open" — warm outline, gold footer board — when there is
+   * A sign is "open" - warm outline, gold footer board - when there is
    * something in that building you can afford right now. That is the affordable
    * rule applied one level up: the yard tells you where to walk before you have
    * walked anywhere.
@@ -299,13 +299,13 @@ export class HomesteadScreen {
   /**
    * One purchase card.
    *
-   * Design: "Purchase cards are the upgrade card cut down — same paper, same
+   * Design: "Purchase cards are the upgrade card cut down - same paper, same
    * tin plate, with rank pips instead of a rarity tier and the price on the
    * plate. Warm outline means you can afford it. Grey means come back later,
    * and the card still tells you what it does."
    *
    * So this is `card()`, not a fifth card object. The whole card is the buy
-   * button — no separate control inside it, which is what the old one did and
+   * button - no separate control inside it, which is what the old one did and
    * which is also invalid HTML.
    */
   private card(opts: {
@@ -332,7 +332,7 @@ export class HomesteadScreen {
       priceUnit: 'acres',
       source: opts.cost === null ? 'OWNED' : undefined,
       affordable: opts.affordable,
-      // Grey is "come back later", never "broken" — and the card keeps telling
+      // Grey is "come back later", never "broken" - and the card keeps telling
       // you what it does either way, which is the whole point of showing a
       // locked class at all.
       dead: opts.cost !== null && !opts.affordable,
@@ -433,7 +433,7 @@ export class HomesteadScreen {
         }))
       }
     }
-    // A locked class shows its face and its price, never an empty slot — you
+    // A locked class shows its face and its price, never an empty slot - you
     // should be able to see what is up there from your first run, which is the
     // whole reason this ladder is worth climbing.
     for (const o of bunkhouseOffers(s)) {
@@ -471,7 +471,7 @@ export class HomesteadScreen {
           tone: 'gain',
         }],
         source: chosen ? 'SELECTED' : 'SELECT',
-        // The Fair costs nothing — the tier you are on is `selected`, and the
+        // The Fair costs nothing - the tier you are on is `selected`, and the
         // rest are live. Nothing here is ever dead stock.
         selected: chosen,
         affordable: !chosen,

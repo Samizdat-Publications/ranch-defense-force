@@ -16,7 +16,7 @@ interface Renderer { drawCalls: number }
 
 const GRAPH_W = 140
 const GRAPH_H = 34
-/** 16.6ms — the frame ceiling. The graph draws a line at it. */
+/** 16.6ms - the frame ceiling. The graph draws a line at it. */
 const BUDGET_MS = 1000 / 60
 
 export class DevOverlay {
@@ -173,7 +173,7 @@ export class DevOverlay {
     c.fillStyle = 'rgba(0,0,0,0.4)'
     c.fillRect(0, 0, GRAPH_W, GRAPH_H)
 
-    // The 16.6ms budget line — anything above it missed the frame.
+    // The 16.6ms budget line - anything above it missed the frame.
     const budgetY = GRAPH_H - (BUDGET_MS / 33) * GRAPH_H
     c.strokeStyle = 'rgba(255, 180, 84, 0.6)'
     c.beginPath()

@@ -6,7 +6,7 @@
  *  1. The map choice stops being the FIRST draw off the run's RNG, and every
  *     recorded seed quietly replays as a different run.
  *  2. A map names a Wang set, a node sprite or an enemy that does not exist,
- *     and the failure is silent — a ground that falls back, a node that never
+ *     and the failure is silent - a ground that falls back, a node that never
  *     spawns, a bias that does nothing.
  *  3. A map turns out to change nothing, so "five maps" is five names for one
  *     map.
@@ -59,7 +59,7 @@ describe('maps', () => {
     const after = probe.state
     const w = new World(seed, 'hand')
     // World consumes more of the stream scattering its field, so compare a
-    // freshly-seeded probe advanced by one draw against the world's map only —
+    // freshly-seeded probe advanced by one draw against the world's map only -
     // the map must equal what that single draw selects.
     expect(w.mapId).toBe(pickMapId(new Rng(seed).next()))
     expect(after).not.toBe(new Rng(seed).state)
@@ -290,7 +290,7 @@ describe('maps', () => {
          node as invisible when the truth was that the test could not get to the
          map. `forceMapId` overrides the draw's result and not the draw.
 
-         Several seeds per map because node placement is itself a roll — one
+         Several seeds per map because node placement is itself a roll - one
          seed that happens not to place the variant is not evidence it cannot.
       */
       const found = new Set<string>()
@@ -315,14 +315,14 @@ describe('maps', () => {
        FORCES the map rather than hunting 400 seeds for one that rolls it.
 
        Hunting only reaches maps that are in the rotation, so a map at weight 0
-       was unreachable and this returned null — which reads as "the hazard did
+       was unreachable and this returned null - which reads as "the hazard did
        not vent" when the truth is "the test could not get there". That is a gap
        in the guard and not a property of the map: a preview map's hazards are
        exactly as worth testing as a live one's, and `theVault` and `theLift`
        have been exempt from these two assertions all along for the same reason.
 
-       `forceMapId` overrides the map draw's RESULT and not the draw itself —
-       the same argument `npm run shot --map=` uses — so the run is still a
+       `forceMapId` overrides the map draw's RESULT and not the draw itself -
+       the same argument `npm run shot --map=` uses - so the run is still a
        real, replayable one with the RNG stream seated identically.
     */
     const runOn = (mapId: string, seconds: number): World | null => {
@@ -336,7 +336,7 @@ describe('maps', () => {
       for (const id of MAP_IDS) {
         const cfg = MAPS[id].hazards
         if (!cfg) continue
-        // Long enough to pass `fromWave` — waves are 40s — and then vent.
+        // Long enough to pass `fromWave` - waves are 40s - and then vent.
         const w = runOn(id, cfg.fromWave * 40 + cfg.everySeconds * 4)
         expect(w, `no seed produced ${id}`).not.toBeNull()
         let mine = 0

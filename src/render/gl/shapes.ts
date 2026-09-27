@@ -28,11 +28,12 @@ const FS = `#version 300 es
 precision highp float;
 precision highp int;
 in vec4 vColor;
+uniform float uGlow;
 layout(location=0) out vec4 oColor;
 layout(location=1) out vec4 oEmissive;
 void main() {
   oColor = vec4(vColor.rgb * vColor.a, vColor.a);
-  oEmissive = vec4(0.0);
+  oEmissive = vec4(vColor.rgb * vColor.a * uGlow, vColor.a * uGlow);
 }`
 
 /** Floats per vertex: x, y, r, g, b, a. */
@@ -184,10 +185,12 @@ export class ShapeBatch {
     this.tri(x1 + nx, y1 + ny, x1 - nx, y1 - ny, x0 - nx, y0 - ny, r, g, b, a)
   }
 
-  flush(viewX: number, viewY: number, targetW: number, targetH: number): void {
+  /** `glow` self-lights the batch: a marker that must read in the dark. */
+  flush(viewX: number, viewY: number, targetW: number, targetH: number, glow = 0): void {
     if (this.count === 0) return
     const gl = this.gl
     gl.useProgram(this.prog)
+    gl.uniform1f(this.u.get('uGlow'), glow)
     gl.uniform2f(this.u.get('uView'), viewX, viewY)
     gl.uniform2f(this.u.get('uTarget'), targetW, targetH)
     gl.bindVertexArray(this.vao)

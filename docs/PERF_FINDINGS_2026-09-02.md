@@ -6,8 +6,8 @@ taken on the owner's machine, sequentially, with nothing else running.
 
 **The headline: the atlas hypothesis is half right, and the half that is right
 is not the half NOTES nominated.** The 4096x8192 atlas is genuinely and
-measurably expensive — 2x the frame cost of a 2048x2048 one at the game's own
-draw load, 3-4x at heavy load — and Chrome re-decodes the whole 12MB PNG from
+measurably expensive - 2x the frame cost of a 2048x2048 one at the game's own
+draw load, 3-4x at heavy load - and Chrome re-decodes the whole 12MB PNG from
 scratch roughly **once per second, forever, while you play**. But on THIS
 machine both are absorbed: 16 hardware threads and an RTX 5070 Ti swallow them,
 and the game still runs at 180-240fps. Nothing measured here produces 2fps, and
@@ -69,7 +69,7 @@ smaller than that cannot be resolved by running this tool twice, which is the
 lesson the previous session paid for.
 
 Note the low fps samples (64-122) land on the ticks where `play.ts` itself is
-doing work — its 500ms rAF probe, a screenshot, a level-up keypress. The
+doing work - its 500ms rAF probe, a screenshot, a level-up keypress. The
 cleaner numbers are in §5, taken with a harness that touches the page once
 every five seconds.
 
@@ -86,7 +86,7 @@ every five seconds.
 | 0.76s | 0.5% | `save` |
 
 The main thread is **over half idle**. Nothing in the game's own JS is above
-1.6%. The largest attributable cost is now `stroke`, not `drawImage` — it comes
+1.6%. The largest attributable cost is now `stroke`, not `drawImage` - it comes
 from `drawArcs` (the melee sweep and aura rings, `renderer.ts:1533/1547`) and
 `drawHazards` (`renderer.ts:1851`), and `hand` is a melee class so the sweep is
 drawn every frame. That is a small finding and it is the biggest one a CPU
@@ -98,7 +98,7 @@ there is one, is not in JS.
 ## 2. Is the canvas accelerated on this machine?
 
 **Yes.** See the table above. This closes the "integrated graphics with limited
-VRAM" branch of the NOTES hypothesis on this hardware — there is no integrated
+VRAM" branch of the NOTES hypothesis on this hardware - there is no integrated
 GPU in play at all.
 
 ---
@@ -114,15 +114,15 @@ measured per cell.
 
 | source | 600 draws: frame ms | fps | JS in loop | 4000 draws: frame ms | fps | JS in loop |
 |---|---|---|---|---|---|---|
-| a — real atlas.png, 4096x8192 `<img>` | **8.30** (8.20–8.30) | 121 | 2.80 | **41.7** (37.5–50.0) | 24 | 17.9 |
-| b — 2048x2048 crop `<img>` | **4.20** (4.20–4.20) | 238 | 0.40 | **12.4** (8.4–12.5) | 81 | 10.0 |
-| c — 1024x1024 crop `<img>` | **4.20** (4.20–4.20) | 238 | 0.40 | **12.4** (8.4–12.5) | 81 | 10.1 |
-| d — flash `<canvas>`, 4096x8192 | 8.30 (4.20–8.30) | 121 | 2.00 | 45.9 (37.5–54.2) | 22 | 14.7 |
-| e — alternating a/d each draw | 8.30 (4.30–8.30) | 121 | 2.30 | 46.0 (41.7–54.1) | 22 | 17.9 |
-| f — atlas.png, reads confined to one 1024 window | 8.20 (4.20–8.30) | 122 | 2.50 | 45.7 (37.6–50.0) | 22 | 19.3 |
+| a - real atlas.png, 4096x8192 `<img>` | **8.30** (8.20–8.30) | 121 | 2.80 | **41.7** (37.5–50.0) | 24 | 17.9 |
+| b - 2048x2048 crop `<img>` | **4.20** (4.20–4.20) | 238 | 0.40 | **12.4** (8.4–12.5) | 81 | 10.0 |
+| c - 1024x1024 crop `<img>` | **4.20** (4.20–4.20) | 238 | 0.40 | **12.4** (8.4–12.5) | 81 | 10.1 |
+| d - flash `<canvas>`, 4096x8192 | 8.30 (4.20–8.30) | 121 | 2.00 | 45.9 (37.5–54.2) | 22 | 14.7 |
+| e - alternating a/d each draw | 8.30 (4.30–8.30) | 121 | 2.30 | 46.0 (41.7–54.1) | 22 | 17.9 |
+| f - atlas.png, reads confined to one 1024 window | 8.20 (4.20–8.30) | 122 | 2.50 | 45.7 (37.6–50.0) | 22 | 19.3 |
 
 Spreads are in brackets. 4.20ms is the vsync floor, which is why (b) and (c)
-are identical at 600 draws — they finish inside a refresh and the display
+are identical at 600 draws - they finish inside a refresh and the display
 decides the rest. The 4000-draw column exists because of that floor.
 
 Four things fall out, all of them larger than the spread:
@@ -135,22 +135,22 @@ Four things fall out, all of them larger than the spread:
    Shrinking it would buy everything.
 3. **2048x2048 is already as cheap as 1024x1024.** (b) and (c) match at both
    loads. The cliff is somewhere between 2048x2048 and 4096x8192, so an atlas
-   split into ≤2048² pages should recover the whole difference — there is no
+   split into ≤2048² pages should recover the whole difference - there is no
    need to go smaller than that.
 4. **The flash canvas is not a separate problem, and source-switching is not
-   one either.** (d) matches (a), and (e) — alternating source every single
-   draw, which is what the hit-flash path does — matches both. The second
+   one either.** (d) matches (a), and (e) - alternating source every single
+   draw, which is what the hit-flash path does - matches both. The second
    4096x8192 surface costs what the first one costs, no more.
 
 The JS-side column is worth reading twice: at 600 draws the synchronous time
 spent inside the `drawImage` calls is 2.80ms for the big atlas against 0.40ms
 for a small one. **7x, on the CPU, in the calling thread.** So this is not
-purely a GPU effect that a CPU profile would miss — part of it is exactly the
+purely a GPU effect that a CPU profile would miss - part of it is exactly the
 `drawImage` self-time the profile already shows at 4.6%.
 
 ---
 
-## 4. GPU-side trace of the real game — and the thing nobody had looked for
+## 4. GPU-side trace of the real game - and the thing nobody had looked for
 
 `tools/play-trace.ts`: the same run, driven the same way, with a chrome trace
 over categories `disabled-by-default-gpu.service, gpu, cc, viz, blink,
@@ -196,7 +196,7 @@ Only one PNG in the shipped build is big enough to take 300ms to decode:
 
 So the 12MB, 4096x8192 atlas is being fully re-decoded from compressed PNG, on
 a renderer raster worker thread, roughly **once per second for the entire
-duration of play** — about 290-300ms of CPU per second of wall clock, ~30% of
+duration of play** - about 290-300ms of CPU per second of wall clock, ~30% of
 one core, continuously, plus a 9-17ms GPU re-upload each time. `has_alpha` on
 the decode path and the `paint_image_id: 0` on the cache events say this is the
 at-raster path, not a cached one.
@@ -204,8 +204,8 @@ at-raster path, not a cached one.
 The mechanism is not directly measured, and should be stated as a hypothesis: a
 4096x8192 RGBA image is ~134MB decoded, which is far over `GpuImageDecodeCache`'s
 working-set budget, so it can never be held and is re-decoded every time it is
-needed. That is consistent with §3 — where the same image is 2x the cost of one
-that fits — and it is consistent with 2048x2048 (16MB decoded) being free.
+needed. That is consistent with §3 - where the same image is 2x the cost of one
+that fits - and it is consistent with 2048x2048 (16MB decoded) being free.
 
 ### But on THIS machine it costs zero frames
 
@@ -237,10 +237,10 @@ each, ~34 per presented frame. `RasterDecoderImpl::DoEndRasterCHROMIUM` totals
 ## 5. Production vs dev, at the owner's window size
 
 `tools/play-prod.ts` starts a run by CLICKING (a `.hero` card selects, a second
-click takes the field), so it works against a build with no `window.rdf` —
+click takes the field), so it works against a build with no `window.rdf` -
 though as it turns out the deployed build DOES expose `window.rdf`, so wave and
 enemy counts are readable there too. Viewport 1920x1080 at
-`deviceScaleFactor 1.25`, canvas backing **2400x1350** — a quarter again bigger
+`deviceScaleFactor 1.25`, canvas backing **2400x1350** - a quarter again bigger
 in each axis than the 1600x900 every other measurement in this repo has used.
 
     node node_modules/vite-node/vite-node.mjs tools/play-prod.ts \
@@ -266,12 +266,12 @@ Growing the canvas to 2400x1350 did not change the picture either.
 no leak.
 
 One unrelated defect fell out: the deployed build 404s on **every** sound
-effect — `audio/sfx-*.mp3`, eleven of them, plus music. `public/audio/` is
+effect - `audio/sfx-*.mp3`, eleven of them, plus music. `public/audio/` is
 gitignored (regenerated by `npm run music`/`npm run sfx`), so the deploy ships
 without it. The live game is silent. That is not a performance problem and it
 is worth someone's attention.
 
-## 5b. Occlusion — what a covered window actually does here
+## 5b. Occlusion - what a covered window actually does here
 
 Two controls, both with the anti-throttling flags **removed** (three of the four
 exist precisely to defeat this, so leaving them on would have measured nothing):
@@ -302,7 +302,7 @@ window**, and cannot conclude from that that the owner's window was not covered.
 
 ---
 
-## 6. Software rasterisation — the decisive control
+## 6. Software rasterisation - the decisive control
 
 The same microbenchmark with `--disable-gpu`, two repeats
 (`tools/play/perf-bench-sw.md`):
@@ -312,21 +312,21 @@ The same microbenchmark with `--disable-gpu`, two repeats
 
 | source | 600 draws: frame ms | JS in loop | 4000 draws: frame ms | fps |
 |---|---|---|---|---|
-| a — atlas.png 4096x8192 | 12.50 | **12.40** | 87.5 | 13 |
-| b — 2048x2048 crop | 12.50 | **0.50** | 58.3 | 19 |
-| c — 1024x1024 crop | 12.50 | **0.50** | 45.9 | 22 |
-| d — flash canvas 4096x8192 | 12.50 | 9.80 | 66.6 | 17 |
-| e — alternating | 12.60 | 13.20 | 87.5 | 13 |
-| f — big atlas, 1024 window | 12.60 | 13.30 | 83.4 | 12 |
+| a - atlas.png 4096x8192 | 12.50 | **12.40** | 87.5 | 13 |
+| b - 2048x2048 crop | 12.50 | **0.50** | 58.3 | 19 |
+| c - 1024x1024 crop | 12.50 | **0.50** | 45.9 | 22 |
+| d - flash canvas 4096x8192 | 12.50 | 9.80 | 66.6 | 17 |
+| e - alternating | 12.60 | 13.20 | 87.5 | 13 |
+| f - big atlas, 1024 window | 12.60 | 13.30 | 83.4 | 12 |
 
 Without GPU acceleration the frame cap drops to 80Hz and everything at 600
 draws pins there. But look at the JS column: **12.4ms of main-thread CPU per
-frame from the big atlas against 0.5ms from a small one — 25x.** At the game's
+frame from the big atlas against 0.5ms from a small one - 25x.** At the game's
 own draw load, a machine without canvas acceleration would spend 12ms per frame
 just blitting, before the sim, the HUD or anything else.
 
 That still lands at 12-22fps at heavy load, not 2. **Software rasterisation
-alone does not explain 2fps** — but it is the one condition measured here where
+alone does not explain 2fps** - but it is the one condition measured here where
 the atlas size becomes catastrophic rather than merely wasteful, and it is a
 condition a different machine, a different Chrome profile, or a driver
 blacklist could put the owner in.
@@ -355,21 +355,21 @@ blacklist could put the owner in.
    eliminates a 300ms full-PNG re-decode that currently runs once a second
    forever (§4). On this machine it buys headroom nobody needs. On a weaker
    machine it is the difference between the game working and not. Note that
-   2048 is enough — 1024 measured no better — and that repacking for locality
+   2048 is enough - 1024 measured no better - and that repacking for locality
    is **not** worth doing, because condition (f) proved locality is irrelevant.
    The atlas is 8176 frames; four 2048x2048 pages hold the same content, and
    the flash copy splits with it for free (condition (d) tracked (a) exactly).
 
 4. **Do not optimise the renderer's JS.** It is 55.7% idle with nothing above
    1.6%, and the profile has been mined out (§1). The only JS-side item worth
-   even noting is `stroke` at 5.4%, from the melee sweep and hazard rings — and
+   even noting is `stroke` at 5.4%, from the melee sweep and hazard rings - and
    it is 5.4% of a mostly-idle thread, i.e. nothing.
 
 5. **The per-frame texture-thrash hypothesis in NOTES is dead** (§4): 23-31
    uploads in ~28 seconds, not 230 a second. Replace it in NOTES with the
    per-second re-decode, which is real, is measured, and is a smaller animal.
 
-6. Unrelated but shipping: **the live site has no audio at all** — every
+6. Unrelated but shipping: **the live site has no audio at all** - every
    `sfx-*.mp3` and the music 404 (§5).
 
 ---
@@ -392,7 +392,7 @@ blacklist could put the owner in.
     # 4  GPU/compositor trace of a real run    -> tools/play/trace/perf-trace.md
     RDF_TRACE_WARMUP=120 node node_modules/vite-node/vite-node.mjs \
       tools/play-trace.ts hand 30 tools/play/trace harvest
-    #    add RDF_TRACE_RAW=1 for the raw trace — it is 737MB for 25s, and this
+    #    add RDF_TRACE_RAW=1 for the raw trace - it is 737MB for 25s, and this
     #    repo lives inside a OneDrive folder, so it is off by default
 
     # 5  production and dev, at the owner's window size
@@ -412,7 +412,7 @@ blacklist could put the owner in.
 The four new tools are `tools/gpu-report.ts`, `tools/atlas-bench.ts`,
 `tools/play-trace.ts` and `tools/play-prod.ts`. They add no dependencies, they
 typecheck under `tools/tsconfig.json`, and none of them is invoked through
-`npx` — `package.json` was deliberately left alone, so they are run with
+`npx` - `package.json` was deliberately left alone, so they are run with
 `node node_modules/vite-node/vite-node.mjs` directly. Everything they write
 lands under `tools/play/`, which is gitignored.
 

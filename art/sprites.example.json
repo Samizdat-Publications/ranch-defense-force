@@ -39,7 +39,7 @@
     "death": {
       "row": 3,
       "frames": 1,
-      "note": "no death frames needed — spin + scale to zero in code"
+      "note": "no death frames needed - spin + scale to zero in code"
     }
   },
   "humanoids": {
@@ -175,7 +175,7 @@
     }
   },
   "fx": {
-    "$comment": "Filenames in the FX pack are meaningless numbers — identify from the preview GIFs, then record semantic names here. ALL fx go through tools/conform-fx.ts.",
+    "$comment": "Filenames in the FX pack are meaningless numbers - identify from the preview GIFs, then record semantic names here. ALL fx go through tools/conform-fx.ts.",
     "$base": "assets/effects-fx/Free/",
     "fx_hit_small": {
       "file": "Part 1/TODO.png",

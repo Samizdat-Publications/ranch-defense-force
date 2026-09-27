@@ -1,4 +1,4 @@
-# Brief to Claude Design — the home screen scene
+# Brief to Claude Design - the home screen scene
 
 **Read `docs/DESIGN_STATE.md` first.** This is a focused brief about one screen.
 
@@ -28,7 +28,7 @@ What is still wrong, and I think is a composition question rather than a bug:
    taking the bottom 40% of the screen. Either my sizes are wrong or the bands
    are meant to sit much lower and be mostly cropped.
 3. **Buildings hug the edges and get cut.** The barn, house and silo all clip
-   against the frame in a way that looks accidental rather than composed —
+   against the frame in a way that looks accidental rather than composed -
    except the silo, which you explicitly wanted cropped.
 
 ## What I need from you
@@ -62,11 +62,11 @@ end buildings.
 
 Pick one:
 
-- **(a) Cover and crop**, as now — and tell me a *safe rectangle* inside the
+- **(a) Cover and crop**, as now - and tell me a *safe rectangle* inside the
   1920×1080 frame that must always stay visible, so I can bias the scale to
   protect it.
-- **(b) Letterbox** — never crop, accept bars.
-- **(c) Reflow** — you give me a second set of placements for a portrait-ish
+- **(b) Letterbox** - never crop, accept bars.
+- **(c) Reflow** - you give me a second set of placements for a portrait-ish
   window and I switch at a breakpoint.
 
 If (a), the safe rectangle is the thing I most need. Everything else follows
@@ -79,8 +79,8 @@ scene with a dark scrim behind them so the text stays legible. **The mockups
 show the scene and the class rail but never together**, so I do not know if the
 scrim is right.
 
-Is there meant to be a **clear band** in the composition — sky above, ground
-below — that the printed matter sits inside without needing to be darkened? If
+Is there meant to be a **clear band** in the composition - sky above, ground
+below - that the printed matter sits inside without needing to be darkened? If
 so, give me its y-range on the 1920×1080 frame and I will place the rail there
 and drop the scrim.
 
@@ -90,14 +90,14 @@ Below about 1300px they do not fit on one row. I made the rail scroll
 horizontally with a compact card (96px art window, blurb clamped to three
 lines), which leaves a visible scrollbar and clips the first and last card.
 
-Shrink to fit, wrap to two rows, or keep the scroll with a nicer affordance —
+Shrink to fit, wrap to two rows, or keep the scroll with a nicer affordance -
 your call, it is a composition decision and I should not be making it.
 
 ### 5. One thing I want to check I understood
 
 You describe these as the home screen's two interchangeable backdrops. The owner
-has been calling them **loading screens**. If they are meant to be *both* — a
-backdrop behind the class picker AND a screen shown while the atlas loads — say
+has been calling them **loading screens**. If they are meant to be *both* - a
+backdrop behind the class picker AND a screen shown while the atlas loads - say
 so, because a loading screen has no printed matter over it and would be composed
 differently. Right now I only use them as the class-picker backdrop.
 
@@ -108,7 +108,7 @@ differently. Right now I only use them as the class-picker backdrop.
   because a 0.5× pixel sprite is a blurry pixel sprite. If you would rather have
   smaller buildings, they need smaller crops, not a fractional zoom.
 - **Anything tiled or stepped must be packed untrimmed.** Already handled, but it
-  is why the crop bands and walk strips work at all — a trimmed 32px tile packs
+  is why the crop bands and walk strips work at all - a trimmed 32px tile packs
   to 26px and every repeat gaps.
 - No new runtime dependencies. CSS animation only, nothing per-frame in JS.
 
@@ -132,11 +132,11 @@ they are here rather than in NOTES.
 ## 1. The yard scene still runs on LimeZu buildings
 
 The generated barn, farmhouse, silo and oak are **on disk and committed** at
-`assets/pixellab/yard_picked/` and are referenced by **nothing** — `grep -c
+`assets/pixellab/yard_picked/` and are referenced by **nothing** - `grep -c
 yard_picked art/sprites.json` returns 0. `scene.barn`, `scene.house` and
 `scene.silo` still point at `assets/scene/*.png`, which is the purchased pack.
 
-This is §1 of `docs/NEXT_SESSION.md` and it is not a generation job — the art
+This is §1 of `docs/NEXT_SESSION.md` and it is not a generation job - the art
 exists. It is a placement job, and it needs placement work because **the
 generated buildings are a different size to the ones the coordinates were
 written for**: barn is 400x224 where the pack's was 480, silo 224x400 where the
@@ -148,10 +148,10 @@ Integer zoom only.
 Also unchanged: `SceneKind` is still `'yard' | 'field'`. Two scenes, as
 delivered.
 
-## 2. The lightning cut — daytime farm to infected night
+## 2. The lightning cut - daytime farm to infected night
 
 The owner's ask, for later. On the title screen: the yard opens as a **clean,
-healthy, daytime farm** — nothing wrong with it, no blight, no cursed cast.
+healthy, daytime farm** - nothing wrong with it, no blight, no cursed cast.
 Then a **lightning flash**, and on the other side of it the same yard is the
 **infected night version** the game actually takes place in.
 
@@ -162,7 +162,7 @@ Worth saying what makes this cheap or expensive before it gets specced:
   A day and a night palette over the same placements is a CSS problem, not a
   new scene.
 - What it would need in art is a **clean variant of the props that are visibly
-  cursed** — the walkers, the rot, the blighted crops. If the day version is
+  cursed** - the walkers, the rot, the blighted crops. If the day version is
   the same sprites with a warm filter, the flash lands on nothing.
 - The flash itself must be CSS animation only. The existing constraint holds:
   no new runtime dependencies, nothing per-frame in JS.
@@ -176,7 +176,7 @@ is the placement pass done twice.
 
 ---
 
-# Added session 18 — the owner's own farm, clean and blighted
+# Added session 18 - the owner's own farm, clean and blighted
 
 Twenty animals were generated from the owner's description of their real farm,
 and nineteen of them have a corrupted twin. They are packed and addressable
@@ -208,7 +208,7 @@ Every one is an eight-direction sheet packed as `<id>.idle.<dir>.0`, where
 | `leghornHen` | `leghornHenBlight` | white Leghorn, big floppy comb |
 | `barredHen` | `barredHenBlight` | barred Plymouth Rock |
 | `farmRooster` | `farmRoosterBlight` | the rooster, green-black sickle tail |
-| `chick` | *(none — see below)* | the yellow chick |
+| `chick` | *(none - see below)* | the yellow chick |
 
 **Wiz and Ouiji are told apart by eye colour and nothing else.** They are both
 black cats. If a scene shows only one, it does not matter which; if it shows
@@ -235,8 +235,8 @@ side of the flash is provably the animal you were just looking at, in the same
 pose, at the same size, on the same canvas. A cross-fade between the two keys
 lands with no re-registration.
 
-So §2 is no longer blocked on art for the cast. It is still blocked on §1 —
-the buildings — and the sequencing note there still holds.
+So §2 is no longer blocked on art for the cast. It is still blocked on §1 -
+the buildings - and the sequencing note there still holds.
 
 ## The fenced yard the owner asked for
 
@@ -248,8 +248,8 @@ The scene already has `scene.coop` at (800, 478) and a stock pen at
 *their* animals instead. Two notes for whoever places it:
 
 - **The flock is ten different birds, not one bird ten times.** That was the
-  explicit request. They differ in size as well as plumage — `chick` packs at
-  34px and `buffHen` at 56px — so a row of them at one scale already reads as a
+  explicit request. They differ in size as well as plumage - `chick` packs at
+  34px and `buffHen` at 56px - so a row of them at one scale already reads as a
   real flock without any per-bird treatment.
 - **Sizes vary by animal**, 34px to 68px, because each was generated at the
   size its subject wanted. `spriteEl` picks an integer zoom from the box you

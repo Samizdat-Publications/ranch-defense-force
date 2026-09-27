@@ -7,12 +7,12 @@
  *
  * Every other way of looking at this art inspects the SOURCE files. This reads
  * `public/atlas.png` through `public/atlas.json`, so it proves the whole chain
- * — manifest entry, packer, frame key, direction list — rather than the pixels
+ * - manifest entry, packer, frame key, direction list - rather than the pixels
  * that went in. A sheet can be perfect on disk and still be drawn wrong because
  * its key is not the one the renderer asks for; that has happened here.
  *
  * One row per direction, in the sheet's own declared order, labelled by nothing
- * — the order IS the label, and a row that does not belong to the same animal
+ * - the order IS the label, and a row that does not belong to the same animal
  * as the others is the failure this is for.
  */
 import { writeFileSync } from 'node:fs'
@@ -37,7 +37,7 @@ const picked: (Frame | undefined)[][] = dirs.map((d) =>
 )
 const found = picked.flat().filter(Boolean) as Frame[]
 if (!found.length) {
-  console.error(`no frames for ${sheet}.${clip}.* — is the sheet id right? (dirs: ${dirs.join(', ')})`)
+  console.error(`no frames for ${sheet}.${clip}.* - is the sheet id right? (dirs: ${dirs.join(', ')})`)
   process.exit(1)
 }
 

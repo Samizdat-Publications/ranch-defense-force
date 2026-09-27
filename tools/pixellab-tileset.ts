@@ -9,8 +9,8 @@
  *
  * Why this exists: the tilesets staged in `assets/tilesets/` were saved from
  * the CREATE response, which carries a composed spritesheet and a
- * `bounding_box` per tile. `GET /v2/tilesets/<id>` — the only way to get a set
- * that was generated in an earlier session and never written to disk — does
+ * `bounding_box` per tile. `GET /v2/tilesets/<id>` - the only way to get a set
+ * that was generated in an earlier session and never written to disk - does
  * NOT. It returns each tile as its own base64 PNG and no sheet at all, so a set
  * left on the account cannot be recovered by hand.
  *
@@ -22,7 +22,7 @@
  * Two fields in the API's tile records look like sheet positions and are not.
  * `wang_N` is a NAME and `original_position` is the generation grid, whose row
  * can exceed the sheet entirely; the API's own note says using either is what
- * produces horizontal banding. Neither is read here — the tiles are laid out in
+ * produces horizontal banding. Neither is read here - the tiles are laid out in
  * the order they arrive and the boxes describe that layout.
  *
  * `corners` is the only field that matters for correctness, because
@@ -78,7 +78,7 @@ const tw = set.tile_size?.width ?? 32
 const th = set.tile_size?.height ?? 32
 
 if (tiles.length !== 16) {
-  console.error(`expected 16 tiles, got ${tiles.length} — refusing to write a short set`)
+  console.error(`expected 16 tiles, got ${tiles.length} - refusing to write a short set`)
   process.exit(1)
 }
 

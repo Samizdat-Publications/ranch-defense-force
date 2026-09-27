@@ -84,7 +84,7 @@ try {
   packed = new Set(Object.keys(atlas.frames))
   atlasNote = `${Object.keys(atlas.frames).length} frames on ${atlas.pages.length} pages`
 } catch {
-  atlasNote = 'NOT BUILT — run `npm run atlas` and refresh; every row will read unclaimed'
+  atlasNote = 'NOT BUILT - run `npm run atlas` and refresh; every row will read unclaimed'
 }
 
 /**
@@ -508,7 +508,7 @@ function famFor(a: Asset): Fam {
   for (const [frag, fam] of BY_PROMPT) {
     if (p.includes(frag) && frag.length > bestLen) { best = fam; bestLen = frag.length }
   }
-  return best ?? { keys: [], note: 'UNMAPPED — add a row to tools/pixellab-ledger.ts', verdict: 'open' }
+  return best ?? { keys: [], note: 'UNMAPPED - add a row to tools/pixellab-ledger.ts', verdict: 'open' }
 }
 
 type Verdict = 'wired' | 'packed-unused' | 'unclaimed' | 'review' | 'retired' | 'surplus' | 'open'
@@ -536,8 +536,8 @@ function verdictFor(a: Asset, fam: Fam, seenFamily: boolean): { v: Verdict; wher
   const drawnKeys = packedKeys.filter(drawn)
   if (fam.verdict === 'open') return { v: 'open', where: fam.note }
   if (!fam.keys.length) return { v: 'unclaimed', where: fam.note }
-  if (!packedKeys.length) return { v: 'unclaimed', where: `${fam.note} — nothing packed under ${fam.keys.join(', ')}` }
-  if (!drawnKeys.length) return { v: 'packed-unused', where: `${fam.note} — ${packedKeys.join(', ')} packed, drawn by nothing` }
+  if (!packedKeys.length) return { v: 'unclaimed', where: `${fam.note} - nothing packed under ${fam.keys.join(', ')}` }
+  if (!drawnKeys.length) return { v: 'packed-unused', where: `${fam.note} - ${packedKeys.join(', ')} packed, drawn by nothing` }
   // The keeper is wired; every further roll of the same prompt is surplus.
   if (seenFamily) return { v: 'surplus', where: `another roll of ${drawnKeys[0]}` }
   return { v: 'wired', where: `${fam.note} (${drawnKeys.join(', ')})` }
@@ -597,7 +597,7 @@ for (const o of [...inv.objects].sort((a, b) => (a.prompt ?? '').localeCompare(b
  *
  * Most characters carry an `rdf-<sheet>` tag and need no entry. These are the
  * ones that predate the convention or that exist to be an input rather than an
- * output — a style anchor is not unwired art, it is the thing every other
+ * output - a style anchor is not unwired art, it is the thing every other
  * character was generated FROM.
  */
 const CHAR: Record<string, { sheet?: string; verdict?: Verdict; note?: string }> = {
@@ -606,8 +606,8 @@ const CHAR: Record<string, { sheet?: string; verdict?: Verdict; note?: string }>
   'Arabian': { sheet: 'arabian', note: 'the horse in the yard, and its cursed enemy twin' },
   'Wiz': { sheet: 'wiz', note: 'one of the two cats in the yard' },
   'rdf-farmhand-infected': { sheet: 'farmhandBlight', note: 'the infected farmhand; recoloured by `npm run recolour` and packed under the blighted id' },
-  'rdf-hand-anchor': { verdict: 'wired', note: 'STYLE ANCHOR, not a sprite — every generated character was made against it. Being unpacked is correct.' },
-  'rdf-hand-anchor-64': { verdict: 'wired', note: 'STYLE ANCHOR at 64px — the input every later character was generated from. Being unpacked is correct.' },
+  'rdf-hand-anchor': { verdict: 'wired', note: 'STYLE ANCHOR, not a sprite - every generated character was made against it. Being unpacked is correct.' },
+  'rdf-hand-anchor-64': { verdict: 'wired', note: 'STYLE ANCHOR at 64px - the input every later character was generated from. Being unpacked is correct.' },
   'warrior woman with orange hair': { verdict: 'retired', note: 'not this game -- three rolls of a fantasy character, from before the roster was six farm classes' },
   'flat shaded light brown bear': { verdict: 'retired', note: 'not this game -- the roster is farm animals turned; a bear is neither farm nor turned' },
   'old man bald': { verdict: 'retired', note: 'predates the roster; The Hand covers the old farmer and is generated against the house anchor' },
@@ -725,13 +725,13 @@ function reachedBy(name: string): string {
   const parts = name.split('.')
   const root = parts[0] ?? name
   const last = parts[parts.length - 1] ?? name
-  if (code.includes(`${root}.\${`)) return `maybe — something builds \`${root}.\${…}\``
-  if (code.includes(`"${last}"`) || code.includes(`'${last}'`)) return `maybe — "${last}" appears as a bare id`
+  if (code.includes(`${root}.\${`)) return `maybe - something builds \`${root}.\${…}\``
+  if (code.includes(`"${last}"`) || code.includes(`'${last}'`)) return `maybe - "${last}" appears as a bare id`
   return 'no'
 }
 const deadKeys = [...packedNames].filter((n) => reachedBy(n) !== 'named').sort()
 const deadList = deadKeys
-  .map((n) => `- \`${n}\`  (${groupOf(n)}) — reachable: ${reachedBy(n)}`)
+  .map((n) => `- \`${n}\`  (${groupOf(n)}) - reachable: ${reachedBy(n)}`)
   .join('\n')
 const deadHard = deadKeys.filter((n) => reachedBy(n) === 'no')
 
@@ -752,9 +752,9 @@ const openGroups = [...openReasons].sort((a, b) => b[1] - a[1])
 const order: Verdict[] = ['wired', 'packed-unused', 'surplus', 'unclaimed', 'review', 'retired', 'open']
 const total = objectRows.length + charRows.length + tileRows.length
 
-const out = `# PixelLab ledger — every asset, and what draws it
+const out = `# PixelLab ledger - every asset, and what draws it
 
-**Generated by \`npm run ledger\`. Do not hand-edit — it is overwritten.**
+**Generated by \`npm run ledger\`. Do not hand-edit - it is overwritten.**
 
 Account snapshot taken \`${inv.taken}\`; atlas: ${atlasNote}.
 
@@ -775,10 +775,10 @@ state and there is no fourth.
 |---|---|---|
 ${order.map((v) => `| **${v}** | ${{
   wired: 'packed in the atlas AND something in `src/` draws its key',
-  'packed-unused': 'packed, drawn by nothing — a job, not a resting state',
+  'packed-unused': 'packed, drawn by nothing - a job, not a resting state',
   surplus: 'another roll of a prompt whose keeper is already wired',
   unclaimed: 'on the account, never downloaded into `assets/`',
-  review: 'a candidate pack nobody has picked from — already paid for',
+  review: 'a candidate pack nobody has picked from - already paid for',
   retired: 'tagged `rdf-retired` on the account, with a reason tag',
   open: 'a real question for the owner; the row says which',
 }[v]} | ${counts[v] ?? 0} |`).join('\n')}
@@ -813,14 +813,14 @@ ${openGroups.map(([reason, n]) => `| ${n} | ${esc(reason.replace(/^OPEN:\s*/, ''
 ## How the join is made
 
 There is no PixelLab object id anywhere in \`art/sprites.json\` and there never
-has been — the manifest names files, and the files were downloaded by hand
+has been - the manifest names files, and the files were downloaded by hand
 across twenty-two sessions. Two joins are exact: **tilesets**, through the
 PixelLab id inside each \`assets/tilesets/*.json\`, and **characters**, through
 their \`rdf-<sheet>\` tags, which are the sheet ids in the manifest by
 construction.
 
-**Objects join by family** — the account tag where there is one, the normalised
-prompt where there is not — through the table in \`tools/pixellab-ledger.ts\`.
+**Objects join by family** - the account tag where there is one, the normalised
+prompt where there is not - through the table in \`tools/pixellab-ledger.ts\`.
 That is the unit that matters: nobody needs to know which of four identical barn
 rolls is the packed one, they need to know the barn is in the game and three
 rolls are surplus. The keys a family maps to are then checked against the built
@@ -832,7 +832,7 @@ pressure that keeps this file honest: a generation run that adds a family and no
 table row makes the open count go up, in a committed document, on the next
 refresh.
 
-## Tilesets — ${tileRows.length}
+## Tilesets - ${tileRows.length}
 
 The exact join. Every one was generated as a Wang set, downloaded into
 \`assets/tilesets/\`, and packed as \`wang.<name>\`; a map's \`terrain\` block is
@@ -840,11 +840,11 @@ what picks one. \`packed-unused\` here means a ground nobody stands on.
 
 ${table([...tileRows].sort((a, b) => order.indexOf(a.v) - order.indexOf(b.v) || a.sort.localeCompare(b.sort)), false)}
 
-## Characters — ${charRows.length}
+## Characters - ${charRows.length}
 
 ${table([...charRows].sort((a, b) => order.indexOf(a.v) - order.indexOf(b.v) || a.sort.localeCompare(b.sort)))}
 
-## Packed and dead — ${deadKeys.length} atlas names nothing NAMES, ${deadHard.length} nothing can reach
+## Packed and dead - ${deadKeys.length} atlas names nothing NAMES, ${deadHard.length} nothing can reach
 
 The account rows above ask, of each asset, *what draws it*. This asks the atlas
 the opposite question, and it catches what the first pass structurally cannot:
@@ -863,12 +863,12 @@ session hunting for a use that already exists, or deleting art the game draws.
 
 ${deadList}
 
-## Objects — ${objectRows.length}
+## Objects - ${objectRows.length}
 
 ${order.map((v) => {
   const rows = objectRows.filter((r) => r.v === v)
   if (!rows.length) return ''
-  return `### ${v} — ${rows.length}\n\n${table(rows.sort((a, b) => a.sort.localeCompare(b.sort)))}\n`
+  return `### ${v} - ${rows.length}\n\n${table(rows.sort((a, b) => a.sort.localeCompare(b.sort)))}\n`
 }).filter(Boolean).join('\n')}
 `
 
@@ -886,5 +886,5 @@ writeFileSync('docs/pixellab-ledger.json', JSON.stringify({
   characters: charRows.map((r) => ({ id: r.id, verdict: r.v, where: r.where })),
 }, null, 1))
 const line = order.map((v) => `${v} ${counts[v] ?? 0}`).join(', ')
-console.log(`${total} rows — ${line}`)
+console.log(`${total} rows - ${line}`)
 console.log('-> docs/PIXELLAB_LEDGER.md')

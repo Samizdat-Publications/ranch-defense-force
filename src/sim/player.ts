@@ -2,7 +2,7 @@
  * The player: movement, health, the owned build, and the two class passives.
  *
  * Stats are resolved once whenever the build changes (level-up, shop purchase),
- * never per tick — `resolve()` is the only place `resolveStats` is called.
+ * never per tick - `resolve()` is the only place `resolveStats` is called.
  */
 import { CLASSES, NODES, TUNING, type ClassDef, type StatMods } from '../content'
 import { emptyDerived, resolveStats, type DerivedStats } from './stats'
@@ -12,20 +12,20 @@ const P = TUNING.player
 
 export interface OwnedItem {
   id: string
-  /** Doubled magnitude — the level-up screen's boosted pick. */
+  /** Doubled magnitude - the level-up screen's boosted pick. */
   boosted: boolean
 }
 
 /**
  * H13 (docs/UPGRADE_ROSTER.md batch 4): additive overlays a class card grants
  * on top of the numbers its OWN class's passive/ability already reads off
- * `def.passive`/`def.ability` — a cap, a rate, a duration, a radius, a refund.
+ * `def.passive`/`def.ability` - a cap, a rate, a duration, a radius, a refund.
  * Never a multiplier: every field here is summed onto the base number at the
  * point the passive reads it, exactly once, the same rule `resolveStats`
  * already enforces for the stat block.
  *
  * A flat, fully-keyed object rather than a map, so `resolveClassBonus` never
- * allocates and every read is a property access — the same shape `stats`
+ * allocates and every read is a property access - the same shape `stats`
  * already is. Zero for every class but the one that owns a card naming that
  * field, so a run with no class cards pays flat zeros, not branches.
  */
@@ -85,12 +85,12 @@ export interface WeaponSlot {
   t0: number
   /**
    * H12 (docs/UPGRADE_ROSTER.md §8): the weapon-upgrade cards this slot has
-   * taken, by short id — `'chokeTube'`, not the item id that granted it.
+   * taken, by short id - `'chokeTube'`, not the item id that granted it.
    *
    * A per-slot list rather than a player-wide flag because the same short id
    * is scoped to the weapon that owns it: `hasMod(slot, 'chokeTube')` only
-   * ever asks the Scattergun's own slot. `addItem` is the only writer — see
-   * its `weaponMod`/`requiresWeapon` handling — and every behaviour reads it
+   * ever asks the Scattergun's own slot. `addItem` is the only writer - see
+   * its `weaponMod`/`requiresWeapon` handling - and every behaviour reads it
    * beside the `tier >= n` checks that already gate the built-in riders, so a
    * run with no upgrades pays one array scan of length zero per read.
    */
@@ -113,7 +113,7 @@ export interface WeaponSlot {
    * is held, everything else hangs off a body anchor. A tick stamp rather than
    * a seconds stamp, and set in the sim rather than inferred in the renderer,
    * because the answer has to be identical in the game, in `npm run shot` and
-   * in a replay of the same seed. `recoil` cannot stand in for it — it expires
+   * in a replay of the same seed. `recoil` cannot stand in for it - it expires
    * after 0.12s and would hand the loadout back and forth between weapons
    * between shots.
    */
@@ -126,7 +126,7 @@ export const MAX_WEAPON_SLOTS = 6
  * H12: whether a weapon slot has taken a given upgrade.
  *
  * A standalone function rather than a method so `behaviours/weapons.ts` reads
- * it the same way it already reads `tier >= n` — beside the number, not
+ * it the same way it already reads `tier >= n` - beside the number, not
  * through the player. `slot.mods` is empty for every run that owns none of
  * the 48+3 cards, so this is one array scan of length zero.
  */
@@ -138,7 +138,7 @@ export function hasMod(slot: WeaponSlot, id: string): boolean {
  * Highest index into a tool's tier list in nodes.json.
  *
  * The `_`-prefixed filter is not cosmetic. This project documents inside its
- * JSON, so a `_note` sitting beside the real entries is normal and expected —
+ * JSON, so a `_note` sitting beside the real entries is normal and expected -
  * and a bare string has no `.tiers`, which crashed this at module load and took
  * three test files down with it. Anything walking a content map has to skip
  * them.
@@ -165,16 +165,19 @@ export class Player {
   facing = 0
   radius = P.baseRadius
 
-  /** Animation phase and distance travelled — the renderer's only inputs for
+  /** Animation phase and distance travelled - the renderer's only inputs for
    *  choosing a walk frame and a bob offset. */
   anim = 0
   travelled = 0
 
   hp = 1
   invuln = 0
-  /** Seconds since the player last moved — The Hand's Braced passive. */
+  /** Seconds since the player last moved - The Hand's Braced passive. */
   stillFor = 0
-  /** Current speed as a fraction of max — The Kid's Momentum passive. */
+  /** Braced's current reduction, in percent. Drains while moving rather than
+   *  snapping to zero, so a step inside a crowd does not throw it all away. */
+  bracedDr = 0
+  /** Current speed as a fraction of max - The Kid's Momentum passive. */
   velocityFraction = 0
 
   level = 1
@@ -199,7 +202,7 @@ export class Player {
   metaMods: StatMods = {}
 
   /** Damage bonus from the active class passive, as a percentage. Recomputed
-   *  each tick and folded in at damage time, not into the stat block — it
+   *  each tick and folded in at damage time, not into the stat block - it
    *  changes every frame and the resolver is not for per-tick values. */
   passiveDamagePct = 0
   /** Damage reduction from the active class passive, 0..1. */
@@ -218,48 +221,48 @@ export class Player {
    * class but The Hand, and false for him until `stillFor` has carried the
    * reduction all the way to `drMax` (+ `classBonus.bracedDrMaxBonus`).
    * Anchor Stone reads this in `World.collideEnemiesWithPlayer` rather than
-   * recomputing the threshold a second time — one boolean, set where the
+   * recomputing the threshold a second time - one boolean, set where the
    * cap is already being computed.
    */
   bracedAtCap = false
   /**
    * Class pass (this session): seconds since the last successful `tryAbility`
-   * call, ANY class — set in `World.tryAbility`, not per-class, because it
+   * call, ANY class - set in `World.tryAbility`, not per-class, because it
    * costs nothing to maintain for the five classes that never read it and a
    * per-class branch to skip it would be the more expensive thing.
    *
    * Only The Hand's Braced reads it (`abilityGraceSeconds`/`drMaxStale` in
    * classes.json), and only he initialises it non-zero: everyone else starts
    * at 0 and it is simply never compared against anything. Starting The Hand
-   * at a value already past his own grace window means `idle`/`idle-buy` —
-   * which press nothing, ever — get no free head start from a field that
+   * at a value already past his own grace window means `idle`/`idle-buy` -
+   * which press nothing, ever - get no free head start from a field that
    * happens to default low.
    */
   sinceAbility = 0
 
   /**
-   * H13: the current class's cards, summed. Recomputed in `resolve()` —
-   * never per tick — from every owned item's `ItemDef.classBonus` block,
+   * H13: the current class's cards, summed. Recomputed in `resolve()` -
+   * never per tick - from every owned item's `ItemDef.classBonus` block,
    * exactly the way `stats` is recomputed from `ItemDef.mods`. See the
    * `ClassBonus` doc comment above.
    */
   readonly classBonus: ClassBonus = emptyClassBonus()
 
   /**
-   * The Kid's Momentum, as actually displayed — distinct from the raw value
+   * The Kid's Momentum, as actually displayed - distinct from the raw value
    * `velocityFraction` implies this tick. Equal to it for every run without
    * Following Wind, which reads straight through and decays instantly to
    * zero on stop exactly as it always has. With the card, this eases toward
    * the raw value instead of snapping to it, at `classBonus.momentumDecayPctPerSec`
-   * per second — the raw value is a ceiling it decays DOWN toward, never
+   * per second - the raw value is a ceiling it decays DOWN toward, never
    * a floor it is pulled up to, so accelerating is still instant.
    */
   private momentumEcho = 0
 
   // ---------------------------------------------------------- class state
   // Four field groups, one per unlockable class. They are plain numbers on
-  // the player rather than entities because each is singular — one wound, one
-  // streak, one ward, one mine — and a pooled entity for a thing there is only
+  // the player rather than entities because each is singular - one wound, one
+  // streak, one ward, one mine - and a pooled entity for a thing there is only
   // ever one of buys nothing and costs a free-list.
 
   /**
@@ -275,7 +278,7 @@ export class Player {
   streak = 0
   streakLife = 0
 
-  /** The Widow's ward — Hold the Line. `wardLife > 0` means one is standing. */
+  /** The Widow's ward - Hold the Line. `wardLife > 0` means one is standing. */
   wardX = 0
   wardY = 0
   wardRadius = 0
@@ -293,7 +296,7 @@ export class Player {
    * The Agronomist's Cultivar, as multipliers on the statuses SHE applies.
    *
    * They are 1 (and the cap 100) for every other class, so `applyHit`
-   * multiplies by one rather than branching on the class — the hot path stays
+   * multiplies by one rather than branching on the class - the hot path stays
    * one shape whoever is playing.
    */
   dotDamageMul = 1
@@ -333,13 +336,13 @@ export class Player {
   element = 'none'
 
   /**
-   * How many copies of the ACTIVE load the run holds — `tracerRounds` x3
+   * How many copies of the ACTIVE load the run holds - `tracerRounds` x3
    * reads 3, not "3 items that each independently do nothing".
    *
    * Derived, not assigned: it is a straight count of `this.items` whose
    * `ITEMS[id].element` matches `this.element`, recomputed in `addItem`
-   * whenever an element card lands. Switching load — taking `coldRounds`
-   * while Fire is active — does NOT clear the fire copies out of `items`
+   * whenever an element card lands. Switching load - taking `coldRounds`
+   * while Fire is active - does NOT clear the fire copies out of `items`
    * (the simpler of the two choices §Part 2 asked for: supersede, don't
    * refund) so this can go back UP on its own if the run ever returns to a
    * load it already invested in, which is the one place "simpler" and
@@ -351,7 +354,7 @@ export class Player {
    * H10 (docs/UPGRADE_ROSTER.md batch 3): Second Wind's remaining charges.
    *
    * Set from `World.specialItems.revives` in `refreshSpecialItems`, which
-   * tops it UP (never down) rather than assigning outright — the same
+   * tops it UP (never down) rather than assigning outright - the same
    * re-arm-on-any-purchase shape `firstHitShield`'s `shieldReady` already had,
    * kept deliberately rather than fought: a spent revive comes back the next
    * time the run buys anything, which is generous but consistent with the
@@ -381,6 +384,7 @@ export class Player {
     this.rooted = false
     this.invuln = 0
     this.stillFor = 0
+    this.bracedDr = 0
     this.revivesLeft = 0
 
     this.wound = 0
@@ -396,13 +400,13 @@ export class Player {
     this.momentumEcho = 0
     // Class pass: starts already past the grace window (rather than 0, which
     // would hand every class a few free seconds at full Braced ceiling before
-    // its first ability press) — harmless for the five classes that never
+    // its first ability press) - harmless for the five classes that never
     // compare it to anything.
     this.sinceAbility = ((this.def.passive.abilityGraceSeconds as number) ?? 0) + 1
 
     // `resolve()` below rebuilds `classBonus` off `this.items` (empty here)
     // and then unpacks the two hot-path passive caches (Overwatch, Cultivar)
-    // off `def.passive` + `classBonus` together — see `unpackPassiveCache`.
+    // off `def.passive` + `classBonus` together - see `unpackPassiveCache`.
     this.resolve()
     this.hp = this.stats.maxHp
   }
@@ -411,7 +415,7 @@ export class Player {
    * The Veteran's Overwatch, as a damage percentage against ONE target.
    *
    * Per-target, so it can live neither in the resolved stat block nor in
-   * `passiveDamagePct` — both are a single number for the whole tick. It joins
+   * `passiveDamagePct` - both are a single number for the whole tick. It joins
    * the same additive sum inside `resolveDamage` that every other percentage
    * joins, which is what keeps the single-pass rule intact: nothing multiplies.
    *
@@ -437,7 +441,7 @@ export class Player {
   takeWound(amount: number): number {
     const p = this.def.passive
     if (p.id !== 'grit') return amount
-    // H13: Set Jaw lowers `immediatePct` — less lands at once, more is held
+    // H13: Set Jaw lowers `immediatePct` - less lands at once, more is held
     // back as a wound to fight through. A pure delta on the class's own
     // number, additive like every overlay here.
     const immediatePct = ((p.immediatePct as number) ?? 100) + this.classBonus.gritImmediatePctDelta
@@ -457,7 +461,7 @@ export class Player {
     if (this.def.passive.id !== 'hotStreak') return
     /*
        H13: Cut and Run. A hit takes only a fraction of the streak rather than
-       all of it — `hotStreakKeepPctOnHit` is what SURVIVES, 0 for every run
+       all of it - `hotStreakKeepPctOnHit` is what SURVIVES, 0 for every run
        without the card, which is the original "one hit ends all of it"
        unchanged. What survives keeps whatever life it had left rather than
        resetting it, so the card is purely "a hit costs less streak", not "a
@@ -482,7 +486,7 @@ export class Player {
     const cb = this.classBonus
     if (p.id === 'grit') {
       // Closing the wound IS the heal: it is damage that now never lands.
-      // Self-limiting by construction — no wound, no reward for the kill —
+      // Self-limiting by construction - no wound, no reward for the kill -
       // which is what makes Grit pay for fighting through a hit rather than
       // for killing in general.
       if (this.wound > 0) {
@@ -522,7 +526,7 @@ export class Player {
     for (const owned of this.items) {
       const item = ITEM_MODS[owned.id]
       if (!item) continue
-      // A boosted copy is worth two — pushed twice rather than scaled, so the
+      // A boosted copy is worth two - pushed twice rather than scaled, so the
       // resolver stays a pure additive sum and nothing multiplies.
       this.sources.push(item)
       if (owned.boosted) this.sources.push(item)
@@ -542,7 +546,7 @@ export class Player {
   /**
    * H13: rebuild `classBonus` from every owned item's `ItemDef.classBonus`
    * block. A fixed key list rather than `Object.entries` on each item's
-   * bonus object, so this allocates nothing — only ever runs on a build
+   * bonus object, so this allocates nothing - only ever runs on a build
    * change, same as `resolve()` itself, but the discipline is free and it
    * keeps this the same shape as the hot-path reads that follow it.
    */
@@ -564,7 +568,7 @@ export class Player {
   /**
    * Unpack the two passives whose parameters are read on a hot path
    * (Overwatch per-target, Cultivar per-status-application) into their
-   * cached form — off `def.passive` AND `classBonus` together, so a class
+   * cached form - off `def.passive` AND `classBonus` together, so a class
    * card taken mid-run (Range Card, Cold Bore, Enfilade, Field Trial,
    * Selective Breeding) is live the instant `resolve()` runs, not only at
    * `init`. Every other class's cache stays the all-zero/all-one it always
@@ -593,7 +597,7 @@ export class Player {
     } else if (pas.id === 'cultivar') {
       // H13: Field Trial and Selective Breeding raise the duration/damage
       // multipliers Cultivar already applies at the point a status leaves a
-      // projectile (World.applyHit) — additive on the PERCENTAGE, then
+      // projectile (World.applyHit) - additive on the PERCENTAGE, then
       // folded into the multiplier once, here, exactly as the base numbers
       // already were.
       const dmgPct = ((pas.dotDamagePct as number) ?? 0) + cb.cultivarDotDamagePctBonus
@@ -643,14 +647,14 @@ export class Player {
       | undefined
 
     /*
-       An element/Load replaces whatever was on the weapons before — one
+       An element/Load replaces whatever was on the weapons before - one
        active Load, exclusive, same as it always was. What changed: the run's
        investment in a Load now actually MEANS something when you take the
        same one again. `loadStacks` is a plain count of every item this run
        owns whose `element` matches whichever one just became active, so
        Tracer Rounds x3 reads as 3 and not as three separately-inert cards.
        It is recomputed rather than incremented so switching Loads and
-       switching back resumes at whatever depth was already bought — the
+       switching back resumes at whatever depth was already bought - the
        "refund or supersede, pick the simpler" call landed on supersede: nothing
        is ever removed from `items`, so nothing needs refunding.
     */
@@ -674,7 +678,7 @@ export class Player {
        same gate `OfferPool.gateOpen` already reads to keep the card off the
        board until the weapon is owned; `weaponMod` is the short id the
        behaviour reads back with `hasMod`. Every one of the 48+3 cards has
-       `maxStacks: 1`, so this can only ever push the id once per run — the
+       `maxStacks: 1`, so this can only ever push the id once per run - the
        `indexOf` guard is defensive, not load-bearing.
     */
     if (typeof def?.weaponMod === 'string' && typeof def?.requiresWeapon === 'string') {
@@ -687,20 +691,20 @@ export class Player {
     /*
        The shop-sink pass (batch 6): two of the five always-on late-game feed
        sinks resolve here as a ONE-TIME effect rather than through
-       `mods`/`resolveStats` — a heal and a tier bump are not percentages to
+       `mods`/`resolveStats` - a heal and a tier bump are not percentages to
        sum, they are things that happen once, exactly when bought. Placed
        AFTER `resolve()` so `stats.maxHp` and the tier-4 clamp below both read
        the fully-resolved build, including whatever this same purchase did.
     */
     if (def?.special === 'healFull') {
       // Field Ration. `canTakeItem` never caps this (no `maxStacks`), so it is
-      // always on the board — the late-game answer to a shop with nothing
+      // always on the board - the late-game answer to a shop with nothing
       // left to sell but stat commons already at LAST.
       this.hp = this.stats.maxHp
     } else if (def?.special === 'tierUpLowest') {
       /*
          Tier-Up Token. Redeems on whichever owned weapon is at the LOWEST
-         tier — `lowestTierWeaponId()`, the same target `swap` trades away —
+         tier - `lowestTierWeaponId()`, the same target `swap` trades away -
          which is exactly what makes a Trade-In's fresh tier-1 weapon viable
          again: the run does not have to wait on the draw for a merge card,
          it can buy the tier directly. `requiresWeaponBelowMax` on the item
@@ -735,7 +739,7 @@ export class Player {
       aimAngle: 0, recoil: 0, firedAt: -1, mods: [],
     })
     // The loadout is a readout, and one more object on an already-equipped man
-    // is easy to miss entirely — which is exactly what happened in play.
+    // is easy to miss entirely - which is exactly what happened in play.
     this.weaponFlash.set(id, 2.5)
     return true
   }
@@ -757,7 +761,7 @@ export class Player {
     return w !== undefined && w.tier >= 4
   }
 
-  /** True when a new weapon could not be taken — used to filter the card pool. */
+  /** True when a new weapon could not be taken - used to filter the card pool. */
   get slotsFull(): boolean {
     return this.weapons.length >= MAX_WEAPON_SLOTS
   }
@@ -765,7 +769,7 @@ export class Player {
   /**
    * The id of the lowest-tier owned weapon, or `null` with none carried.
    *
-   * §7.5's `swap` offer trades this one away — "your lowest-tier weapon" — so
+   * §7.5's `swap` offer trades this one away - "your lowest-tier weapon" - so
    * a run that filled its slots with the wrong thing in wave 2 has recourse
    * without touching a slot it has since built around. Ties go to pickup
    * order, which is the same tie-break the loadout's own hand slot uses.
@@ -777,7 +781,7 @@ export class Player {
     return best.id
   }
 
-  /** Drop a weapon outright — the half of a swap that is not `addWeapon`. */
+  /** Drop a weapon outright - the half of a swap that is not `addWeapon`. */
   removeWeapon(id: string): void {
     const i = this.weapons.findIndex((w) => w.id === id)
     if (i >= 0) this.weapons.splice(i, 1)
@@ -803,7 +807,7 @@ export class Player {
    * @param slow 0-1, from any map hazard the player is standing in. Defaults to
    *             0, so every caller that predates map hazards is unchanged.
    *             `velocityFraction` stays measured against the UNSLOWED move
-   *             speed on purpose — The Kid's damage scales with it, and a Kid
+   *             speed on purpose - The Kid's damage scales with it, and a Kid
    *             bogged down in an oil sump should read as slow, because it is.
    */
   /**
@@ -828,8 +832,8 @@ export class Player {
        two multiplies.
 
        When the bonus is zero this is the resolved value by definition, so every
-       class without a per-tick speed passive — which is five of the six, and
-       both of the classes whose seeds are already banked — takes the identical
+       class without a per-tick speed passive - which is five of the six, and
+       both of the classes whose seeds are already banked - takes the identical
        branch and replays byte for byte.
     */
     const bonus = this.passiveMoveSpeedPct
@@ -922,36 +926,49 @@ export class Player {
       const fullMax = ((p.drMax as number) ?? 30) + this.classBonus.bracedDrMaxBonus
       /*
          Class pass (this session): Braced needs INPUT now, not just
-         idleness — see `_inputNote` in classes.json. Standing still is still
+         idleness - see `_inputNote` in classes.json. Standing still is still
          the trigger (his identity, untouched), but the CEILING it can reach
          depends on whether Dig In has actually been pressed recently:
          `sinceAbility` counts seconds since the last successful `tryAbility`
          call (any class, set in World; only Hand reads it) and resets to 0
          there. Within `abilityGraceSeconds` of a press the ceiling is the
          full `drMax`; past it, it drops to `drMaxStale`. A rooted player who
-         never presses the button — `idle` and `idle-buy` press nothing, ever
-         — sits at the lower ceiling for the whole run. A brawler pressing on
+         never presses the button - `idle` and `idle-buy` press nothing, ever
+         - sits at the lower ceiling for the whole run. A brawler pressing on
          anything close to Dig In's own 14s cooldown never sees the drop: the
          grace window is wider than the cooldown on purpose.
       */
       const grace = (p.abilityGraceSeconds as number) ?? Infinity
       const staleMax = (p.drMaxStale as number) ?? fullMax
       const max = this.sinceAbility <= grace ? fullMax : staleMax
-      if (this.stillFor >= delay) {
-        const dr = Math.min(max, (this.stillFor - delay) * perSec)
-        this.passiveDamageReduction = dr / 100
-        // Whatever ceiling is active right now, not always the full 45 —
+      /*
+         v2: it DRAINS on a move (`drDecayPerSec`) instead of resetting. The
+         horde arrives from every side now (the spawn ring), and a brawler
+         who shuffled one step inside a crowd lost the whole of it, so
+         standing measured no better than running (run.test.ts, "each class
+         does better at its own game"). Standing still still builds it and
+         still is the only way to build it; the onset delay holds it steady.
+      */
+      const decay = (p.drDecayPerSec as number) ?? Infinity
+      // Built from time stood still (as it always was), holding whatever is
+      // still draining from before the last step until the build passes it.
+      if (this.stillFor >= delay) this.bracedDr = Math.max(this.bracedDr, (this.stillFor - delay) * perSec)
+      else if (this.stillFor === 0) this.bracedDr = Math.max(0, this.bracedDr - decay * dt)
+      this.bracedDr = Math.min(max, this.bracedDr)
+      if (this.bracedDr > 0) {
+        this.passiveDamageReduction = this.bracedDr / 100
+        // Whatever ceiling is active right now, not always the full 45:
         // Anchor Stone (`cb.bracedCapSlowPct`) reads this to mean "he cannot
         // bank any more reduction", which is equally true at the stale cap.
-        this.bracedAtCap = dr >= max
+        this.bracedAtCap = this.bracedDr >= max
       }
     } else if (p.id === 'momentum') {
       /*
          H13: Long Stride raises the cap AND the rate together.
 
          `dmgPerVelocityPct` (0.5) and `dmgMax` (50) are authored so full
-         velocity (velocityFraction 1) lands EXACTLY on the cap — 100% * 0.5
-         = 50 — which means a cap-only bonus is arithmetically inert: raw
+         velocity (velocityFraction 1) lands EXACTLY on the cap - 100% * 0.5
+         = 50 - which means a cap-only bonus is arithmetically inert: raw
          damage can never exceed 100% * rate under ordinary movement, so
          raising `dmgMax` alone with the rate untouched never moves anything
          a player can reach. Long Stride's own `momentumRatePctBonus` moves
@@ -966,12 +983,12 @@ export class Player {
       /*
          Following Wind: Momentum eases toward `raw` instead of snapping to
          it, at `momentumDecayPctPerSec` per second, whenever `raw` has
-         DROPPED below where the echo already is — i.e. only while slowing
+         DROPPED below where the echo already is - i.e. only while slowing
          or stopped. `momentumDecayPctPerSec` is 0 for every run without the
          card, so `raw < momentumEcho` is the only branch that could differ
          and it is never taken: the echo snaps to `raw` every tick exactly as
          `passiveDamagePct` always did. Accelerating is always instant either
-         way — the echo is a ceiling `raw` decays down toward, never a floor
+         way - the echo is a ceiling `raw` decays down toward, never a floor
          it is pulled up to.
       */
       const decay = this.classBonus.momentumDecayPctPerSec
@@ -987,7 +1004,7 @@ export class Player {
       const a = this.def.ability
       if (a.id === 'digIn') {
         const reduction = ((a.damageReductionPct as number) ?? 70) / 100
-        // The ability's reduction replaces the passive's rather than stacking —
+        // The ability's reduction replaces the passive's rather than stacking -
         // no multiplicative stacking anywhere (CLAUDE.md).
         this.passiveDamageReduction = Math.max(this.passiveDamageReduction, reduction)
       }
@@ -1008,7 +1025,7 @@ export class Player {
 
 /**
  * Item stat mods, flattened once at module load. Items with a `special` and no
- * `mods` contribute nothing here — their behaviour lives in the sim.
+ * `mods` contribute nothing here - their behaviour lives in the sim.
  */
 import { ITEMS } from '../content'
 const ITEM_MODS: Record<string, StatMods> = {}

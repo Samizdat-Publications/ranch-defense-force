@@ -1,6 +1,6 @@
 /**
  * Weapon behaviours: string key -> function, referenced from weapons.json
- * (architecture §2 — behaviour that can't be data is a named function the JSON
+ * (architecture §2 - behaviour that can't be data is a named function the JSON
  * points at by name).
  *
  * Two tables:
@@ -11,7 +11,7 @@
  *
  * Every tier rider named in weapons.json fires from here (M5). The rider text
  * in the JSON is what the level-up and shop cards show, and each one is
- * implemented directly below the behaviour it belongs to — if a card promises
+ * implemented directly below the behaviour it belongs to - if a card promises
  * it, this file does it. The magnitudes are all JSON too; nothing here invents
  * a number.
  *
@@ -49,13 +49,13 @@ const num = (def: WeaponDef, key: string, fallback: number): number => {
 const arcSwing: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   /*
      Batch 2. `arcSwing` is shared by the Pitchfork, the Post Hole Auger and
-     the Combine Head, and every mod id below is unique to one of them — the
+     the Combine Head, and every mod id below is unique to one of them - the
      gate that gets a card onto a slot in the first place means a Combine
      Head slot can never carry `longHaft`, so checking all nine here costs a
      run that owns none of them nine cheap array scans and never a false hit.
 
      `slot.t0` is free scratch for this behaviour (arcSwing uses `p.t0`/`p.t1`
-     for its own T3 re-arm, never the slot's) — Ash Handle and Down Pressure
+     for its own T3 re-arm, never the slot's) - Ash Handle and Down Pressure
      both count swings on it. The two can never share a physical slot (one
      weapon is the Pitchfork, the other the Post Hole Auger), so there is no
      contention. Down Pressure counts swings rather than tracking one specific
@@ -125,12 +125,12 @@ const arcSwing: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) =
 /**
  * Blades circling the player. Damage scales with move speed (§7).
  *
- * T2 widens the orbit, T3 adds a second blade, T4 "blades pierce" — the blade
+ * T2 widens the orbit, T3 adds a second blade, T4 "blades pierce" - the blade
  * cuts through rather than being turned by what it hits, which in an orbit
  * means it comes round to bite again twice as fast.
  */
 const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) => {
-  // Second Cutting grants an extra blade at any tier, and a weaker one — so it
+  // Second Cutting grants an extra blade at any tier, and a weaker one - so it
   // is a real upgrade for a T1 scythe and a smaller one for a T3 that already
   // has two. `extraBladeDamage` is the world's flattened item state, read here
   // rather than the item being special-cased inside the world.
@@ -142,15 +142,15 @@ const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) 
   // At the design's 74px the blade sweeps a ring the enemies are never in:
   // chasers press to about 25px from the player, and a blade orbiting at 74
   // passes 49px clear of them, so a standing player's axe hit almost nothing.
-  // Sprinting, the same radius is right — it cuts through the trail of pursuers
+  // Sprinting, the same radius is right - it cuts through the trail of pursuers
   // strung out behind you. Interpolating on `velocityFraction` keeps the wide
   // sweep the design drew and closes the blade to where enemies actually are
   // when you stop, so the axe is a real pick for The Hand as well as The Kid
   // without being strictly better for either. It also reads: the blades visibly
   // draw in when you plant your feet.
-  // T2's "+25% radius" widens the sweep, not the floor. The floor is geometry —
+  // T2's "+25% radius" widens the sweep, not the floor. The floor is geometry -
   // it is the distance at which the blade still reaches enemies pressed against
-  // you — and scaling it pushed a T2 axe back out of contact, so the rider made
+  // you - and scaling it pushed a T2 axe back out of contact, so the rider made
   // a standing player's axe worse than no rider at all.
   // Batch 2, Scythe: Whetted Edge tightens the hit interval further; Long
   // Snath widens the sweep, additively on top of T2's own widen (both scale
@@ -196,7 +196,7 @@ const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) 
       // Stamped from the tick, never a constant. A fixed stamp of -1 collided
       // with the value `spawnEnemy` leaves in `e.t1`, and the "already hit by
       // this stamp" guard was therefore true before the blade touched anything
-      // — the axe dealt no damage at all in any run.
+      // - the axe dealt no damage at all in any run.
       p.hitStamp = world.tick
       p.rearm = 0
     }
@@ -229,7 +229,7 @@ const orbit: WeaponBehaviour = ({ world, player, slot, def, damage, dt, tier }) 
  */
 const rotatingJet: WeaponBehaviour = ({ world, player, slot, def, damage, tier, dt }) => {
   // Batch 2, Chem Sprayer: Wide Nozzle and Concentrate are opposite trades on
-  // the same reach; Backpack Tank does not touch the jet itself at all — it
+  // the same reach; Backpack Tank does not touch the jet itself at all - it
   // doubles the LOAD it applies, so it is a payload change, not a geometry
   // one.
   const wideNozzle = hasMod(slot, 'wideNozzle')
@@ -261,7 +261,7 @@ const rotatingJet: WeaponBehaviour = ({ world, player, slot, def, damage, tier, 
   p.hitStamp = world.tick
   // Backpack Tank: the load this jet stamps on lasts twice as long. The load
   // itself is applied a moment later, in `World.applyElementTo`, off
-  // `p.loadDurationMul` — see that call site.
+  // `p.loadDurationMul` - see that call site.
   p.loadDurationMul = backpackTank ? num(def, 'backpackTankDurationMul', 2) : 1
   // The slow was previously written into scratch and then read by a line that
   // resolved to a no-op, so the can's headline effect never applied.
@@ -300,7 +300,7 @@ const hookFurthest: WeaponBehaviour = ({ world, player, slot, def, damage, tier 
      the line it replaces. It is the class stat block that pays for extra hooks.
   */
   // Batch 2, Harpoon Gun: Twin Line is a flat target bonus beside T3's own;
-  // Barbed Head and Winch both ride the per-target loop below — a bleed left
+  // Barbed Head and Winch both ride the per-target loop below - a bleed left
   // on the way in, a stun left on the way home.
   const barbedHead = hasMod(slot, 'barbedHead')
   const winch = hasMod(slot, 'winch')
@@ -424,7 +424,7 @@ const arcLob: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => 
 
   // Batch 2, Grenade Launcher: Thin Casing is a plain splash multiplier;
   // Willie Pete and Rifled Cup fire on DETONATION, which for this weapon
-  // happens on expiry rather than on contact — see the `arcLob` branch of
+  // happens on expiry rather than on contact - see the `arcLob` branch of
   // `World.integrateProjectiles`, the one place that already reads this
   // weapon's T3 rind off `p.t1`.
   const splash = num(def, 'splashRadius', 50)
@@ -470,7 +470,7 @@ const arcLob: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => 
 /**
  * Pierces, and burns what it passes through.
  *
- * The burn itself is new — `burnDps`/`burnDuration` were declared in the JSON
+ * The burn itself is new - `burnDps`/`burnDuration` were declared in the JSON
  * but nothing applied them, so the weapon's own headline did not fire either.
  * T2 burns longer, T3 spreads the burn when a burning enemy dies, T4 pierces
  * more.
@@ -587,11 +587,11 @@ const throwPuddle: WeaponBehaviour = ({ world, player, slot, def, damage, tier }
 
   /*
      Batch 2. `throwPuddle` is shared by the Tar Bomb and the Seed Drill, and
-     — as with `arcSwing` — every mod id below belongs to exactly one of them,
+     - as with `arcSwing` - every mod id below belongs to exactly one of them,
      so checking all six costs the other weapon nothing.
 
      Tar Bomb: Thin Cut and Heavy Cut are plain multipliers on the puddle's
-     own numbers; Sump Oil gives it a burn that does not need a fire Load —
+     own numbers; Sump Oil gives it a burn that does not need a fire Load -
      it takes the LARGER of its own dps and whatever T3 already ticks, so a
      T3+Sump Oil puddle is not double-counted.
 
@@ -649,7 +649,7 @@ const slam: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
      Batch 2. `slam` is shared by the Sledge and the Crow Bell, mod ids again
      unique to one weapon each. Long Handle, Dead Blow and Drop Forged are the
      Sledge's; Heavier Clapper, Cracked Bell and Tolls Twice are the Crow
-     Bell's, and read as "the peal" rather than "the slam" — the Crow Bell's
+     Bell's, and read as "the peal" rather than "the slam" - the Crow Bell's
      own blurb calls its hit a ring, so Tolls Twice repeats the PRIMARY pulse,
      not only T3's extra ring, and Cracked Bell's slow rides both.
   */
@@ -674,7 +674,7 @@ const slam: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   world.playFx('shockwave', player.x, player.y, 0, radius / 55, 0, 0, true)
 
   if (tollsTwice) {
-    // A second peal, 0.5s later at 60% — an attached hitbox with `pierce: -1`
+    // A second peal, 0.5s later at 60% - an attached hitbox with `pierce: -1`
     // so it detonates on expiry rather than on contact, the same trick
     // `arcLob` already uses. See the `tollsTwice` branch of
     // `World.integrateProjectiles`.
@@ -713,7 +713,7 @@ const slam: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
   }
 
   if (dropForged) {
-    // Drop Forged: the ground itself cracks. No damage — a fissure, not a
+    // Drop Forged: the ground itself cracks. No damage - a fissure, not a
     // hazard the sledge is scoring, exactly the shape the puddle riders use.
     const h = world.spawnHazard()
     if (h) {
@@ -737,7 +737,7 @@ const slam: WeaponBehaviour = ({ world, player, slot, def, damage, tier }) => {
  *
  * T2 lasts longer, T3 detonates when it expires, T4 reaches further. The
  * detonation is carried on the hazard's `dps` slot being zero and its `growth`
- * slot holding the blast — see `World.detonateLure`, which fires on expiry.
+ * slot holding the blast - see `World.detonateLure`, which fires on expiry.
  */
 const lure: WeaponBehaviour = ({ world, player, slot, def, tier }) => {
   const h = world.spawnHazard()
@@ -788,11 +788,11 @@ const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier })
     ) / 100
     : 1
   /*
-     docs/UPGRADE_ROSTER.md batch 3, Allies & Placeables: Littermate — "a
+     docs/UPGRADE_ROSTER.md batch 3, Allies & Placeables: Littermate - "a
      second dog at 80% damage", `requiresWeapon: 'barnDog'`. T3 already grants
      a second dog at FULL damage (below); Littermate's own job is only to open
      that second slot EARLY, at a discount, for a run that has not reached T3
-     yet. The two never stack into three, and a T3 dog is never discounted —
+     yet. The two never stack into three, and a T3 dog is never discounted -
      `i === 1 && tier < 3` is exactly "the slot Littermate opened that T3 did
      not", so a run with both simply keeps T3's full-damage second dog.
   */
@@ -825,7 +825,7 @@ const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier })
     }
     // Speed is a target the world steers toward, not a multiplier applied to
     // the current velocity. The previous form multiplied `vx` by 1.5 every
-    // tick this ran, which compounds — a T2 dog accelerated without limit.
+    // tick this ran, which compounds - a T2 dog accelerated without limit.
     p.angularVelocity = num(def, 'dogSpeed', 240)
       * (tier >= 2 ? num(def, 't2SpeedMultiplier', 1.5) : 1)
       * bloodUpMul
@@ -839,22 +839,22 @@ const minionHunt: WeaponBehaviour = ({ world, player, slot, def, damage, tier })
 }
 
 /**
- * A damaging ring that stays on you — the genre's other constant, next to the
+ * A damaging ring that stays on you - the genre's other constant, next to the
  * orbit. The owner asked for it in as many words: "some type of floating ring
  * around you that causes damage in a radius around you and powers up with
  * larger size area/circle or more damage."
  *
  * SUSTAIN, `cooldown: 0`: **one** attached projectile, repositioned every tick
  * and re-armed on an interval, exactly as the Scythe's blades are. It is not
- * a stream of pulses — a weapon that spawned a hitbox per tick would put sixty
- * projectiles a second through the pool for one ring — and it is not a hazard,
+ * a stream of pulses - a weapon that spawned a hitbox per tick would put sixty
+ * projectiles a second through the pool for one ring - and it is not a hazard,
  * because a hazard does not move with you and the whole point is that it does.
  *
  * The interval is what stops it grinding one enemy every frame: `hitInterval`
  * seconds between passes, `damage` per pass, so the number on the card is a
  * DPS and the number in the sim is a bite. The Chem Sprayer proved the
- * `type: 'aura'` path years before this — `renderer.ts:drawArcs` already
- * strokes a soft ring for it and `applyHit` already resolves it as ranged —
+ * `type: 'aura'` path years before this - `renderer.ts:drawArcs` already
+ * strokes a soft ring for it and `applyHit` already resolves it as ranged -
  * so the ring needed no renderer change and no new projectile type.
  *
  * T2 widens it, T3 hits harder and shoves on every pass, T4 slows what is
@@ -900,7 +900,7 @@ const sustainAura: WeaponBehaviour = ({ world, player, slot, def, damage, dt, ti
     p.rearm = interval
     p.hitStamp = world.tick
     p.hitsLeft = 999
-    // T3's shove rides the pass rather than being continuous — a knockback
+    // T3's shove rides the pass rather than being continuous - a knockback
     // applied sixty times a second is a wall, not a pulse.
     p.knockback = tier >= 3 ? num(def, 't3Knockback', 110) : 0
   } else {
@@ -920,7 +920,7 @@ const sustainAura: WeaponBehaviour = ({ world, player, slot, def, damage, dt, ti
   p.damage = damage * burn
   // T4 "the dust settles on them": the ring slows what is standing in it.
   // Damper Plate gives an early ring the same rider at a smaller number,
-  // independent of tier — the larger of the two wins rather than summing.
+  // independent of tier - the larger of the two wins rather than summing.
   p.slowOnHit = Math.max(
     tier >= 4 ? num(def, 't4SlowPct', 35) : 0,
     damperPlate ? num(def, 'damperPlateSlowPct', 25) : 0,

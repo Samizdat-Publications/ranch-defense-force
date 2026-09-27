@@ -5,16 +5,16 @@
  *
  * ## Why this exists
  *
- * `tools/play.ts` notes that page load can block for "tens of seconds — a 12MB
+ * `tools/play.ts` notes that page load can block for "tens of seconds - a 12MB
  * atlas", and the atlas was split into pages partly on the strength of that.
  * A claim like that is worth a number rather than a memory, and the number has
  * to separate two things the same page load conflates:
  *
- * - **boot** — `goto` until `window.rdf` exists. That is module evaluation and
+ * - **boot** - `goto` until `window.rdf` exists. That is module evaluation and
  *   the first paint of the menu. The atlas is NOT on this path: `main.ts`
  *   kicks `Atlas.load` off and does not await it, deliberately, so a slow or
  *   missing atlas costs the art and not the game.
- * - **art** — `goto` until `rdf.atlas` is non-null, i.e. every page image has
+ * - **art** - `goto` until `rdf.atlas` is non-null, i.e. every page image has
  *   decoded and its white-silhouette flash copy has been built. This is the
  *   one the atlas size can move.
  *

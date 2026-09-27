@@ -4,9 +4,14 @@
   "waveDuration": 40,
   "continuous": true,
   "_bossNote": "The Prize Bull runs twice. Wave 18 was empty of anything a run could lose to -- session 23 measured the home pilots' deaths and waves 15-25 held almost none of them, which is the shape behind the owner's 'I could have gone probably infinitely longer'. He is not re-tuned for it: `waveHpScalar` is 3.6x at wave 12 and 6.4x at wave 18, so the same nine hundred pounds arrives with nearly twice the health, against a build that has had six more waves to get ready for him. Measured: the home pilots now die on waves 18-21 on seeds where nothing used to kill them at all.",
+  "_bossScheduleNote": "v2: a boss every third wave, every boss the art pass built (the four that sat at weight 0, the rusted tractor as its own fight, the Duster as the plane). Each boss's hp is its base times the wave's hp scalar, so the base values in enemies.json are set for the wave each one lands on: roughly 1.2k, 2k, 3.2k, 4.8k, 6.8k, 9k and then the Duster.",
   "bossWaves": {
+    "6": "bossCockerel",
+    "9": "bossScarecrow",
     "12": "prizeBull",
-    "18": "prizeBull",
+    "15": "bossSow",
+    "18": "bossCombine",
+    "21": "sprayRig",
     "25": "duster"
   },
   "shopAfterWaves": [
@@ -34,9 +39,31 @@
     "linear": 30,
     "quadratic": 1.4
   },
-  "_pressureNote": "Left at 380 after being measured, twice, as INERT. Session 23 ran the whole ladder at 700 against the doubled density and got byte-identical results: peak live count averages 194 over a run and the ceiling withholds for a mean of ZERO seconds. It is a guard against a compounding failure that no longer happens, not a difficulty knob, and raising it would only spend frames. `spawn.minDistanceFromPlayer` is the same story -- 130 measured identical to 220, because `Spawner.pickSpawnPoint` only ever picks ARENA EDGES and the `cornTile` source listed below has never been implemented.",
-  "pressureCeiling": 380,
+  "_pressureNote": "(Pre-v2; see spawn._ringNote.) Left at 380 after being measured, twice, as INERT. Session 23 ran the whole ladder at 700 against the doubled density and got byte-identical results: peak live count averages 194 over a run and the ceiling withholds for a mean of ZERO seconds. It is a guard against a compounding failure that no longer happens, not a difficulty knob, and raising it would only spend frames. `spawn.minDistanceFromPlayer` is the same story -- 130 measured identical to 220, because `Spawner.pickSpawnPoint` only ever picks ARENA EDGES and the `cornTile` source listed below has never been implemented.",
+  "_hordeNote": "v2: the horde. Every critic round said the field had no crowd, and the owner agreed. `count` (see _countNote) multiplies each wave's threat budget, so that many more bodies come; `hp`, `damage`, `xp` and `feed` scale each ordinary enemy (never a boss) so that a crowd three times the size is not three times the danger or three times the payout. `mergeRadius`: a seed dropped this close to one already lying there joins it, so a crowd's payout is a handful of bigger seeds, not a carpet.",
+  "horde": {
+    "count": 1.6,
+    "countPerWave": 0.16,
+    "_countNote": "The multiplier grows with the day: count at wave 1, plus countPerWave each wave after (1.6 at dawn, 3.0 by wave 10, 5.4 by the Duster; 1.5 and 0.12 until the owner and critic rounds 12 and 13 asked for more horde). Measured with npm run probe -- 8 density at 1.8/0.15: on screen at wave 3, 23 became 37, and at wave 5, 29 became 49. More bodies level a bot faster, so xp went 0.45 to 0.35 with it. At 1.8 a player who never moves died at a median of wave 4.75 (run.test.ts wants 5), so dawn starts at 1.6 and the day climbs 0.16 a wave instead. A flat 2.6 put fifty on screen in wave 1, enough to kill the glass classes standing still, and let a late build clear the field faster than it filled (the probe counted sixteen on screen at wave 24). Groups grow with the square root of it, so late waves arrive as crowds rather than as more of the same trickle.",
+    "hp": 0.5,
+    "hpPerWave": 0.024,
+    "_hpNote": "Enemy health grows through the day on top of the wave hp curve: 0.5 at dawn, 0.76 by wave 12, 1.08 by the Duster. When the horde grew in round 15 the bot taking whatever came up beat the one that merged (98 waves to 85); 0.55 here fixed that but left the Hand no better standing than running (1 clear to 6), so the fix went to the merge instead (tuning.merge, 1.6 to 1.7). Flat, a build that was alive at wave 12 cruised the rest, and a player who never moved cleared 3 of 24 runs (run.test.ts allows 2); the ring delivers enemies to a stationary player, who levels faster than v1's ever did. Below about 0.5 at any wave every hit overkills and merging stops paying.",
+    "damage": 0.6,
+    "damagePerWave": 0,
+    "xp": 0.35,
+    "feed": 0.15,
+    "mergeRadius": 40
+  },
+  "pressureCeiling": 520,
   "spawn": {
+    "_ringNote": "v2: most enemies step on from just beyond the edge of the screen, all round the player (Spawner.pickSpawnPoint). halfW/halfH are half a 16:9 view at the game's view height (render.viewHeight 450) plus a little, so nothing appears on screen out of thin air; margin and depth set how far past that edge. `chance` is the share that comes this way; the rest come over the fence as they always did. With the ring the pressure ceiling is no longer inert, so it rose to 520.",
+    "ring": {
+      "chance": 0.85,
+      "halfW": 420,
+      "halfH": 240,
+      "margin": 30,
+      "depth": 110
+    },
     "minDistanceFromPlayer": 220,
     "sources": [
       "arenaEdge",
@@ -44,8 +71,8 @@
     ],
     "finalQuarterBias": 1.4,
     "groupInterval": {
-      "min": 0.3,
-      "max": 0.9
+      "min": 0.2,
+      "max": 0.6
     },
     "_groupIntervalNote": "Seconds between GROUPS, not enemies. This was hardcoded in spawner.ts as rng.range(0.5, 1.5) and it was the real throughput cap: the budget could allow more, but one group per second is all the director could physically emit, so a wave finished spawning around the 23s mark and the field drained for the rest of it. Halving it is most of what makes the arena feel like a bullet-heaven rather than a skirmish."
   },
@@ -67,7 +94,9 @@
     "shopReroll": "3 + 2*rerollsThisShop",
     "levelReroll": 4,
     "sinkCostGrowth": 1.18,
-    "_sinkCostGrowthNote": "The always-available shop sinks (fieldRation, tierUpToken, rerollChit, acreBond, secondHarvest — items.json's `scalesWithStacks: true`) have no maxStacks, so without this every copy after the first would sell at the same price forever and a run sitting on thousands of unspent feed would have nowhere real to put it. `sinkCost` in formulas.ts is the truth; this is the number, one knob for all five so they inflate at the same rate."
+    "pricePerWave": 0,
+    "_pricePerWaveNote": "Shop prices climb by this fraction a wave (0.04 = 4% a wave, about 1.9x by the Duster). OFF: built for critic round 17 (thousands of feed unspent at the end) and left for the owner to call, see NOTES.md \"Pacing\".",
+    "_sinkCostGrowthNote": "The always-available shop sinks (fieldRation, tierUpToken, rerollChit, acreBond, secondHarvest - items.json's `scalesWithStacks: true`) have no maxStacks, so without this every copy after the first would sell at the same price forever and a run sitting on thousands of unspent feed would have nowhere real to put it. `sinkCost` in formulas.ts is the truth; this is the number, one knob for all five so they inflate at the same rate."
   },
   "xp": {
     "formula": "ceil(flat + linear*L + power*pow(L,exponent))",
@@ -86,5 +115,5 @@
       "stopSpawningAfterWave": 14
     }
   },
-  "_bossWaveNote": "waveCount is 25, not 24. §9 puts the Duster on wave 25 while waveCount was 24, so the run called finishRun the instant wave 24 completed and wave 25 never began — the final boss could not be fought at all. Wave 25 is now the finale."
+  "_bossWaveNote": "waveCount is 25, not 24. §9 puts the Duster on wave 25 while waveCount was 24, so the run called finishRun the instant wave 24 completed and wave 25 never began - the final boss could not be fought at all. Wave 25 is now the finale."
 }

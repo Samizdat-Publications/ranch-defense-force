@@ -9,7 +9,7 @@
  *
  * Rarity is never hardcoded here. The tier's colour, ink and pip count come
  * from `rarity.json` through `RARITY`, and are handed to CSS as custom
- * properties on the plate — so retuning a tier is a content edit.
+ * properties on the plate - so retuning a tier is a content edit.
  */
 import { RARITY, type RarityTier } from '../content'
 import { el } from './dom'
@@ -28,7 +28,7 @@ export interface CardSpec {
   /**
    * The draw's own quota axis (docs/UPGRADE_ROSTER.md §7.1), printed at the
    * right of the kind band: ON-HIT, LOAD, ALLY… so a board reads at a glance
-   * as more than a wall of names. Undefined draws nothing — the Homestead's
+   * as more than a wall of names. Undefined draws nothing - the Homestead's
    * purchase cards and class-select have no `OfferCategory` to show.
    */
   category?: string
@@ -50,12 +50,12 @@ export interface CardSpec {
    * The stack counter, beside the lot number (docs/UPGRADE_ROSTER.md §5).
    *
    * `3/5` for a stackable, `ONE ONLY` for a card that can never come back, and
-   * `4/4 · LAST` on the final copy — the one case the contract calls out as
+   * `4/4 · LAST` on the final copy - the one case the contract calls out as
    * still missing, because "this was your last one" is the difference between
    * spending a level-up on a card and regretting it.
    */
   stack?: string
-  /** Footer right slot — where the card came from, or its price. */
+  /** Footer right slot - where the card came from, or its price. */
   source?: string
   /** Shop and Homestead: the price, rendered in the footer. */
   price?: number
@@ -63,7 +63,7 @@ export interface CardSpec {
   priceUnit?: string
   /**
    * A plain tin plate carrying this many pips, for a surface that has a RANK
-   * rather than a rarity — the Homestead's purchase cards, per the design:
+   * rather than a rarity - the Homestead's purchase cards, per the design:
    * "rank pips instead of a rarity tier". Ignored when `rarity` is set; a card
    * has one plate.
    */
@@ -107,8 +107,8 @@ function plate(rarity: string): HTMLElement | null {
 /**
  * The same tin, carrying a RANK rather than a tier.
  *
- * The Homestead's purchases have no rarity — a rank of the Feed Store is not
- * rare, it is your third one — so the design puts pips on a plain plate there
+ * The Homestead's purchases have no rarity - a rank of the Feed Store is not
+ * rare, it is your third one - so the design puts pips on a plain plate there
  * instead. Same stamped metal, same position, no colour claim.
  */
 function rankPlate(pips?: number): HTMLElement | null {

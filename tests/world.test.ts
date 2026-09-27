@@ -1,10 +1,10 @@
 /**
  * Headless world tests. The sim imports nothing from render/ or ui/, which is
- * what lets these run with no DOM at all — that boundary is a non-negotiable
+ * what lets these run with no DOM at all - that boundary is a non-negotiable
  * in CLAUDE.md and this file is what keeps it honest.
  */
 import { describe, expect, it } from 'vitest'
-import { ENEMIES, WAVES } from '../src/content'
+import { ENEMIES, TUNING, WAVES } from '../src/content'
 import { World } from '../src/sim/world'
 import { STEP } from '../src/core/loop'
 
@@ -262,7 +262,7 @@ describe('World invariants', () => {
   })
 
   it('acid pools and gas clouds hurt the player', () => {
-    // These spawned and rendered but were harmless before M5 — the pool was the
+    // These spawned and rendered but were harmless before M5 - the pool was the
     // acid zombie's entire point.
     for (const kind of ['acid', 'gas'] as const) {
       const w = new World(23, 'hand')
@@ -285,7 +285,7 @@ describe('World invariants', () => {
     it('never lets the wave director spawn one', () => {
       // Bosses carry threatCost 0 so the budget cannot refuse them, which means
       // leaving them in the spawner roster let the director pick the Prize Bull
-      // like any other enemy — free, and without limit. Every bot run died on
+      // like any other enemy - free, and without limit. Every bot run died on
       // wave one.
       const w = new World(5, 'hand')
       for (let i = 0; i < 3600; i++) w.step(STEP, 1, 0, false)
@@ -351,7 +351,7 @@ describe('World invariants', () => {
 
     it('makes wave 25 reachable at all', () => {
       // Section 9 puts the Duster on wave 25 while waveCount was 24, so the run
-      // finished the instant wave 24 completed and wave 25 never began — the
+      // finished the instant wave 24 completed and wave 25 never began - the
       // final boss could not be fought.
       expect(WAVES.waveCount).toBeGreaterThanOrEqual(
         Math.max(...Object.keys(WAVES.bossWaves as Record<string, string>).map(Number)),
@@ -382,7 +382,7 @@ describe('World invariants', () => {
   it('never lets an fx decision touch the rng stream', () => {
     // The guarantee this protects: a seed replays exactly, whatever the art is
     // doing. If a spark ever rolls `world.rng`, drawing fewer sparks would move
-    // every later spawn — so playFx is proven here to consume nothing.
+    // every later spawn - so playFx is proven here to consume nothing.
     const w = new World(77, 'kid')
     for (let i = 0; i < 600; i++) w.step(STEP, 1, 0, false)
 
@@ -399,13 +399,13 @@ describe('World invariants', () => {
 })
 
 /**
- * The Smudge Pot — docs/UPGRADE_ROSTER.md batch 1's aura weapon.
+ * The Smudge Pot - docs/UPGRADE_ROSTER.md batch 1's aura weapon.
  *
  * The owner asked for "a floating ring around you that causes damage in a
  * radius around you and powers up with larger size area/circle or more
  * damage". The three things that can go wrong with one are all here: it can
  * spawn a hitbox per tick and eat the pool, it can fail to grow with the tier,
- * and it can be carried — which the farmhand's loadout has no answer for.
+ * and it can be carried - which the farmhand's loadout has no answer for.
  */
 describe('the aura weapon', () => {
   const equip = (w: World): void => {
@@ -464,7 +464,7 @@ describe('the aura weapon', () => {
   /*
    * The bug this test would have caught: `sustainAura` computed
    * `p.damage = damage * burn * interval`, which folds `hitInterval` into the
-   * per-pass bite a SECOND time — `interval` already governs how often a pass
+   * per-pass bite a SECOND time - `interval` already governs how often a pass
    * lands (the rearm above it), so multiplying it into the pass's size too
    * halved the delivered dps at every tier, silently, since the weapon
    * shipped. None of the three tests above catch it: "kills things on its
@@ -472,7 +472,8 @@ describe('the aura weapon', () => {
    * there eventually against a wave-1 farmhand.
    *
    * `weapons.json`'s own tier table states the dps this weapon is supposed to
-   * deal -- 10, 16, 41, 65.5 -- so the assertion is exact, not a floor.
+   * deal (10 at T1, then x M a tier with a +60% rider from T3, M being the merge
+   * multiplier in tuning.json), so the assertion is exact, not a floor.
    */
   it('deals the dps its own card states, at every tier', () => {
     const dpsAt = (tier: number): number => {
@@ -493,10 +494,11 @@ describe('the aura weapon', () => {
       }
       return dealt / seconds
     }
+    const M = (TUNING as unknown as { merge: { tierDamageMultiplier: number } }).merge.tierDamageMultiplier
     expect(dpsAt(1)).toBeCloseTo(10, 1)
-    expect(dpsAt(2)).toBeCloseTo(16, 1)
-    expect(dpsAt(3)).toBeCloseTo(41, 1)
-    expect(dpsAt(4)).toBeCloseTo(65.5, 1)
+    expect(dpsAt(2)).toBeCloseTo(10 * M, 1)
+    expect(dpsAt(3)).toBeCloseTo(10 * M * M * 1.6, 1)
+    expect(dpsAt(4)).toBeCloseTo(10 * M * M * M * 1.6, 1)
   })
 
   it('is carried by nothing, and the loadout copes', async () => {
@@ -507,7 +509,7 @@ describe('the aura weapon', () => {
     const out: (string | null)[] = [null, null, null, null, null, null, null, null]
     assignCarrySlots(w.player.weapons, out as never, 'hand')
     // `carry: "none"` means the farmhand never tries to hang a smoking pot off
-    // his belt — the same answer the Scythe and the Barn Dog already give, and
+    // his belt - the same answer the Scythe and the Barn Dog already give, and
     // `assignCarrySlots` skips it without needing to know why.
     expect(out[0]).toBe(null)
     expect(out[1]).toBe('hand')

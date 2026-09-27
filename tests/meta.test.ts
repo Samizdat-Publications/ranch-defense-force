@@ -135,7 +135,7 @@ describe('banking a run', () => {
 
   /**
    * The Acre Bond shop sink (`items.json`, `special: 'acreBond'`) is the
-   * run-to-meta answer to unspent late-game feed — `World.bonusAcres`,
+   * run-to-meta answer to unspent late-game feed - `World.bonusAcres`,
    * folded in here rather than derived, so a died-mid-run bond still pays:
    * it was already spent, whatever the run does next.
    */
@@ -147,6 +147,16 @@ describe('banking a run', () => {
       s2, { wavesCleared: 8, bossKills: 0, tier: 1, cleared: false, bonusAcres: 9 }, 1, 'hand',
     )
     expect(withBond).toBe(plain + 9)
+  })
+
+  /** Leftover feed is sold at the day's end, in whole acres only. */
+  it('sells the feed left in the purse for acres', () => {
+    const per = (META as unknown as { acres: { feedPerAcre: number } }).acres.feedPerAcre
+    const plain = bankRun(emptySave(), { wavesCleared: 8, bossKills: 0, tier: 1, cleared: false }, 1, 'hand')
+    const sold = bankRun(
+      emptySave(), { wavesCleared: 8, bossKills: 0, tier: 1, cleared: false, feedLeft: per * 3 + per - 1 }, 1, 'hand',
+    )
+    expect(sold).toBe(plain + 3)
   })
 
   /**
@@ -202,7 +212,7 @@ describe('locked classes', () => {
    * The class picker built its cards once, in the constructor, from the full
    * roster with no unlock check. That was harmless while every class was free
    * and became "all four paid classes are free" the moment the Bunkhouse had
-   * something to sell — a bug worth exactly the price of the ladder.
+   * something to sell - a bug worth exactly the price of the ladder.
    */
   it('offers only the free classes on a fresh save', () => {
     const s = emptySave()

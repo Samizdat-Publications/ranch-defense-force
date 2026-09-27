@@ -1,7 +1,7 @@
 /**
  * Enemy steering, keyed by the `behaviour` string in enemies.json.
  *
- * Each function sets `e.vx`/`e.vy` for the tick. It must not move the enemy —
+ * Each function sets `e.vx`/`e.vy` for the tick. It must not move the enemy -
  * integration and separation happen once, in the world, after every enemy has
  * steered (tick order step 4).
  *
@@ -182,7 +182,7 @@ const charge: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
       e.s0 = 2
     // Boss only: the charge brings the herd once he is hurt (§9).
     world.tryStampedePublic(e)
-      // Lock the lane at wind-up end — turning mid-charge would remove the
+      // Lock the lane at wind-up end - turning mid-charge would remove the
       // whole point of the tell.
       e.s1 = e.facing
       e.t0 = (dist + 140) / chargeSpeed
@@ -206,18 +206,23 @@ const charge: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
 }
 
 /**
- * The Duster (§9).
+ * The Duster (§9): the crop duster itself, flown by nobody.
  *
- * Phase 1 is the whole idea: it drives a fixed agricultural back-and-forth and
- * **never chases**. The danger is entirely of your own making — the arena fills
- * with lanes you cannot be in, and it is up to you not to be in them. A boss
- * that ignores you is a harder design problem than one that hunts you, and it
- * is the reason this fight is not just the Bull with more health.
+ * It flies. Everything below follows from that: it never stops, it cannot turn
+ * on the spot, and it banks round in an arc at the end of every pass.
  *
- * Phase 2 breaks the pattern: it turns, finds you, and comes on slowly, still
- * dragging its strip. Meanwhile the rows burn inward and the arena closes.
+ * Phase 1, the Pattern, is the whole idea: a fixed agricultural back-and-forth,
+ * lane by lane down the field, spraying as it goes. It **never chases**. The
+ * danger is entirely of your own making: the field fills with lanes you cannot
+ * stand in, and it is up to you not to be in them.
  *
- * Scratch: s0 phase, s1 lane direction, t0 gas timer, t1 summon timer.
+ * Phase 2 breaks the pattern: it comes round and makes strafing runs straight
+ * through where you are standing, overshoots, banks, and comes again, while the
+ * rows burn inward and the corn sends farmhands.
+ *
+ * Steering is a heading with a turn rate, so every change of course is an arc.
+ * Scratch: s0 phase, s1 lane direction (phase 1) / overshoot timer (phase 2),
+ * t0 spray timer, t1 summon timer, a0 lane y.
  */
 const duster: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
   const def = ENEMIES[e.typeId]
@@ -228,37 +233,50 @@ const duster: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
   // --- phase -------------------------------------------------------------
   if (e.s0 === 0 && e.hp <= e.maxHp * (num('phase2BelowPct', 50) / 100)) {
     e.s0 = 1
+    e.s1 = 0
     world.addShake(0.9)
     world.beginArenaBurn(num('shrinkSeconds', 90), num('shrinkToFraction', 0.34))
   }
 
+  let tx: number
+  let ty: number
+  let speed: number
+  let turn: number
   if (e.s0 === 0) {
-    // The Pattern. Drive to the far side, drop a lane, come back. It does not
-    // know the player exists.
-    if (e.s1 === 0) e.s1 = 1
-    const speed = num('patrolSpeed', 54)
-    const margin = 90
-    const targetX = e.s1 > 0 ? world.arenaW - margin : margin
-    const dx = targetX - e.x
-    if (Math.abs(dx) < speed * dt * 2) {
-      // End of the run: step down a lane and turn around.
-      e.s1 = -e.s1
-      e.y += num('laneStep', 150)
-      if (e.y > world.arenaH - margin) e.y = margin
-      e.vx = 0
-      e.vy = 0
-    } else {
-      e.vx = Math.sign(dx) * speed
-      e.vy = 0
+    // The Pattern: fly to the far end of the lane, then the next lane down.
+    if (e.s1 === 0) {
+      e.s1 = e.x < world.arenaW / 2 ? 1 : -1
+      e.a0 = Math.max(120, Math.min(world.arenaH - 120, e.y))
     }
+    const margin = num('laneMargin', 170)
+    tx = e.s1 > 0 ? world.arenaW - margin : margin
+    ty = e.a0
+    if ((e.s1 > 0 && e.x >= tx) || (e.s1 < 0 && e.x <= tx)) {
+      e.s1 = -e.s1
+      e.a0 += num('laneStep', 150)
+      if (e.a0 > world.arenaH - 120) e.a0 = 120
+    }
+    speed = num('patrolSpeed', 120)
+    turn = num('turnRate', 1.5)
   } else {
-    // Off the Rails. Comes for you, slowly, still dragging the strip.
-    const dx = playerX - e.x
-    const dy = playerY - e.y
-    const d = Math.hypot(dx, dy) || 1
-    const speed = num('chaseSpeed', 38)
-    e.vx = (dx / d) * speed
-    e.vy = (dy / d) * speed
+    // Strafing runs: straight at where you are, past you, round, again.
+    if (e.s1 > 0) {
+      // Overshooting: hold the heading until the timer runs out.
+      e.s1 -= dt
+      tx = e.x + Math.cos(e.facing) * 100
+      ty = e.y + Math.sin(e.facing) * 100
+    } else {
+      tx = playerX
+      ty = playerY
+      const dx = playerX - e.x
+      const dy = playerY - e.y
+      // Passed over you (you are behind it, and close): overshoot, then turn.
+      if (dx * Math.cos(e.facing) + dy * Math.sin(e.facing) < 0 && dx * dx + dy * dy < 160 * 160) {
+        e.s1 = num('overshootSeconds', 0.9)
+      }
+    }
+    speed = num('strafeSpeed', 165)
+    turn = num('strafeTurnRate', 2.1)
 
     // Farmhands pour from the corn for the rest of the fight.
     e.t1 -= dt
@@ -268,16 +286,26 @@ const duster: EnemyBehaviour = ({ world, e, dt, playerX, playerY }) => {
     }
   }
 
-  if (e.vx !== 0 || e.vy !== 0) e.facing = Math.atan2(e.vy, e.vx)
+  // Turn toward the target at a limited rate, then fly the heading.
+  const want = Math.atan2(ty - e.y, tx - e.x)
+  let diff = want - e.facing
+  while (diff > Math.PI) diff -= Math.PI * 2
+  while (diff < -Math.PI) diff += Math.PI * 2
+  const maxTurn = turn * dt
+  e.facing += Math.max(-maxTurn, Math.min(maxTurn, diff))
+  if (e.facing > Math.PI) e.facing -= Math.PI * 2
+  else if (e.facing < -Math.PI) e.facing += Math.PI * 2
+  e.vx = Math.cos(e.facing) * speed
+  e.vy = Math.sin(e.facing) * speed
 
-  // --- the strip ---------------------------------------------------------
-  // Laid in both phases. This is the thing that actually kills you.
+  // --- the spray -----------------------------------------------------------
+  // Laid from the booms in both phases. This is the thing that actually kills you.
   e.t0 -= dt
   if (e.t0 <= 0) {
     e.t0 = num('gasEvery', 0.5)
     world.dropGasStrip(
-      e.x - Math.cos(e.facing) * 40,
-      e.y - Math.sin(e.facing) * 40,
+      e.x - Math.cos(e.facing) * 30,
+      e.y - Math.sin(e.facing) * 30,
       num('gasRadius', 44),
       num('gasSeconds', 7),
       num('gasDps', 9),

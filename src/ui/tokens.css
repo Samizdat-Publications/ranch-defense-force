@@ -1,19 +1,19 @@
 /* ===================================================================
-   PAPER & PIN — the design tokens
+   PAPER & PIN - the design tokens
    ===================================================================
    From docs/DESIGN_LANGUAGE.md. Every screen is built from one idea:
    the UI is PRINTED MATTER ON A FARM. Kraft seed packets, stamped tin
    plates, wood type, dotted paper, a bulldog clip when something is
    held. Nothing is a glass panel and nothing glows for decoration.
 
-   This replaces THE PANEL LANGUAGE wholesale — the carved-wood
+   This replaces THE PANEL LANGUAGE wholesale - the carved-wood
    border-image 9-slice, wood-as-chrome, dark-field-for-text and
    gold-means-affordable. The handoff says explicitly: do not preserve
    it. The `fill`-keyword bug goes with it, because there is no
    9-slice in this design at all; borders are plain solid ink.
 
    Three things earned their place and are kept:
-     1. The HP chaser — the delayed white band draining behind the red.
+     1. The HP chaser - the delayed white band draining behind the red.
      2. The scaleY cooldown wipe on weapon slots.
      3. Affordable gets a warm outline on every purchase surface.
 
@@ -23,7 +23,7 @@
    =================================================================== */
 
 /* Self-hosted: a webfont link is a network dependency on a game that
-   should run offline. Latin subset only — the game ships English and
+   should run offline. Latin subset only - the game ships English and
    latin-ext would double the payload for glyphs nothing renders. */
 @font-face {
   font-family: 'Rye';
@@ -40,15 +40,22 @@
   src: url('/fonts/silkscreen-700.woff2') format('woff2');
   font-weight: 700; font-style: normal; font-display: block;
 }
-/* Pixelify Sans (OFL 1.1, public/fonts/pixelify-sans-OFL.txt), variable
-   400-700. The label face since v2 critic round 9: Silkscreen is an 8 px
-   grid font, and at the 11-15 px the labels need its C closes into an O
-   ("OANTON, OHIO", "BAOK TO THE FIELD"). Silkscreen stays for the in-world
-   damage digits, which draw at exactly 8 and 16 px. */
+/* The label face since v2 critic round 12: Plex Mono at a heavier cut than
+   the body. Pixelify Sans at 11-15 px drew C as O and B as 8 in the browser
+   ("SOATTERGUN", "OHEM SPRAYER", "8AR8ED WIRE"), the same failure Silkscreen
+   had; and round 11 had counted four typefaces. The labels share the body's
+   family now, so the screens use two faces and one for the digits in the
+   world. Its own family name so a rule's 400 and 700 land on 500 and 600
+   without touching the thirty-nine rules that name --label. */
 @font-face {
-  font-family: 'Pixelify Sans';
-  src: url('/fonts/pixelify-sans.woff2') format('woff2');
-  font-weight: 400 700; font-style: normal; font-display: block;
+  font-family: 'RDF Label';
+  src: url('/fonts/ibm-plex-mono-500.woff2') format('woff2');
+  font-weight: 100 500; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'RDF Label';
+  src: url('/fonts/ibm-plex-mono-600.woff2') format('woff2');
+  font-weight: 600 900; font-style: normal; font-display: block;
 }
 @font-face {
   font-family: 'IBM Plex Mono';
@@ -79,7 +86,7 @@
      `background: var(--paper)` therefore sets the image and resets the
      background-COLOUR to transparent. Any later `background-image` on the
      same element then replaces the gradient outright and the surface has
-     nothing opaque left in it at all — which is exactly how every level-up
+     nothing opaque left in it at all - which is exactly how every level-up
      card ended up showing the field through its own blurb.
 
      Paint the colour as well as the gradient and paper is paper even when
@@ -95,7 +102,7 @@
      THE ALPHA IS PART OF THE TOKEN, and that is the point of it.
      DESIGN_LANGUAGE.md specifies "dotted stock, 0.12 opacity". `.psheet::before`
      and `.hero-body::after` honour that by hanging the dots off a pseudo-element
-     and setting `opacity` on it — but `.pcard` and `.stock` apply this token
+     and setting `opacity` on it - but `.pcard` and `.stock` apply this token
      directly as a background-image, where there is nothing to carry an opacity,
      so they were painting a solid #5a4630 dot every 4px. Eight times the
      intended strength, over every blurb on every card.
@@ -104,7 +111,7 @@
      the dots from a pseudo-element into the background shorthand and quietly
      left their opacity behind. Baking the alpha into the colour means the token
      is correct wherever it is used, with or without a pseudo-element to dim it.
-     Anything using it must NOT also set `opacity` — that multiplies to 0.014.
+     Anything using it must NOT also set `opacity` - that multiplies to 0.014.
   */
   --paper-dots: radial-gradient(rgba(90, 70, 48, 0.12) 1px, transparent 1px);
   --paper-edge: #40311f;
@@ -141,7 +148,7 @@
 
   /* --- Type --- */
   --display: 'Rye', Georgia, serif;
-  --label: 'Pixelify Sans', 'Silkscreen', ui-monospace, monospace;
+  --label: 'RDF Label', 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
   --body: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
 
   /* --- Motion. All on transform/opacity/width; nothing per-frame. --- */

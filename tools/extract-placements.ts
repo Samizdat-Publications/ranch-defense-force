@@ -8,7 +8,7 @@
  * **Why this is a tool and not a careful read.** A scene is fifty-odd sprites
  * with a left, a top, a size, a filter and an animation each. Transcribing that
  * by hand is a hundred chances to fat-finger a number, and every one of them is
- * invisible — a sprite eight pixels off looks fine on its own and wrong only in
+ * invisible - a sprite eight pixels off looks fine on its own and wrong only in
  * company. Worse, a hand-typed table goes stale the first time Design
  * re-exports, and then two documents disagree with no way to tell which is
  * right. `PLACEMENTS.md` already said it was "extracted from the mockup source
@@ -130,11 +130,11 @@ function extract(html: string): Placement[] {
 const files = process.argv.slice(2).filter((a) => a.endsWith('.dc.html'))
 if (!files.length) { console.error('usage: npm run placements -- <artboard.dc.html> ...'); process.exit(1) }
 
-let md = `# Scene placements — generated, do not hand-edit\n\n`
+let md = `# Scene placements - generated, do not hand-edit\n\n`
   + `Written by \`npm run placements\` straight out of the Claude Design artboards.\n`
   + `All numbers are in **1920x1080 stage space**, top-left origin. Layer = DOM order\n`
   + `(higher paints later), which is the order \`src/ui/scene.ts\` must build in.\n\n`
-  + `\`still\` is an atlas key drawn once. \`strip\` is \`sheet.clip.direction\` — a\n`
+  + `\`still\` is an atlas key drawn once. \`strip\` is \`sheet.clip.direction\` - a\n`
   + `packed animation, drawn by \`stripActor\`/\`clipActor\` rather than as an image.\n`
 
 for (const file of files) {
@@ -145,7 +145,7 @@ for (const file of files) {
   rows.forEach((p, i) => {
     const tint = [p.opacity ? `op ${p.opacity}` : '', p.filter ?? ''].filter(Boolean).join(' · ')
     md += `| ${i + 1} | ${p.kind} | \`${p.key}\` | ${p.x} | ${p.y} | ${p.w} | ${p.h} `
-      + `| ${p.anim ?? '—'} | ${tint || '—'} |\n`
+      + `| ${p.anim ?? ' - '} | ${tint || ' - '} |\n`
   })
   const unresolved = rows.filter((p) => p.key.startsWith('??'))
   console.log(`${basename(file)}: ${rows.length} placements`

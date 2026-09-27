@@ -22,7 +22,7 @@
  *
  * Using the wrong one does not fail cleanly. `POST /v2/characters/{id}/
  * animations` EXISTS and answers OPTIONS with `allow: DELETE`, so it returns
- * 405 — which reads as a bad request body on a good endpoint and sends you
+ * 405 - which reads as a bad request body on a good endpoint and sends you
  * debugging the wrong file. Both were found by reading `/v2/openapi.json`,
  * which the same key can fetch. Ask the API rather than guessing at it.
  *
@@ -42,7 +42,7 @@
  *
  * **`replace: true` does not reliably take on more than one direction per
  * request.** Regenerating two directions of one clip needed two calls. If a
- * replacement looks like it did not happen, that is why — check before assuming
+ * replacement looks like it did not happen, that is why - check before assuming
  * the job is still running.
  */
 import { readFileSync } from 'node:fs'

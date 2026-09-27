@@ -4,13 +4,13 @@
  *
  *   npm run balance -- [runs] [class|both|all] [pilot] [ladder]
  *
- * `tests/run.test.ts` asks yes/no questions — does a run complete, is either
+ * `tests/run.test.ts` asks yes/no questions - does a run complete, is either
  * class a trap. This asks *how* and *why*: which wave runs die on, what killed
  * them, which weapons the offer pool actually hands out, which ones get merged
  * to T4 and what they contribute. Those are the questions a balance change
  * needs answered before and after, and a pass/fail test cannot answer them.
  *
- * The pilot is deliberately the same crude bot the acceptance test uses —
+ * The pilot is deliberately the same crude bot the acceptance test uses -
  * kiting, merging, favouring defence. It is nowhere near a competent human, so
  * read these numbers as *relative*: the comparison between two runs of this
  * tool across a change is meaningful, the absolute clear rate is not a
@@ -49,7 +49,7 @@ const classes = classArg === 'both'
     ? ALL
     : classArg.split(',').map((c) => c.trim()).filter(Boolean)
 for (const c of classes) {
-  if (!ALL.includes(c)) throw new Error(`unknown class "${c}" — known: ${ALL.join(', ')}`)
+  if (!ALL.includes(c)) throw new Error(`unknown class "${c}" - known: ${ALL.join(', ')}`)
 }
 /** Optional 4th arg: one pilot name, to halve the runtime when you know which. */
 const pilotArg = process.argv[4] ?? ''
@@ -58,7 +58,7 @@ const pilotArg = process.argv[4] ?? ''
  * Two pilots, because one pilot measures one class.
  *
  * `kite` runs from the crowd's centre of mass at all times. That is The Kid's
- * entire kit — fast, damage scaling with velocity — and the precise opposite of
+ * entire kit - fast, damage scaling with velocity - and the precise opposite of
  * The Hand's, which pays damage reduction for standing still and has an ability
  * that roots it. A kiting-only harness therefore reports The Hand as the weaker
  * class no matter what the game does, and tuning the game to close that gap
@@ -79,16 +79,16 @@ const pilotArg = process.argv[4] ?? ''
  * powerup randomly and it got to level 22 without me having to move the
  * character at all". So: never moves, never presses the ability, takes a
  * uniformly random card off every level-up board, and walks out of every shop
- * without spending. It is the FLOOR OF THE FLOOR — a player who is not playing
- * — and the whole point of it is that the three pilots above are ALSO a floor.
+ * without spending. It is the FLOOR OF THE FLOOR - a player who is not playing
+ * - and the whole point of it is that the three pilots above are ALSO a floor.
  * They cannot dodge, aim or read a card, and five batches of the upgrade
  * roster were each tuned to keep their clear rate at a bar, which pushed the
  * game easier for a person every time. `idle` is the bar that cannot be gamed:
  * if a run that nobody is playing completes, the difficulty is wrong, and no
  * amount of kite/brawler/spacer agreement says otherwise.
  *
- * `idle-buy` is the same bot with the shop turned on — it takes the first card
- * it can afford — because "unspent feed" and "no build" are two different
+ * `idle-buy` is the same bot with the shop turned on - it takes the first card
+ * it can afford - because "unspent feed" and "no build" are two different
  * failures and the owner's ledger had 4,614 feed banked.
  *
  * Neither is in the default sweep: they answer a different question, and
@@ -227,7 +227,7 @@ function simulate(seed: number, classId: string, pilot: Pilot): Result {
       }
     }
 
-    // `idle` never presses the ability either — the owner did not.
+    // `idle` never presses the ability either - the owner did not.
     world.step(STEP, mx, my, !idle && ticks % 400 === 0)
     ticks++
 
@@ -311,7 +311,7 @@ for (const classId of classes) {
   const cleared = results.filter((r) => r.cleared)
   const died = results.filter((r) => !r.cleared)
 
-  console.log(`\n=== ${classId} / ${pilot} — ${runs} runs ===`)
+  console.log(`\n=== ${classId} / ${pilot} - ${runs} runs ===`)
   console.log(`cleared        ${cleared.length}/${runs}  (${pct(cleared.length, runs)})`)
   console.log(`wave reached   median ${median(results.map((r) => r.waveReached))}  ` +
     `min ${Math.min(...results.map((r) => r.waveReached))}  ` +
@@ -352,7 +352,7 @@ for (const classId of classes) {
   for (const id of Object.keys(WEAPONS)) {
     const e = seen.get(id)
     if (!e) {
-      console.log(`  ${id.padEnd(15)} —`)
+      console.log(`  ${id.padEnd(15)} -`)
       continue
     }
     console.log(`  ${id.padEnd(15)}${pct(e.runs, runs).padStart(4)}    ${median(e.tiers)}`)

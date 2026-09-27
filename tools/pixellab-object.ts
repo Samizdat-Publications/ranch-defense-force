@@ -3,8 +3,8 @@
  *
  *     npm run object -- <object-id> <name>
  *
- * The object endpoint serves a zip of everything the object owns — eight
- * rotations and every frame of every animation, in named folders — which is
+ * The object endpoint serves a zip of everything the object owns - eight
+ * rotations and every frame of every animation, in named folders - which is
  * one request instead of eight rotation URLs plus nine frame URLs per
  * direction, each carrying its own uuid.
  *
@@ -31,7 +31,7 @@
  * is GNU tar, which does not read zips at all, and whether `unzip` exists
  * varies by shell. Zip's central directory is forty lines to walk and the
  * entries are raw-deflated, which Node's own zlib already does for the PNG
- * codec — so this costs no dependency and cannot be broken by a PATH.
+ * codec - so this costs no dependency and cannot be broken by a PATH.
  */
 import { mkdirSync, readdirSync, writeFileSync, existsSync } from 'node:fs'
 import { readFileSync } from 'node:fs'
@@ -97,7 +97,7 @@ const rots = DIRS
   .filter(existsSync)
   .map((f) => decodePng(readFileSync(f)))
 contact(rots, `${dir}/_ring.png`)
-console.log(`  ${rots.length}/8 rotations — order: ${DIRS.join(' ')}`)
+console.log(`  ${rots.length}/8 rotations - order: ${DIRS.join(' ')}`)
 
 const animRoot = `${dir}/animations`
 if (existsSync(animRoot)) {

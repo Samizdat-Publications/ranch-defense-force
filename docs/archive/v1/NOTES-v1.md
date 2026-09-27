@@ -4,11 +4,11 @@ Handoff back to the next design pass, per CLAUDE.md. Latest session first.
 
 ---
 
-# Session 25 — the account is closing, so buy what cannot be re-bought
+# Session 25 - the account is closing, so buy what cannot be re-bought
 
 The owner is keeping PixelLab for **one more month** and does not know the exact
 cut-off: *"once its cut off its cut off and i dont know when it cuts off."* That
-makes art the only perishable thing in this project — code and balance can be
+makes art the only perishable thing in this project - code and balance can be
 done for free, forever, at any time. So this session is about spending an
 expiring account correctly, and the first finding is that the obvious way to
 spend it is the wrong one.
@@ -26,7 +26,7 @@ What dies are the **object, character and tileset IDS**, because
 lives on PixelLab's servers.
 
 So the audit that matters is not "what art is missing". It is **"what derivations
-would we ever want off what we already own"** — which inverts the instinct, since
+would we ever want off what we already own"** - which inverts the instinct, since
 the instinct on a closing account is to spend it on new subjects.
 
 `docs/PIXELLAB.md` already said this in as many words. It is restated because
@@ -63,7 +63,7 @@ frames:
 
 `hazard.fire` alone justifies the pass. A fire that did not burn was the most
 obviously wrong thing on the field, and there are now two of them on The Burn on
-different frames of the same loop — which is the per-position phase working.
+different frames of the same loop - which is the per-position phase working.
 
 **The rule, for the next person:** before queueing, ask whether the moving part
 is a small bright thing on a body that holds still. If it is not, do not buy it.
@@ -74,8 +74,8 @@ Trees and crops still needed to move and the endpoint could not do it. Rotating
 about the sprite's own draw origin does it for nothing: the singles pivot is
 bottom-centre, so a rotation there pivots a plant **at its roots**.
 
-Two sines — one carries the sway, a slower one swells and drops it so a field
-breathes instead of ticking — with a phase off the prop's position so a crop row
+Two sines - one carries the sway, a slower one swells and drops it so a field
+breathes instead of ticking - with a phase off the prop's position so a crop row
 does not move as one object. `tuning.json` -> `sway`, matched by sprite-key
 PREFIX, so a new crop sways with no code edit and no new art.
 
@@ -85,8 +85,8 @@ Free, deterministic, and it cannot morph the thing it is moving.
 
 `propFrame` already played `<key>.<n>` off a `play` clip and already carried the
 per-position phase. The whole pass was art plus a manifest group. Two places were
-still doing a flat atlas lookup and now call `propFrame` too — hazards and
-pickups — which is the entire reason the fire animates.
+still doing a flat atlas lookup and now call `propFrame` too - hazards and
+pickups - which is the entire reason the fire animates.
 
 A `fieldClips` group packs a directory of frames with the **singles pivot**,
 which is what makes frame 0 land exactly where the still did. Frame 0 IS that
@@ -111,7 +111,7 @@ This is what the audit turned up, and it is what the closing account is for.
 |---|---|
 | `farmhandBlight`, `acidZombie`, `maskedSprayer`, `bloatedFarmhand`, `maskedHauler` | attack, walkHurt |
 | `baseTech`, `baseGuard`, `baseOperator`, `baseHazmat`, `baseBreacher` | attack, hit, death, walkHurt |
-| `duster` (a BOSS), `duckFlight` | attack, hit, death — objects, not characters, still open |
+| `duster` (a BOSS), `duckFlight` | attack, hit, death - objects, not characters, still open |
 
 The five underground humanoids have **only idle and walk**. They walk into the
 lab and cannot swing, flinch or fall over. The renderer degrades a missing clip
@@ -121,7 +121,7 @@ All ten humanoids are live characters on the `mannequin` skeleton, whose templat
 library holds the poses those clips want: `cross-punch`, `taking-punch`,
 `falling-back-death`, `sad-walk`, plus `throw-object` for the sprayer and
 `pushing` for the shield breacher. 29 clips x 4 directions = **116 generations**
-against a 5000 allowance, billed to that allowance and not to credits — measured
+against a 5000 allowance, billed to that allowance and not to credits - measured
 unmoved at $8.5184 either side.
 
 `npm run charanim -- <jobs.json>` submits them in bulk and backs off on the
@@ -131,7 +131,7 @@ account's ten-job ceiling.
 
 **The endpoint is `POST /v2/animate-character`.** The obvious guess,
 `/v2/characters/{id}/animations`, EXISTS and answers OPTIONS with `allow:
-DELETE` — so a POST to it returns **405, not 404**, which reads as a bad body on
+DELETE` - so a POST to it returns **405, not 404**, which reads as a bad body on
 a good endpoint and sends you debugging the wrong file. `/v2/openapi.json` is
 readable with the same key and settles the path and the request shape in one
 call. Ask the API rather than guessing at it.
@@ -154,7 +154,7 @@ sessions.
 gets `undefined`, and returns before spawning anything.
 
 So equipping ANY element removed the impact effect entirely rather than
-recolouring it — **fire included**, and fire is the one this file records as the
+recolouring it - **fire included**, and fire is the one this file records as the
 element that worked. The complaint behind that entry, *"adding a fire upgrade or
 an acid bullet upgrade changed nothing"*, was written up as an art problem with
 the art half fixed. This was the other half.
@@ -167,7 +167,7 @@ back to the base clip's timing when the suffixed key has none. A tint changes
 the art and never the timing, so the base entry is the correct answer and not
 merely a safe one.
 
-**Four new impacts** on top of it — acid, frost, salt, quicklime — so the four
+**Four new impacts** on top of it - acid, frost, salt, quicklime - so the four
 elements that shared `arrowImpact` now land differently. All four are emitters,
 which is the one thing `/animate-with-text-v3` does well, and it shows: frost
 genuinely shatters and thins to nothing across seven frames. Quicklime was
@@ -181,7 +181,7 @@ that matters; it is chalky white now.
 ### The guard, and the first version of it that was worthless
 
 The first test recomputed the fallback inside itself and asserted on its own
-arithmetic. It passed just as happily with the fix reverted — it was testing the
+arithmetic. It passed just as happily with the fix reverted - it was testing the
 test. It now builds a real `World`, sets the element and calls `playFx`, and
 reverting the fix fails it by name on all nine non-None elements.
 
@@ -198,15 +198,15 @@ Two things worth carrying:
 
 **Frame counts must be measured, not parsed.** `npm run character` prints a
 manifest block with counts it read off the strips, and the first attempt here
-scraped those blocks out of the saved log. The regex died on `{compass}` — a
-brace inside the string it was scanning for braces — and would have written
+scraped those blocks out of the saved log. The regex died on `{compass}` - a
+brace inside the string it was scanning for braces - and would have written
 silently wrong counts, which slices a strip at the wrong offsets and makes a
 walk slide. Rewritten to open each `*_south_strip.png` and divide its width by
 the cell, which also asserts the division is exact.
 
 **Every cell grew.** A cell must fit the widest frame of every clip at once, so
 adding a punch widened all ten sheets and every existing idle and walk was
-re-cut to match — 136 committed files changed for what reads as an addition.
+re-cut to match - 136 committed files changed for what reads as an addition.
 `farmhand` went 32 to 44 wide, and its 8-direction idle and walk are now cut at
 a different size from its 4 cardinals. Only the cardinals are read, but do not
 trust those diagonals.
@@ -216,7 +216,7 @@ trust those diagonals.
 
 ## The boss was already bought
 
-`duster` — the wave-25 boss — was drawn from LimeZu's `Tractor_32x32.png`. A
+`duster` - the wave-25 boss - was drawn from LimeZu's `Tractor_32x32.png`. A
 clean, healthy green farm tractor, four directions, no death, and the last pack
 sheet any ENEMY used.
 
@@ -237,7 +237,7 @@ machine that flinches when shot would argue with the fight it is in.
 **Per-direction size drift** is the trap here. Two directions of the death came
 back 96x96 against the object's 113x113, because they were generated when the
 object was smaller. The packer refuses a frame that is not the declared cell,
-which is the only reason it was caught. Do not pad and do not scale — 113/96 is
+which is the only reason it was caught. Do not pad and do not scale - 113/96 is
 not an integer and the boss would visibly shrink when it turned west. Regenerate
 with `replace_existing: true`, and note that it only took on one of the two
 directions per request.
@@ -249,13 +249,13 @@ may need."* What follows is the second half of session 25.
 
 ### Two more sheets were already bought
 
-`duckFlight` was LimeZu's `Duck_Brown_32x32` — the last PACK sheet any enemy
-used — and it had idle and walk and nothing else. It is now an eight-direction
+`duckFlight` was LimeZu's `Duck_Brown_32x32` - the last PACK sheet any enemy
+used - and it had idle and walk and nothing else. It is now an eight-direction
 generated mallard in flight with a death, styled off the crow so the two birds
 belong to the same game. The `animals` group is deleted, not emptied.
 
 `crow` was the stranger find. Eight rotations, a hop cycle, a recoil, generated
-in an earlier session for the Crow Bell, tagged `rdf-wired` — and carrying
+in an earlier session for the Crow Bell, tagged `rdf-wired` - and carrying
 **zero frames in the atlas**. Tagged as wired while being wired to nothing.
 Session 25 finished it (the missing walk direction, five hit directions, a
 death) and packed it. It is defined as an enemy and deliberately kept out of the
@@ -268,7 +268,7 @@ entry and is deleted with it.
 ### Every direction that failed was east-facing
 
 Three separate batches came back short, and every missing direction was `east`,
-`north-east` or `south-east` — the same side that failed on the duster earlier
+`north-east` or `south-east` - the same side that failed on the duster earlier
 in the session. The object reports `status: completed` with the directions
 simply absent, so nothing raises it.
 
@@ -292,7 +292,7 @@ economy with it.
 **One rule is shared between the two painters and the rest is not.**
 `mapIsBlighted` lives in `src/content` because the ground turning and the crops
 turning are one event in the fiction, and deriving that from two copies of the
-same comparison is how they come apart — a screenshot with dead ground over a
+same comparison is how they come apart - a screenshot with dead ground over a
 healthy field would be a picture of a different game. The atlas lookup beside it
 stays local to each painter, because that is the part that can differ
 harmlessly.
@@ -312,13 +312,13 @@ so immediately:
     hand idle-buy cleared 7/24 without moving: expected 7 to be less than or equal to 5
 
 **The cause is arithmetic, not difficulty.** The wave budget is FIXED, so a new
-enemy type does not add bodies — it redistributes them. At `threatCost: 3` with
+enemy type does not add bodies - it redistributes them. At `threatCost: 3` with
 `xp: 2` the crow paid **0.67 xp per point of threat** against 0.5 for the
 rooster and hen and 0.4 for the feral dog, the most xp-efficient body in the
 roster. The same budget bought more levels. Repricing to `threatCost: 4` moved
 it to 6/24. Still over a cap of 5.
 
-So the crow came out of the two maps — and the next run failed **on a different
+So the crow came out of the two maps - and the next run failed **on a different
 bot, for what looked like an unrelated reason**:
 
     drifter cleared 3/24 runs without the player moving: expected 3 to be less than or equal to 2
@@ -363,12 +363,12 @@ Two things worth keeping past the crow:
   duster's own content note says nobody is driving it.
 - **The remaining pack art is not enemy art.** Terrain, weapon and tool icons,
   the FX pack's three surviving clips, the projectile pack, the scene strips.
-  `terrainSource` is the big one and it needs no generation at all — 29 Wang
+  `terrainSource` is the big one and it needs no generation at all - 29 Wang
   sets are already packed and retiring it is a wiring job.
 - **The companion art already exists.** `joy` (idle/walk/attack/sit), `wiz`,
   `ouiji`, both cats, the mules and the hens are all packed with walk clips. The
-  owner's "companions that follow you" ask is a CONTENT job — items with a
-  `minionSprite`, the way the Barn Dog and Broody Hen already work — and needs
+  owner's "companions that follow you" ask is a CONTENT job - items with a
+  `minionSprite`, the way the Barn Dog and Broody Hen already work - and needs
   no generations. It was left alone because it changes balance and the balance
   question is still the owner's.
 - **Balance is still untouched** beyond pricing the crow to be neutral.
@@ -403,7 +403,7 @@ account's names are long English descriptions, slugifying them does not
 reproduce the names already on disk, and a name-based check would have
 re-downloaded all 23 under second names and packed every ground twice.
 
-Five biome props came out of the awaiting-review pile the same way — cattails,
+Five biome props came out of the awaiting-review pile the same way - cattails,
 water reeds, an apple tree, a blighted wheat stand and rotted corn. They are
 weight-0 node variants in `nodes.json`, which is the pattern
 `node.boneHeap` and `node.saltRock` already use: they cost nothing until a map
@@ -411,7 +411,7 @@ raises them.
 
 ### Bosses: four, and none of them switched on
 
-The roster had two — the Prize Bull, who charges in a straight line, and the
+The roster had two - the Prize Bull, who charges in a straight line, and the
 Duster, who patrols a fixed pattern and never chases. Both heavy, both slow.
 
 | boss | shape that was missing |
@@ -428,7 +428,7 @@ changes the shape of a run, that is the owner's call, and the art and the wiring
 are finished either way.
 
 **The style anchor decides the anatomy.** The scarecrow was generated first
-against the prize bull — a quadruped — and two of its eight rotations came back
+against the prize bull - a quadruped - and two of its eight rotations came back
 **on four legs**. Regenerated against the cockerel, a biped, it is upright in all
 eight. The reference carries far more than palette.
 
@@ -445,7 +445,7 @@ typical and one is never enough, so `npm run objfill` now does that loop:
 download, measure the directions **on disk**, submit the gap, wait, repeat.
 
 Disk and not the API, because a clip can have two groups carrying the same
-description — a killed batch that was re-run — and they merge into one folder on
+description - a killed batch that was re-run - and they merge into one folder on
 download. The union only exists on disk.
 
 `npm run objanim` also skips a clip the object already has, so a re-run after a
@@ -473,7 +473,7 @@ at the front of a 1920x1080 stage.
 Four of the six came back on an opaque card. Three were cut free with `npm run
 decard`, which is offline and free. The fence needed `npm run rmbg` and one
 generation, because the sky between its rails is *enclosed* card colour and
-decard deliberately will not cut an enclosed region — it cannot tell a gap from
+decard deliberately will not cut an enclosed region - it cannot tell a gap from
 a highlight, and guessing wrong on a highlight is worse.
 
 ### The Bottoms: a sixth level, built and not switched on
@@ -532,7 +532,7 @@ lazily is the obvious lever, and `npm run load-time` is the measurement.
   only sim changes this session were the `playFx` fallback and pricing the crow
   so it is balance-neutral.
 - **Companions, destructibles and ambient haze** are all still on the backlog.
-  Companions need no art at all — see above — and the other two are code.
+  Companions need no art at all - see above - and the other two are code.
 - `docs/BACKLOG.md` now carries a checked status table at the top. Both of its
   P0s and two of its P1s were already done, and the prose had never been
   updated. `docs/NEXT_SESSION.md` is rewritten; the version it replaced said the
@@ -541,7 +541,7 @@ lazily is the obvious lever, and `npm run load-time` is the measurement.
 
 ---
 
-# Session 24 — the second playtest, and the fork stays in her hands
+# Session 24 - the second playtest, and the fork stays in her hands
 
 ## What the owner reported (The Widow, on the live site, 2026-09-05)
 
@@ -549,7 +549,7 @@ lazily is the obvious lever, and `npm run load-time` is the measurement.
 from about wave 5 on, but a long way from the level-22 idle run that started
 the retune. (His end wave came later the same night: he stopped at wave 10,
 "invincible forever"; the second half of this entry is what was done with
-that.) The dial has not moved this session — the owner's rule is to tune
+that.) The dial has not moved this session - the owner's rule is to tune
 from his play, not from the bots, and the bots say only that the WIDOW IDLE
 BOT dies at median wave 9 (`npm run probe -- 24 idle`, all
 six classes, 24 seeds, unchanged tree):
@@ -574,7 +574,7 @@ afford, the owner takes the right one. When his end wave arrives: if he
 cleared or got past ~18 standing still, the idle-buy cap in
 `tests/run.test.ts` is the bar to tighten and `xp.exponent` in `waves.json`
 the dial; if he died in the teens, the opening is right and only the
-mid-game (waves 5-12) wants steeper `waveHpScalar` — the probe's 4th argument
+mid-game (waves 5-12) wants steeper `waveHpScalar` - the probe's 4th argument
 sweeps `hplin`/`hpq` without editing JSON.
 
 ## The pitchfork, on a class whose primary is a gun
@@ -588,7 +588,7 @@ look on every class that can hold a fork.
 (`slot.firedAt`). On The Hand the fork fires often enough to hold it. On The
 Widow the rifle takes the hand back between every jab, so the fork snapped
 between her hands (aimed, thrusting) and a slung diagonal on her back several
-times a second. Not a bad angle — a weapon with no business having a resting
+times a second. Not a bad angle - a weapon with no business having a resting
 pose at all.
 
 **Fix, in content, so both painters inherit it.** `carryHeld: true` on the
@@ -605,11 +605,11 @@ weapon along the facing, so rifle and fork landed on the same pixels and the
 fork drew last. In play the rifle tracks its target, so that happens whenever
 the target is where she faces, which for the thing she is walking toward is
 often. `offhand` in `tuning.json` is a few pixels off `hand` on the far side
-and a rung lower — rifle at the shoulder, fork at the waist — with `byClass`
+and a rung lower - rifle at the shoulder, fork at the waist - with `byClass`
 rows for The Hand, The Kid and The Widow matching their `hand` overrides. Not
 in `fallbackOrder`, named by nothing else, so no gun can rest there.
 
-**Retired with it.** `classSlot.hand.pitchfork: "back"` — the fork never
+**Retired with it.** `classSlot.hand.pitchfork: "back"` - the fork never
 rests now, so the entry was dead. The `_handNote` on the back slot says so.
 The Hand's back override itself stays; it is for the guns he picks up.
 
@@ -622,7 +622,7 @@ the rifle fired last, and with six weapons the five resting anchors go to
 the five guns, none of them `hand` or `offhand`.
 
 **Known, not done.** Facing UP, the fork is drawn behind the body like
-everything at `hand` is, so only the tines show above the head — the same as
+everything at `hand` is, so only the tines show above the head - the same as
 The Hand before this session, which the owner called great. The Kid's fork
 facing DOWN runs to the ground at her feet; she is 40px tall and the fork is
 31. If either reads wrong in play, `offhand.byClass` is the place and no code
@@ -646,14 +646,14 @@ that scale off `e.maxHp` (Threshing Floor, Reaper, Split Shot, Last Rites)
 share one re-entry guard so a kill cannot chain a kill. The only deliberate
 multiplicative exception is Two Speed's per-weapon rate on the Post Hole Auger,
 written up in `world.ts`. **There is no compounding bug.** The strength is
-the product of independent systems — tier x weapon count x enemy HP curve —
+the product of independent systems - tier x weapon count x enemy HP curve -
 and that is the design working as written.
 
 ### The bot that plays like him: `idle-greedy`
 
 `npm run probe` has two new pilots beside `idle` (random cards, walks past the
 shop) and `idle-buy` (first affordable card): **`idle-smart`** stands still and
-picks merges, then defence, then anything — `tests/run.test.ts`'s `pickSmart`;
+picks merges, then defence, then anything - `tests/run.test.ts`'s `pickSmart`;
 **`idle-greedy`** stands still and picks merges, then a new weapon, then a
 damage/attack-speed/ranged/crit stat, then any on-hit or on-kill rider. Both
 buy at the shop. The table now also prints median contact damage taken by
@@ -705,14 +705,14 @@ move nothing that matters. All of them leave "untouched through wave 10"
 standing, because the thing that produces it is not a number on the curve: a
 six-weapon kit at any tier kills a steady trickle from the arena edge before
 it arrives, and waves 4-18 are a steady trickle from the arena edge. Wave 20
-walks in exactly the way wave 1 does — there is no per-wave speed, spawn
+walks in exactly the way wave 1 does - there is no per-wave speed, spawn
 distance or arrival shape in the game, only more bodies with more hp, and
 bodies are xp. Session 23's note said it: every lever on the curve feeds the
 same loop.
 
 ### What is open, and it is the owner's call
 
-The bar is now measurable — `idle-greedy` on all six classes — and it is not
+The bar is now measurable - `idle-greedy` on all six classes - and it is not
 in `tests/run.test.ts` yet because it would fail on `main` today and the fix
 is a design decision, not a dial:
 
@@ -721,7 +721,7 @@ is a design decision, not a dial:
    it. If the answer is "everyone but him", that is a per-class bar.
 2. **The candidates that do not feed the loop**, in the order this session
    would measure them: **weapon slots that open over the run** (three at the
-   start, one more at each shop — a greedy picker cannot have six weapons by
+   start, one more at each shop - a greedy picker cannot have six weapons by
    wave 4, and it touches nothing else); `weaponOfferWeight` down from 6
    (measured up to 6 in the roster pass against the home pilots, never
    against a greedy idler); a share of each wave that spawns close, behind,
@@ -736,11 +736,11 @@ these numbers are what landed.
 ---
 
 
-# RESOLVED — the 2fps was a backgrounded window; here is what was measured on the way
+# RESOLVED - the 2fps was a backgrounded window; here is what was measured on the way
 
 **Read this before anything else in the performance line.** The owner reports
 the game at about 2 frames per second while playing. Session 22 spent a
-measurement pass on it — no game code touched, everything under `tools/` —
+measurement pass on it - no game code touched, everything under `tools/` -
 and the findings are in `docs/PERF_FINDINGS_2026-09-02.md` (the report;
 the tools that produce it are committed under `tools/`). The short version, in order of
 what it changes:
@@ -750,9 +750,9 @@ what it changes:
 | | |
 |---|---|
 | machine | RTX 5070 Ti laptop, 16 threads, 31GB, ~240Hz; `chrome://gpu` says Canvas, raster, compositing all **hardware accelerated** |
-| three real runs, seed `harvest` | fps median 228/236/236, min 64-122; frames >33ms 123/211/137 — **±35% run-to-run on the spike count** |
+| three real runs, seed `harvest` | fps median 228/236/236, min 64-122; frames >33ms 123/211/137 - **±35% run-to-run on the spike count** |
 | CPU profile | **55.7% idle**; `stroke` 5.4% (melee sweep + hazard rings), `drawImage` 4.6%, nothing of ours above 1.6%. **The profile is mined out.** |
-| production site vs dev server, 1920x1080 at dpr 1.25 | 179/226 vs 238 median — within the spread. No production-only slowdown. Heap flat at 6-10MB. |
+| production site vs dev server, 1920x1080 at dpr 1.25 | 179/226 vs 238 median - within the spread. No production-only slowdown. Heap flat at 6-10MB. |
 | covered window | **could not reproduce a throttle.** Half covered 151, fully covered by another Chrome window 236. |
 | `--disable-gpu` | frame cap 80Hz; 12-22fps under heavy load. Not 2. |
 
@@ -773,7 +773,7 @@ six source conditions, three repeats:
 
 And the thing nobody had looked for, from a chrome trace of a real run
 (`tools/play-trace.ts`): **Chrome re-decodes the entire 12.7MB PNG from
-scratch about once per second for the whole run** — 291-301ms each, 6-9s of
+scratch about once per second for the whole run** - 291-301ms each, 6-9s of
 decode in a 28s window, plus a 9-17ms GPU re-upload every time. A 134MB
 decoded image cannot be held in the image-decode cache, so it is decoded at
 raster, forever. **On this machine that costs zero frames** (inter-frame gap
@@ -800,13 +800,13 @@ landed.
 
 1. **Which Chrome profile.** Every measurement here ran a fresh playwright
    profile, which had acceleration on. The owner's own profile could have "Use
-   graphics acceleration when available" off — a per-profile setting no tool
+   graphics acceleration when available" off - a per-profile setting no tool
    can see. Ask for `chrome://gpu` from the owner's own browser.
 2. **The window.** Covering the window did not throttle rAF here, most likely
    because an attached CDP debugger suppresses renderer throttling. **That is
    a limit of the instrument, not evidence that occlusion is harmless**: no
    playwright-driven tool in this repo can reproduce a throttled window. The
-   owner's own answer — fronted, split-screen, or behind something — is the
+   owner's own answer - fronted, split-screen, or behind something - is the
    only measurement of it that exists.
 
 ## The owner answered both, the same evening
@@ -825,7 +825,7 @@ landed.
    confirmation belongs in the next entry.
 
 So the report was the throttle, and the atlas split proceeds anyway on its own
-measured merits — it is still 2x per frame and a 300ms re-decode every second,
+measured merits - it is still 2x per frame and a 300ms re-decode every second,
 just on a machine that can afford both.
 
 
@@ -853,7 +853,7 @@ you are testing, A/B-ing suspects never converges.** The spike count varies
 ---
 
 
-# Session 22 — measured first, then four agents in four worktrees
+# Session 22 - measured first, then four agents in four worktrees
 
 The 2fps report got a measurement pass before anything else (the section above
 is its result). Then the session split into four isolated worktrees, each with
@@ -864,7 +864,7 @@ account, edited only for accuracy against the diff.
 
 The owner also settled two open Design questions in this session, by looking at
 the live site: **the class cards get out of the scene's way** (they shrink and
-drop; the composition stays), and the home screen gets a scene sequence — calm,
+drop; the composition stays), and the home screen gets a scene sequence - calm,
 lightning, blight, then a camera descent through the soil to the lab that is
 "secretly right under the farm."
 
@@ -879,7 +879,7 @@ is in flight. Run `git fetch && git status` anyway.
 
 1. **Difficulty against a human.** The owner stood still, picked at random and
    reached level 22; now an `idle` pilot in the harness encodes that and must
-   die (wave 6-9). The lever was XP (`xp.exponent` 1.55→1.85), not bodies —
+   die (wave 6-9). The lever was XP (`xp.exponent` 1.55→1.85), not bodies -
    doubling early density alone made the game EASIER. Waves 1-5 hold ~2x the
    enemies; elites every 3 waves; a second Prize Bull at 18; late hp scaling
    steeper. Home pilots clear ~9/24, deaths spread waves 3-21.
@@ -889,7 +889,7 @@ is in flight. Run `git fetch && git status` anyway.
    placeables, the Smudge Pot aura weapon, one active Load with deepening
    stacks, five late-game feed sinks, Trade-In guarantees its merge.
 3. **Six distinct classes** (attrition, spacing, status, tempo, plus the two
-   originals), each with a passive that needs input — Braced needs a Dig In
+   originals), each with a passive that needs input - Braced needs a Dig In
    press to hold its ceiling.
 4. **The carried loadout**: weapons worn on the body at life scale, per class,
    purpose-drawn guns and pitchfork, a thrust instead of a slash, the flash
@@ -924,13 +924,13 @@ is in flight. Run `git fetch && git status` anyway.
   predates deepening; batch 1/3 icons have no ledger rows by construction
   (`create_image_pro` makes no object); 25 held weapon icons and 4 pens remain
   packed-unused by decision; a stale `.claude/worktrees/agent-*` directory or
-  two may linger on disk, unregistered, held by a file lock — safe to delete.
+  two may linger on disk, unregistered, held by a file lock - safe to delete.
 
 ### How this session worked, for the next one
 
 Read first, spawn second. Measurement alone on a quiet machine before any
 implementation agent. **Sonnet for anything with a spec and a test; Opus only
-for design judgment** — eleven Opus agents with five-part briefs cost ~$250 in
+for design judgment** - eleven Opus agents with five-part briefs cost ~$250 in
 one session before that rule. One-part briefs, one full test run per agent at
 the end, no two browser-driving agents at once. Worktrees are fine again (vite
 and vitest ignore `.claude/`), but never `git add -A`, and a worktree left with
@@ -948,7 +948,7 @@ short version:
 
 - **The page was wider than the window by a third of a pixel.** `#stage` was
   `width: 100vw`, and on a non-integer device pixel ratio `100vw` exceeds
-  `documentElement.clientWidth` — measured at dpr 1.5 on a 2560 panel:
+  `documentElement.clientWidth` - measured at dpr 1.5 on a 2560 panel:
   1707 against 1707.33. The right-anchored `#dev` hung off by that much under
   an `overflow: hidden`, so no scrollbar and no way to reach it. That is the
   clipped dev panel on every screenshot the owner sent. `position: fixed;
@@ -962,7 +962,7 @@ short version:
   the lab beneath → back up into the other outdoor scene. Reduced motion gets a
   240ms fade instead of the descent. The blight swaps every actor with a
   counterpart in the atlas and grades the rest by filter; `npm run blight`
-  asserts every mapping resolves, which is what caught the one merge hazard —
+  asserts every mapping resolves, which is what caught the one merge hazard -
   the branch was cut before the farmhand recolour and named `farmhand`, a
   sheet the merged atlas no longer packs. That failure is SILENT (a null strip,
   one fewer person in the field), which is the whole reason the check exists.
@@ -978,7 +978,7 @@ three were sent to the owner. Its own tests: 205/205 before the class merge.
 
 The owner's word for the ring was "arbitrary", and both halves of that were
 right. Six icons at equal arc on a circle is the visual signature of ORBITING
-— it is what the Scythe literally does — and normalising every one of them to
+- it is what the Scythe literally does - and normalising every one of them to
 fifteen pixels wide threw away the only thing the art was carrying, which is
 how big and how upgraded the object is. A 58px combine header and a 20px
 rifle arrived on screen the same size.
@@ -1002,13 +1002,13 @@ differently to the game is worse than no screenshot. `WeaponSlot` lost
 stand in for it because it expires after 0.12s.
 
 **Three measurements the design turned on.** `dy` is from the BOOTS, not the
-player origin (the origin is the cell floor twelve pixels under his feet — the
+player origin (the origin is the cell floor twelve pixels under his feet - the
 player-mark lesson again; `carry.bootOffsetY` is the one conversion). The
 anchors are a LADDER and nothing shares a rung: hips -18, hand -23, backX -29,
-back -35, shoulder -37 — in profile he is twenty pixels wide, and a first pass
+back -35, shoulder -37 - in profile he is twenty pixels wide, and a first pass
 with the anchors a few pixels apart put the pitchfork over his hat. And the
-atlas anchors two incompatible families — `gun.*` centred, `weapon.*`
-bottom-centre — so `DrawItem` gained `pivotX/pivotY` and both turn about the
+atlas anchors two incompatible families - `gun.*` centred, `weapon.*`
+bottom-centre - so `DrawItem` gained `pivotX/pivotY` and both turn about the
 art's centre.
 
 **Depth costs nothing.** Carried items are pushed at the player's own y and the
@@ -1019,7 +1019,7 @@ runs, ring vs loadout: mean draw 0.62ms vs 0.64ms at the same draw-call count.
 **What this cannot fix, and it is the next art job.** `art/sprites.json` says
 it: the 132 firearms on the bundled sheet are 14-25px wide and "drawn to be
 HELD by a 32px character". Ours is 52px. A rifle across his back reads as a
-carbine, and `gun.pistol.*` — the Harpoon Gun — is 3x2 at T1 and 11x4 at T4,
+carbine, and `gun.pistol.*` - the Harpoon Gun - is 3x2 at T1 and 11x4 at T4,
 which is ALSO its HUD card, where it draws as a blank rectangle. Nothing here
 upscales (integer zoom; an enlarged sprite lies about the pixel grid). The
 six guns' `carryHeight` is left above their source as a no-op that records
@@ -1036,7 +1036,7 @@ at his feet. `HANDOFF.md` still describes the ring as live.
 
 ### Second pass: the guns are drawn for him, and each class wears them its own way
 
-`art/sprites.json` had said it all along — the 132 firearms on the bundled sheet
+`art/sprites.json` had said it all along - the 132 firearms on the bundled sheet
 are 14-25px wide and "drawn to be HELD by a 32px character". Ours is 52. A rifle
 across his back read as a carbine and `gun.pistol.0`, the Harpoon Gun at T1, is
 three pixels by two: invisible on the body and a blank rectangle on its card.
@@ -1044,7 +1044,7 @@ three pixels by two: invisible on the body and a blank rectangle on its card.
 Six firearms now have purpose-drawn carried art, side-on and pointing right at
 28-31px. They draw at NATIVE size: every `carryHeight` on the six equals its own
 art's longest side, so nothing is resampled. **Nine generations, six kept, three
-retired with reasons tagged on the account, six cents** — the owner's wiring
+retired with reasons tagged on the account, six cents** - the owner's wiring
 rule applied for the first time: nothing is in review, every keeper is packed
 under `carry.<id>` and drawn. Not conformed: quantising through
 `art/palette.json` cost the rifle its walnut stock (the nearest house entry to
@@ -1052,7 +1052,7 @@ warm gun-metal brown is a cold blue-grey). `docs/progress/carry-scale.png` is
 the contact sheet, old frame beside new beside the man.
 
 **`carrySprite` is a different question from `sprite`.** One is what he wears,
-the other is what a card shows. The carried art has no tiers on purpose — a gun
+the other is what a card shows. The carried art has no tiers on purpose - a gun
 does not change shape when it merges, and 24 more generations would buy a
 difference nobody reads at 30px in a fight. The tier stays on the card.
 
@@ -1061,7 +1061,7 @@ target no longer sweeps its stock through his chest. It is also the number the
 muzzle flash needs: the muzzle is `1 - carryPivot` of the drawn length forward.
 
 **Each class carries its kit its own way**, and it is the cheapest
-characterisation in the game — no art, no stat, one block of numbers.
+characterisation in the game - no art, no stat, one block of numbers.
 `byClass` beside a slot's four facings overrides any field for one class;
 `classSlot` overrides which resting slot a weapon asks for; both merge into
 complete anchors ONCE at load. The Kid shoots from the hip, the Widow braces
@@ -1082,7 +1082,7 @@ A/B on three fixed seeds at 3000 ticks, every reported quantity identical
 including live effect count, two of three shots byte-identical, the third
 differing only where a flash is on screen.
 
-**The pickaxe and axe came off the floor** — they drew at the origin, twelve
+**The pickaxe and axe came off the floor** - they drew at the origin, twelve
 pixels under his boots (the player-mark lesson again). They hang from
 `beltR`/`beltL`, a rung below the hips, and cannot eat a weapon slot.
 
@@ -1110,15 +1110,15 @@ three times does. `tools/offer-stream.ts` measured it over 144 runs and
 bumps, 40% of boards are four of one category, every shop visit reshows the
 previous one, merges are 2.9% of level-up cards and structurally confined to
 one slot, and the top seven ids are a third of everything shown.** The pool
-was never thin — 27-44 takeable candidates all run. Three causes in source:
+was never thin - 27-44 takeable candidates all run. Three causes in source:
 `drawLevelUp` fills every non-boosted slot from commons alone; the 90s
 suppression memory is dead against a 200s shop interval; and 22 of 40 items
 are pure `mods` with no card in the game about a weapon you own.
 
-`docs/UPGRADE_ROSTER.md` is the design: 56 → 160 cards — 48 weapon upgrades
+`docs/UPGRADE_ROSTER.md` is the design: 56 → 160 cards - 48 weapon upgrades
 gated on ownership, 18 class cards into the passives, six new loads (salt,
 quicklime, kerosene, tar, fence charge, font water), on-hit, on-kill, allies
-and placeables, defence, ledger — with numbers, rarities, the sim hook each
+and placeables, defence, ledger - with numbers, rarities, the sim hook each
 rides (12 new hooks at six call sites carry 85 of 104 cards), synergy tags,
 the card-text contract (a merge states its delta, a stackable shows 2/4), a
 draw-rule redesign, five shippable batches, and 31 icons batched so nothing is
@@ -1136,8 +1136,8 @@ stand-ins while their own icons sat packed. All of it was in
 `docs/PIXELLAB_INVENTORY.md` the whole time, because that file answers *what
 does the account hold* and nobody had ever asked *what is on screen*.
 
-`docs/PIXELLAB_LEDGER.md` asks the second question. 1,103 rows — every object,
-character and tileset — each ending in exactly one of seven states: wired (192),
+`docs/PIXELLAB_LEDGER.md` asks the second question. 1,103 rows - every object,
+character and tileset - each ending in exactly one of seven states: wired (192),
 packed-unused (19, all tilesets no map stands on), surplus (600, other rolls of
 a wired prompt), unclaimed (132), review (40), retired (43, tagged with a
 reason), or a named open question with a recommendation (77 rows, 15
@@ -1146,7 +1146,7 @@ decisions). There is no eighth state. `npm run ledger` rebuilds it;
 `list_objects(tags="rdf-open")` is the queue. Zero generations in this pass.
 
 **The join is exact where the data allows and honest where it does not.** There
-is no PixelLab id anywhere in `art/sprites.json` and never has been — the
+is no PixelLab id anywhere in `art/sprites.json` and never has been - the
 manifest names files, downloaded by hand across twenty-two sessions. Objects
 join by FAMILY, which is the unit that matters: nobody needs to know which of
 four identical barn rolls is packed, only that the barn is in the game and
@@ -1158,17 +1158,17 @@ not. An unmapped family reports as `open` and is counted at the top; it is zero.
 
 Seven item cards took their own icons (`saltLick` and `saltCircle` both drew
 `node.rockSmall`; `barbedWire` drew a silver ore node). Five firearm cards took
-their `carry.*` art — `gun.shotgun.0` is 8x4 in a 96px window; the tier is
+their `carry.*` art - `gun.shotgun.0` is 8x4 in a 96px window; the tier is
 carried by the tin plate and its pips. Six ranch fixtures and a muck decal went
 into the field dressing on every surface map. Two container-shaped ones went to
 `breakables.json` as skins, because an unbreakable trough beside a breakable
 one is the one thing no feedback recovers from. `vault.drumWeeping` is in the
-lab — `art/sprites.json` calls it "the story of the game in one asset" in the
+lab - `art/sprites.json` calls it "the story of the game in one asset" in the
 same file that never placed it. Six stalactites hang in the descent column.
 
 **The blighted scarecrow is the one that had a note where the art should have
 been.** Four `rdf-scene-scarecrow-wrong` candidates from session 15; one
-picked on silhouette — the only one on a vertical post with the head centred,
+picked on silhouette - the only one on a vertical post with the head centred,
 which matters because the scene places props by the top-left of the full 96
 box. The other three are retired with reasons; one wears the player's own
 blue denim, the thing the recolour pass spent itself taking off the enemies.
@@ -1176,12 +1176,12 @@ blue denim, the thing the recolour pass spent itself taking off the enemies.
 ### A cosmetic draw was living in the sim's RNG stream
 
 Giving a breakable class a second skin fired a `this.rng.int` branch that had
-never fired — every class carried exactly one skin — which shifted every
+never fired - every class carried exactly one skin - which shifted every
 downstream draw and dropped the 24-seed clear rate from 14 to 10. Red, from a
 change that only picks a different PNG. It is on `skinRng` now, its own
 stream, the rule the fog, overhead, scenery and decal layers already follow:
 nothing decorative may move a spawn. `tests/maps.test.ts` asserted the default
-dressing EQUALS the old farm list — a freeze, not a guarantee, and the only
+dressing EQUALS the old farm list - a freeze, not a guarantee, and the only
 thing between paid-for art and the field. It is a prefix check now.
 
 ### `npm run cards`
@@ -1195,7 +1195,7 @@ them, and fails on any window that draws nothing.
 
 Biggest first: the five cave webs (composite one over the crate and drum
 offline, free); six orphan weapon icons (hold for roster batch 2); the barn
-interior — eight assets waiting on one scene, and the Homestead is already
+interior - eight assets waiting on one scene, and the Homestead is already
 entered through the barn door; the LimeZu signs, dog strips, calf and pen
 pieces, superseded by generated art and recommendable for deletion from the
 manifest; `ranch.coopBroken`, which came back inside a drawn frame `decard`
@@ -1206,7 +1206,7 @@ because `dismiss_review` deletes and the brief said not to.
 ### Two things worth writing down
 
 A `git add -A` in this pass swept three `.claude/data/healthcare/*.sqlite`
-files — another plugin's database, nothing to do with the game — into a commit
+files - another plugin's database, nothing to do with the game - into a commit
 on a branch of a PUBLIC repository. The branch was rebuilt commit by commit
 without them before it merged; `main`'s history never carried them, verified
 with `git log --diff-filter=A -- '.claude/data/*'`. `.claude/data/` and
@@ -1221,21 +1221,21 @@ them. CLAUDE.md's warning about the repo is just as true of the account.
 
 `drawLevelUp` filled its boosted slot from the uncommon-or-better cards and
 then filled **every remaining slot from `commonIdx` alone**. A merge's rarity
-is its next tier, never `common`, so a merge — or an element, or a special, or
-any uncommon item — could not appear in slots 2, 3 or 4 of a level-up at any
+is its next tier, never `common`, so a merge - or an element, or a special, or
+any uncommon item - could not appear in slots 2, 3 or 4 of a level-up at any
 point in any run. Measured: 100.0% of the 6,090 uncommon+ level-up cards were
 the one boosted slot, and the eleven common stat items took 46.3% of every card
 the player ever saw. The pool was never thin. The draw could not show it.
 
 Two more, both structural. The suppression memory was 90 SECONDS and the shops
-are 200 seconds apart, so it had always expired by the time it was needed —
+are 200 seconds apart, so it had always expired by the time it was needed -
 100.0% of shop visits reshowed an id from the previous one. And the shop had no
 memory of its own visit, so a reroll could hand back the board it had just
 swept away.
 
 All four slots draw from the whole candidate set now, under quotas: boosted,
 gated, behavioural, free, with at most one stat card and at most one merge on a
-board — and at least one stat card, because the design's own sentence is the
+board - and at least one stat card, because the design's own sentence is the
 rule ("still the reliable filler a player wants; there are just no longer four
 of them at once"). Memory counts boards. The shop bans its previous visit and
 everything this visit has already shown.
@@ -1249,8 +1249,8 @@ everything this visit has already shown.
     candidates at L30-34             27        40
 
 **Every recorded seed replays as a different run.** The draw consumes a
-different number of `next()` calls. The map pick is untouched — still the first
-draw and still exactly one — so the arena a seed produces has not moved.
+different number of `next()` calls. The map pick is untouched - still the first
+draw and still exactly one - so the arena a seed produces has not moved.
 
 ### The cards
 
@@ -1262,7 +1262,7 @@ Hen's chick rides the minion path the Barn Dog already flies. No new pools. The
 Loads' riders live on the ELEMENT, not on the item that granted it, because a
 Load is exclusive but the item stays in `player.items` forever.
 
-The card text states its delta now. A merge reads "Tier 3: +2 pellets — 1 → 3
+The card text states its delta now. A merge reads "Tier 3: +2 pellets - 1 → 3
 pellets · 9.6 → 15.4 damage": 48 authored strings beside the numbers they
 describe. Stackables print 3/5, non-stackables ONE ONLY, the last copy
 4/4 · LAST.
@@ -1276,7 +1276,7 @@ the rest, under the wiring rule.
 ### The Smudge Pot
 
 Seventeenth weapon, and the genre staple the roster did not have: an orchard
-heater you never put out. `cooldown: 0` puts it on SUSTAIN beside the Scythe —
+heater you never put out. `cooldown: 0` puts it on SUSTAIN beside the Scythe -
 ONE attached projectile repositioned every tick, re-armed on an interval, not a
 hitbox per frame. `drawArcs` already stroked aura rings for the Chem Sprayer,
 so it needed no renderer change. 96px/10dps to 156px/65.5dps across four tiers,
@@ -1287,8 +1287,8 @@ credits), wired the same task; `carry: "none"`.
 
 The rebuild hit every offer target and a run through the browser still
 photographed four percentages at level 6. `unlockedItems` was
-`Object.keys(ITEMS).slice(0, 12)` — the first twelve keys of items.json in
-AUTHORING order — and eleven of those are the commons. **A fresh save's entire
+`Object.keys(ITEMS).slice(0, 12)` - the first twelve keys of items.json in
+AUTHORING order - and eleven of those are the commons. **A fresh save's entire
 item pool was the eleven stat cards.** Neither harness calls `setUnlocked`, so
 neither could see it. The starting sets are named in meta.json now; the weapons
 had it worse, since the first eight keys contain no melee weapon at all. Also:
@@ -1304,7 +1304,7 @@ he was the strongest thing in the game at 79% cleared standing. Cut the stat
 share from 65% to 25% and he falls to 33% and stops preferring to stand at all,
 which is his whole identity. Two acceptance tests went red with him.
 
-Fixed in the passive, where batch 4 was always going to fix it: "Deep Rooted —
+Fixed in the passive, where batch 4 was always going to fix it: "Deep Rooted -
 Braced caps at 45%, not 30%" is that batch's own card and 45 is its own number.
 Braced 6%/s→30% becomes 9%/s→45%, plus maxHp 140→160 and hpRegen 0.8→0.9. The
 Kid is untouched.
@@ -1318,12 +1318,12 @@ Kid is untouched.
       + 160hp, 2.5 regen                     14       9       14
     SHIPPED: Braced 9/45, 160hp, 0.9        11    * 12       10
 
-**Braced saturates at 45** — 45→65 bought nothing, drPerSec 6→20 bought nothing;
+**Braced saturates at 45** - 45→65 bought nothing, drPerSec 6→20 bought nothing;
 the pilot stops standing once six enemies are on it, so past the cap there is no
-standing time left to convert. **Flat stats favour the kiter, every time** — a
+standing time left to convert. **Flat stats favour the kiter, every time** - a
 kiter turns hp into runway, a brawler in a crowd takes damage that scales with
 the crowd; regen 2.5 sent kiting to 14 and standing down to 9. And **batch 4's
-other Hand card, "Set Feet — Braced starts at 0.5s", measured WORSE** (11→9);
+other Hand card, "Set Feet - Braced starts at 0.5s", measured WORSE** (11→9);
 recorded in classes.json, re-measure before shipping it. The six-class ladder
 came back to 82/144 against 84 before batch 1, with the spread narrower. 216/216.
 
@@ -1331,7 +1331,7 @@ came back to 82/144 against 84 before batch 1, with the spread narrower. 216/216
 
 The owner, on the Hand's default melee: "something about it doesn't look
 right", and the tan cloud "looks like a giant sand mouth eating things". Both
-were literally true. The attack drew `fx.slash` — a white crescent — over
+were literally true. The attack drew `fx.slash` - a white crescent - over
 `swingClip: proj.claw`, which is `pj3_demon_bite_loop_large_orange` from the
 FX pack, a DEMON BITE, stretched across the full 78px of the hitbox. A sword's
 swing and a monster's mouth, on a tool that stabs.
@@ -1339,7 +1339,7 @@ swing and a monster's mouth, on a tool that stabs.
 ### What replaced it
 
 `swingStyle: "thrust"` in weapons.json turns off the crescent and the swept
-clip, and turns on three things: **the held fork lunges** — the recoil kick
+clip, and turns on three things: **the held fork lunges** - the recoil kick
 with its sign reversed, phased off `slot.firedAt`, no new sim state; **three
 straight strokes at the tine tips**, phased off the swing projectile's
 `hitStamp`, which the T3 re-arm resets exactly when the second jab lands;
@@ -1348,33 +1348,33 @@ whole jab is about thirty screen pixels and an animated sprite scaled into
 that is a smudge. Judged at 1x, the only scale that settles it.
 
 The streak is lifted to hand height off the same `hand` anchor the loadout
-uses. A melee hitbox sits at the player's ORIGIN — twelve pixels under his
-boots — so drawn there it came out thirty-five pixels below the fork that made
+uses. A melee hitbox sits at the player's ORIGIN - twelve pixels under his
+boots - so drawn there it came out thirty-five pixels below the fork that made
 it. The player-mark lesson for the third time.
 
 `carry.pitchfork` is the seventh member of a family that was six firearms. The
 guns joined because they were too SMALL; the fork because it was the wrong
-VIEW — a 3/4 icon standing up cannot be aimed. One generation, 64 candidates,
+VIEW - a 3/4 icon standing up cannot be aimed. One generation, 64 candidates,
 one kept, 63 dismissed, nine cents; the account held no fork of any kind,
 grepped first. **Provably decoration:** three seeds at 3000 and 9000 ticks,
 wave, level, enemies alive, crops and kills identical in all six runs.
 
 **One reversal.** `carry.slots.back.byClass.hand` was briefly turned a quarter
 further to keep the fork over his shoulder the way its old icon sat, and put
-back: that slot is not the fork's private anchor — a slung rifle rests there
+back: that slot is not the fork's private anchor - a slung rifle rests there
 too, and a quarter turn stands the rifle up like the post the owner rejected.
 Fixing the art meant no angle was needed at all.
 
 ### Two instruments, because a 0.16s animation cannot be photographed by waiting
 
 `npm run catch` polls `window.rdf.world` in the real browser and shoots the
-first frame a PREDICATE holds — it asks the sim whether the moment has
+first frame a PREDICATE holds - it asks the sim whether the moment has
 arrived rather than guessing from pixels. It shuffles left and right rather
 than holding one key; holding D for fifteen seconds pins the player against an
 arena wall. `npm run crop` magnifies a region of a real frame, because every
 anchor bug is a two-pixel relationship invisible at 1x. `RDF_HELD=<weaponId>`
 on `npm run facings` chooses the held weapon, so the sheet can show a class's
-STARTING weapon at rest — the one pose the tool could not photograph before.
+STARTING weapon at rest - the one pose the tool could not photograph before.
 
 ## The ledger's queue is empty, and the tool was counting its own homework
 
@@ -1389,7 +1389,7 @@ four chicken runs and four paddocks.
 
 **`drawn()` was searching a corpus that contained the tool.** It greps `src/`,
 `tools/` and `tests/` for a key, and the family table in
-`tools/pixellab-ledger.ts` NAMES every key it reasons about — so every object
+`tools/pixellab-ledger.ts` NAMES every key it reasons about - so every object
 was "drawn" by the document asking whether anything drew it. The object half of
 wired/packed-unused had been self-satisfied since the ledger was written; it hid
 behind the queue because a forced `open` verdict short-circuits the key check.
@@ -1444,20 +1444,20 @@ family table needs rows for them or the next refresh reports them as open.
 48 weapon-upgrade cards (three per weapon, uncommon/rare/epic) plus three for
 the Smudge Pot, which the roster doc predates. H12: `WeaponSlot.mods` and
 `hasMod(slot, id)`, read beside the `tier >= n` checks every behaviour already
-had — the magnitude lives in weapons.json next to the tier riders, the card in
+had - the magnitude lives in weapons.json next to the tier riders, the card in
 items.json with `requiresWeapon`/`weaponMod` driving the gate, the art the
 weapon's own T1 sprite, zero new generations. Slots-full contributes up to 18
-weapon-upgrade cards instead of six merges alone, plus a shop-only `swap` —
+weapon-upgrade cards instead of six merges alone, plus a shop-only `swap` -
 trade the lowest-tier weapon for one you do not own, at T1, resolved at
 PURCHASE rather than draw time so building the candidate list stays RNG-free.
 
 Batch 2's own targets, hand/kite over 24 seeds: candidates at L30-34
 27 → 40 (batch 1) → 55; merges 2.9% → ~9.8% → 10.9% (8-14% target);
 distinct-by-end ≥ 65, measured 70.8. All pass, all six classes. Balance:
-hand/brawl 13/24 and kid/kite 13/24 — each class at its own game, identical.
+hand/brawl 13/24 and kid/kite 13/24 - each class at its own game, identical.
 
 `tests/run.test.ts`'s hand/kite ladder is what found the real cost: once any
-upgrade exists — the Pitchfork's, from level 1 — `offers.ts`'s slot B always
+upgrade exists - the Pitchfork's, from level 1 - `offers.ts`'s slot B always
 succeeds on its gated quota, and the "or a weapon" fallback batch 1 wrote for
 an EMPTY gated pool never fires again. A merge lost the one slot the redesign
 had quietly been guaranteeing it. 12+/24 fell to 4/24, dying by wave 9 with
@@ -1466,18 +1466,18 @@ quota rather than a fallback behind it, and re-measuring `weaponOfferWeight`
 directly against the failing test: 1.6 through 4 still failed, 6 passed every
 case, 8-15 were flat or worse. Re-measure if the item or upgrade count changes.
 
-Art: the 26 icons tagged `rdf-hold-batch2` were checked against the 51 cards —
+Art: the 26 icons tagged `rdf-hold-batch2` were checked against the 51 cards -
 none fit (seven are concept weapons that never made the sixteen), so they stay
 held. 220/220 tests. `docs/progress/cards-batch2.png`: 130 cards, all render.
 
 ## Batch 3 of the upgrade roster: things that stand on the field for you
 
-Eleven cards. Six allies and placeables ride H8 — `Projectile.type: 'placeable'`
+Eleven cards. Six allies and placeables ride H8 - `Projectile.type: 'placeable'`
 on the existing pool, no new pool: the Scarecrow Post (an attached turret that
 pulses `areaDamage` every 1.2s at 190px for 25s and replants beside you when it
 expires), the Bear Trap (one-shot, a real `hitStamp`/`hitsLeft: 1`, freed by a
 new `trapField` branch in `collideProjectiles`), the Hen Coop (a permanent base
-that spawns a hen which dies on first contact — the reason `'placeable'` is not
+that spawns a hen which dies on first contact - the reason `'placeable'` is not
 just `'minion'`), the Trip Wire (not a projectile at all: a per-tick
 line-crossing check between the player and the nearest harvestable prop,
 mirroring Salt Circle's ring), the Yard Goose (a chase-and-bite minion on the
@@ -1491,20 +1491,20 @@ player-knockback site plus enemy-into-enemy collision damage.
 
 Eight icons, one `create_image_pro` call each, style-anchored the way batch 1's
 were, ~$0.76; Scarecrow Post reuses `prop.scarecrow`, Littermate reuses
-`weapon.barnDog`. The doc's "four unclaimed coop candidates" were stale — the
-ledger shows them wired or surplus — so the coop reuses `ranch.coop`. Found
+`weapon.barnDog`. The doc's "four unclaimed coop candidates" were stale - the
+ledger shows them wired or surplus - so the coop reuses `ranch.coop`. Found
 in passing: `projectileFrame` in BOTH painters had no path for an item-sourced
 placeable, and draw-world's minion lookup lacked the `minionSprite` read the
 renderer already had.
 
 **The regression, again, and it is the same shape as batches 1 and 2.** Adding
-the content alone — no sim code — took the hand/kite acceptance ladder from
+the content alone - no sim code - took the hand/kite acceptance ladder from
 12/24 to 3/24: eleven new uncommon+ items reseeding the offer stream.
 `weaponOfferWeight` was re-measured first and ruled out. The lever was The
 Hand's flat stats, because Braced pays nothing while kiting: maxHp 160→180,
 hpRegen 0.9→2.5, and a new dodgePct 15; reasoning in `classes.json`'s
 `_dodgeNote`. It passes, and the six-class ladder now reads hand 15/19/21 and
-kid 14/12/21 (kite/brawl/spacer) — **which is drifting EASIER with every
+kid 14/12/21 (kite/brawl/spacer) - **which is drifting EASIER with every
 batch**. Three batches have each re-tuned the Hand to hold a test bar while the
 roster grew; batch 5 is the full retune and is where that settles. Until then,
 do not read the ladder as balance. 231/231 tests; candidates at L30-34 now 65.
@@ -1514,7 +1514,7 @@ do not read the ladder as balance. 231/231 tests; candidates at L30-34 now 65.
 18 class cards, H13: `player.classBonus`, rebuilt in `resolve()` from every
 owned item's `classBonus` block the way `stats` already is, read by
 `updatePassive`/`onKill`/`takeWound`/`onHurt` in player.ts and by two new hooks
-in world.ts — Volunteer Strain's status spread in `killEnemy`, Dust Devil's
+in world.ts - Volunteer Strain's status spread in `killEnemy`, Dust Devil's
 dash-trail hazard on Bolt. `requiresClass` gating already existed (batch 2
 anticipated it); this adds the class name to the kind band.
 
@@ -1523,7 +1523,7 @@ classes.json: Deep Rooted's "caps at 45%" already shipped as The Hand's base in
 batch 1, so the card pushes to 55% instead; Long Stride's cap-only design was
 arithmetically inert against Momentum's formula (velocityFraction tops out
 exactly at the base cap), so it raises the rate too. Anchor Stone trades the
-doc's 90px aura for the touch-collision loop — the same simplification Straw
+doc's 90px aura for the touch-collision loop - the same simplification Straw
 Hat's "within 60px" already makes. Set Feet uses a quarter-second nudge, not
 the half-second that measured worse in batch 1.
 
@@ -1532,7 +1532,7 @@ precedent, added after measurement: without it, reseeding the offer stream
 dropped hand/kite below its acceptance bar and moved Vet and Agronomist more
 than three clears off the pre-batch ladder. With it, home pilots on the test
 ladder: hand 16→17, kid 13→14, widow 21→18, vet 12→14, agronomist 15→17,
-drifter 14→16 — all within ±3, mean 15.2→16.0. The base stats were NOT
+drifter 14→16 - all within ±3, mean 15.2→16.0. The base stats were NOT
 touched this time. Art: zero generations, `portrait.<classId>` for all 18.
 238/238 tests.
 
@@ -1546,7 +1546,7 @@ deleted most of it; caught on the next `vite-node` failure, restored with
 Five Field & Ledger cards, the shop's fifth slot and free first reroll
 (Handbill), a free level-up reroll per stack per level (Spare Choke), and a
 shared ledger (`src/ui/ledger.ts`) that renders weapon mods by name, class
-cards, and every item's `n/N` stack in both the pause screen and the shop —
+cards, and every item's `n/N` stack in both the pause screen and the shop -
 one builder, so the two cannot disagree about the same run. Cards print their
 draw category and a `SHOP ONLY` flag in the kind band; the shop's subtitle
 says how many cards on the board a level-up will never show. Four icons, one
@@ -1557,10 +1557,10 @@ hold a test bar while the roster grew, and the six-class ladder had drifted to
 hand 17 / kid 14 / widow 18 / vet 14 / agronomist 17 / drifter 16 of 24 against
 an 11-15 target. Tried in the doc's own lever order: (a) rolling The Hand all
 the way back to batch 1's flat stats broke `run.test.ts`'s own >=12/24 kite bar
-(5/24) — dodge turned out to be the load-bearing half of batch 3's fix for a
+(5/24) - dodge turned out to be the load-bearing half of batch 3's fix for a
 bot that never stands still; hp/regen only needed pushing back a third of the
 way. Shipped 165hp / 1.4 regen / 15 dodge. (b) Steepening `waveHpScalar`'s
-quadratic term was tried and REVERTED — the Widow and Agronomist, the real
+quadratic term was tried and REVERTED - the Widow and Agronomist, the real
 outliers, barely moved (their deaths were never a durability problem; contact
 damage taken sat under 200 across a full clear), while the Vet and the Hand's
 kite number fell out of range. (c) The Widow's actual lever was `immediatePct`
@@ -1597,7 +1597,7 @@ Every pass this session that needed `npm run inventory` or `npm run tag --write`
 reported "no PIXELLAB_API_KEY in the shell" and worked around it through the
 MCP, leaving the account-side tags stale. The key was on the machine the whole
 time, in the gitignored `.mcp.json` the MCP server reads. `tools/pixellab-key.ts`
-resolves it now — env var first, then that file — and eight tools use it. The
+resolves it now - env var first, then that file - and eight tools use it. The
 unblocked refresh retagged 94 assets and closed the ledger's last open row.
 Two gaps remain by construction: the icons from roster batches 1 and 3 were
 made with `create_image_pro`, which never registers an object, so the ledger
@@ -1609,10 +1609,10 @@ check after every commit is a grep for its first characters returning zero.
 
 `sceneBg.cornWall` (the corn horizon whose own manifest note called it "the
 RIGHT horizon for this farm"), `scene.nest`, `scene.fenceRail` and
-`ranch.fenceRail` are wired — the first three into the yard and field scenes,
+`ranch.fenceRail` are wired - the first three into the yard and field scenes,
 the last into the field dressing. `sceneBg.treeline` is retired as the
 alternative corn superseded. **Nineteen Wang ground sets were retired outright
-and deleted from `assets/tilesets/`** — session 17 found this family reads as
+and deleted from `assets/tilesets/`** - session 17 found this family reads as
 wallpaper against a full field of enemies, a combat-readability call no
 screenshot can make, so they were not wired blind. They remain on the PixelLab
 account and in git history if a map ever wants one. The atlas dropped from
@@ -1620,8 +1620,8 @@ account and in git history if a map ever wants one. The atlas dropped from
 recorded decisions: the 25 weapon-icon rolls held for future weapons, and the
 four chicken-run enclosures that are Design's call.
 
-**A dev picker for every home-screen state** — YARD CALM, YARD BLIGHT, FIELD
-CALM, FIELD BLIGHT, FLASH, DESCENT, LAB, HOMESTEAD — sits beside the scene
+**A dev picker for every home-screen state** - YARD CALM, YARD BLIGHT, FIELD
+CALM, FIELD BLIGHT, FLASH, DESCENT, LAB, HOMESTEAD - sits beside the scene
 selector and shows only while the F1 dev overlay is on (`body[data-dev='on']`,
 a CSS gate, so there is no JS visibility to drift). Production starts with the
 overlay hidden, so the picker is off on the live site and one keypress away;
@@ -1630,7 +1630,7 @@ accepts the same eight names, and `docs/progress/scene-<state>.png` holds one
 shot of each.
 
 Found in passing: `MenuScreen.open()` restarted the sequence from calm on every
-boot, silently dropping a persisted lab hold back onto the surface — the
+boot, silently dropping a persisted lab hold back onto the surface - the
 documented "come back underground" behaviour had never worked across a reload.
 It skips the restart when a beat is already scheduled.
 
@@ -1650,9 +1650,9 @@ game to the floor.** Each item became a pass; the two below landed first.
 
 ### The road to the barn, and three fixtures
 
-The "weird square" was `Yard Grounding Fix.dc.html`'s track to the barn doors —
+The "weird square" was `Yard Grounding Fix.dc.html`'s track to the barn doors -
 a trapezoid road narrowing for perspective, `clip-path: polygon(...)` in the
-artboard — ported with its box and gradient and without its clip, so it painted
+artboard - ported with its box and gradient and without its clip, so it painted
 as a rectangle of a different shade behind the coop. Restored verbatim. The
 well, coop and doghouse matched the catalog's person-scale column exactly and
 still read small, because the animals beside them are deliberately above life
@@ -1664,7 +1664,7 @@ off the atlas alpha, which is how the coop's cap was computed rather than eyed.
 ### The Smudge Pot dealt half its own advertised dps
 
 `sustainAura` computed `p.damage = damage * burn * interval`, applying
-`hitInterval` twice — once to space the rearms (correct), once to scale the
+`hitInterval` twice - once to space the rearms (correct), once to scale the
 bite (not). Every tier delivered exactly 50% of the number on its card
 (5/8/20.48/32.77 against 10/16/41/65.5), invisible at low tiers, and at T4
 after three merges weak enough against wave-25 pools to read as a dead slot.
@@ -1685,38 +1685,38 @@ Hand and 7/24 as The Drifter with median deaths around wave 12; idle-buy
 cleared 14/24 as The Hand. Home pilots averaged 13.7/24 and finished at level
 30-43. Embarrassing, as predicted.
 
-**Doubling the density of waves 1-5 — the owner's own request — made the game
+**Doubling the density of waves 1-5 - the owner's own request - made the game
 EASIER on its own.** Threat intercept 30→96: alive in waves 1-5 went 17→35,
 the home ladder went 13.7→16.2, end level 42-51. Every body-adding lever pays
 the player first, in XP and feed, before it is any threat. **The only lever
 that does not is XP**, and the pass turns on it: `xp.exponent` 1.55→1.85 took
-the home ladder 16.2→8.3 and end level to a median of 21 — the owner's own run
+the home ladder 16.2→8.3 and end level to a median of 21 - the owner's own run
 reached 22. 1.85 is the knee: 2.10 zeroes idle but collapses the home pilots.
 
 Shipped with it: `waveHpScalar` 0.06/0.010→0.08/0.014 (3.6x at wave 12, 11x
-at 25); elites every 3 waves instead of 5, 14% at x6 — which moved The Hand's
+at 25); elites every 3 waves instead of 5, 14% at x6 - which moved The Hand's
 deaths from waves 5-13 to 7-21; a second Prize Bull at wave 18, so the home
 pilots now die on 18-21 at all. Rejected, with numbers: the quadratic threat
-term alone (breaks parity — vet 6/24, range 12); `waveHpScalar`'s linear term
+term alone (breaks parity - vet 6/24, range 12); `waveHpScalar`'s linear term
 alone (BACKWARDS: tougher trash is a thinner ring a standing player farms);
-`pressureCeiling` 380→700 (inert — withholds zero seconds); shorter
+`pressureCeiling` 380→700 (inert - withholds zero seconds); shorter
 post-hit invulnerability (moved idle the wrong way); `minDistanceFromPlayer`
-(inert, because `pickSpawnPoint` only ever picks arena edges — **the
+(inert, because `pickSpawnPoint` only ever picks arena edges - **the
 `cornTile` spawn source has never been implemented**). Coefficients moved out
 of `formulas.ts` into `waves.json` so a sweep cannot desync a string from a
 duplicated literal.
 
 After: idle clears 1/24 as The Hand, 0 elsewhere, six-class median death wave
 8.75; idle-buy 0-8; home pilots hand 8, kid 12, widow 9, vet 4, agronomist 5,
-drifter 12 — mean 8.3, deaths spread wave 3 to 21. Waves 1-5 hold 35 alive
+drifter 12 - mean 8.3, deaths spread wave 3 to 21. Waves 1-5 hold 35 alive
 (from 17), 32 on the field at t=60s (from 15). The acceptance bar "completes
-all 25 waves on most seeds" is now "on a minority of seeds" — `formulas.ts`
+all 25 waves on most seeds" is now "on a minority of seeds" - `formulas.ts`
 had written that the half-bar encoded a difficulty target and needed somebody
 to say otherwise; the owner did. New tests: a run nobody is playing never
 clears; shop money alone does not buy a clear; the opening waves hold a floor.
 
-**Still open, stated:** The Hand's idle is his kit — Braced pays 45% for
-standing still and Dig In roots him — so "nobody playing" is his home game
+**Still open, stated:** The Hand's idle is his kit - Braced pays 45% for
+standing still and Dig In roots him - so "nobody playing" is his home game
 with the button unplugged; closing it means moving Braced, in classes.json.
 Vet (4) and Agronomist (5) sit under the 8-12 band because they are the two
 classes that pay for contact and doubled early density is what they cannot
@@ -1731,7 +1731,7 @@ The renderer and draw-world were already right: both look up
 `proj.<clip>.<element>` and fall back to the base clip. The bug was upstream in
 `tools/build-atlas.ts`: every projectile clip, element-tinted or not, was
 quantised through the 32-colour LimeZu farm palette, and that palette has no
-warm/hot or cold/corrosive swatch — so `proj.pellet.fire` snapped to the same
+warm/hot or cold/corrosive swatch - so `proj.pellet.fire` snapped to the same
 entry as `proj.pellet`, measured 0 of 1,600 pixels different. Element clips
 skip the conform pass now and keep the source pack's saturated colour; the base
 clip still conforms, so house style is unchanged with no Load active. The
@@ -1744,26 +1744,26 @@ The three original element items and the six batch-1 Loads were two
 generations of the same idea, and the owner ended a run owning Tracer Rounds
 3/3 and Cold Rounds 3/3 at once. They are one family now: taking a Load sets
 `player.element`; switching SUPERSEDES (the old copies stay in `player.items`
-and stop contributing — no refund plumbing) and resumes at the depth already
+and stop contributing - no refund plumbing) and resumes at the depth already
 invested if you switch back, because `loadStacks` is derived from ownership
 rather than tracked. Stacks deepen: `elements.json` carries `<field>PerStack`
 and one `elementStat()` in content is read by both `World.applyElementTo` and
 the card text, so the sim and the card cannot disagree. A card reads "Replaces
-your current load (Fire)" on a switch and "2/3 — burn 7 → 10 dps" on a
+your current load (Fire)" on a switch and "2/3 - burn 7 → 10 dps" on a
 deepen; the HUD shows the active Load beside the weapon slots. 249 tests. The
 roster doc's Loads table still lists flat numbers and wants reconciling.
 
 ## The shop's floor, the Trade-In's dead end, and the ledger that ate Continue
 
 The first human playtest hit three bugs at wave 24: six weapons T4, every
-common item at LAST, 4,614 feed — and the shop fell to one card (the swap),
+common item at LAST, 4,614 feed - and the shop fell to one card (the swap),
 because every other candidate has a `maxStacks` ceiling. Five uncapped sinks
 (Field Ration, Tier-Up Token, Reroll Chit, Acre Bond, Second Harvest) answer
 it, but only as a **floor**: `items.json`'s `sink: true`, read in
 `OfferPool.draw`, pulls them in only when the real pool cannot fill the board.
 The first version had them always in the mix and cost the hand/kite ladder two
 clears (12/24 → 10/24) by diluting a healthy shop's weighted draw from wave
-one — gating behind "pool ran dry" restored it exactly and made a normal shop
+one - gating behind "pool ran dry" restored it exactly and made a normal shop
 draw byte-identical to before. Costs escalate per copy (`sinkCost`, 1.18).
 
 Trade-In stopped being a dead end two ways: `OfferPool.guaranteeMergeNext` is
@@ -1781,7 +1781,7 @@ visible; the pause screen's chip list got the same treatment. Verified with
 six T4 weapons and 47 items at 1366x768 and 1920x1080.
 
 Five icons generated, style-anchored; packed under `item.<id>`. Not built: a
-"Hired Hand" ally sink — the only temporary-ally pattern (Scarecrow Post's
+"Hired Hand" ally sink - the only temporary-ally pattern (Scarecrow Post's
 turret) shares mutable state a second item would corrupt. 261 tests.
 
 ## The Hand's idle and the Drifter's idle-buy, closed
@@ -1791,14 +1791,14 @@ gone. **The Hand's Braced now needs INPUT to hold its ceiling**: `sinceAbility`
 (player.ts, reset in `World.tryAbility`) measures time since the last Dig In
 press, and past `abilityGraceSeconds` (20s, wider than the 14s cooldown) the
 realised cap drops from 45% to `drMaxStale` (20%). Standing still is still the
-trigger — his identity — only the ceiling a rooted-but-idle player reaches
+trigger - his identity - only the ceiling a rooted-but-idle player reaches
 moved. Tried and abandoned first: gating the RATE on enemy proximity, which
 barely moved idle-buy (9/24 at 140px) because a stationary bot in the doubled
 opening is swarmed continuously, so "an enemy is near" was never the
 constraint. idle-buy 9/24 → 4/24.
 
 **The Drifter's lifesteal** (0.95%, unchanged) now scales by streak/maxStacks
-in `World.damageEnemy` rather than applying flatly to every point of damage —
+in `World.damageEnemy` rather than applying flatly to every point of damage -
 a standing aura's DoT ticks included, which is what let idle-buy farm near-full
 healing off a Smudge Pot with no kill ever landing. idle-buy 6/24 → 4/24,
 kite 11 → 8. Both exemptions retired; all six classes sit under the one
@@ -1806,14 +1806,14 @@ kite 11 → 8. Both exemptions retired; all six classes sit under the one
 
 **The Veteran and Agronomist move into band without touching the curve.** The
 Veteran: maxHp 115→135, hpRegen 0.5→1.2 (spacer 6→9). Overwatch's near
-penalty was tried first and reverted — halving it broke `vetEnfilade`'s fixed
+penalty was tried first and reverted - halving it broke `vetEnfilade`'s fixed
 +20 cancel-out delta in items.json, caught by `tests/sim.test.ts`; that
 coupling is worth remembering. The Agronomist: one stat, `rangePct: 20`, which
 the Chem Sprayer's `rotatingJet` already read and nothing had granted her
 (brawl 5→11).
 
 Final ladder, home pilots: hand 7, kid 12, widow 9, vet 9, agronomist 11,
-drifter 8 — mean 9.3, worst deviation 2.7; idle ≤2 and idle-buy ≤5 for every
+drifter 8 - mean 9.3, worst deviation 2.7; idle ≤2 and idle-buy ≤5 for every
 class. The Hand's 7 is one under the nominal floor and was 7 before this pass;
 his standing-over-kiting preference is intact at 14/32 against 3/32. 253 tests
 on the branch, 264 on the merged tree, typecheck clean.
@@ -1829,11 +1829,11 @@ standing-versus-running is another stat spread whatever the numbers say.
 - **Widow / attrition.** `grit` splits a blow: 55% lands now, the rest is a wound
   that bleeds off over 5s and that each kill closes a quarter of. Fighting
   through a hit erases it; running pays all of it. `holdTheLine` plants a ward
-  that slows and pays per kill inside, and does NOT root her — a ward you cannot
+  that slows and pays per kill inside, and does NOT root her - a ward you cannot
   leave is a worse Dig In. Her flat regen came down 1.4 → 0.3 because Grit IS
   her sustain now.
 - **Veteran / spacing.** `overwatch` pays +40% past 170px, charges -20% inside
-  80px. PER-TARGET, so it joins the additive sum in `resolveDamage` — the stat
+  80px. PER-TARGET, so it joins the additive sum in `resolveDamage` - the stat
   block and `passiveDamagePct` are both one number for the whole tick.
   `claymore` plants a mine: arms in 0.8s, trips on the first thing within 90px
   or a 6s fuse, 55 in a ring plus knockback and a 1.2s stun. A ring, not a
@@ -1871,7 +1871,7 @@ holds ~200px, because a range class flown by a brawler measures the wrong game.
 
 ### The Drifter was a trap pick, and had been for a while
 
-**1/24 kiting, 4/24 brawling, 2/24 spacing — dying on WAVE 2 in fourteen of
+**1/24 kiting, 4/24 brawling, 2/24 spacing - dying on WAVE 2 in fourteen of
 twenty-four, on the code that was already committed.** He had been broken since
 the density pass halved enemy hp and damage to buy BODIES. Nothing caught it
 because **the parity test only ever ran The Hand and The Kid**, and Momentum was
@@ -1882,14 +1882,14 @@ The cause is the STARTING WEAPON, proved rather than argued: every other number
 held still, 4/24 holding the Harpoon Gun and 13/24 holding the Scattergun. At
 T1 `hookFurthest` fires one shot at ONE enemy every 1.8s, at the FURTHEST enemy
 in range, so it does not even answer the thing about to touch you. **Stat
-inflation was tried first and refused to move it — 95 hp, +45% attack speed and
+inflation was tried first and refused to move it - 95 hp, +45% attack speed and
 +15% damage took 4/24 to 4/24.**
 
 The fix is that `hookFurthest` now reads `projectileCount`, a declared stat
 that until now **only the Scattergun's `stream` looked at**. Nothing in the game
 grants it, so every existing build resolves it at 0 and the line is
 arithmetically the one it replaces; the Drifter's stat block pays for extra
-hooks. The Harpoon Gun is still a bad T1 weapon for everyone else — a T1 rider
+hooks. The Harpoon Gun is still a bad T1 weapon for everyone else - a T1 rider
 on the weapon, or a different starting weapon, is a design call.
 
 ### The weapon ring targets the NEAREST enemy, and that shapes range passives
@@ -1932,7 +1932,7 @@ deviation, not the pass: 4.5 against a bar of 8. 207 tests now.
   shows outstanding damage, so what a player sees is a health bar that keeps
   falling after the hit and stops when they kill something. That is the whole
   class and it has no readout.
-- **`lifestealPct: 1` on the Drifter is doing a lot of work** — 4% put him at
+- **`lifestealPct: 1` on the Drifter is doing a lot of work** - 4% put him at
   21/24 and 2% at 20/24, roughly five clears per point.
 - **The Claymore may be invisible in practice.** Its only marker is the
   TRIGGER-radius telegraph; the larger blast radius is never drawn.
@@ -1978,7 +1978,7 @@ Three `npm run play -- hand 90 <dir> harvest` runs each side, and one
 | fps min | 222 / 154 / 104 | 222 / 200 / 234 |
 | frames over 33ms | 82 / 74 / 101 | 12 / 30 / 10 |
 
-**The frame rate does not move and was never going to** — this machine absorbs
+**The frame rate does not move and was never going to** - this machine absorbs
 the cost. What moves is the stall count, 74-101 down to 10-30, and the fps
 floor, 104-222 up to 200-234. Those two ranges do not overlap, which is more
 than the previous session could say about anything it A/B-ed.
@@ -1998,11 +1998,11 @@ Compare counts.
   `vatSpecimen`/`windmill`/`scarecrow`/`wheat`/`labConsole`/`tank*`) lands on
   pages 5-6 and the pages the renderer samples every frame carry only field
   art. That grouping is tidiness; a frame carries its page and every reader
-  indexes by it. `base.*` is deliberately field — `maps.json` uses it for the
+  indexes by it. `base.*` is deliberately field - `maps.json` uses it for the
   lab map. So is `item.*`: `drawPickups` draws an item's card art as its
   ground pickup.
 - **Page height rounds to 64, not to a power of two.** These are `drawImage`
-  sources on a 2D canvas — no mipmaps, no wrap — and POT rounding turned a page
+  sources on a 2D canvas - no mipmaps, no wrap - and POT rounding turned a page
   needing 1216 rows into 2048, 43% full. 25.3M pixels became 23.6M.
 - **The flash copy split for free**: one white silhouette canvas per page.
 
@@ -2011,7 +2011,7 @@ Compare counts.
 `Atlas` holds `images[]`, `flash[]` and `pageUrls[]`, loads the manifest first
 (it says how many pages) then every page in parallel. `AtlasFrame` gains
 `page`. The renderer's hot path is still one `drawImage`, no state change, no
-allocation — `images[f.page]` is an array index beside five property reads the
+allocation - `images[f.page]` is an array index beside five property reads the
 loop already did. `src/ui/sprite.ts` gives each DOM sprite its frame's page url
 AND that page's `background-size` through one `pageOf()`; its exported helpers
 are unchanged and `card.ts`/`menu.ts`/`scene.ts` needed no edits. The nine
@@ -2025,7 +2025,7 @@ offline tools that used to open `public/atlas.png` go through
 - `npm run strips` rewrote all 714 strips and `npm run catalog` every contact
   sheet with **zero diff**. That is the page indexing checked against 714
   files, which is better evidence than one screenshot.
-- `npm run scene -- yard` is NOT deterministic — the yard has a timed CSS
+- `npm run scene -- yard` is NOT deterministic - the yard has a timed CSS
   entrance, so two consecutive shots differ. Do not use it as an A/B.
 
 ### Two corrections made in passing
@@ -2033,7 +2033,7 @@ offline tools that used to open `public/atlas.png` go through
 **`tools/play.ts` blamed the atlas for slow page load, and that was wrong.**
 `tools/load-time.ts` (new) separates boot (`goto` → `window.rdf`) from art
 (`goto` → `rdf.atlas`). A cold browser context takes ~81s and `rdf.atlas`
-resolves **7ms** after `window.rdf` — the atlas fetched in parallel while vite
+resolves **7ms** after `window.rdf` - the atlas fetched in parallel while vite
 transformed the module graph. It is vite, not the art. Later loads: ~190ms to
 boot, ~700ms to art; the atlas's own share went from ~750ms to ~490ms.
 
@@ -2065,7 +2065,7 @@ wrong at once and they needed different fixes.
 `docs/PIXELLAB_INVENTORY.md` holds four turned farmhands and **all four are
 already claimed**: `9bcb41fd` is the superseded 40x40 first pass sitting in
 `farmhand_orig/`, `7418d20d` is the sheet actually in use (confirmed against
-the live account — walk 8f, hit 6f, death 7f, which is exactly what
+the live account - walk 8f, hit 6f, death 7f, which is exactly what
 `sprites.json` declares), `f6e8c1fb` is `bloatedFarmhand` and `371055e3` is
 `acidZombie`. Nothing unclaimed, nothing in review. So the art we already own
 gets repainted, and this session spent **zero generations**.
@@ -2074,7 +2074,7 @@ gets repainted, and this session spent **zero generations**.
 
 Every pixel goes into one of four colour FAMILIES by its Oklab hue and chroma,
 and each family is re-ramped onto blight anchors taken from the cursed block of
-`art/palette.json` — the block that exists because "cursed art is grey-green
+`art/palette.json` - the block that exists because "cursed art is grey-green
 rot ... those greens must be DISTINCT from the healthy pasture greens".
 
     straw    the hat and its leather   ->  rotted brown-black
@@ -2084,7 +2084,7 @@ rot ... those greens must be DISTINCT from the healthy pasture greens".
 
 Classification is by colour and never by position, which is the whole reason it
 is cheap: one rule set covers all 88 frames of a four-direction rig without
-anyone hand-masking a hat. Run `--mask` and look at the output — the hat, the
+anyone hand-masking a hat. Run `--mask` and look at the output - the hat, the
 dungarees and the skin fall out of the hue boundaries almost perfectly, and the
 few stray pixels read as grime. Two things are never touched: anything below
 `INK_L` is outline and stays black, and the sickly yellow eye is already the
@@ -2092,7 +2092,7 @@ right horror cue.
 
 **The reason it works is value, not hue.** The player is a bright hat over a
 dark body. The farmhand is now a dark hat over a body darker still, with a pale
-green head — the arrangement inverted, not merely recoloured. Hue is what you
+green head - the arrangement inverted, not merely recoloured. Hue is what you
 notice at 8x in a contact sheet; value is what survives 32 pixels on a 520px
 camera. Squint any wave-7 shot down to 25% and that is the whole difference.
 
@@ -2100,14 +2100,14 @@ Output is `assets/pixellab/character/farmhandBlight/`: identical filenames,
 identical cells, identical strip widths, identical alpha. Only colours differ,
 so every packed offset, measured anchor and clip length carried over untouched.
 Committed rather than gitignored, the same call `assets/generated/characters/`
-already makes — a fresh clone must be able to run `npm run atlas` without
+already makes - a fresh clone must be able to run `npm run atlas` without
 first running every upstream tool. `npm run recolour` re-runs it.
 
 ### The other half: a mark the crowd never has
 
 Repainting the enemy tells the eye what to rule OUT. It needed something to
 hunt FOR as well, so the player now stands in a soft contact shadow with a
-faint lamp ring round it — `Renderer.drawPlayerMark`, once per frame, in the
+faint lamp ring round it - `Renderer.drawPlayerMark`, once per frame, in the
 ground layer where the dash dust goes.
 
 Deliberately NOT a per-enemy outline or tint. The sprite pass is one
@@ -2118,7 +2118,7 @@ costs two shapes, allocates nothing, and puts `globalAlpha` back.
 All ten numbers are in `tuning.playerMark`, and its `_restraintNote` is the
 part worth keeping: this is a farm at dusk, not a MOBA. The shadow does most
 of the work by GROUNDING him; the ring only has to survive a squint. Raise
-`ringAlpha` before `ringWidth` — a thick ring reads as UI painted over the
+`ringAlpha` before `ringWidth` - a thick ring reads as UI painted over the
 world, a faint wide one reads as lamplight on grass.
 
 ### Where the sheet choice is stated, and why there
@@ -2127,7 +2127,7 @@ world, a faint wide one reads as lamplight on grass.
 enemy WEARS is content, `world.spawnEnemy` already read the field and
 `tests/content.test.ts` already validated it, so nothing in `src/sim` changed.
 The straw `farmhand` entry was DELETED from `sprites.json` rather than left
-beside the new one — packing both would spend 88 frames on art nothing draws.
+beside the new one - packing both would spend 88 frames on art nothing draws.
 `art/sprites.json` cannot express "this sheet lives at that path": the packer
 derives the directory from the sheet id (`${_base}${id}/`), so the sheet id IS
 the path, which is why the directory is `farmhandBlight`.
@@ -2135,7 +2135,7 @@ the path, which is why the directory is `farmhandBlight`.
 ### Still open from this
 
 - **`bloatedFarmhand` and `acidZombie` still wear the straw hat.** Neither has
-  the same problem — one is 60% belly, the other vivid green. But the hat is
+  the same problem - one is 60% belly, the other vivid green. But the hat is
   now the player's signature, and leaving it on any enemy weakens the rule.
   `npm run recolour` handles either in one command; a trial of the bloated one
   looked right. Design's call, not code's.
@@ -2146,7 +2146,7 @@ the path, which is why the directory is `farmhandBlight`.
 
 ---
 
-# Session 21 — the balance session, and a stutter that was a debug guard
+# Session 21 - the balance session, and a stutter that was a debug guard
 
 The owner played it split-screen while this ran and gave two verdicts: too easy,
 and a stutter every 6-10 seconds. Both were real. Balance was given a free hand.
@@ -2157,7 +2157,7 @@ It shouts when a UI layer holding controls computes `pointer-events: none` --
 three screens have shipped unreachable that way, so the guard earns its keep. It
 was wired to a `MutationObserver` on `#ui` with `subtree: true, attributes:
 true`, re-checking on a microtask. **The HUD lives inside `#ui` and writes styles
-every frame** — hp bar width, xp fill, cooldown sweeps. Every frame fired the
+every frame** - hp bar width, xp fill, cooldown sweeps. Every frame fired the
 observer, and the check calls `getComputedStyle`, which forces a synchronous
 style recalc. The game paid a full style flush per frame to ask a question whose
 answer only changes when a screen opens.
@@ -2169,7 +2169,7 @@ second only to `drawImage`. Both are gone from the top 25 now.
 **Three guesses were wrong first, and the order matters.** GC was ruled out (one
 collection per run). The measuring tool was ruled out by QUADRUPLING its sample
 interval and watching the ~0.9s spike period not move. The dev overlay was ruled
-out and measured *worse* with it off — which is the result that ended the
+out and measured *worse* with it off - which is the result that ended the
 guessing, because it proved run-to-run variance exceeds the effects being A/B'd.
 A CPU profile named the function in one run. **When variance beats the effect,
 stop swapping suspects and go get a profile.**
@@ -2200,7 +2200,7 @@ What worked was the change that note had been asking for, made all at once:
   remembering: **regen is an ABSOLUTE number, so halving enemy damage silently
   made every point of it nearly twice as valuable.** The Hand carries 1.5 and
   The Kid none, which alone failed class parity at a gap of 10 against 8.
-  Raising The Kid's dodge was tried first and moved nothing — the gap was never
+  Raising The Kid's dodge was tried first and moved nothing - the gap was never
   about avoidance. Percentage defences (armour is `armor/(armor+k)`, braced DR)
   are scale-free and untouched.
 
@@ -2211,7 +2211,7 @@ What worked was the change that note had been asking for, made all at once:
     kid/brawler     38% -> 56%       w4x4 w5 w12x2
 
 Deaths land across the whole run now instead of piling up before wave 12, and
-each class is still strongest at its own game — which `run.test.ts` explicitly
+each class is still strongest at its own game - which `run.test.ts` explicitly
 wants. **This is a first pass by bots that cannot dodge, aim or read an offer.
 It wants playing.**
 
@@ -2220,13 +2220,13 @@ It wants playing.**
 `Threshing Floor splashes when something dies in reach` asserted on
 `damageDealt`, which does not count the chain. A chain that finishes an enemy
 REMOVES weapon damage the run would otherwise have dealt, so the relic reliably
-LOWERS the number the test demanded it raise — 36 kills for 397 damage against
+LOWERS the number the test demanded it raise - 36 kills for 397 damage against
 28 kills for 504. It passed on the old enemy hp by luck and the density pass
 tipped it over. It asserts on kills now.
 
 ## Standing directive from the owner: the locked classes
 
-**The four unlockable classes should be notably different from each other — not
+**The four unlockable classes should be notably different from each other - not
 one better than another, but skilled in different areas and carrying different
 powers.** Right now `widow`, `vet`, `agronomist` and `drifter` are variations on
 two passives: three carry `braced` at different rates and three carry `momentum`
@@ -2237,7 +2237,7 @@ design ask, not a tuning one, and it is the next balance-adjacent job.
 ## Both artboards are implemented
 
 Design sync was abandoned as a route and it cost nothing: **all 69 sprite keys
-the two artboards reference already resolve in the atlas** — checked with a
+the two artboards reference already resolve in the atlas** - checked with a
 script, not assumed. Nothing was needed from Design that was not in the repo.
 
 `lab` is a `SceneKind` alongside `yard` and `field`, and the yard is rebuilt.
@@ -2248,7 +2248,7 @@ bit twice in one session and is the thing to remember:
 - The lab came out as furniture floating in black, because the wall, the floor
   and the join between them are CSS in the artboard and `npm run placements`
   extracts SPRITES. The room is wall 0-496, a 26px junction band AT 496, floor
-  below — which is the same horizon the previous handoff states as a rule
+  below - which is the same horizon the previous handoff states as a rule
   ("nothing stands in y 496-556"). Drawing it as a band makes the rule visible
   rather than merely obeyed.
 - The yard's fence came out as a row of smears. The table reports
@@ -2256,7 +2256,7 @@ bit twice in one session and is the thing to remember:
   a 96x32 TILE. **A width in the table is not always a size.**
 
 The yard rebuild also settled an argument the old code had documented. The
-previous yard deliberately disagreed with the placement table — the table put
+previous yard deliberately disagreed with the placement table - the table put
 the treeline at y 268-414, the ground began at 620, and three of four oaks hung
 a hundred pixels up in the sky, so that session wrote "ground wins". The
 Grounding Fix is Design's answer: **the horizon moved to 540** and the trees
@@ -2267,7 +2267,7 @@ blurred contact ellipse pushed BEFORE it, so paint order puts the shadow under
 the object. That is session 19's *"everything is in the air"* fix applied to
 props rather than only animals, and it is most of why the scene reads as a place
 instead of a collage. The treeline is blurred 2-2.4px and dimmed to 0.4-0.48
-opacity — depth here is entirely blur and value, and a sharp tree at the back
+opacity - depth here is entirely blur and value, and a sharp tree at the back
 reads as a prop standing in the yard.
 
 `MenuScreen` held a BOOLEAN for the backdrop and could not express a third one.
@@ -2283,7 +2283,7 @@ always landed the same side.
   the UI or the UI should move.
 - `scene.fencePicket` is still the re-opened blocker at 7 of 8; the near fence
   is LimeZu's tile. Closing it needs one wide shallow generation asked for as a
-  THING — "a long low wooden rail fence filling the frame edge to edge", 400x64.
+  THING - "a long low wooden rail fence filling the frame edge to edge", 400x64.
 - **Enemy humanoids share the player's silhouette.** Same straw hat and
   dungarees as The Hand, at the same size, and the density pass put 2.2x as many
   of them on the field. This got worse, not better.
@@ -2295,7 +2295,7 @@ always landed the same side.
 
 ---
 
-# Session 20 — the game can be watched now, and it had never been
+# Session 20 - the game can be watched now, and it had never been
 
 The previous handoff said the next session should be LOCAL, because locally you
 can see and play the thing. That was the right call for a reason nobody had
@@ -2346,7 +2346,7 @@ and fails with `spawn UNKNOWN`, so headed runs go through `channel: 'chrome'`;
 and `spawn('npx', ...)` is ENOENT on Windows, which is why the scene tool was
 simply dead the moment the project moved off the cloud sandbox.
 
-## `npm run play` — a run, watched, through the real renderer
+## `npm run play` - a run, watched, through the real renderer
 
     npm run play -- [class] [seconds] [outDir] [seed]
 
@@ -2419,7 +2419,7 @@ Both from `tools/play/hand/`, and both are for Design rather than for me:
 
 ---
 
-# Session 19 — why the title screens were wrong, and it was not Design
+# Session 19 - why the title screens were wrong, and it was not Design
 
 Claude Design produced three landing scenes that the owner called horrible, and
 was right to. The interesting part is that **both defects were in this repo's
@@ -2442,7 +2442,7 @@ in life. Integer zoom pins all six to 1x, so `spriteEl('joy', 40)` returns 40px
 tall and `spriteEl('fjordPony', 96)` returns **53px**. The box argument was
 being silently discarded above 1x, and no choice of numbers could have fixed it.
 That is the bulldog the size of a pony, and it took reading `spriteEl` to see
-it — the scene code looked correct.
+it - the scene code looked correct.
 
 `sceneSprite(name, height)` scales fractionally and hits the number. Nearest
 neighbour keeps it crisp, and a scene is composited once at a fixed size rather
@@ -2464,14 +2464,14 @@ amount of correct placement substitutes for it.
 
 `docs/ASSET_CATALOG.md` listed frame keys and clips and **no sizes at all** for
 the cast. The building tables listed raw canvas, which is its own trap:
-`ranch.barn` is 400px wide, `ranch.coop` 128 and `ranch.windmill` 128 — a
+`ranch.barn` is 400px wide, `ranch.coop` 128 and `ranch.windmill` 128 - a
 chicken coop drawn at a third of a barn, and a windmill drawn the same as the
 coop when a windmill is taller than a barn is wide.
 
 Every table now carries a **`draw at`** column derived from what the thing
 actually is, against one stated reference: **a grown person is 64 pixels tall**,
-so 36.6px per metre. Small animals sit deliberately above life scale — a cat at
-true scale is 9px and unreadable — but the ORDER is always right.
+so 36.6px per metre. Small animals sit deliberately above life scale - a cat at
+true scale is 9px and unreadable - but the ORDER is always right.
 
 ## The animation gap was real and it was ours
 
@@ -2489,7 +2489,7 @@ believed it, correctly. Tier 5 in `docs/ANIMATION_PLAN.md` had this filed as
 "$0.53, scene-only, nice to have"; it is the difference between a diorama and a
 farm, and it is re-costed at $1.09 for walk on the whole cast.
 
-Walk is the clip that matters, not the ambient ones — it is the only one that
+Walk is the clip that matters, not the ambient ones - it is the only one that
 reads at any size or distance. Landed this session, eight directions each:
 fjordPony, arabian, blackMule, beigeMule, rosie, joy.
 
@@ -2520,7 +2520,7 @@ props, which is how the first bunker preview came out with a plough and a grave
 marker on a concrete floor. Fog, overhead art, breakable skins and the ground
 were already per-map; the dressing was the one layer that was not, so every new
 biome inherited a barnyard. It is data now, and the five surface maps are
-unchanged to the pixel — asserted, not claimed.
+unchanged to the pixel - asserted, not claimed.
 
 The arena edge can be a `wall` instead of a `fence`, and the wall is a **Wang
 terrain, not a run of stamped sprites.** That is the whole reason the corners
@@ -2530,7 +2530,7 @@ rectangle.
 
 `boundary.inset` is the only part that touches the sim and it defaults to 0. The
 player clamp, node and breakable scatter, hazard placement, the scenery band and
-the decals all add it, and `rng.range` costs one draw whatever its bounds — so a
+the decals all add it, and `rng.range` costs one draw whatever its bounds - so a
 surface map draws the identical numbers it always did.
 
 Two things the shots caught that the descriptions did not: **a wall the same
@@ -2541,7 +2541,7 @@ regenerating near-black), and oil drums standing on the wall band.
 
 `new World(seed, class, mods, tier, forceMapId)` overrides the map draw's RESULT
 and never the draw, so a forced run sits at the identical stream position. It is
-the only way to reach a weight-0 map — `pickMapId` can never return one — so
+the only way to reach a weight-0 map - `pickMapId` can never return one - so
 photographing the preview vault previously meant editing content and remembering
 to put it back. `npm run shot -- ... --map=<id>` uses it, and the level system
 will need the same door.
@@ -2566,12 +2566,12 @@ generation to learn. Things bolted ONTO a wall are what they are good for.
 - `public/fonts/rdf-bunker-stencil.ttf` is committed and referenced by nothing.
   Same pattern: made, never picked up.
 - The level exit (blast door / lift) is art-complete and engine-absent.
-- Per-map enemy rosters for the base — the farm cast currently spawns in a
+- Per-map enemy rosters for the base - the farm cast currently spawns in a
   bunker. That is Tier 4 and the owner has said balance is a joint session.
 
 ---
 
-# Session 17 — the flash, the roster, and what a dollar buys
+# Session 17 - the flash, the roster, and what a dollar buys
 
 Overnight, unsupervised, with the owner's approval to spend and to add systems.
 **$1.22 of $15 spent.** Five things landed, and two of them were bugs that had
@@ -2594,7 +2594,7 @@ blink.
 The tell was sitting right underneath it the whole time. The spark immediately
 below was already rate-limited, with the comment *"so a late wave reads as
 combat rather than as a wall of white."* Somebody saw the exact failure, fixed
-it for the sparks, and did not notice the flash — which is the thing that
+it for the sparks, and did not notice the flash - which is the thing that
 actually fills the sprite.
 
 DoT no longer flashes, and a `flashLock` refractory caps the duty cycle at
@@ -2610,8 +2610,8 @@ could not finish scattering its own field. Now 2400 / 256 / 192 / 320.
 ## Five enemies were already in the atlas
 
 `arabianCursed`, `donkeyCursed`, `draftMuleCursed`, `fjordPonyCursed` and
-`infectedHen` were complete 8-direction rigs — walk, attack, death, idle, 224
-frames each — **sitting in the shipped atlas wired to nothing.** 1,120 frames,
+`infectedHen` were complete 8-direction rigs - walk, attack, death, idle, 224
+frames each - **sitting in the shipped atlas wired to nothing.** 1,120 frames,
 26% of the packed page, bought in an earlier session and never drawn.
 
 They went in at waves 3, 8, 13, 16 and 19, weighted to the back half, because
@@ -2626,7 +2626,7 @@ down, and the mechanism is worth writing down because it is silent and total.
 
 `ENEMIES` only ever stripped `_bosses`. Every other underscore key survived into
 the roster as a fake enemy with no `firstWave` (so `refreshRoster` never filtered
-it) and no `threatCost` — and `1 / Math.sqrt(undefined)` is NaN. **One NaN makes
+it) and no `threatCost` - and `1 / Math.sqrt(undefined)` is NaN. **One NaN makes
 `weightedIndex` return garbage for every enemy**, so the director stops spawning
 and a full run reports zero kills. The file had never carried a top-level note
 before, so nothing had ever triggered it.
@@ -2644,7 +2644,7 @@ a true rate near 60%, six seeds fail a 50% bar about **one time in five on a
 passing game.** Twice that turned the suite red for no reason at all, and the
 reflex both times was to go tuning the game.
 
-`SEEDS` is now 24 and `CROSSOVER_SEEDS` 32. **Both bars are untouched** — a
+`SEEDS` is now 24 and `CROSSOVER_SEEDS` 32. **Both bars are untouched** - a
 bigger sample against the same bar is strictly harder to pass by luck. The
 parity tolerance became `ceil(n/3)` rather than a hardcoded `2`, which is the
 same third-of-the-sample it always was and was about to become four times
@@ -2656,7 +2656,7 @@ stricter by accident.
 `knockbackImmune` + `flank`. A flanker that cannot be pushed off is aimed
 squarely at the one class whose kit is standing still. The control measured The
 Hand's preference for holding ground at **21-vs-11 without these enemies and
-26-vs-21 with them** — the gap halved, and this one card was why. Knockback
+26-vs-21 with them** - the gap halved, and this one card was why. Knockback
 restored.
 
 **Not fixed, because it is not:** that same control settled something bigger.
@@ -2678,12 +2678,12 @@ Every figure measured with the balance read either side:
 | Wang tileset (32px, 16 tiles) | ~$0.017 |
 | 8-direction character, standard mode | ~$0.01 |
 
-**Size is nearly free** — 1.10× the cost for 7.1× the pixels. The repo's standing
+**Size is nearly free** - 1.10× the cost for 7.1× the pixels. The repo's standing
 "generate small, candidates are free money" advice optimises the *subscription
 generation counter*, which is a different currency and is at zero until Sep 14.
 On credits there is no size penalty.
 
-The subscription is **active, not cancelled**, and the key is **not dead** —
+The subscription is **active, not cancelled**, and the key is **not dead** -
 `docs/PIXELLAB.md` says both and both are wrong. What is true is that the 4,710
 monthly generations are spent.
 
@@ -2691,15 +2691,15 @@ monthly generations are spent.
 
 Ten Wang tilesets generated. **None wired**, and that is the finding.
 
-The first family went out at `highly detailed` with decorative nouns —
+The first family went out at `highly detailed` with decorative nouns -
 wildflowers, plates splitting. At 32px, detail becomes a **repeating motif**: the
 pasture tiled into visible polka dots and the hardpan into red brickwork with
 the enemies unreadable on top of it. `tuning.json`'s `_chosenNote` already
-recorded exactly this about `dirt_to_grass`, with the reason spelled out — *the
+recorded exactly this about `dirt_to_grass`, with the reason spelled out - *the
 ground is what two hundred enemies are read against.* It was overridden anyway.
 
 The second family, at `low detail` + `flat shading` + `lineless` +
-`tile_strength 0.4`, is much better and the sprites read against it — but still
+`tile_strength 0.4`, is much better and the sprites read against it - but still
 carries a faint repeat that `dirt_to_grass_plain` does not. So the Home Field
 stays on the ground it was tuned on, because it is the control, and all ten sit
 packed as stock to be chosen in motion.
@@ -2708,8 +2708,8 @@ packed as stock to be chosen in motion.
 
 Related, and worth correcting: **the ground was never LimeZu.** Those 29 Wang
 sets were generated off the account earlier. What IS still LimeZu is five
-manifest groups — `weapons` (8), `animals` (duckFlight), `vehicles` (the
-Duster), `singlesExtra` (pickup.heal) and the yard `scene` — and a generated
+manifest groups - `weapons` (8), `animals` (duckFlight), `vehicles` (the
+Duster), `singlesExtra` (pickup.heal) and the yard `scene` - and a generated
 replacement for every one is already on disk, unwired. That is the whole
 remaining retirement job.
 
@@ -2717,7 +2717,7 @@ remaining retirement job.
 
 Ten field crops swapped from the LimeZu pack to the generated set that had been
 sitting unwired since session 15, picked by contact sheet. The pack entries were
-**deleted, not left alongside** — two groups writing one frame key is the trap
+**deleted, not left alongside** - two groups writing one frame key is the trap
 this repo has hit before and the later one wins silently.
 
 They are 32×32 where the pack crops were 32×64, because the pack drew a whole
@@ -2729,7 +2729,7 @@ and belongs in the play session.
 ## Props can animate now
 
 `Renderer.propFrame` draws `sprite.N` when the atlas holds a loop for that key
-and falls back to the single static frame when it does not — so **adding motion
+and falls back to the single static frame when it does not - so **adding motion
 to a prop is an atlas change with no code and no content edit.** Phase comes
 from world position rather than a per-prop timer, because props are pooled and
 have no animation state, and forty crops swaying on the same frame reads as the
@@ -2741,11 +2741,11 @@ Ambient loops run at 8fps against combat art's 15. At 15 a crop flickers.
 ## Four animals from the owner's actual farm
 
 The white Fjord pony with the cream mane, the bay Arabian with the golden mane
-and tail, Job the tan-and-white bulldog, and Wiz the black cat with green eyes —
+and tail, Job the tan-and-white bulldog, and Wiz the black cat with green eyes -
 each an 8-direction rig for **one generation** via the quadruped templates.
 
-Those templates also expose presets for walk, run, eat, dying and — the useful
-one — **`hit-left` and `hit-right`**, which means hit reactions stop being custom
+Those templates also expose presets for walk, run, eat, dying and - the useful
+one - **`hit-left` and `hit-right`**, which means hit reactions stop being custom
 animation work entirely.
 
 **Known defect:** the Fjord's *west* rotation came back on an opaque grey card.
@@ -2753,25 +2753,25 @@ Unwired, so nothing ships broken, but it needs a `remove-background` pass first.
 
 Standard mode is visibly flatter than the existing cursed animals, which were
 made with `create_8_direction_object` at 20–40 generations. For animals this
-personal, the richer path is probably worth $0.09 apiece — that is a look-at-it
+personal, the richer path is probably worth $0.09 apiece - that is a look-at-it
 decision, not a measurable one.
 
 ## Open, in priority order
 
-1. **The Kid's identity** — measured at zero, predates tonight, needs the play
+1. **The Kid's identity** - measured at zero, predates tonight, needs the play
    session.
-2. **The rest of the owner's roster** — two more mules, Rosie, three more cats,
+2. **The rest of the owner's roster** - two more mules, Rosie, three more cats,
    and ten chicken variants, wanted both as scene characters and as corrupted
    enemies, with the hen flock varied rather than one hen repeated.
 3. **Choose a ground** in motion from the ten packed sets.
-4. **Retire the last five LimeZu groups** — all replacements already bought.
-5. **Hit reactions** — the preset exists, the sim needs a `hit` clip slot.
-6. **Destructibles and the magnet** — designed in the plan, not started.
+4. **Retire the last five LimeZu groups** - all replacements already bought.
+5. **Hit reactions** - the preset exists, the sim needs a `hit` clip slot.
+6. **Destructibles and the magnet** - designed in the plan, not started.
 7. **The Fjord's grey card.**
 
 ---
 
-# Session 16 — maps
+# Session 16 - maps
 
 Five maps. A run picks one, and it changes the ground, the field, the roster
 and the arena's shape. Plus the merge that was not a merge.
@@ -2790,7 +2790,7 @@ ls docs/MERGE.md               # does not exist, and never has in any commit
 ```
 
 `origin/main` and `origin/claude/pixel-labs-credit-plan-ufnx41` are the same two
-commits authored twice — same messages, same trees, different SHAs. There was
+commits authored twice - same messages, same trees, different SHAs. There was
 nothing to merge, and nothing was lost by not merging. Also checked and already
 true: the GitHub description no longer says "private", the homepage already
 points at the Pages URL, and `assets/pixellab/yard_picked/` (barn, farmhouse,
@@ -2800,7 +2800,7 @@ The named-but-absent work was substantial: a `groundLayers` layer system, a
 `src/render/blight.ts`, `npm run maps`, `npm run snap`, a `docs/progress/`
 archive, 147 tests. None of it exists in the tree, in any commit, in the reflog,
 in a stash, or among the unreachable objects (`git fsck` finds one dangling
-commit — an August 14 home-screen fix, superseded). The owner's call was that it
+commit - an August 14 home-screen fix, superseded). The owner's call was that it
 was never built. **This session built the maps part from
 `docs/NEXT_SESSION.md` §2, from scratch.**
 
@@ -2815,14 +2815,14 @@ for: ground and tileset, node and enemy mix, arena size and shape, hazards.
 
 | map | arena | ratio | ground | biome node | hazard |
 |---|---|---|---|---|---|
-| The Home Field | 2400x1600 | 1.50 | dirt_to_grass_plain | — | none |
+| The Home Field | 2400x1600 | 1.50 | dirt_to_grass_plain | - | none |
 | The Salt Flats | 2900x1300 | 2.23 | grass_to_palegreygreen | salt rock | gas |
 | The Scrapyard | 1700x1700 | 1.00 | dirt_to_gravel | scrap heap | oil sump (slow) |
 | The Burn | 1700x2350 | 0.72 | ash_to_dyinggrass_v2 | ash stump | fire (damage) |
 | The Bone Orchard | 2300x1700 | 1.35 | earth_to_pasture | bone heap | grave gas |
 
 The Home Field is weighted 2 against 1 for the others, and is **exactly** the
-game that was played and liked — same arena, same nodes, same roster, no
+game that was played and liked - same arena, same nodes, same roster, no
 hazards. It is the control, deliberately, so that "is this map worse" always has
 an answer.
 
@@ -2845,7 +2845,7 @@ field is scattered; and it has to be exactly one draw because the cost in stream
 position is what every later draw is measured from.
 
 `arenaW`/`arenaH` stopped being field initialisers and became constructor
-assignments to make this possible — a field initialiser runs before the
+assignments to make this possible - a field initialiser runs before the
 constructor body, so it cannot see a map that the constructor picks.
 
 Two tests pin it, and both fail if the pick moves or costs a second draw. They
@@ -2853,7 +2853,7 @@ were checked by mutation, not by assumption: inserting one extra `rng.next()`
 before the pick fails both.
 
 **Every pre-existing seed now replays as a different run.** That is unavoidable
-— a draw at the front reseats the whole stream — and `NEXT_SESSION.md` had
+- a draw at the front reseats the whole stream - and `NEXT_SESSION.md` had
 already granted it. `run.test.ts`'s "replays a whole run identically from its
 seed" still passes, because it compares two runs of the same seed rather than a
 recorded transcript.
@@ -2863,7 +2863,7 @@ recorded transcript.
 ### The maps did not break the acceptance test; the sample size did
 
 After wiring, `run.test.ts` failed at 2 of 6 seeds cleared against a bar of 3.
-The reflex reading is "maps are too hard". The measurement says otherwise —
+The reflex reading is "maps are too hard". The measurement says otherwise -
 60 runs of the real harness:
 
 ```
@@ -2877,19 +2877,19 @@ TOTAL        36/60  (60%)
 
 The **unchanged** map clears 55%. The whole game, with maps, clears 60%. The
 test asks 6 seeds to resolve a ~55% rate against a 50% bar, which is a coin
-flip with extra steps — at p=0.55, six samples fail the bar about one time in
+flip with extra steps - at p=0.55, six samples fail the bar about one time in
 five, and always did. Reseeding the stream simply moved which fifth we were in.
 `run.test.ts` was not touched: it is byte-identical to `origin/main` and it
 passes.
 
-The first pass genuinely was too hard on two maps, and those were fixed — see
+The first pass genuinely was too hard on two maps, and those were fixed - see
 the `_tuningNote` in each. theBurn measured 21% against a 32% baseline on the
 first pass, boneOrchard 29% against 55%. Both are now in band.
 
 ### Arena AREA was a stealth difficulty knob, and it inverted a class
 
-The one real regression maps introduced. `run.test.ts`'s crossover test — each
-class does better at its own game — inverted: The Kid, whose damage scales with
+The one real regression maps introduced. `run.test.ts`'s crossover test - each
+class does better at its own game - inverted: The Kid, whose damage scales with
 velocity, started preferring to stand still.
 
 ```
@@ -2900,8 +2900,8 @@ maps, area held (32)         22       16       20      23      passes
 ```
 
 The cause was not hazards and not the enemy mix. It was that the first pass
-varied arena **area** along with shape — theBurn at 4.75M px² and boneOrchard at
-4.32M against the Home Field's 3.84M — and a class that needs enemies to run
+varied arena **area** along with shape - theBurn at 4.75M px² and boneOrchard at
+4.32M against the Home Field's 3.84M - and a class that needs enemies to run
 past deals nothing on a field big enough to run into empty ground.
 
 **Shape is the feature; area is a confound.** Every map now sits within about 4%
@@ -2920,9 +2920,9 @@ none to draw. Two separate mistakes:
    arena is nearly four million square pixels. Measured: an ambient hazard was
    on screen **0% of sampled seconds**. It was a tax rolled over the horizon.
 
-Fixed by making the density relationship explicit in the content file — and
+Fixed by making the density relationship explicit in the content file - and
 writing it down there, because the next person will otherwise set `maxLive`
-again — and by spawning in a **ring** around the player rather than uniformly:
+again - and by spawning in a **ring** around the player rather than uniformly:
 
 ```
 theBurn      avgLive 5.4   on screen 80% of the time
@@ -2940,7 +2940,7 @@ walk is what makes "this map vents gas" learnable instead of merely survivable.
 on the Burn does 26 to enemies and 6 to the player. That is deliberate: a hazard
 that only punishes is a tax, and a hazard you can drag a hog into is a tool. It
 also means the ambient maps measure *easier* than the Home Field for a kiting
-bot, which is worth watching in a real playtest — a human who fights rather than
+bot, which is worth watching in a real playtest - a human who fights rather than
 runs may find them the opposite.
 
 `playerSlowPct` is new and separate from `slowPct`. `slowPct` has only ever
@@ -2948,7 +2948,7 @@ slowed enemies; the Watering Can's rind slick is a player tool and had to keep
 behaving exactly as it did. Only the Scrapyard's oil sumps set the player one
 (45 to enemies, 30 to the player). `Player.move` gained a `slow` parameter that
 defaults to 0, so every existing caller is untouched, and `velocityFraction`
-stays measured against the *unslowed* move speed — a Kid bogged in a sump should
+stays measured against the *unslowed* move speed - a Kid bogged in a sump should
 read as slow, because it is.
 
 ## One source of truth for the ground
@@ -2959,7 +2959,7 @@ groups writing one frame key: the later one silently wins and nothing tells you
 which is live. `tuning.json` keeps a pointer and the reasoning that picked the
 Home Field's pair.
 
-`tools/draw-world.ts` had its **own** copy of the terrain constants — its own
+`tools/draw-world.ts` had its **own** copy of the terrain constants - its own
 `GROUND_SET`, its own `BLIGHT`, its own `groundSetFor`. Its file header says a
 screenshot that disagrees with the game is the thing it exists to avoid, and it
 was one edit from doing exactly that: still reading `tuning.json`, it would have
@@ -2968,7 +2968,7 @@ painted all five maps as the Home Field. Both painters now read
 
 ## Art
 
-Seven frames added, all from candidates already on disk — nothing generated,
+Seven frames added, all from candidates already on disk - nothing generated,
 the subscription is still dead. Picked by looking at a contact sheet, not by
 filename, and the filenames would have picked wrong three times out of seven:
 
@@ -2989,7 +2989,7 @@ hurting you. They burn orange now, in both painters.
 
 While hardening the scatter loop against picking a weight-0 variant, a test was
 written to cover it and then **mutation-checked**: reverting the fix left the
-test passing. The reason is arithmetic — `roll` is `next() * totalWeight` with
+test passing. The reason is arithmetic - `roll` is `next() * totalWeight` with
 `next()` in [0, 1), so with integer weights the loop always breaks on the last
 weighted entry and the old fallback was unreachable. A second attempt using
 fractional weights also could not fail: the two versions diverge only when float
@@ -2998,8 +2998,8 @@ error exceeds the gap to `totalWeight`, which needs `next()` to land in the last
 
 The test was deleted rather than kept. A test that passes under the bug it names
 is worse than no test, because it reads like coverage. The hardened code stayed
-— `maps.json` is a content file and `"weight": 2.5` is one edit from making the
-arithmetic argument stop holding — and the code comment now says plainly that it
+- `maps.json` is a content file and `"weight": 2.5` is one edit from making the
+arithmetic argument stop holding - and the code comment now says plainly that it
 is defensive and deliberately untested.
 
 Every other new test was mutation-checked too. Moving the map pick one draw
@@ -3021,11 +3021,11 @@ Carried forward, in the order they will matter:
    place to spend the change than `pressureCeiling`.
 2. **Ambient hazards measure as a net help to a kiting bot**, because they
    damage enemies and a bot that never stops rarely stands in one. A human who
-   holds ground will experience the opposite. Worth an early look — if it holds
+   holds ground will experience the opposite. Worth an early look - if it holds
    up, `playerDps` is the knob, not density.
 3. **The Bone Orchard clears 86% on a small sample.** It may simply be the easy
    map. Wanted: more samples, or a human.
-4. **The `threatBudget` split is still there** — hardcoded in `formulas.ts`
+4. **The `threatBudget` split is still there** - hardcoded in `formulas.ts`
    while `waves.json` carries a `formula` string nothing reads. This session did
    not touch it, and it is still the thing that turns the next balance session
    from editing code into editing content.
@@ -3038,7 +3038,7 @@ Carried forward, in the order they will matter:
 ## Verification
 
 ```
-npm run atlas      4283 frames, 2048x8192 — +7, dimensions unchanged
+npm run atlas      4283 frames, 2048x8192 - +7, dimensions unchanged
 npm run typecheck  clean, game and tools
 npm test           154 passed (131 before, +23 maps)
 npm run shot       all five maps, looked at, all five draw
@@ -3049,7 +3049,7 @@ moved to land this.
 
 ---
 
-# Session 15 — the account is spent, and the handoff is honest again
+# Session 15 - the account is spent, and the handoff is honest again
 
 Two jobs: convert the last of a dying subscription into art, and leave the
 repo readable by someone who was not here. **Balance went 259 -> 0.** 247
@@ -3061,7 +3061,7 @@ Same calculus as session 13, and it is worth restating because it looks like
 laziness from the outside: credits expire, engineering time does not. The
 account died at the end of this session. Wiring is available forever; the
 generations were available for one more afternoon. So the afternoon bought
-art, and the wiring is the next session's — which is also the session that
+art, and the wiring is the next session's - which is also the session that
 can *look* at each sprite in a real run, which this one could not.
 
 The corollary is that `art/sprites.json` is untouched. Packing an unreviewed
@@ -3078,7 +3078,7 @@ happened before.
 | `assets/pixellab/duster/` | 4 facings | the wave-25 boss |
 
 That covers essentially everything LimeZu still supplied except the terrain
-sheet, which needs no art at all — 29 Wang sets are already packed.
+sheet, which needs no art at all - 29 Wang sets are already packed.
 
 ## `/map-objects` costs a twentieth of what session 13 paid
 
@@ -3097,7 +3097,7 @@ Three related things, all measured rather than assumed:
   The cheapest way to get choice is to generate small.
 - **`remove-background` costs 1, not free** as the docs claim.
 - **Rejections are free.** `detail` is a validated enum and I sent
-  `"highly detailed"` instead of `"high detail"` — 20 calls 422'd for zero
+  `"highly detailed"` instead of `"high detail"` - 20 calls 422'd for zero
   generations. A cheap probe before a big batch genuinely costs nothing, and
   that is how the 400px size cap got established too.
 
@@ -3108,8 +3108,8 @@ opaque ground. Every subject at <=160px came back cleanly cut out. The barn,
 house, silo and oak all needed `remove-background`, which is why
 `yard_picked/` exists as a separate directory from `yard/`.
 
-**Protect before you write.** Session 13 made the opposite mistake — re-cut
-the coop from its carded candidate *before* protecting it — so the de-card
+**Protect before you write.** Session 13 made the opposite mistake - re-cut
+the coop from its carded candidate *before* protecting it - so the de-card
 pass writes to a staging copy here and the raw candidates stay raw.
 
 ## What the model ignored
@@ -3121,8 +3121,8 @@ Worth recording because it is a prompting limit, not a fluke:
   candidates across four facings gives enough to pick four genuinely
   different views, but the filenames cannot be trusted.
 - **"Blighted" needed to be said several ways.** A first pass asking for a
-  "rotting pumpkin" returned a healthy orange one. Naming the absence —
-  "no healthy colour", "grey and mouldy", "collapsed" — at guidance 18 was
+  "rotting pumpkin" returned a healthy orange one. Naming the absence -
+  "no healthy colour", "grey and mouldy", "collapsed" - at guidance 18 was
   what worked.
 - **`ui_panel` produced one usable candidate out of twelve.** Eleven came
   back as blank parchment with no frame at all. A panel is a shape, and the
@@ -3131,7 +3131,7 @@ Worth recording because it is a prompting limit, not a fluke:
 ## The handoff was lying, and that was the real blocker
 
 `HANDOFF.md` said "current as of session 12" and its outstanding list still
-asked for work finished in sessions 13 and 14 — item 3 wanted sixteen animals
+asked for work finished in sessions 13 and 14 - item 3 wanted sixteen animals
 packed that are packed, item 6 wanted a gas cloud wired that is wired.
 `docs/NEXT_SESSION.md` was still the session-12 brief, "make the field
 frightening", every item of which is done. And `HANDOFF.md` sends a cold
@@ -3147,7 +3147,7 @@ document in the repo and the one nobody re-reads after writing it.
 The owner played it: *"I plaed it and it was great."* Two findings:
 
 - **More enemies per wave.** And critically, **performance is not the
-  limit** — they ran 200+ enemies alive several times and *"it all worked
+  limit** - they ran 200+ enemies alive several times and *"it all worked
   great"*. `pressureCeiling: 380` is a design choice to revisit, not a frame
   budget.
 - **The class dropdown is untested.** Six classes ship, some have never been
@@ -3159,7 +3159,7 @@ awkward: **`threatBudget` is hardcoded in `src/sim/formulas.ts`** as
 `threatBudget.formula` as a string that **nothing reads**. The content file
 describes the curve; the code is the truth. `waveScalar` has the identical
 split. Since the owner's first tuning ask is density, the first move of that
-session is to read those coefficients from content — which CLAUDE.md's
+session is to read those coefficients from content - which CLAUDE.md's
 no-balance-constants-in-code rule requires anyway. Not done here, because it
 belongs to the session with a person at the controls.
 
@@ -3168,13 +3168,13 @@ belongs to the session with a person at the controls.
 Three drivers moved out of `/tmp` into `tools/`, reading `PIXELLAB_API_KEY`
 from the environment rather than a scratchpad path: `npm run mapobject`,
 `npm run rmbg`, and `npm run contactdir` (which tiles a directory of raw
-candidates at an integer zoom — 32px art cannot be judged at 1:1, and every
+candidates at an integer zoom - 32px art cannot be judged at 1:1, and every
 review pass this session needed it). The first two cannot run again without a
 new account. They are kept as the record of what works and what it costs.
 
 ---
 
-# Session 14 — the art goes in
+# Session 14 - the art goes in
 
 Session 13 bought raw material and wired none of it, deliberately. This
 session wired it. The subscription is still being cancelled; balance went
@@ -3184,13 +3184,13 @@ wiring exposed rather than buying anything new.
 ## The camera question, settled
 
 The owner asked whether `high top-down` was an option, since the handoff
-kept warning about camera mismatch. **It is** — `low top-down`,
+kept warning about camera mismatch. **It is** - `low top-down`,
 `high top-down` and `side` on objects, characters and tilesets alike, and
 `create-1-direction-object` takes `top-down` or `sidescroller`. Verified
 against the live OpenAPI schema, not from memory.
 
 But the project already chose, deliberately, in `docs/ART_STYLE.md`: low
-top-down, "because **horror needs a face** — a high top-down view looks at
+top-down, "because **horror needs a face** - a high top-down view looks at
 the top of its head". Someone had already run the experiment too;
 `assets/pixellab/object/barn_dog_hightopdown/` is a full ring, and the
 difference for an animal is marginal.
@@ -3205,15 +3205,15 @@ is that the animals match the PLAYER, and both are low top-down.
 
 feralDog, rooster, sickHog, blownSheep and prizeBull are the cursed
 animals, with walk, attack and death in eight directions. The rooster swap
-also fixed a wrong-species bug — its LimeZu sheet was drawing a hen.
+also fixed a wrong-species bug - its LimeZu sheet was drawing a hen.
 
 **Eight directions needed a second rig family, not a manifest entry.**
 `atlas.json` carried ONE global rig, `[down, up, left, right]`, and
 `directionIndex` indexed straight into it. Sheets now declare their own
 list (`dirSets`); a sheet absent from it uses the rig's four, so the six
 classes and five humanoid enemies were untouched. Four keeps its
-comparison — that list is not angle-sorted and the comparison is what
-biases toward the side views — while eight is a single rounded division.
+comparison - that list is not angle-sorted and the comparison is what
+biases toward the side views - while eight is a single rounded division.
 
 **The atlas needed a shape change, not a size one.** At `width = 1024` the
 animals take it to 1024x16384. The area is fine; the dimension is not.
@@ -3242,14 +3242,14 @@ count INCLUDING corpses inside their `dying` window.** Holding bodies half
 a second instead of 0.2 throttles spawning, and the "merging beats taking
 whatever came up" balance test caught it at 16 waves against 26. So trash
 mobs play the clip inside the existing 0.2s and only prizeBull gets
-`deathSeconds: 0.8` — one corpse, no pool pressure.
+`deathSeconds: 0.8` - one corpse, no pool pressure.
 
 ## Picking 1,900 candidates
 
 The median silhouette: take every candidate's content bounds, take the
 median area, pick the closest. Both failure modes sit at the extremes.
 
-**The grid of all picks earned itself immediately** — it showed three props
+**The grid of all picks earned itself immediately** - it showed three props
 on opaque white cards, which no area heuristic can see because a card is a
 perfectly ordinary area. The corner test catches them: a cut-out prop has
 transparent corners on its content box, a carded one has opaque ones.
@@ -3264,7 +3264,7 @@ candidate before I protected it. Protect, then write.
 
 ## The ground
 
-`tuning.terrain.blight` bands the ground by wave — pasture, then withered
+`tuning.terrain.blight` bands the ground by wave - pasture, then withered
 grass at 9, rot at 15, cold ash at 21. Bands rather than a blend because a
 Wang set is a whole terrain pair; you swap and re-bake. Safe because the
 bake already had **its own RNG stream**, separate precisely so "the ground
@@ -3276,7 +3276,7 @@ must not move a single later spawn".
 behaviours own the `t0`/`s0` scratch and their wind-up state is not
 exposed. True, and the wrong conclusion: the fix is not for the renderer
 to decode private state, it is for the sim to say something the renderer
-can use. `e.attackT` is that — a behaviour says "the attack starts now"
+can use. `e.attackT` is that - a behaviour says "the attack starts now"
 and never learns the clip length. `charge` fires it on the tell,
 everything else on the contact hit, because the chasers have no attack
 state at all. Cosmetic, so unlike the death timer it needed no balance
@@ -3287,7 +3287,7 @@ sim-owned because scenery has no behaviour. Placed in a band near the
 edges, and that is a constraint not a taste: they carry no collision, and
 walking through a water trough in open field would read as a bug.
 Scattered BEFORE the draw list is sized, because `push()` returns null
-when full and every caller breaks — under-sizing silently drops whatever
+when full and every caller breaks - under-sizing silently drops whatever
 sorts last.
 
 **The fence is real art** instead of a `strokeRect`, and flat decals are
@@ -3310,7 +3310,7 @@ what the flat green band was.
 the single most useful thing learned this session. Every prop this project
 generated went through `create-1-direction-object` at TWENTY apiece, and
 that endpoint only accepts a square `size`. So the ~120 generations spent
-on unusable square rarity badges were not merely the wrong shape — they
+on unusable square rarity badges were not merely the wrong shape - they
 were on the wrong endpoint by a factor of twenty.
 
 **The rarity plate** is one 192x32 steel banner, measured against the real
@@ -3319,7 +3319,7 @@ six: `card.css` already expresses every tier through `--tier-colour`, so
 the banner is blended OVER that gradient and all five rarities plus the
 plain-steel rank variant keep working with no per-tier art. Eight
 generations, including two first attempts that came back as a dirty white
-board and a flat bar — what makes a plate read as struck metal is
+board and a flat bar - what makes a plate read as struck metal is
 STRUCTURE, a bevelled rim and rivets, not surface noise.
 
 **The FX are ours and animated.** `animate-with-text-v3` turns a finished
@@ -3331,7 +3331,7 @@ They are deliberately NOT conformed to the house palette, unlike the pack
 FX. Conforming exists to drag a bought sheet onto our palette; these never
 left it, and the palette is authored for terrain and creatures with no
 coverage for an electric blue arc. Quantising would send those pixels
-somewhere absurd — the "explosion turning magenta" failure already on
+somewhere absurd - the "explosion turning magenta" failure already on
 record.
 
 **A detector that had to be measured rather than guessed.** The animator's
@@ -3340,14 +3340,14 @@ it would have flashed a filled rectangle over the game on the last frame of
 every shot. Bounds cannot catch it: an effect legitimately fills its
 canvas, and frames 0-2 of that same muzzle flash do. Measured, the good
 frames are 43-56% transparent with about twenty colours and the bad one is
-7% with four — so the test is both conditions together, and a dense
+7% with four - so the test is both conditions together, and a dense
 explosion is never mistaken for a failure.
 
 **One stale note corrected:** the queue claimed "nothing in the game
 renders gas". `playFx('gas')` has always been there and the pack had a gas
 clip. The generated one replaces it rather than filling a hole.
 
-# Session 13 — spending the subscription down
+# Session 13 - spending the subscription down
 
 The owner is cancelling PixelLab. The brief was to burn the remaining
 generations on whatever is most valuable, most important first, so that
@@ -3370,13 +3370,13 @@ pile recovered for nothing.
 holds, and a lot of it had never been downloaded. It would simply have
 vanished.
 
-- **17 environment objects** from 2026-08-18 — six dead and dying trees,
+- **17 environment objects** from 2026-08-18 - six dead and dying trees,
   eleven boulders, rocks and stones with ore, crystal and rot. That is
   most of the "trees and rocks/minerals" work session 12's handoff asked
   for, already paid for and forgotten. They also map straight onto
   `nodes` and `nodeTrees`, which are LimeZu rocks and LimeZu trees.
 - **The four `rotten` livestock**, three of them already carrying full
-  eight-direction walks with the right clip names — "a jerky twitching
+  eight-direction walks with the right clip names - "a jerky twitching
   strut", "a slow bloated waddle", "a laboured stagger". These are the
   finished infected enemies, not the mildly-diseased first attempt.
 - **15 tilesets**, ten of them one family chained off a single grass on
@@ -3393,7 +3393,7 @@ forever. But `create_object_state`, `animate_object` and
 `create_8_direction_object`-with-a-`style_object_id` all take an **id
 that lives on PixelLab's servers**. Once the account lapses you cannot
 derive a new state, rotation or animation from anything already
-generated — the animal has to start again from nothing.
+generated - the animal has to start again from nothing.
 
 So derivations went first, and `art/pixellab-queue.json` `_accountLedger`
 now records every id the account held, against the repo path it landed
@@ -3409,8 +3409,8 @@ on the price list.
   eight. Six cursed animals and the rotten hen now walk.
 - **Ten attacks and ten deaths**, per species rather than shared, because
   at eight generations each there is no reason to share one. Every enemy
-  in the roster now has walk + attack + death. The two player minions —
-  Barn Dog and Whitacre Bull — got attacks too; they are summons that
+  in the roster now has walk + attack + death. The two player minions -
+  Barn Dog and Whitacre Bull - got attacks too; they are summons that
   fight and had only a walk.
 
 **~1,520 generations of map objects**, 76 of them across four waves, each
@@ -3418,12 +3418,12 @@ wave ordered so a shortfall would cost scenery rather than substance:
 
 1. Crops healthy and rotted (corn, wheat, pumpkin, cabbage), the horror
    props and their healthy twins, then landmarks last.
-2. Pickups — `xp_seed` was a flat coloured square — plus the gas cloud,
+2. Pickups - `xp_seed` was a flat coloured square - plus the gas cloud,
    which matters because `gasImmune`, `trailGas` and `gasGrace` have all
    been in the sim with nothing ever rendering gas. Plus a chain
    lightning arc for Threshing Floor, the last `_standInArt` item left.
    Plus barn, farmhouse and bunkhouse.
-3. Field dressing and the FX set the game never owned — muzzle flash,
+3. Field dressing and the FX set the game never owned - muzzle flash,
    dust, sparks, heal glow, level-up burst.
 4. Biome props, ground decals, and the six stamped-metal UI plates that
    ART_STYLE explicitly sanctions generating because CSS cannot make
@@ -3433,7 +3433,7 @@ wave ordered so a shortfall would cost scenery rather than substance:
 
 **Size decides how many tries you get, and the price does not change.**
 32px returns **64 candidates**, 64px returns **16**, 96–128px returns
-**4** — all for the same 20 generations. `_modelNote` said this about
+**4** - all for the same 20 generations. `_modelNote` said this about
 `create_image_pro`; it is true of map objects too. Generate small and
 draw at an integer zoom unless the subject genuinely needs the pixels.
 The pickups and FX bought 64 tries each; the buildings bought four.
@@ -3447,8 +3447,8 @@ timeout on every batch with the work already done and paid for.
 **A job status is a claim about a job; the object is the artefact.**
 The first animation driver trusted `GET /background-jobs/<id>`, read a
 single 404 as "finished", and reported arabian_cursed complete at 8/8
-with two directions on disk. Verify against the object — ask which
-directions actually carry frames — and re-fire the rest. That is also
+with two directions on disk. Verify against the object - ask which
+directions actually carry frames - and re-fire the rest. That is also
 what makes retries automatic, and retries here are routine: one attack
 POST came back 500 and the identical retry landed 8/8.
 
@@ -3456,7 +3456,7 @@ POST came back 500 and the identical retry landed 8/8.
 response it returns no spritesheet and no bounding boxes, only sixteen
 loose base64 tiles. `tools/pixellab-tileset.ts` composes the sheet and
 synthesises the boxes from the grid it lays out, which is safer than
-trusting supplied ones — the box is true by construction.
+trusting supplied ones - the box is true by construction.
 
 ## What is now waiting, and none of it needs a subscription
 
@@ -3467,7 +3467,7 @@ unpacked art, not missing art.**
   Picking is free: `npm run cut -- single <sheet>/<name>_NN.png
   assets/pixellab/picked/<name>.png`.
 - **Twelve animals** with walk, attack and death in eight directions, and
-  ten more with walks — still none of it in the atlas. `_howToWireIt` in
+  ten more with walks - still none of it in the atlas. `_howToWireIt` in
   the queue has the direction mapping measured and the four-vs-eight call
   is still a judgement, not a measurement.
 - **29 tilesets** against a terrain bake that reads one hardcoded pair
@@ -3476,11 +3476,11 @@ unpacked art, not missing art.**
   LimeZu `nodes` and `nodeTrees`.
 
 `npm test` 131 passing, `npm run typecheck` clean, `npm run atlas` packs
-1859 frames with all 29 tilesets present — the build fails on a Wang set
+1859 frames with all 29 tilesets present - the build fails on a Wang set
 missing any of its sixteen corner combinations, so that is the proof the
 recovered sets are whole.
 
-# Session 12 — the art becomes ours
+# Session 12 - the art becomes ours
 
 The owner: *"I'm not tied to ANY of the original artwork. I just needed something
 to start and used an asset pack because they were $5 each. Now that we can
@@ -3514,7 +3514,7 @@ tile matching that combination, so a boundary runs THROUGH tiles rather than
 around them.
 
 **That is the whole fix.** The staircase was in the geometry, and no amount of
-extra tile detail was ever going to remove it — worth remembering, because the
+extra tile detail was ever going to remove it - worth remembering, because the
 instinct was to ask for better tiles.
 
 - `src/render/wang.ts` owns the key convention and BOTH the packer and the
@@ -3533,24 +3533,24 @@ instinct was to ask for better tiles.
 sage green, dusty, desaturated" still came back arcade.
 
 Quantising was the obvious answer and **it made the grass worse the first time**
-— flatter and MORE saturated. The reason is the keeper: **conform matches a
+- flatter and MORE saturated. The reason is the keeper: **conform matches a
 palette, it cannot shift one.** `art/palette.json` was 32 colours k-means'd out
 of the LimeZu sheets, which are full of saturated green, so the nearest entry to
 a bright green was a bright green.
 
 The palette is **authored** now. With muted daylight actually in it, conform
-delivers the house look whatever the model returns — the only reliable way to get
+delivers the house look whatever the model returns - the only reliable way to get
 consistency out of a generator with its own opinions.
 
 **Coverage beats taste when editing that file.** A quantiser sends every pixel to
-its nearest entry, so a missing region lands somewhere absurd — session 3 lost a
+its nearest entry, so a missing region lands somewhere absurd - session 3 lost a
 day to an explosion turning magenta with no saturated red between hue 20 and 40.
 The cursed greens are kept distinct from the pasture greens on purpose, or a
 diseased animal quantises straight back into a healthy one.
 
 ## The whole cast is generated now
 
-Seven characters — six player classes and the infected farmhand — from ONE anchor
+Seven characters - six player classes and the infected farmhand - from ONE anchor
 via `style_character_id`, walked with the template animator at one generation per
 direction, and cut to the 32×64 cell.
 
@@ -3566,7 +3566,7 @@ After the swap the farmhand is 28×52 against the player's 30×52.
 
 **The baseline moved 52 → 58.** 52 was LimeZu's and fit their 46px characters;
 the generated cast is 51–55 tall, so a 55px Kid placed feet-at-52 would start at
-y=−3 and lose the top of his cap — silently, because a cut that overflows just
+y=−3 and lose the top of his cap - silently, because a cut that overflows just
 clips. Safe only because every character is being replaced: the atlas takes each
 sprite's pivot from where its feet sit, so a cast cut consistently at 58 aligns
 with itself. **Mixing 52 and 58 is what would break.**
@@ -3591,7 +3591,7 @@ him."*
    top is what says *carried*.
 2. **The lift was going into the depth sort.** `it.y` was both the drawn position
    AND the sort key, so the 14px torso lift also pushed weapons 14px toward the
-   back — a weapon at his SIDE drew behind him. `liftY` separates them,
+   back - a weapon at his SIDE drew behind him. `liftY` separates them,
    defaulting to 0 so everything standing on the ground is unaffected.
 
 **Lift is a picture, depth is a position, and they are not the same number.**
@@ -3601,11 +3601,11 @@ him."*
 Three complaints, three causes:
 
 1. **"There's a gap in between it reloading."** Mine. The three visibility
-   windows did not abut — walk switched off at 64% and peck did not switch on
+   windows did not abut - walk switched off at 64% and peck did not switch on
    until 66%. Two percent of a 24s cycle is 0.48s with NO layer visible, three
    times a loop. Every off stop is now the same number as the next layer's on
    stop; verified by sampling the whole cycle at 0.1%, zero holes.
-2. **"It pops — generated on a different palette."** `conform: false` on the
+2. **"It pops - generated on a different palette."** `conform: false` on the
    `pixellab` and `sceneStrips` groups. The tilesets went through the house
    palette and the sprites did not. Both conform now.
 3. **"You can see the flip."** `scaleX(-1)` mirrors every asymmetric detail at
@@ -3614,7 +3614,7 @@ Three complaints, three causes:
 
 ## Wave density: measured, attempted, reverted
 
-The owner reported the waves as far too slow. The harness agreed — **19 enemies
+The owner reported the waves as far too slow. The harness agreed - **19 enemies
 alive at the average death**, ~76 kills a wave, one every half-second, which is
 the rate they arrive at. The field never builds.
 
@@ -3627,7 +3627,7 @@ Raising it was tried three ways and every one failed the acceptance test:
 **That last line is the finding: the game has no headroom at all.** Spawn rate
 alone, on the identical budget, drops `run.test.ts` below "clears 25 waves on
 most seeds". Density and player power are coupled, and the fix is not a bigger
-number — it is **more enemies that are individually weaker**, across
+number - it is **more enemies that are individually weaker**, across
 `enemies.json`. Values are reverted; the numbers are recorded in `formulas.ts` so
 nobody re-tries it blind.
 
@@ -3639,7 +3639,7 @@ constants they should have been reading.
 
 It composites when the Claude Code window is **displayed and focused**. Reporting
 `visibilityState: hidden` with `hasFocus: false` means the app is backgrounded or
-the panel is collapsed — and when it is, `requestAnimationFrame` never fires, so
+the panel is collapsed - and when it is, `requestAnimationFrame` never fires, so
 the game loop does not tick and screenshots time out.
 
 Most of the pipeline does not need it: `npm run shot`, `npm run range` and the
@@ -3655,7 +3655,7 @@ animate.
 
 ---
 
-# Session 11 — the first real playtest since the art landed, and one token behind three of the bugs
+# Session 11 - the first real playtest since the art landed, and one token behind three of the bugs
 
 The owner played it and took notes. Everything below came out of that, which is
 the whole argument for the playtest: **131 tests and a clean typecheck were green
@@ -3663,7 +3663,7 @@ through every one of these.**
 
 ## Three separate complaints, one redefined token
 
-Reported as three things — the pause screen's white-on-cream text, the level-up
+Reported as three things - the pause screen's white-on-cream text, the level-up
 cards being unreadable, and "the homestead cards look incorrect". One cause.
 
 `--ink` was defined **three times**: `#33261a` in tokens.css, then `#241f1a` and
@@ -3677,11 +3677,11 @@ names, the pause sheet's title and tallies, the Homestead sign names, the class
 hero names and the HUD feed counter into cream text on cream paper.
 
 Proved rather than reasoned, in the live DOM: `--ink-body` and `--ink-band`
-computed correctly (#5c4a33, #4b3a24) while `--ink` computed #f0e4d2 — which is
+computed correctly (#5c4a33, #4b3a24) while `--ink` computed #f0e4d2 - which is
 what pointed at a redefinition rather than at any of the rules that consume it.
 
 Both legacy `:root` blocks are deleted. They redefined **fourteen** names between
-them, all of which tokens.css already carries as deliberate aliases — it says so,
+them, all of which tokens.css already carries as deliberate aliases - it says so,
 under "Legacy aliases", precisely so those blocks could go. The only rule that
 genuinely wanted cream is `.btn`, which is dark wood rather than paper, and it
 asks for `--cream` by name now.
@@ -3697,7 +3697,7 @@ dotted." DESIGN_LANGUAGE.md specifies *"dotted stock, 0.12 opacity"*.
 `.psheet::before` and `.hero-body::after` honour that by hanging the dots off a
 pseudo-element and setting `opacity` on it. But `.pcard` and `.stock` apply the
 token **directly as a background-image**, where there is nothing to carry an
-opacity — so they painted a solid `#5a4630` dot every 4px, at full strength,
+opacity - so they painted a solid `#5a4630` dot every 4px, at full strength,
 underneath every blurb on every card.
 
 That is the tail of the session-9 fix. Making the card opaque again moved the dots
@@ -3713,14 +3713,14 @@ element that uses it, moving it costs the correction. Put the alpha in the token
 
 `scene.oak` packs at 59x54 and is drawn at 4x, so it is 216 tall. PLACEMENTS.md
 puts the four yard oaks at y 268/300/282/414, which lands their BASES at 484, 516,
-498 and 630 — against a ground layer that starts at **620**. Three of the four hung
+498 and 630 - against a ground layer that starts at **620**. Three of the four hung
 104–136px up in the sky. The fourth was fine, which is why it read as "some trees
 float" rather than as a systematic error.
 
 There is no reference to copy for this one: **`tree_oak` does not appear in
 `docs/reference/` at all.** Design's final yard drops the oaks; they are in the
 game because the owner wants them. So the table is the only source, and the table
-disagrees with a ground layer the table never contained. Ground wins — it is in
+disagrees with a ground layer the table never contained. Ground wins - it is in
 the reference and the table is not.
 
 Placed by their base instead, varied a few pixels either side of the line so four
@@ -3735,7 +3735,7 @@ consistent and disagree with the scene they are placed into.
 
 §12: *"bottom-centre weapon ring, 128px slots, cooldown wipe + tier chip"*. They
 were 78px text chips carrying the weapon's NAME, so six weapons read as six words,
-and the cooldown wipe — the one thing that shows a weapon firing — drained down a
+and the cooldown wipe - the one thing that shows a weapon firing - drained down a
 word.
 
 They are seed packets now: art window over a stamped name, tier chip, wipe across
@@ -3745,7 +3745,7 @@ the whole card. 128px, six of them plus gaps is 808px, which fits.
 `weapon.<id>` is the obvious guess and resolves for only five of the sixteen: the
 atlas still carries the pre-rename ids (`axe`, `chiliShot`, `eggToss`) and every
 ranged weapon draws a gun from a different family entirely (`gun.shotgun.0`).
-Eleven slots would have fallen back to a text caption — the exact thing the change
+Eleven slots would have fallen back to a text caption - the exact thing the change
 exists to remove.
 
 `weapons.json` already answers it. Every weapon carries `sprite` and a
@@ -3758,7 +3758,7 @@ weapon-tier icons resolve in the packed atlas.
 
 Reported as a blocker: *"All the buttons become unclickable so the user can't
 proceed past that point."* Exactly right, and it made every finished run a dead
-end — there is no keyboard escape from results.
+end - there is no keyboard escape from results.
 
 `#ui` is `pointer-events: none` and each layer opts back in. The rule is
 `#ui > .screen`. The results root is **`.results-wrap`**, so it never matched.
@@ -3766,7 +3766,7 @@ end — there is no keyboard escape from results.
 `pointer-events: auto` in its own rule; results never did.
 
 Proved with `elementFromPoint` at each button's centre, which returned
-**`CANVAS`** — the click was landing on the game behind the sheet.
+**`CANVAS`** - the click was landing on the game behind the sheet.
 
 **This is the third screen in this project to ship unreachable**: the shop and
 level-up cards in session 2 (a blanket `#ui > *` rule outranked `.hud`), the
@@ -3781,7 +3781,7 @@ throws. Verified both ways: silent in normal play, and it names `.results-wrap`
 within a frame of the bug being reintroduced deliberately.
 
 It observes on mutation rather than running once at boot **because screens are
-built empty and filled on open** — at boot the results layer has no buttons to
+built empty and filled on open** - at boot the results layer has no buttons to
 count, and a single startup check would have missed this exact bug.
 
 ## Two scroll boxes, one of them clipping the other
@@ -3794,7 +3794,7 @@ is the level-up screen's scroll box: `max-width: min(1000px, 92vw)` with
 `overflow: auto`. A 1080px child in a 1000px clipping parent.
 
 Measured: overflowing by **103px**, with the acres panel's right edge 84px past
-the clip — which is why "BANKED AT THE HOMEST…" and a halved acre count were on
+the clip - which is why "BANKED AT THE HOMEST…" and a halved acre count were on
 screen. `.results-wrap` is already the scroll container (`place-items: center`,
 `overflow-y: auto`), so the inner box is neutralised back to a plain div.
 
@@ -3807,7 +3807,7 @@ overflow one.
 
 *"The background also starts vibrating crazy."*
 
-`world.shake` decays inside `world.step` — `shake -= traumaDecayPerSecond * dt`.
+`world.shake` decays inside `world.step` - `shake -= traumaDecayPerSecond * dt`.
 It is CONSUMED in `renderer.draw`, every frame, as a fresh random offset of
 `trauma² × maxShakePixels`.
 
@@ -3818,7 +3818,7 @@ Measured before the fix: ±17px of jitter per frame with the sim frozen.
 
 The renderer asks for no shake while paused. That was chosen over teaching the
 sim to decay cosmetics on a stopped clock, and it fixes level-up, shop and pause
-in the same line — all three set `paused` and all three had a milder version of
+in the same line - all three set `paused` and all three had a milder version of
 this. Verified: 0 across every frame when paused, still shaking when playing.
 
 **The shape worth keeping:** a value that decays on one clock and is consumed on
@@ -3827,7 +3827,7 @@ divergence.
 
 ## The rest of the screens, swept
 
-Every screen opened in isolation and audited for the same three defects —
+Every screen opened in isolation and audited for the same three defects -
 unreachable controls, controls off-screen, and unintended horizontal scroll.
 Level-up, shop, pause, Homestead and results are all clean. One earlier reading
 that flagged the shop's "Back to the field" was an artifact of the audit stacking
@@ -3836,13 +3836,13 @@ two screens that never stack in play; opened properly it hit-tests fine.
 ## The yard is alive now, and it cost eighteen generations
 
 The owner: *"I like the rooster and its placement, but we need animations so it
-walks and pecks at the ground and crows — every character needs a full
+walks and pecks at the ground and crows - every character needs a full
 animation."* Fair: the yard had two hens and two farmhands on real strips, and
-everything else — rooster, cow, calf, sheep, dog, chick, both idle hands, both
-scarecrows — was a still frame floating on a CSS `y-bob`.
+everything else - rooster, cow, calf, sheep, dog, chick, both idle hands, both
+scarecrows - was a still frame floating on a CSS `y-bob`.
 
 **`animate_image` is the tool, and it is startlingly cheap.** It animates a LOOSE
-sprite — no PixelLab object id required — so it works on art that already exists
+sprite - no PixelLab object id required - so it works on art that already exists
 in this repo, which is all of it. Cost scales with total pixels: a 64x64 8-frame
 animation is **one generation**. Sixteen animations across every frozen actor in
 both scenes cost sixteen. Compare `create_8_direction_object` at 20.
@@ -3853,7 +3853,7 @@ Two things about it worth knowing:
    Every strip in `sceneStrips` now carries its real count and the note says so;
    assuming six is how a stepped strip slides.
 2. **Feed it a URL, not base64.** The repo is public, so it is its own asset
-   host — `raw.githubusercontent.com/<owner>/<repo>/<sha>/<path>` — and that
+   host - `raw.githubusercontent.com/<owner>/<repo>/<sha>/<path>` - and that
    sidesteps the base64 truncation documented in `_eightDirNotes` entirely.
 
 `npm run anim -- <job-id> <name> [frames]` pulls a job down and assembles the
@@ -3862,12 +3862,12 @@ the load-bearing part: `stripActor` steps by dividing the strip's width, so an
 uneven cell slides, and a top-left composite lets a taller frame lift the bird
 off the ground between steps. It also writes a contact sheet on grey, because
 **the failure mode of a generated animation is one frame that belongs to a
-different animal** — invisible one frame at a time, obvious in a row.
+different animal** - invisible one frame at a time, obvious in a row.
 
 ### One keyframe instead of six
 
 The existing pattern is `@keyframes y-strip-384`, one block per strip width. The
-new actors arrive at 224, 288, 364, 378, 468, 486, 540, 630, 672 and 810 — ten
+new actors arrive at 224, 288, 364, 378, 468, 486, 540, 630, 672 and 810 - ten
 more blocks that all say the same thing, each a chance to typo a number that
 fails *silently* by sliding instead of stepping. `stripActor` publishes
 `--strip-w` and one generic `y-strip` keyframe reads it. The named ones still
@@ -3876,7 +3876,7 @@ work; nothing was migrated.
 ### The rooster
 
 He pecks on a 2.4s loop, and every twenty-one seconds he crows. Two strips
-stacked on one spot with `y-crow-show` / `y-crow-hide` cutting between them —
+stacked on one spot with `y-crow-show` / `y-crow-hide` cutting between them -
 stops 0.1% apart rather than shared, so it is a cut and not a dissolve, because
 two birds cross-fading through each other reads as a ghost.
 
@@ -3901,7 +3901,7 @@ live DOM with real image data and no fallbacks, 131 tests pass, typecheck clean.
 The owner's direction: *"a ranch where crop dusters have turned everyone
 zombies/cursed"*, and lean harder into it. `_horrorPlan` already said the horror
 version has to be made FROM the healthy animal or the pair does not read as one
-animal before and after. **`create_object_state` is that tool** — it takes an
+animal before and after. **`create_object_state` is that tool** - it takes an
 existing object, applies an edit, and returns a new object **with all eight
 rotations intact**. Six went through in one batch.
 
@@ -3911,8 +3911,8 @@ the **draft mule**. Judged as rings, all eight directions agree.
 
 Two did nothing. The **fjord pony** came back an unchanged clean white, and the
 **barn dog** got a faint green tint and stayed a friendly brown dog. That is the
-same complaint session 9 logged about the four infected livestock — *"the hog
-reads as a spotted pig and the sheep as an ordinary sheep in grey"* — and the
+same complaint session 9 logged about the four infected livestock - *"the hog
+reads as a spotted pig and the sheep as an ordinary sheep in grey"* - and the
 cause is now clear:
 
 **Name the colour transformation, not the symptoms.** "matted patchy coat, ribs
@@ -3928,7 +3928,7 @@ the disease palette is already near their coat. Pale ones need to be told.
 ## Tilesets: the recipe matters more than the prompt
 
 The owner wants the ground to stop being blocky before any more maps get made.
-`create_topdown_tileset` returns a 16-tile Wang set with corner autotiling —
+`create_topdown_tileset` returns a 16-tile Wang set with corner autotiling -
 which is the right shape for the problem, because what stops ground looking
 blocky is the TRANSITIONS.
 
@@ -3936,7 +3936,7 @@ blocky is the TRANSITIONS.
 cracked dirt with small stones and tyre ruts" at `highly detailed` +
 `detailed shading` + `selective outline`, it returned tan **paving with a purple
 grid**; "blighted ash-grey dead earth" came back as grey **dungeon cobblestone**.
-At 32px, `highly detailed` does not mean more texture, it means more STRUCTURE —
+At 32px, `highly detailed` does not mean more texture, it means more STRUCTURE -
 and structure on a ground tile is a repeating pattern you can count.
 
 Re-run as a four-way settings experiment on one terrain pair, the recipe is:
@@ -3960,14 +3960,14 @@ grass→soil, grass→ash and grass→water all meet the same field:
 **None of it is wired, deliberately.** The terrain bake draws one sprite per
 cell; using a Wang set means picking a tile from its four corner values, which
 is a real change in `renderer.ts` and wants doing awake and with the owner
-looking. The metadata's `bounding_box` is the sheet rect to slice — the
+looking. The metadata's `bounding_box` is the sheet rect to slice - the
 tileset API's own note warns that `wang_N` and `original_position` are NOT sheet
 positions and using them is what produces horizontal banding.
 
 ## What the browser pane could and could not prove
 
 Computed styles, token values, element geometry and atlas resolution were all
-checked live. **No screenshot was possible again** — the pane does not composite,
+checked live. **No screenshot was possible again** - the pane does not composite,
 and because `document.visibilityState` is `hidden` that also means
 `requestAnimationFrame` never fires, so the HUD does not tick and the weapon
 slots could not be observed populating themselves. The slot DOM was built by hand
@@ -3979,7 +3979,7 @@ next time someone plays.
 
 ---
 
-# Session 10 — the animals measured, and the wrong thing was being worried about
+# Session 10 - the animals measured, and the wrong thing was being worried about
 
 Nothing was wired. This session answered three of the four questions blocking the
 ten generated animals, and found that the fourth problem is not the one the queue
@@ -3994,22 +3994,22 @@ that it had to be measured rather than assumed. That warning conflated two
 different problems, and only one of them exists here.
 
 The three sheet families pack their directions as **anonymous bands**. Which band
-is which genuinely has to be proved — the `humanoidRig._directionNote` in
+is which genuinely has to be proved - the `humanoidRig._directionNote` in
 `art/sprites.json` is the record of doing it, by pixel-mirroring bands and
 counting skin centroids, after a player reported that walking right drew the
 down sprite.
 
 A PixelLab object is not that. It comes back as **eight files named for their
 compass points**. There is no order to infer; there are only names to check. And
-the mapping they imply was already shipped in this repo — `compassToDirection`
+the mapping they imply was already shipped in this repo - `compassToDirection`
 under `pixellabStrips`, for the infected farmhand, generated by the same service.
 
 Checked rather than assumed, on all ten, by silhouette IoU against a mirror:
 
-- **south and north are self-symmetric** (0.68–1.00) — a front view and a rear
+- **south and north are self-symmetric** (0.68–1.00) - a front view and a rear
   view of an animal are bilaterally symmetric
-- **east and west are not** (0.26–0.75) — a profile is not
-- **east matches a mirrored west** (0.88–1.00) — the two profiles are the same
+- **east and west are not** (0.26–0.75) - a profile is not
+- **east matches a mirrored west** (0.88–1.00) - the two profiles are the same
   animal facing opposite ways
 
 That pins all four axes without anyone judging a picture. `south → down,
@@ -4030,7 +4030,7 @@ right in the queue.
 ## The size problem is a camera problem
 
 The queue framed this as scale: 56–68px sprites against LimeZu animals at 46–54
-wide and 32–40 tall. Those LimeZu numbers are correct — but only for the
+wide and 32–40 tall. Those LimeZu numbers are correct - but only for the
 **profile**, and the profile is the only view where the difference actually
 lives. Measured profile against profile:
 
@@ -4042,7 +4042,7 @@ lives. Measured profile against profile:
 | bull | 92×26 | 64×43 | **−30%** | **+65%** |
 
 **The widths already agree.** It is the heights that do not, and the bull inverts
-the sign — LimeZu's `prizeBull` profile is 92 wide by 26 tall, a cow
+the sign - LimeZu's `prizeBull` profile is 92 wide by 26 tall, a cow
 foreshortened from a high top-down, against a bull standing at 64×43.
 
 So this is not a scale mismatch that a multiplier fixes. **LimeZu draws its
@@ -4060,7 +4060,7 @@ LimeZu *characters* are drawn upright too. It is specifically the LimeZu
 
 **Wire `barn_dog` first, alone.** At +7% wide and +5% tall against the `feralDog`
 already on the field it is the one animal that is close to a drop-in, and it is a
-weapon minion rather than an enemy — so a wrong call costs one summon rather than
+weapon minion rather than an enemy - so a wrong call costs one summon rather than
 the enemy roster. Whether the other nine need re-generating at LimeZu's camera
 height is a question one dog in a real run can answer and no amount of further
 measuring can.
@@ -4078,13 +4078,13 @@ pretends to.
 - `npm run animal` reports all ten and writes a contact sheet at the game's 2×
   zoom on the real `terrain.grass` tile, every animal on a shared baseline.
 - The LimeZu animals pack **all four directions**, not the two that session 1
-  described — the up/down-alias-onto-side workaround from that session is no
+  described - the up/down-alias-onto-side workaround from that session is no
   longer what the atlas contains, and the sheet shows genuine front and rear
   views. That entry below is stale; this is the state.
 
 ---
 
-# Session 9 — the two scenes, and a card you could see through
+# Session 9 - the two scenes, and a card you could see through
 
 ## The scenes were built from an index of the scenes
 
@@ -4094,15 +4094,15 @@ session almost none of either one was in the game.
 
 The previous pass built both scenes faithfully from `docs/mockups/PLACEMENTS.md`
 and measured correct against it. **That table lists the scenes' `<img>`
-placements and only those.** Everything that is not a sprite — and in these two
-scenes that is most of the picture — is a CSS layer, and none of it is in the
+placements and only those.** Everything that is not a sprite - and in these two
+scenes that is most of the picture - is a CSS layer, and none of it is in the
 table. What was missing from the yard:
 
 - the dusk sky itself (a nine-stop gradient; the build had an invented six-stop one)
 - the sun, its core, and the flicker they share
 - three drifting cloud bands
 - the haze band the buildings stand in front of
-- the ground — the yard had **no ground layer at all**, just sky to the bottom edge
+- the ground - the yard had **no ground layer at all**, just sky to the bottom edge
 - the lit top edge of the ground, and the furrow stripes
 - the track worn up to the barn doors
 - **the barn**, and the glowing doorway that is the Homestead entrance
@@ -4131,7 +4131,7 @@ thing itself.
 ## Every scene sprite was in the wrong place, silently
 
 The `scene` group was packed **trimmed**, like every other sprite group. Trimming
-is right for a field sprite, which is drawn from a pivot — and wrong for anything
+is right for a field sprite, which is drawn from a pivot - and wrong for anything
 positioned by its box, which is every sprite in these two scenes.
 
 Design's coordinates are the top-left of the sprite's FULL box. Measured against
@@ -4150,7 +4150,7 @@ Nothing errors. Every sprite is present, every frame is non-empty, and the scene
 renders a confident, wrong composition. `scene` carries `noTrim` now and every
 sprite measures its native size in the live DOM.
 
-This is the fourth distinct thing the atlas's trimming has broken — after the
+This is the fourth distinct thing the atlas's trimming has broken - after the
 six-frame strip, the 32px tile and the stepped walk cycle. The rule worth
 carrying: **trim what is drawn from a pivot, never what is drawn from a box.**
 
@@ -4173,7 +4173,7 @@ element computes to `background-color: rgba(0,0,0,0)` with a single
 radial-gradient. The paper was never there.
 
 `.psheet` and `.hero-body` are the same stock and get it right by hanging the
-dots off a pseudo-element — and `tokens.css` even carries a `.stock` helper
+dots off a pseudo-element - and `tokens.css` even carries a `.stock` helper
 whose comment warns that paper elements already own their gradient. The card did
 it inline anyway. It now layers both images in one declaration over a flat
 colour (`--paper-flat`), so paper stays paper whatever wins the image slot next.
@@ -4193,21 +4193,21 @@ so moving a barn moves its door.
 Twelve subjects generated, in three batches of eight.
 
 Landed and wired: the Ditch Light, the Straw Hat, and **all four Homestead
-building signs** — which were borrowing a grain lure, a feed pickup, the player's
+building signs** - which were borrowing a grain lure, a feed pickup, the player's
 own head and a tier-3 scythe, and so read as four inventory items rather than
 four places you walk into. Also `scene.rooster`, generated, replacing a
 transparent crop, and visibly taller than the hens beside him.
 
 Generated and staged, not wired: the oak, four infected livestock side views, the
 Whitacre bull, the barn dog, the gas cloud, the crop duster, the salt ring, a post
-auger, a combine head, and the owner's own animals — a fjord pony, an arabian, a
+auger, a combine head, and the owner's own animals - a fjord pony, an arabian, a
 draft mule and a donkey. A side view is a reference, not an enemy; see
 `art/pixellab-queue.json` for what each still needs.
 
 **The post auger and the combine head have real four-rung ladders now**, and
 the way they were made is the point. Each rung was generated FROM the rung below
 it as a `reference_images` URL pointing at this repo's own raw.githubusercontent
-path — the repo is public, so it is its own asset host — with the description
+path - the repo is public, so it is its own asset host - with the description
 changing only the material. Generated independently they would have been four
 unrelated tools; referenced, they are one tool at four qualities.
 
@@ -4220,7 +4220,7 @@ than by measuring. `brass crank handle` on the auger's T4 dragged an orange
 squash out of the style anchor into all sixteen candidates; dropping `detail`
 from `style_copy` and the colour word fixed it, which is the second time that
 exact fix has worked. And the first T3 pick read as T2 with a wooden grip rather
-than as an escalation — a ladder has to be judged as a ladder, so `tools/`
+than as an escalation - a ladder has to be judged as a ladder, so `tools/`
 grew a throwaway contact-sheet script to put all four side by side on a grey
 field. Judging rungs one at a time is how you get four fine icons that are not
 a progression.
@@ -4231,7 +4231,7 @@ a progression.
    limit exceeded (8/8)". There is no cooldown to wait out: the batch finishes in
    about nine minutes and the slots free. Fire eight, wait, fire eight more.
 2. **The style anchor is a sheet of farm produce, and `style_copy` defaults to
-   copying `detail` as well as palette, outline and shading — which drags the
+   copying `detail` as well as palette, outline and shading - which drags the
    anchor's SUBJECT across.** The first oak came back as four pumpkins and an
    onion. Same prompt, same anchor, `style_copy` narrowed to
    palette/outline/shading: a correct oak, first try. Small hand-held objects are
@@ -4247,7 +4247,7 @@ refusal. It was not: the block came from the **Claude Code permission
 classifier**, so the prompt never reached the API at all. Retrying the identical
 request went straight through and returned sixteen good knives, one of which is
 now the Boot Knife's card art. Check which layer refused a generation before
-rewriting the prompt — the wording was never the problem.
+rewriting the prompt - the wording was never the problem.
 
 `npm run fetch -- <job-id> <name>` is new: it pulls every candidate down plus a
 4-across contact sheet, because the REST API returns candidates as separate files
@@ -4261,7 +4261,7 @@ both of which were borrowing a generic sprite; and the four infected livestock.
 
 **`create_8_direction_object` is the tool, not the character creator.** Each
 animal was generated FROM its own side view passed as `reference_image_base64`,
-so the ring is recognisably the same animal rather than a generic one — the
+so the ring is recognisably the same animal rather than a generic one - the
 fjord pony stays white and blonde, the mule black, the donkey small and grey.
 The tool's own docs warn that reference identity transfer is unreliable for
 CHARACTER sprites; it held for all ten ANIMALS. Do not extrapolate that to
@@ -4278,7 +4278,7 @@ each.
 
 - **`reference_image_base64` is intermittently truncated in transit.** The error
   says "broken data stream" and reports the full byte count, so it reads like a
-  corrupt file — and the same file opens fine in PIL locally. It is not
+  corrupt file - and the same file opens fine in PIL locally. It is not
   size-related: payloads of 814, 1424, 1938 and 2149 bytes went through while
   1365, 2098 and 3898 byte ones did not, and one file failed twice then
   succeeded unchanged. **Retry.** Quantising through `conform-fx`'s LimeZu
@@ -4288,13 +4288,13 @@ each.
   download is a zip; the first version of `npm run object` shelled out to `tar`
   and got "This does not look like a tar archive". Zip's central directory is
   forty lines to walk and its entries are raw-deflated, which Node's zlib
-  already does for the PNG codec — so it is read in-process now and cannot be
+  already does for the PNG codec - so it is read in-process now and cannot be
   broken by a PATH.
 
 **`npm run object` writes a `_ring.png` and a `_walk_<dir>.png` per direction,
 and that is the point of it.** The failure mode of an eight-way rotation is not
 a bad frame, it is ONE DIRECTION that does not belong to the same animal as the
-other seven — invisible one frame at a time, obvious on a strip.
+other seven - invisible one frame at a time, obvious on a strip.
 
 **None of it is packed or wired, deliberately.** The renderer advances walk
 frames by distance travelled, so a static sprite would skate across the ground:
@@ -4309,8 +4309,8 @@ be guessed. `_howToWireIt` in the queue lists them.
 Three CC-0 tracks by **Abstraction** (Benjamin Burnes / Tallbeard Studios) from
 the Music Loop Bundle replace the three Lyria clips: an ambient-spooky bed for
 the field, an 85-second drum-and-bass for combat, and the pack's heaviest
-non-chiptune track for the boss. Chosen from the pack's own metadata — tags,
-energy, duration, the author's score — which means they were chosen by reading
+non-chiptune track for the boss. Chosen from the pack's own metadata - tags,
+energy, duration, the author's score - which means they were chosen by reading
 and still want checking by ear in a real run.
 
 **OGG, not MP3, and that is the pack author's own instruction:** MP3 leaves a
@@ -4321,11 +4321,11 @@ so this was a JSON edit with no code change.
 The prompts stay in `audio.json`. They no longer describe what plays, but they
 still describe what each layer is FOR, and they are the brief if the soundtrack
 is ever regenerated. `npm run music` would now write `.mp3` files that nothing
-points at — noted in the file so the next person does not wonder.
+points at - noted in the file so the next person does not wonder.
 
 **One clean licence out of ten packs surveyed.** Both horse packs, both admurin
 monster packs, both JDSherbert UI packs and the Echoes kit all forbid
-redistribution, and this repo is public — committing them to `assets/` *is*
+redistribution, and this repo is public - committing them to `assets/` *is*
 redistribution. That is the same deadlock that kept this repo private through
 M0–M5. The rule and the workaround (gitignore the pack, ship only the generated
 atlas) are written down in the queue under `_licenceRule`.
@@ -4337,15 +4337,15 @@ from five numbers each at zero download and no credit obligation.
 ## There is one map, and the seed does not choose it
 
 Asked directly, and worth writing down because the answer is not what it looks
-like. The seed drives everything through the `mulberry32` RNG — spawns, elite
-rolls, drops, offer draws, crop scatter — and the terrain bake derives its own
+like. The seed drives everything through the `mulberry32` RNG - spawns, elite
+rolls, drops, offer draws, crop scatter - and the terrain bake derives its own
 stream from `seed ^ 0x7e44a1` so the ground varies without moving the sim. But
 there is **one arena and one tileset**: grass, dirt and soil, scattered. Same
 ground every run.
 
 Making the seed pick a map is a real feature, not a content drop, and the
 constraint that matters is that the map choice has to be the FIRST draw off the
-RNG — anything later and adding a map silently changes every existing seed's
+RNG - anything later and adding a map silently changes every existing seed's
 replay, which this project has a test for. Sketched under `_mapsAndTilesets` in
 the generation queue, with what PixelLab can actually make for it.
 
@@ -4354,7 +4354,7 @@ the generation queue, with what PixelLab can actually make for it.
 - 131 tests pass; typecheck clean on game and tools.
 - Both scenes mount with every layer present: 43 in the yard, 38 in the field,
   nothing dropped to a null sprite, console clean after a reload.
-- Every scene sprite measures its native size in the live DOM — silo 224x448,
+- Every scene sprite measures its native size in the live DOM - silo 224x448,
   coop 128x160, well 96x64, milkcan 48x64 at 2x, fence band 1960 wide.
 - Card stock computes opaque in all three states, on a `<button>`, which is what
   a card actually is.
@@ -4366,7 +4366,7 @@ evidence. The scenes still want a human looking at them next to
 
 ---
 
-# Session 7 — audio, from two providers
+# Session 7 - audio, from two providers
 
 ## Two providers, each doing the thing it is for
 
@@ -4384,9 +4384,9 @@ So: **ElevenLabs for effects, Lyria for music.** `npm run audio` runs both.
 
 Twenty-six effects are generated and thirteen are still synthesised, chosen per
 sound in `audio.json`. (This entry originally said nine and seven; the roster
-grew and the line went stale.) **Physical** sounds — gunfire, impacts, stone, a bull scraping
-dirt — are unambiguously better from a real generator. **Arcade feedback** — an
-XP pickup, a level-up flourish, a UI blip — is not a real-world sound at all,
+grew and the line went stale.) **Physical** sounds - gunfire, impacts, stone, a bull scraping
+dirt - are unambiguously better from a real generator. **Arcade feedback** - an
+XP pickup, a level-up flourish, a UI blip - is not a real-world sound at all,
 and a realistic recording of one fights the pixel art rather than serving it.
 Vampire Survivors and Brotato both use synthetic blips for the same reason.
 
@@ -4405,7 +4405,7 @@ is scaled by `master.sampleGainScale` rather than retuning sixteen hand-set
 gains.
 
 ElevenLabs enforces a **0.5s minimum** and several of these want to be 70ms, so
-the files carry trailing silence. Harmless — playback is one-shot.
+the files carry trailing silence. Harmless - playback is one-shot.
 
 ## Verified
 
@@ -4416,7 +4416,7 @@ dozen parallel fetches for the same file.
 
 ---
 
-# Session 7 — audio
+# Session 7 - audio
 
 ## Gemini has no sound-effects model, and that changed the design
 
@@ -4424,8 +4424,8 @@ Checked against the API docs rather than assumed: Gemini offers **Lyria 3 for
 music** and **TTS for speech**, and nothing for sound effects. Prompting a music
 model for a 90ms shotgun report gets you a short piece of music about a shotgun.
 
-So the sixteen effects are **synthesised in the browser** — oscillators, a
-shared noise buffer and exponential envelopes through Web Audio — and only the
+So the sixteen effects are **synthesised in the browser** - oscillators, a
+shared noise buffer and exponential envelopes through Web Audio - and only the
 three music layers come from Lyria.
 
 That split is not a compromise. Synthesis is the better answer here: it matches
@@ -4438,7 +4438,7 @@ stylistically right for pixel art in a way a recorded sample is not.
 
 `npm run music` (in `tools/fetch-music.ts`) posts each layer's prompt to
 `v1beta/interactions` with `lyria-3-clip-preview` and writes base64 audio to
-`public/audio/`. Offline like the atlas — a network round trip inside a game
+`public/audio/`. Offline like the atlas - a network round trip inside a game
 loop is a stutter, not a soundtrack. Needs `GEMINI_API_KEY`; exits with
 instructions if it is missing, and says so explicitly if the model 404s, since
 Lyria is preview-gated separately from ordinary Gemini.
@@ -4447,7 +4447,7 @@ Lyria is preview-gated separately from ordinary Gemini.
 score.** Tune the prose and re-run; never hand-edit the audio.
 
 `public/audio/` is gitignored like the atlas. **Missing music is never an
-error** — the loader remembers the failure so it does not retry every wave, and
+error** - the loader remembers the failure so it does not retry every wave, and
 the game is simply quiet.
 
 ## Boundaries kept
@@ -4463,7 +4463,7 @@ oscillators summing into clipping rather than a sound.
 ## Verified
 
 Rendered `shootHeavy` through an `OfflineAudioContext` with the shipped spec:
-peak 0.124, tail 0.00002 — audible, and it decays cleanly rather than clicking.
+peak 0.124, tail 0.00002 - audible, and it decays cleanly rather than clicking.
 Sound intents confirmed firing in a live run (68 shots, 8 deaths, 5 hits, a crit
 and a pickup over 15 seconds).
 
@@ -4472,7 +4472,7 @@ own, and persist to `localStorage`.
 
 ---
 
-# Session 6 — the Duster, and one UI language
+# Session 6 - the Duster, and one UI language
 
 ## The Duster
 
@@ -4480,7 +4480,7 @@ Wave 25's boss. Phase 1 is the whole idea: it drives a fixed agricultural
 back-and-forth and **never chases**, so the arena fills with lanes you cannot be
 in and the danger is entirely of your own making. Below half health the pattern
 breaks and it comes for you slowly, still dragging its strip, while farmhands
-pour out and the rows burn inward — ninety seconds to take the field to 34% of
+pour out and the rows burn inward - ninety seconds to take the field to 34% of
 its shorter axis, measured exactly.
 
 **A third sprite layout.** The tractor is 192x192 frames on a 6x5 grid with ONE
@@ -4492,20 +4492,20 @@ from the last one.
 
 §9's "tractor at x3" was written assuming a 32px source. This one is drawn
 ~130px wide, so x3 would be nearly 400px against a 520px camera. Packed native,
-drawn at x1 — still four times the player — and the heavy read comes from the
+drawn at x1 - still four times the player - and the heavy read comes from the
 slowed frame rate instead.
 
 ## The panel language
 
 `assets/modern-ui` had never been opened. It is the same LimeZu hand as the farm
-tiles, so the screens can match the game with **no conforming at all** — the one
+tiles, so the screens can match the game with **no conforming at all** - the one
 pack in the project that needs none.
 
 Before this, the level-up cards had a flat 3px border, the shop had another, and
 pause did not exist: four screens that happened to ship together. There is one
 vocabulary now, in `style.css` under THE PANEL LANGUAGE:
 
-- **`.panel`** — LimeZu's carved wood frame as a real CSS `border-image`, which
+- **`.panel`** - LimeZu's carved wood frame as a real CSS `border-image`, which
   is exactly the 9-slice that art was drawn for. `image-rendering: pixelated`
   keeps it on the grid at any size, so one 64x62 source dresses a shop card and
   a pause menu alike.
@@ -4515,7 +4515,7 @@ vocabulary now, in `style.css` under THE PANEL LANGUAGE:
   you cannot afford, red is danger.
 
 Card rarity moved from the border colour (the frame occupies that now) to a bar
-along the top edge, which reads better regardless — it survives the frame's own
+along the top edge, which reads better regardless - it survives the frame's own
 colour.
 
 `public/ui/panel.png` is generated by `npm run atlas` and gitignored like the
@@ -4525,7 +4525,7 @@ simply does not apply and the colour underneath carries it.
 ## Pause
 
 `Esc` or `P`, edge-triggered so holding it does not toggle sixty times a second.
-Reachable only from play and only returns to play — a level-up or shop is
+Reachable only from play and only returns to play - a level-up or shop is
 already a pause with a decision attached, and stacking a second freeze on one of
 those is how you get a screen nobody can dismiss.
 
@@ -4534,7 +4534,7 @@ game was unreachable behind the HUD for a whole milestone.
 
 ---
 
-# Session 5 — roster, elements, and the first boss
+# Session 5 - roster, elements, and the first boss
 
 ## Start-here delta
 
@@ -4544,15 +4544,15 @@ M6 is **half done**: the Prize Bull fights, the Duster does not exist. See
 ## The roster
 
 Twelve weapons rebuilt around the bought art, ranged-heavy. The twelve
-behaviours are untouched — they work, they are tested, they are distinct — so
+behaviours are untouched - they work, they are tested, they are distinct - so
 this was a reskin and a retheme, not a rewrite. Three melee were kept on
 purpose: they are the only weapons that reward standing still, which is The
 Hand's identity and now also how you mine, and an all-ranged roster would have
 quietly deleted a class.
 
 Tier art: merging changes the weapon. Guns step up their category, melee steps
-up its material. The Pixcuit pack is **not complete per tool** — no Iron
-Pitchfork, no Golden Sickle — so the four materials differ by weapon.
+up its material. The Pixcuit pack is **not complete per tool** - no Iron
+Pitchfork, no Golden Sickle - so the four materials differ by weapon.
 
 Renaming the weapon ids meant first removing the hardcoded id literals
 (`findAttached('axe')`, `WEAPONS.eggToss`). Those resolve from the projectile's
@@ -4564,7 +4564,7 @@ weapon in JSON can no longer silently break code.
 Fire, acid or frost, one at a time, converting every ranged weapon. The element
 **swaps the whole bullet** rather than tinting one, which cost no new art
 because the packs already ship a fireball, an acid glob and an ice spike as
-separate animations. Fire ignites slop slicks — two things the player already
+separate animations. Fire ignites slop slicks - two things the player already
 chose doing something neither does alone.
 
 It needed no new damage plumbing at all: the lasting damage rides on the
@@ -4583,7 +4583,7 @@ build.
 
 `ENEMY_IDS` was `Object.keys(ENEMIES)`, so adding the Prize Bull put it in the
 wave director's roster. A boss carries `threatCost: 0` precisely so the budget
-cannot refuse it — which meant the director could pick it for free, without
+cannot refuse it - which meant the director could pick it for free, without
 limit. **Every bot run died on wave one.** Bosses are excluded from the roster
 now and placed explicitly by `spawnBoss`; there is a test.
 
@@ -4594,24 +4594,24 @@ has ever existed.** waveCount is 25.
 
 ## What M6 still owes
 
-1. **The Duster.** Nothing exists — no art, no behaviour. §9 wants two phases:
+1. **The Duster.** Nothing exists - no art, no behaviour. §9 wants two phases:
    a fixed agricultural back-and-forth laying gas that never chases, then below
    50% it comes for you directly while the rows burn inward and shrink the
    arena to a third. The tractor sheet is at
    `assets/modern-farm/32x32/Vehicles_32x32/Tractor_32x32.png` (1152x960) and
-   its grid has NOT been measured — run `npm run pitch` on it first; the cow
+   its grid has NOT been measured - run `npm run pitch` on it first; the cow
    sheet turned out to be 96px pitch at row 6 while every other animal is 64 at
    row 2-4.
 2. **The Bull's charge is the generic `charge` behaviour.** It winds up and
    staggers, and Stampede fires below 50%, but it does not yet damage its own
    trash in the lane or slam the fence.
-3. **Audio.** Still nothing, and still no source material in `assets/` — this
+3. **Audio.** Still nothing, and still no source material in `assets/` - this
    is the one milestone item blocked on something outside the repo.
 4. **Pause screen.** No Escape handling anywhere.
 
 ---
 
-# Session 4 — mining, and the assets to draw it
+# Session 4 - mining, and the assets to draw it
 
 ## Harvesting rebuilt on the Deep Rock Galactic: Survivor model
 
@@ -4620,7 +4620,7 @@ invisible chip damage the player never chooses, and it made the field scenery
 rather than a place. The new one is DRG:S's: **nodes you stand next to, worked
 continuously by tools that are not weapons.**
 
-- **Three node kinds** in `src/content/nodes.json` — rock, tree, crop — with
+- **Three node kinds** in `src/content/nodes.json` - rock, tree, crop - with
   per-variant HP, feed and XP. The LimeZu pack ships rocks with ore already in
   them (bronze, silver, gold, blue, red), so the payout tier is legible before
   you commit to standing there, which is exactly DRG's "minerals embedded in
@@ -4631,7 +4631,7 @@ continuously by tools that are not weapons.**
   `pickaxeHead` / `axeHead` upgrades through the normal offer pool.
 - **Nodes pay XP as gems**, not just feed. In DRG:S mining is the primary
   early-game XP source and this is what makes that true here rather than
-  decorative — ten seconds standing on one bronze seam took a level-1 player to
+  decorative - ten seconds standing on one bronze seam took a level-1 player to
   level 2.
 - **Mobs drop seed packs** (5%), a feed trickle that is not tied to standing
   still, so a player kited all wave still earns.
@@ -4643,7 +4643,7 @@ tools. It silently defeated the entire design: a shovel swing carries more
 damage than a wooden pickaxe does in five seconds, so every node was broken
 incidentally by whatever was shooting past it.
 
-Measured: **0.28s to break a rock on every tool tier, wood through diamond** —
+Measured: **0.28s to break a rock on every tool tier, wood through diamond** -
 identical, because the tool was never the thing breaking it, and the upgrades
 bought nothing at all. With weapons removed from nodes it reads properly:
 
@@ -4660,8 +4660,8 @@ nothing" rather than an error.
 ### What the harness says, and why to read it carefully
 
 Clear rates held (Hand 94% holding ground, Kid 100%) and median level rose from
-26 to 30, so mining is contributing XP. But **the bots barely mine** — median 0
-to 8 nodes in a seventeen-minute run — because they kite constantly and never
+26 to 30, so mining is contributing XP. But **the bots barely mine** - median 0
+to 8 nodes in a seventeen-minute run - because they kite constantly and never
 choose to stand anywhere. The brawler pilot mines four times what the kiter
 does, which is the design working: standing still now pays, and that is The
 Hand's identity.
@@ -4672,7 +4672,7 @@ different economy entirely. This needs a human playtest before any balancing.
 
 ---
 
-# Session 3 — M4 finished, M5 content, balance, weapon visibility
+# Session 3 - M4 finished, M5 content, balance, weapon visibility
 
 ## Weapons you can actually see
 
@@ -4681,21 +4681,21 @@ weapon I don't think I'm actually getting a new weapon."* He was right, and it
 was one root cause with three symptoms.
 
 **Not one of the twelve weapon sprites was ever packed.** Every entry in
-`weapons.json` carries a `sprite` field — `tool_shovel`, `crop_corn`,
-`prop_bucket` — and `art/sprites.json` had never heard of any of them. So:
+`weapons.json` carries a `sprite` field - `tool_shovel`, `crop_corn`,
+`prop_bucket` - and `art/sprites.json` had never heard of any of them. So:
 
 - Projectiles never got a frame and fell through to the coloured-square
   fallback, which is why **every ranged weapon looked identical**: same pale
   green square, sized by radius. Six weapons firing was indistinguishable from
   one.
 - Melee arcs took the same path at `radius * 2`, so a shovel swing drew as a
-  **~100px white box** — the loudest thing on screen, and the reason melee felt
+  **~100px white box** - the loudest thing on screen, and the reason melee felt
   like the only weapon that "worked".
 
 Fixed in three parts:
 
 1. **Weapon sprites are packed** as `weapon.<id>`, keyed to the weapon ids.
-2. **Projectiles draw their weapon's sprite**, rotated — thrown things tumble,
+2. **Projectiles draw their weapon's sprite**, rotated - thrown things tumble,
    fired things point where they are going, orbits spin. A projectile that never
    rotates reads as a decal sliding over grass.
 3. **Melee arcs and auras stopped being objects.** They are volumes, so they
@@ -4706,7 +4706,7 @@ Fixed in three parts:
 Weapons now sit spaced around the player and turn to point at what they are
 shooting, Brotato-style, kicking back when they fire. The angles live on the
 weapon slot in the sim (`ringAngle`, `aimAngle`, `recoil`) and the renderer only
-draws them — targeting is a simulation decision and the render layer does not
+draws them - targeting is a simulation decision and the render layer does not
 get to have an opinion about it. The ring is what makes ownership, aim and rate
 of fire legible at a glance, and it is the direct answer to "did I actually get
 a new weapon".
@@ -4715,7 +4715,7 @@ a new weapon".
 
 **The pack is an environment set, not an item-icon set.** There is no axe,
 watering can or fishing rod anywhere in it at 32x32. Stand-ins are used and
-named honestly in `art/sprites.json` — a hacksaw blade for the axe, a milk can
+named honestly in `art/sprites.json` - a hacksaw blade for the axe, a milk can
 for the watering can, a fishing branch for the rod. Swapping them later is a
 one-block change.
 
@@ -4728,7 +4728,7 @@ same spirit as the 1792x704 humanoid check.
 
 ---
 
-# Session 3 — M4 finished, M5 content, first balance pass
+# Session 3 - M4 finished, M5 content, first balance pass
 
 ## The balance pass, and `npm run balance`
 
@@ -4741,7 +4741,7 @@ what a balance change needs before and after.
     npm run balance -- 24 both
 
 Read it as *relative*. The pilots are crude bots and the absolute clear rate is
-not a prediction of how a person will do — but the same tool across a change
+not a prediction of how a person will do - but the same tool across a change
 is a real measurement.
 
 It immediately found three things, two of them bugs rather than balance.
@@ -4756,7 +4756,7 @@ landed about a quarter of the damage its JSON claimed, because most of its ticks
 fell inside the mercy window it had just granted itself.
 
 Environmental damage now neither grants i-frames nor is blocked by them, and
-skips the dodge roll — you cannot sidestep a cloud you are standing in.
+skips the dodge roll - you cannot sidestep a cloud you are standing in.
 
 ### The gas cloud was wider than the screen
 
@@ -4764,7 +4764,7 @@ skips the dodge roll — you cannot sidestep a cloud you are standing in.
 **270**, against a camera view 520px wide. Fine while the cloud was decoration;
 once it damaged you it was not a hazard you could play around, it was a tax with
 no visible edge, and hazards were 44–60% of all damage taken. Growth is now 10,
-landing at 150 — half the screen, still frightening, walkable-out-of.
+landing at 150 - half the screen, still frightening, walkable-out-of.
 
 ### One elite roll was spawning a whole squad of elites
 
@@ -4773,8 +4773,8 @@ handed the result to every member, so one success turned a group of three to six
 into three to six elites at 4x health, arriving shoulder to shoulder. §8's "one
 in ten" means one in ten *enemies*. The roll moved into the per-enemy loop.
 
-The harness had found 2.6 elites alive at the average death and wave 5 — the
-first elite wave — killing more runs than any other. Afterwards: 1.2 elites at
+The harness had found 2.6 elites alive at the average death and wave 5 - the
+first elite wave - killing more runs than any other. Afterwards: 1.2 elites at
 death, and the wave 5 spike is gone.
 
 | | before | after |
@@ -4787,8 +4787,8 @@ death, and the wave 5 spike is gone.
 
 Those numbers left The Hand at 79% and The Kid at 100%, and the parity test
 started failing. The temptation was to buff The Hand. That would have been
-wrong: **the bot only kites**, which is precisely The Kid's kit — fast, damage
-scaling with velocity — and precisely the opposite of The Hand's, which buys
+wrong: **the bot only kites**, which is precisely The Kid's kit - fast, damage
+scaling with velocity - and precisely the opposite of The Hand's, which buys
 damage reduction by standing still and has an ability that roots it. A
 kiting-only harness reports The Hand as weaker no matter what the game does.
 
@@ -4806,7 +4806,7 @@ built to be played, and a new test asserts the cross-over above, so if the two
 classes ever stop being different the parity numbers stop lying about it.
 
 **The lesson worth keeping:** twice in this session a measurement was wrong
-before the game was — the tier probe that rewarded not killing, and the parity
+before the game was - the tier probe that rewarded not killing, and the parity
 test that measured The Kid twice. Check what the instrument is actually asking
 before tuning anything to satisfy it.
 
@@ -4814,7 +4814,7 @@ before tuning anything to satisfy it.
 
 - The Kid clears 100% of 24 seeds kiting. The bot kites perfectly and a human
   will not, but that is the number to watch if the game feels soft.
-- Deaths that remain cluster on waves 10 and 15 — elite waves, now with a
+- Deaths that remain cluster on waves 10 and 15 - elite waves, now with a
   sensible number of elites on them.
 - Crop yield differs a lot by stance: a kiting Kid harvests ~38 a run against a
   standing Hand's ~19, because it covers more ground. Feed income therefore
@@ -4826,7 +4826,7 @@ before tuning anything to satisfy it.
 `tools/conform-fx.ts` extracts 32 colours from the LimeZu sheets by seeded
 k-means in Oklab and writes `art/palette.json`; `build-atlas.ts` imports the
 quantiser and conforms every FX frame as it packs. There is deliberately no
-directory of conformed PNGs on disk — one generated artefact is enough to keep
+directory of conformed PNGs on disk - one generated artefact is enough to keep
 track of.
 
 **The pack's real geometry, since the spec does not give it and the inspect tool
@@ -4841,8 +4841,8 @@ files are never looked at again.
 
 First attempt sampled terrain, crops and animals. The resulting 32 had **no
 saturated red between hue 20° and 40° and no light green at all**, so the
-explosion's `#d64f5a` body landed on the strawberry crimson `#cf2266` — the only
-saturated thing anywhere near that hue — and the gas cloud's bright `#cbf17a`
+explosion's `#d64f5a` body landed on the strawberry crimson `#cf2266` - the only
+saturated thing anywhere near that hue - and the gas cloud's bright `#cbf17a`
 highlight, which is most of its area, landed on cream. Two effects came out
 magenta and olive.
 
@@ -4850,8 +4850,8 @@ The instinct was to blame nearest-in-Oklab and weight the distance. That was
 worth doing and is still in (matching runs in Oklch with hue and chroma charged
 above lightness, because a muted palette forces every saturated pixel to lose
 chroma somewhere and unweighted matching pays that bill by rotating hue). But it
-barely moved these two, and the diagnostic — dumping each clip's dominant
-colours with their nearest three palette entries — showed why: **there was
+barely moved these two, and the diagnostic - dumping each clip's dominant
+colours with their nearest three palette entries - showed why: **there was
 nowhere right to send them.** Sampling `0_Complete_Tileset_32x32.png`, the whole
 pack on one sheet, fixed both outright.
 
@@ -4865,7 +4865,7 @@ A cosmetic decision that consumed `world.rng` would mean the number of sparks
 drawn moved every later enemy spawn, and the seed-replay guarantee would be
 hostage to the art. There is a test for it.
 
-## M5 — the riders, and four bugs behind them
+## M5 - the riders, and four bugs behind them
 
 Every rider named in `weapons.json` now fires, and the magnitudes are all JSON.
 Getting there needed infrastructure that did not exist: burn, bleed,
@@ -4892,7 +4892,7 @@ search, lure detonation and shard bounces.
 Acid pools and gas clouds damage the player, which is what the acid zombie is
 *for*; they spawned, rendered and were harmless. Making them lethal made hazard
 readability a fairness requirement rather than polish, so harmful hazards now
-read in a different colour family from yours, carry a bright rim, and pulse —
+read in a different colour family from yours, carry a bright rim, and pulse -
 movement in the periphery is what you notice with two hundred enemies on screen,
 and it is reserved for the things that hurt.
 
@@ -4905,14 +4905,14 @@ orbiting at 74 passes 49px clear of them. The axe worked only at a sprint.
 The orbit now interpolates between a 42px floor and the design's 74 on
 `velocityFraction`, so it tightens as you slow. This keeps the wide sweep the
 design drew for a moving player, makes the axe a real pick for The Hand, and
-reads in play — the blades visibly draw in when you plant your feet. T2's
+reads in play - the blades visibly draw in when you plant your feet. T2's
 "+25% radius" scales only the wide end: the floor is geometry, not a tunable,
 and scaling it pushed a T2 axe back out of contact and made the rider worse than
 no rider.
 
 **The measurement mattered as much as the fix.** The first probe topped a ring of
 enemies back up as they died, which measures throughput *and* how long
-replacements take to walk in — and those pull against each other, so a stronger
+replacements take to walk in - and those pull against each other, so a stronger
 tier clears faster, stands idle, and scores lower. It reported a T2 axe as worse
 than T1. The tier test now holds the dummies at 1e9 hp and measures output
 alone. Any future weapon comparison should use that rig and not the other one.
@@ -4921,7 +4921,7 @@ alone. Any future weapon comparison should use that rig and not the other one.
 
 ---
 
-# Session 2 — playtest fixes, M4 art pipeline
+# Session 2 - playtest fixes, M4 art pipeline
 
 ## The shop freeze
 
@@ -4947,14 +4947,14 @@ bloated 75→90, hauler 50→66, sheep 45→60, hog 60→84 (charge 220→260), 
 110→132, sprayer 85→100, rooster 145→160, duck 170→185.
 
 The first pass overshot at 92 for farmhands. That left The Hand a 36 px/s margin
-at its 128 px/s and **it cleared 1 seed in 6 while The Kid cleared 6 of 6** — a
+at its 128 px/s and **it cleared 1 seed in 6 while The Kid cleared 6 of 6** - a
 class-balance break, not a difficulty one. Softened to 82 and the two classes are
 back to succeeding and failing on the same seeds. The run acceptance test now
 surveys six seeds instead of pinning one, and asserts class parity directly, so
 that gap cannot silently reopen.
 
 **Damage scaling.** Nothing in the pool touched `damagePct`, and `meleePct` and
-`rangedPct` were in the damage formula with no source at all — weapon merging
+`rangedPct` were in the damage formula with no source at all - weapon merging
 was the only way to scale damage. Added Whetstone (+10% damage), Hay Hook (+18%
 melee), Sling Bands (+18% ranged), Kerosene Can (+25% damage, −15 max HP).
 
@@ -4985,15 +4985,15 @@ This is the Brotato-style economy the design did not have: it gives a player
 with spare seconds something to do with them, and turns "the wave is thin right
 now" into a decision rather than dead time.
 
-## M4 — art pipeline
+## M4 - art pipeline
 
-**`tools/png.ts`** — a minimal PNG codec on Node's built-in zlib. Written rather
+**`tools/png.ts`** - a minimal PNG codec on Node's built-in zlib. Written rather
 than pulled in because the design caps dependencies at three, and adding `sharp`
 (a native binary) or `pngjs` to slice sprites offline is not worth the budget.
-Handles 8-bit greyscale, RGB, palette and RGBA, non-interlaced — everything the
+Handles 8-bit greyscale, RGB, palette and RGBA, non-interlaced - everything the
 packs actually use.
 
-**`tools/build-atlas.ts`** — slices every source named in `art/sprites.json`,
+**`tools/build-atlas.ts`** - slices every source named in `art/sprites.json`,
 trims each frame to content bounds, records a bottom-centre pivot, and packs one
 `public/atlas.png` + `atlas.json` with 2px bleed. The game never reads `assets/`
 at runtime, which is also what keeps the licensed art out of a deployed build.
@@ -5001,13 +5001,13 @@ at runtime, which is also what keeps the licensed art out of a deployed build.
 **The 1792×704 assertion is in** and is the point of the file. A wrong-sized
 sheet fails the build naming the file.
 
-**`tools/inspect-sheet.ts`** — reports the frame grid of any sheet. This is how
+**`tools/inspect-sheet.ts`** - reports the frame grid of any sheet. This is how
 the rigs were derived rather than guessed, and it should be run on every new
 generator export.
 
 ### What the rigs actually are
 
-The design says all thirteen character sheets share one rig, and they do — but
+The design says all thirteen character sheets share one rig, and they do - but
 not the one the doc implies. They are 56×22 cells of 32px, and **a character is
 32×64 spanning a stacked row pair**: the even row holds the upper half, the odd
 row the lower. That gives 11 clips at 4/24/24/36/36/56/40/36/24/8/36 frames,
@@ -5034,8 +5034,8 @@ packed again under an idle key.
 
 First pass produced 10×50 "plank" enemies for the up and right facings. The
 cause is not a slicing bug: on the two-row animal sheets the front and back
-clips are drawn at proportions that do not match the side views — a rear-view
-pig measures **16×52 against a 28×32 side view** — and there is no 32px grid
+clips are drawn at proportions that do not match the side views - a rear-view
+pig measures **16×52 against a 28×32 side view** - and there is no 32px grid
 alignment that makes both read correctly.
 
 Rather than ship visibly broken sprites, only the two **side** clips are packed,
@@ -5049,21 +5049,21 @@ uses all four via `allDirections`.
 currently unused, and understanding their layout would give the animals proper
 facing. `tools/inspect-sheet.ts` and a scaled dump are how to approach it.
 
-Also added `dominantBandBounds` to the PNG helpers — takes the tallest
+Also added `dominantBandBounds` to the PNG helpers - takes the tallest
 *contiguous* band of occupied rows rather than raw bounds, so a frame window
 that catches a slice of a neighbouring clip discards it. A no-op for
 well-formed sprites; cheap insurance for the next sheet.
 
 ### Renderer
 
-446 frames, 1024×1024, 85KB. Draws at **2× integer zoom** — a 32px sprite at
+446 frames, 1024×1024, 85KB. Draws at **2× integer zoom** - a 32px sprite at
 1080p is otherwise about a fingernail, and non-integer scaling breaks the pixel
 grid. Walk frames advance by **distance travelled**, not time, so sprites never
 skate. Terrain bakes once from real tiles.
 
 Hit flash uses a white silhouette copy of the atlas rendered once at load, so it
 costs one `drawImage` from a different source rather than a per-sprite
-`save`/`globalCompositeOperation`/`restore` — at 800 enemies that is the frame
+`save`/`globalCompositeOperation`/`restore` - at 800 enemies that is the frame
 budget.
 
 Anything the atlas has no art for still draws as a coloured square with bob and
@@ -5080,7 +5080,7 @@ CLAUDE.md requires a written reason.
 
 - **`tools/conform-fx.ts` and `art/palette.json`.** The FX pack is untouched and
   unused. The design is emphatic that dropping it in unconformed is the single
-  most likely way this ends up looking assembled rather than made — so nothing
+  most likely way this ends up looking assembled rather than made - so nothing
   uses it yet rather than using it raw.
 - **Boss art.** The Prize Bull (cow ×2) and Duster (tractor ×3) are M6.
 - **Props, fences, pickups.** XP gems and feed are still coloured squares. They
@@ -5100,23 +5100,23 @@ CLAUDE.md requires a written reason.
 
 ---
 
-# Session 1 — M0 through M3
+# Session 1 - M0 through M3
 
 ## What was built
 
-**M0 — Skeleton.** Vite + TypeScript, pixel-perfect canvas sizing at device DPR,
+**M0 - Skeleton.** Vite + TypeScript, pixel-perfect canvas sizing at device DPR,
 fixed 1/60s loop with accumulator and render interpolation, keyboard + gamepad
 input, follow camera with dead zone and lead, dev overlay, Pages workflow.
 
-**M1 — Combat core.** Fixed-capacity pools with swap-pop, 64px spatial hash
+**M1 - Combat core.** Fixed-capacity pools with swap-pop, 64px spatial hash
 (counting-sort layout, zero per-query allocation), enemy steering with
 separation, auto-firing weapons, the §5 damage pipeline, deaths and drops, hit
 flash, damage numbers, trauma screenshake, hitstop on crits only.
 
-**M2 — Progression.** XP gems with the accelerating magnet, level-up card screen
+**M2 - Progression.** XP gems with the accelerating magnet, level-up card screen
 with written-out stat deltas, the single-pass stat resolver, all 12 passives.
 
-**M3 — Wave and shop loop.** Spawn director on the threat budget with the
+**M3 - Wave and shop loop.** Spawn director on the threat budget with the
 pressure ceiling, 24 continuous waves, feed economy with interest, shop at
 5/10/15/20/24 with escalating reroll and per-card lock, six weapon slots with
 tier merging, results screen.
@@ -5124,7 +5124,7 @@ tier merging, results screen.
 ## Performance, measured
 
 Chrome at 1920×1080, driving sim and renderer directly (the browser pane was not
-compositing, so these exclude presentation — rAF frame time was not measurable in
+compositing, so these exclude presentation - rAF frame time was not measurable in
 that environment and should be confirmed by eye).
 
 | Load | Sim/step | Draw/frame | Total | Budget |
@@ -5145,7 +5145,7 @@ around it.
 
 Fixed both ways: bark-summoned dogs are marked as having already barked, and
 barks check the ceiling and a 6-second global interval. That interval
-(`BARK_INTERVAL` in `world.ts`) is the one number in code rather than JSON — it
+(`BARK_INTERVAL` in `world.ts`) is the one number in code rather than JSON - it
 is a recursion guard, not balance.
 
 Invisible while playing, obvious the moment a bot ran the whole 17 minutes.
@@ -5153,14 +5153,14 @@ Invisible while playing, obvious the moment a bot ran the whole 17 minutes.
 ## Deviations from the spec
 
 **1. Added `src/content/tuning.json`** for engine-level constants the design did
-not specify — base move speed, pickup radius, camera lerp, knockback decay, pool
+not specify - base move speed, pickup radius, camera lerp, knockback decay, pool
 sizes, i-frames. The design's own five JSON files are byte-identical to delivery
 apart from the balance changes noted in session 2.
 
 **2. Built all 12 weapons and all 6 enemy behaviours at base fidelity**, ahead of
 M5, because M3's shop draws from the full pool and a shop offering a weapon that
 does nothing would have made the milestone untestable. The named tier riders (T3
-shovel hitting twice, chili burn spreading on death) are still M5 — **the cards
+shovel hitting twice, chili burn spreading on death) are still M5 - **the cards
 currently describe riders that do not fire yet**.
 
 **3. Enemy on-death specials are half-wired.** Acid pools and gas clouds spawn as
@@ -5183,7 +5183,7 @@ plan changes or the build is hosted privately elsewhere.
 
 ## Design decisions still open
 
-1. **There is no damage-percentage item** — addressed in session 2, but the
+1. **There is no damage-percentage item** - addressed in session 2, but the
    original design intent (merging *is* the offensive game) was deliberate and
    the new items may undercut it.
 2. **The shop can thin out late** when all six slots are full and every weapon is
@@ -5200,14 +5200,14 @@ Playtest: *"all the bullets looked the same, new weapons didn't appear to equip
 or shoot any kind of novel round."* True, and not for the reason I assumed.
 
 **They were not identical. They were too small to tell apart.** The projectile
-packs ship every type in two sizes, and only the SMALL size was packed — 16-20px
+packs ship every type in two sizes, and only the SMALL size was packed - 16-20px
 clips, drawn at the renderer's 0.55 projectile scale, so a bullet reached the
 screen about 10 world pixels wide next to a character 64 pixels tall. Six
 different silhouettes at 10px on grass are one grey smudge. Colour cannot carry
 identity at that size; only shape can, and there was no room for shape.
 
 Fixed by packing the LARGE size for six signature rounds, one silhouette per
-weapon — burst, dart, shell, missile, glob, harpoon head — and adding a
+weapon - burst, dart, shell, missile, glob, harpoon head - and adding a
 per-weapon `projectileScale` in `weapons.json`, because a 89x64 mortar shell and
 a 40x40 pellet burst cannot share one number. Scales were computed from the
 actual trimmed atlas frames against a target size in world pixels, not guessed.
@@ -5222,7 +5222,7 @@ actual trimmed atlas frames against a target size in world pixels, not guessed.
 | `--mode rounds` | the rounds themselves at true size on grass, elements across |
 
 `--mode rounds` is the one that settled it. Judging a bullet off a gameplay tile
-is guesswork — it is 30 pixels of a 520 pixel frame, half the time behind an
+is guesswork - it is 30 pixels of a 520 pixel frame, half the time behind an
 enemy. Lined up at true scale on the background they are always seen against,
 "can you tell these apart" answers itself in a second.
 
@@ -5232,7 +5232,7 @@ This makes six times, and both instances were in the tool built to check the
 game:
 
 1. **God mode killed the player.** The range set `player.hp = player.maxHp` to
-   keep a slow weapon alive long enough to fire. There is no `player.maxHp` —
+   keep a slow weapon alive long enough to fire. There is no `player.maxHp` -
    max HP is `player.stats.maxHp`. So hp became `undefined`, `alive()` went
    false, `world.over` latched on tick one, and every later `step()` returned
    immediately. The tool photographed a frozen world and reported, confidently,
@@ -5258,13 +5258,13 @@ cheap: when a tool reports something surprising, check the tool before the game.
   replaced behaviour. Both removed; a test now fails if `clip` comes back.
 - **The harpoon went through three rounds before landing.** A magic spike
   trimmed down to something that read as an eye. A helix beam read correctly as
-  a cable, but its saturated colours do not survive the LimeZu palette conform —
+  a cable, but its saturated colours do not survive the LimeZu palette conform -
   fire came back blue and frost magenta. A kunai blade conforms like the other
   five and actually looks like a harpoon head.
 - `tools/draw-world.ts` now holds the headless painter, shared by the screenshot
   tool and the range, instead of a second and third copy of the renderer's frame
   rules. `tools/tinyfont.ts` is a 3x5 bitmap font so contact sheets can be
-  labelled — an unlabelled twelve-tile sheet is a puzzle, not a report.
+  labelled - an unlabelled twelve-tile sheet is a puzzle, not a report.
 
 `tests/content.test.ts` is new and guards the complaint directly: no two
 launching weapons may share a round, every one must have a round, every round
@@ -5281,14 +5281,14 @@ not.
 **`ZOOM` was a fixed `2`, and the canvas is sized `innerWidth * devicePixelRatio`.**
 So screen size and DPI controlled *how much world you see*. At 1920x1080 with
 dpr 1.5 the canvas is 2880x1620 and the view was **1440x810 world pixels** of a
-2400x1600 arena — well over half the field at once. The farmer was about 2% of
+2400x1600 arena - well over half the field at once. The farmer was about 2% of
 screen width. A 24-pixel round at that scale is three or four screen pixels. No
 amount of silhouette work survives that, and an element recolouring a four-pixel
 smudge is genuinely invisible.
 
 A denser display was making the game *zoom out*, which is backwards: DPI should
-buy sharpness at the same world scale. Zoom is now derived —
-`round(canvasHeight / targetWorldHeight)`, integer, clamped — against a
+buy sharpness at the same world scale. Zoom is now derived -
+`round(canvasHeight / targetWorldHeight)`, integer, clamped - against a
 `targetWorldHeight` of 340 in `tuning.json`. The visible world is now ~324-384
 pixels tall on every screen tested, from a 1366x768 laptop to 4K at dpr 2. On
 the reporter's likely setup that is **2.2x tighter than before**.
@@ -5311,7 +5311,7 @@ use that order. Proved rather than guessed:
 - band 1 has **no skin pixels at all** (back of the head) and band 3 has the most
   (front, two eyes).
 
-The true order is `[right, up, left, down]` — which is exactly the
+The true order is `[right, up, left, down]` - which is exactly the
 `directionOrder` the *animal* sheets were already corrected to. The humanoid rig
 never was. So `up` and `left` were right by luck, `down` drew the right-facing
 pose, and `right` drew the front-facing one. Fixed by giving the humanoid rig a
@@ -5320,14 +5320,14 @@ through it, the way the animal path already did.
 
 **The build now refuses a wrong order.** A bad band order has no symptom a build
 can otherwise see: every frame is present, every frame is non-empty, and the
-game renders a confident, wrong sprite. The new assertion is geometric — left
+game renders a confident, wrong sprite. The new assertion is geometric - left
 flipped must match right (>45%), and up must *not* match down. A correct order
 measures 61-100% across the seven sheets; a wrong one measures 10-12%. The gap
 is so wide the threshold barely matters.
 
 ### The range tile was lying about size, in both directions
 
-First the tile was 260x180 world pixels at zoom 2 — a much tighter crop than the
+First the tile was 260x180 world pixels at zoom 2 - a much tighter crop than the
 game's view, so every round looked bigger than a player ever sees it. Then it was
 604x340 at zoom 1, which understated by 3x. What actually decides whether two
 bullets are tellable apart is **screen pixels per world pixel**, not how much
@@ -5343,7 +5343,7 @@ single most reliable failure mode in this project.
 "Adding fire or acid changed nothing" was half about the round and half about
 the hit. Fire swapped to a bigger impact clip; **Acid and Frost both left the
 same orange spark**, so two of the three elements changed nothing at the moment
-of contact — which is the moment you are actually looking at. Both impact clips
+of contact - which is the moment you are actually looking at. Both impact clips
 are now packed in all three element colours and picked via `World.elementalFx`.
 Renderer and headless painter both fall back to the base clip if a variant is
 missing, because drawing nothing is a worse failure than drawing the wrong
@@ -5351,7 +5351,7 @@ colour.
 
 ## Zoom, corrected: 560, not 340
 
-The 340 target was too tight in play — "the zoom is way too much, it was
+The 340 target was too tight in play - "the zoom is way too much, it was
 fine/ideal before". Rendering the same moment at both candidates with
 `npm run zoom` made the call easy: at zoom 2 the pellet burst and the dart still
 read clearly, because what fixed legibility was **packing bigger art, not
@@ -5359,7 +5359,7 @@ cropping the field**, and zoom 2 keeps the warning time to see a horde coming.
 
 `targetWorldHeight` is now **560**, which lands on ~540 world pixels tall on
 every screen from 1080p to 4K. That is the same view a 1080p dpr-1 screen always
-had — the framing that was already right, now independent of monitor and DPI. On
+had - the framing that was already right, now independent of monitor and DPI. On
 a 1620px canvas it is 540 where it used to be 810.
 
 `npm run zoom -- [canvasHeight] [targets]` renders one moment at several targets
@@ -5384,7 +5384,7 @@ Melee now gets real art, per weapon, the way ranged does:
 | Pitchfork (swing) | a raking claw, stretched to the swing radius |
 | Sledge (slam) | the shockwave it already had |
 
-`swingClip` is the new field for the swept kind — scaled to `radius * 2` rather
+`swingClip` is the new field for the swept kind - scaled to `radius * 2` rather
 than by a per-weapon multiplier, so the picture IS the hit area and +range
 visibly widens the sweep. And the projectile fallback now asks for the weapon's
 declared `sprite` before giving up, so no weapon can render as a bare rectangle
@@ -5392,9 +5392,9 @@ again.
 
 Note for whoever picks this up: `proj.claw` was red first and the LimeZu palette
 conform fringed it magenta. Orange survives. Saturated effect colours are the
-ones that lose in the conform — the helix beam did the same thing.
+ones that lose in the conform - the helix beam did the same thing.
 
-## M7 — The Homestead
+## M7 - The Homestead
 
 Meta progression, per §4. A run pays acres; four buildings spend them.
 
@@ -5402,7 +5402,7 @@ Meta progression, per §4. A run pays acres; four buildings spend them.
 never derived values**. What a rank of grain is worth is a number in
 `meta.json` that will change; what the player bought will not. `load()`
 migrates, validates and clamps, and a corrupt blob yields a fresh save rather
-than an exception — losing progress is bad, but a save that throws on boot
+than an exception - losing progress is bad, but a save that throws on boot
 means the game will not start at all, which is worse and unrecoverable without
 devtools. Migration is a chain of single-version steps so a v1 and a v4 save
 take the same path and there is only ever one place to add the next one.
@@ -5414,21 +5414,21 @@ else. Three tracks make the game wider, one makes it easier and is capped:
 |---|---|
 | **Seed Catalog** | Done. Runs start with 8 of 12 weapons and 12 of 20 items; the rest unlock permanently into `OfferPool.setUnlocked`. |
 | **Feed Store** | Done. Five tracks, five ranks, flat per rank, total percentage effect capped near +25% and tested against it. |
-| **County Fair** | Done. Tiers scale enemy HP by a flat multiplier on top of the wave curve — Tier 3 is "everything has 50% more HP", not a different curve — and multiply the payout so climbing beats farming. |
+| **County Fair** | Done. Tiers scale enemy HP by a flat multiplier on top of the wave curve - Tier 3 is "everything has 50% more HP", not a different curve - and multiply the payout so climbing beats farming. |
 | **Bunkhouse** | Structure done, **content blocked**. See below. |
 
 ### Two things that are deliberately not finished
 
-**The Bunkhouse had nothing to sell** — now fixed, see "Characters are
+**The Bunkhouse had nothing to sell** - now fixed, see "Characters are
 generated now" below.
 
-**Seventeen of twenty-two items had no card art** — now fixed, see below.
+**Seventeen of twenty-two items had no card art** - now fixed, see below.
 
 ### Acres
 
 `bankRun` pays `2*waves + 25*bosses`, plus a first-clear bonus, times the tier
 multiplier. `tiersPaid` exists because deriving "first time" from `tierCleared`
-re-paid the bonus on every later clear of that tier — free acres forever, silent,
+re-paid the bonus on every later clear of that tier - free acres forever, silent,
 and banked into the save. There is a test for exactly that.
 
 The results screen is handed the acres that were *banked* rather than
@@ -5445,15 +5445,15 @@ stale". That cost twenty minutes the first time.
 
 ### Every item has card art now
 
-`items.json` carried an `icon` field holding plain words — `clover`, `coffee`,
-`hat` — which were never atlas keys. Only five items had a real `cardSprite`, so
+`items.json` carried an `icon` field holding plain words - `clover`, `coffee`,
+`hat` - which were never atlas keys. Only five items had a real `cardSprite`, so
 seventeen rendered as text-only cards in the shop, the level-up screen and the
 Homestead alike. Invisible for two milestones because a missing sprite degrades
 to nothing rather than erroring, which is the same reason the Scythe's white
 square survived: **the fallbacks in this renderer are all quiet, so absent art
 never announces itself.**
 
-Most items borrow a frame that was already packed — the thing an item is about
+Most items borrow a frame that was already packed - the thing an item is about
 is usually already drawn somewhere. Barbed Wire takes the silver ore, the
 Rooster Alarm takes an actual rooster, the Silo Key takes gold ore. Four needed
 real icons and came from the pack's 32x32 icon set.
@@ -5471,7 +5471,7 @@ a generator and exporting a PNG by hand. That is why the ladder shipped built,
 priced, and with no rungs.
 
 It did not have to be manual. **Every piece under `Farmer_Generator_Pieces/` is
-a full 1792x704 sheet in the same rig the atlas builder already reads** — 9
+a full 1792x704 sheet in the same rig the atlas builder already reads** - 9
 bodies, 13 outfits, 45 hairstyles, 5 eyes, 8 accessories. A character is those
 layers alpha-composited in order: skin, eyes, clothes, hair, hat. Any other
 order puts a hat under a fringe.
@@ -5481,7 +5481,7 @@ order puts a hat under a fringe.
 the art is reproducible and diffable like the rest of the content. It runs
 automatically as the first step of `npm run atlas`, so a recipe change cannot
 leave a stale sheet packed. The two original farmers are deliberately NOT listed
-— regenerating them would overwrite art that already ships.
+- regenerating them would overwrite art that already ships.
 
 Four classes added, all playable, priced at the spec's 40/90/150/240:
 
@@ -5493,13 +5493,13 @@ Four classes added, all playable, priced at the spec's 40/90/150/240:
 | **The Drifter** | Fastest, dodgy, highest crit damage | Harpoon Gun |
 
 All six classes were run headlessly to wave 2 to confirm none of them dies to
-its own stat block. The Agronomist kills noticeably slower than the rest — the
-Chem Sprayer is an aura and ramps late — which is worth a balance look but is
+its own stat block. The Agronomist kills noticeably slower than the rest - the
+Chem Sprayer is an aura and ramps late - which is worth a balance look but is
 not broken.
 
 ### The one compromise, stated plainly
 
-The four share the two *implemented* ability archetypes — `digIn` and `bolt` —
+The four share the two *implemented* ability archetypes - `digIn` and `bolt` -
 retuned per class, rather than each getting a bespoke one. Abilities dispatch on
 `a.id` in `world.ts` and `player.ts`, so an unimplemented id gives the player a
 button that silently does nothing. A class with a borrowed ability is fully
@@ -5508,9 +5508,9 @@ are follow-up work and the dispatch is where they go.
 
 ## Two enemies were wired into the game with no art at all
 
-`baseOperator` and `baseBreacher` shipped fully specified — stat blocks in
+`baseOperator` and `baseBreacher` shipped fully specified - stat blocks in
 `enemies.json`, spawn weights in both sector maps (`1.0`/`1.4` and `1.2`),
-behaviours, `teaches` strings, PixelLab object ids recorded — and neither was
+behaviours, `teaches` strings, PixelLab object ids recorded - and neither was
 ever declared in `art/sprites.json`. Neither had one packed frame. Both would
 have walked into the lab as **plain coloured rectangles**: a wave-12 flanker and
 a wave-18 shield tank, drawn as boxes.
@@ -5519,7 +5519,7 @@ Nothing caught it, and the reasons are worth keeping:
 
 - `tests/maps.test.ts` asserts a biased enemy is a *defined* enemy. They were.
 - The renderer degrades a missing frame to `null` and draws the fallback box
-  rather than erroring — the same forgiving path that makes a fresh clone
+  rather than erroring - the same forgiving path that makes a fresh clone
   render squares until `npm run atlas` runs.
 - `docs/SESSION_STATE.md` listed both object ids under "generated", which reads
   as done. **A recorded id means the art exists on PixelLab's servers, not that
@@ -5529,14 +5529,14 @@ Nothing caught it, and the reasons are worth keeping:
 ### `def.sheet` is vestigial and lies
 
 Chasing this down surfaced a second thing. The sim does not read the singular
-`sheet` field in `enemies.json` at all — `world.ts` sets
+`sheet` field in `enemies.json` at all - `world.ts` sets
 `e.sheetId = def.sheets?.[n] ?? typeId`, the plural array or the type id. The
 singular field disagrees with the packed art for six enemies: `farmhand` claims
 `"zombie"`, `feralDog` claims `"dog"`, `sickHog` claims `"pig"`, `maskedSprayer`
 claims `"gas_enemy"`. None of those sheets has a single frame in the atlas, and
 all six of those enemies render perfectly.
 
-It is left in place — it is content, it is harmless to the running game, and
+It is left in place - it is content, it is harmless to the running game, and
 deleting a field across the roster is a bigger change than this. But it is a
 loaded gun for anyone reasoning about which art an enemy uses, and it fired
 twice in one session: it produced a wrong diagnosis of the missing humanoids and
@@ -5546,7 +5546,7 @@ you want to know what sheet an enemy draws, read `world.ts`, not `enemies.json`.
 ### The fix, and the guard
 
 `baseOperator`'s walk was **already generated** and had been sitting on the
-account unclaimed — four cardinals, eight frames, `scary-walk` — so cutting and
+account unclaimed - four cardinals, eight frames, `scary-walk` - so cutting and
 packing it cost nothing. `baseBreacher` had rotations but no animations; four
 template directions closed it. Measured cost: `generations_used` 4715 → 4719 and
 credits unchanged at **$11.99**. The whole roster gap was essentially free,
@@ -5559,14 +5559,14 @@ built atlas rather than mocking it. Two scoping decisions in it were earned:
 - It resolves the sheet the way the sim does. Using `def.sheet` reported six
   working enemies as broken.
 - It checks `idle` and `walk` only. Everything above them in the renderer's
-  chain — `hit`, `attack`, `walkHurt`, `death` — returns `undefined` when absent
+  chain - `hit`, `attack`, `walkHurt`, `death` - returns `undefined` when absent
   and falls through by design, which is what lets the roster gain clips one
   animal at a time. `humanoidFrame` is the last link and has nothing to fall
   back to, so those two are the real floor. Checking every clip reported
   `fjordPonyCursed` and `prizeBull` as broken for partial `walkHurt` rings that
   are working as intended.
 
-All five underground humanoids now also carry a `drawAt` of 64 — the same
+All five underground humanoids now also carry a `drawAt` of 64 - the same
 grown-person height as the six player classes. None of the five had one, so the
 lab scene had no published height for any of its cast.
 
@@ -5576,12 +5576,12 @@ lab scene had no published height for any of its cast.
 them. The cosmetic half of that is well documented. The half that was not:
 **100% opaque means the alpha content box is the canvas, so `npm run scale`
 measures the card.** `drumRank` is 253x58 of drums floating in a 300x180 canvas;
-carded, the table published it at 210x126 against a true 210x48 — 2.6x too tall,
+carded, the table published it at 210x126 against a true 210x48 - 2.6x too tall,
 on a number whose entire purpose is to be trusted without re-measuring.
 
 The card is a flat fill touching the border, which means it does not need the
 API. `npm run decard` floods 4-connected from the edge at a colour tolerance and
-removes exactly it — free, offline, deterministic, and repeatable by anyone
+removes exactly it - free, offline, deterministic, and repeatable by anyone
 without a key. It refuses rather than guesses when the border region is under
 15% of the canvas, and it reports enclosed pockets of card colour instead of
 cutting them, since a pocket is as likely to be a highlight as a gap. `npm run
@@ -5591,7 +5591,7 @@ one generation per image.
 Checked on both drums by rendering them over magenta and looking: no grey halo,
 outlines and stencilled numbers intact, and the semi-transparent contact shadows
 under `drumScatter` survived. Derived heights afterwards were 210x48 and
-190x115, against 210x49 and 190x115 measured independently by Design — two
+190x115, against 210x49 and 190x115 measured independently by Design - two
 methods agreeing to a pixel, which is the only reason to believe either.
 
 ### A red test was pushed and reported as green
@@ -5610,7 +5610,7 @@ point at art in three ways, and it knew two:
 | a cast sheet | `fjordPony`, `vet` | `<k>.idle.down.0` |
 | **an ambient loop** | `vatSpecimen`, `wheat` | `<k>.bubble.down.0`, `<k>.sway.down.0` |
 
-An ambient loop has no `idle` — its clip is whatever the loop was named — so all
+An ambient loop has no `idle` - its clip is whatever the loop was named - so all
 nine reported as pointing at nothing while all nine were packed and drawing
 fine. Matching any packed frame under the key's own prefix covers all three.
 
@@ -5621,14 +5621,14 @@ it on purpose.
 
 The lesson is not about the lookup. `npm run scale` prints `not packed,
 skipped: wheat, scarecrow, windmill, labConsole, vatSpecimen, ...` on every
-single run — the exact nine keys, in the exact order the test reports them. The
+single run - the exact nine keys, in the exact order the test reports them. The
 tool had been saying so all along and it read as routine.
 
 ## Nobody could look, and that was the whole problem
 
 Every scene failure this project has had traces to the same gap: there was no
 way to see a title screen without a human opening a browser. `npm run shot`
-photographs the SIM — it drives `tools/draw-world.ts`, which is canvas and knows
+photographs the SIM - it drives `tools/draw-world.ts`, which is canvas and knows
 nothing about the home screen. The scenes are DOM, built by `src/ui/scene.ts`.
 So Design built them blind, I reviewed them blind, and the owner was the only
 pair of eyes in the loop. "Everything is floating on the horizon" and "Joy is in
@@ -5642,7 +5642,7 @@ reports console errors and failed requests, which is how the first run turned up
 a 404.
 
 **It is not a re-implementation of the scene, and that is the point.** A second
-renderer that agrees with itself proves nothing — that lesson is already in this
+renderer that agrees with itself proves nothing - that lesson is already in this
 file under the cross-renderer agreement tests, and it applies double here.
 
 ### The dependency

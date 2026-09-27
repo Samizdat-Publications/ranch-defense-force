@@ -1,7 +1,7 @@
 # Archive
 
 Superseded briefs and handoffs, kept because they record what was asked for and
-when — not because they are current.
+when - not because they are current.
 
 **Nothing in here is the state of the project.** For that, read the repo root
 `README.md`, then `NOTES.md`, then `docs/DESIGN_STATE.md`.

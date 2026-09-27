@@ -5,7 +5,7 @@
  * `vite`, `typescript`, `vitest`, and adding `sharp` (a native binary) or
  * `pngjs` to slice sprites offline is not worth the budget. This covers exactly
  * what the packs use: 8-bit greyscale, RGB, palette and RGBA, non-interlaced.
- * It is a build tool — it never ships in the game bundle.
+ * It is a build tool - it never ships in the game bundle.
  *
  * Everything is decoded to straight RGBA8 so the rest of the pipeline has one
  * pixel format to think about.
@@ -245,7 +245,7 @@ export interface Bounds {
  *
  * Needed because several animal sheets draw a sprite straddling the 32px row
  * boundary, so a naive 32x64 window catches a slice of the clip above or below
- * as well — which produced 10x50 "plank" dogs instead of 22x36 ones. Taking the
+ * as well - which produced 10x50 "plank" dogs instead of 22x36 ones. Taking the
  * dominant band throws the stray slice away. A single well-formed sprite has
  * exactly one band, so this is a no-op for everything else.
  *

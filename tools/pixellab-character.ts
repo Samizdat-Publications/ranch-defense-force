@@ -21,7 +21,7 @@
  * ## The two numbers that matter
  *
  * `BASELINE_Y = 58` is where the feet go in the 64px cell, and it is 58 rather
- * than LimeZu's 52 because the generated cast is 51-55px tall — see the note in
+ * than LimeZu's 52 because the generated cast is 51-55px tall - see the note in
  * `pixellab-cut.ts`. `ALPHA_FLOOR = 8` is because PixelLab's background removal
  * leaves a fringe of alpha 1-8, and trimming at `!== 0` keeps a one-pixel halo
  * that puts every sprite a pixel off centre.
@@ -40,15 +40,15 @@ import { decodePng, encodePng, blankImage, blit, type Image } from './png.ts'
    These are the DEFAULTS and the floor, not the answer. They were the answer
    for as long as every character was generated on a 64px canvas, where the
    figure comes back 25-32 wide and 51-58 tall and drops into a 32x64 cell with
-   room to spare. The five base humanoids were generated on a 92px canvas — the
-   figure is 35-39 wide and 64-67 tall — and cutting those into a fixed 32x64
+   room to spare. The five base humanoids were generated on a 92px canvas - the
+   figure is 35-39 wide and 64-67 tall - and cutting those into a fixed 32x64
    cell silently destroyed them on all four sides: `dx` goes NEGATIVE when the
    figure is wider than the cell, and `dy` pushes the head above row 0.
 
    Measured, every walk frame of every base humanoid lost about 10px off the top
    and 3-7px off each side. It reads as a flat-topped skull: the source's topmost
    row is a rounded 6-10px, the cut version's is a flat 17-22px. The art on
-   PixelLab is perfect and always was — 10-13px of headroom above the figure in
+   PixelLab is perfect and always was - 10-13px of headroom above the figure in
    every frame. This tool was the only thing destroying it, so the fix is a
    re-cut and costs no generations.
 
@@ -66,7 +66,7 @@ let CELL_W = MIN_CELL_W
 let CELL_H = MIN_CELL_H
 let BASELINE_Y = CELL_H - FOOT_GAP
 const ALPHA_FLOOR = 8
-/** south/north/west/east — `compassToDirection` in the manifest maps them. */
+/** south/north/west/east - `compassToDirection` in the manifest maps them. */
 const CARDINALS = ['south', 'north', 'east', 'west'] as const
 const WALK_FRAMES = 8
 
@@ -134,10 +134,10 @@ if (!res.ok) {
 unzipTo(Buffer.from(await res.arrayBuffer()), tmp)
 
 // The zip nests everything under the character's state name, which is whatever
-// it was called when created — "Idle" for these. Find it rather than assume it.
+// it was called when created - "Idle" for these. Find it rather than assume it.
 const root = ['Idle', 'idle', '.'].map((d) => `${tmp}/${d}`).find((d) => existsSync(`${d}/rotations`))
 if (!root) {
-  console.error(`no rotations/ in the download — layout changed?`)
+  console.error(`no rotations/ in the download - layout changed?`)
   process.exit(1)
 }
 
@@ -163,7 +163,7 @@ if (!root) {
    PRE-PASS: size the cell to the biggest frame this character actually has.
 
    Every source PNG is measured before anything is cut, because the cell has to
-   fit the tallest and widest frame of every clip and direction at once — a walk
+   fit the tallest and widest frame of every clip and direction at once - a walk
    bob-up frame is taller than the idle it was derived from, and an east-facing
    stride is wider than a south-facing stand.
 
@@ -190,8 +190,8 @@ for (const clip of clipDirsPre) {
    Height is measured as REACH, not as frame height, because those differ and
    only one of them is what the cut uses.
 
-   `cells()` shares ONE baseline across a clip — that is what stops a walk from
-   bobbing for the wrong reason — so a frame is placed by `feet - b.y`: its top
+   `cells()` shares ONE baseline across a clip - that is what stops a walk from
+   bobbing for the wrong reason - so a frame is placed by `feet - b.y`: its top
    edge measured from the clip's shared floor. A bob-up frame has its own feet
    ABOVE that floor, so its reach exceeds its own height. Sizing the cell to the
    tallest frame therefore still clips the bob, which is exactly what the first
@@ -219,14 +219,14 @@ for (const paths of groups.values()) {
   }
 }
 // One pixel of margin each way, so a frame sits INSIDE the cell rather than
-// flush against it — flush is indistinguishable from clipped when you audit it.
+// flush against it - flush is indistinguishable from clipped when you audit it.
 CELL_W = Math.max(MIN_CELL_W, maxW + 2 + ((maxW + 2) % 2))
 CELL_H = Math.max(MIN_CELL_H, reach + 1 + FOOT_GAP)
 BASELINE_Y = CELL_H - FOOT_GAP
 const grew = CELL_W !== MIN_CELL_W || CELL_H !== MIN_CELL_H
 console.log(
   `${name}: ${sourcePaths.length} source frames, widest ${maxW}, tallest reach ${reach}`
-  + ` -> cell ${CELL_W}x${CELL_H}${grew ? '  (GREW — put these in art/sprites.json)' : ''}`,
+  + ` -> cell ${CELL_W}x${CELL_H}${grew ? '  (GREW - put these in art/sprites.json)' : ''}`,
 )
 
 let idles = 0
@@ -286,5 +286,5 @@ if (blocks.length) {
 }
 for (const line of report) console.log(line)
 for (const [clip, n] of Object.entries(written)) {
-  if (n < 4) console.log(`  ${clip}: only ${n}/4 directions — still generating, or lost by v3`)
+  if (n < 4) console.log(`  ${clip}: only ${n}/4 directions - still generating, or lost by v3`)
 }

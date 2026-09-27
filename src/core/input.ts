@@ -3,7 +3,7 @@
  * reads key state directly.
  *
  * The move vector is normalised so diagonal movement isn't faster, and the
- * ability button is edge-triggered — `abilityPressed` is true for exactly one
+ * ability button is edge-triggered - `abilityPressed` is true for exactly one
  * tick per press, whichever device it came from.
  */
 const DEADZONE = 0.22
@@ -150,7 +150,7 @@ export class Input {
     return this.held.has(code)
   }
 
-  /** Movement magnitude 0..1 — The Kid's Momentum passive reads this. */
+  /** Movement magnitude 0..1 - The Kid's Momentum passive reads this. */
   get moveMagnitude(): number {
     return Math.hypot(this.moveX, this.moveY)
   }
@@ -163,7 +163,7 @@ export class Input {
     this.digitPressed = 0
   }
 
-  // Test seam — the digit/ability latches are otherwise only set by DOM events.
+  // Test seam - the digit/ability latches are otherwise only set by DOM events.
   _testPressDigit(n: number): void {
     this.digitLatch = n
   }

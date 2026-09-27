@@ -8,7 +8,7 @@
  *
  * A 1-direction object does not finish. It lands in status `review` holding
  * sixteen candidates in `frame_urls`, and stays there until something selects a
- * frame — so anything polling for `completed` waits forever. That is the whole
+ * frame - so anything polling for `completed` waits forever. That is the whole
  * reason this exists: `tools/pixellab-object.ts` downloads a FINISHED object as
  * a zip, and there is no zip until a pick has been made.
  *
@@ -49,7 +49,7 @@ const obj = await res.json() as { status: string; frame_urls?: string[] }
 
 const urls = obj.frame_urls ?? []
 if (!urls.length) {
-  console.error(`no candidate frames (status ${obj.status}) — still generating?`)
+  console.error(`no candidate frames (status ${obj.status}) - still generating?`)
   process.exit(1)
 }
 

@@ -1,5 +1,5 @@
 {
-  "_note": "Harvestable resource nodes and the tools that work them, modelled on Deep Rock Galactic: Survivor. Mining there is the primary XP source in the early game \u2014 you climb the first few levels off the rock, not the kills \u2014 and that is the job this table does. Everything is content: HP, payouts, spawn weights and tool speeds all live here.",
+  "_note": "Harvestable resource nodes and the tools that work them, modelled on Deep Rock Galactic: Survivor. Mining there is the primary XP source in the early game - you climb the first few levels off the rock, not the kills - and that is the job this table does. Everything is content: HP, payouts, spawn weights and tool speeds all live here.",
   "_harvestNote": "Harvesting is PROXIMITY-BASED and continuous, not a weapon hit. Stand near a node and the tool works on its own, so mining never competes with a weapon slot and never asks the player to stop shooting. That is also why the tools are not in weapons.json: everyone starts with both, and they upgrade on their own ladder.",
   "_tierNote": "Six tiers, named for the Pixcuit icon pack's materials so every tier has real art. The ladder was five (wood/stone/iron/steel/diamond) before the art arrived; matching the pack beat inventing a steel-to-titanium mapping.",
   "tools": {
@@ -40,7 +40,7 @@
       ]
     },
     "axe": {
-      "_note": "Works wood, and crops \u2014 a crop is soft enough that the axe is overkill, which is the point: crops are the early trickle and trees are the real wood.",
+      "_note": "Works wood, and crops - a crop is soft enough that the axe is overkill, which is the point: crops are the early trickle and trees are the real wood.",
       "worksKind": "tree",
       "alsoWorks": "crop",
       "tiers": [
@@ -77,7 +77,7 @@
       ]
     }
   },
-  "_kindNote": "weight is the relative spawn chance within a kind. hp scales with the wave via hpPerWave so a late-wave rock is still worth standing next to. xp is granted as gems, feed as feed pickups \u2014 both drop on break rather than being credited silently, so the payout is something you see and collect.",
+  "_kindNote": "weight is the relative spawn chance within a kind. hp scales with the wave via hpPerWave so a late-wave rock is still worth standing next to. xp is granted as gems, feed as feed pickups - both drop on break rather than being credited silently, so the payout is something you see and collect.",
   "kinds": {
     "rock": {
       "tool": "pickaxe",
@@ -141,7 +141,7 @@
           "weight": 2
         },
         {
-          "_note": "Biome variants. Weight 0 means they never appear on a map that does not ask for them — maps.json raises the weight, so adding a map is a content edit and the default field is exactly what it was.",
+          "_note": "Biome variants. Weight 0 means they never appear on a map that does not ask for them - maps.json raises the weight, so adding a map is a content edit and the default field is exactly what it was.",
           "sprite": "node.saltRock",
           "hp": 48,
           "feed": 7,
@@ -320,7 +320,7 @@
     }
   },
   "field": {
-    "_note": "How much of each kind is standing at the start of a run, and how much grows back per wave. Rocks do not regrow as fast as crops \u2014 a stripped quarry should stay stripped for a while, so where you fight changes over a run.",
+    "_note": "How much of each kind is standing at the start of a run, and how much grows back per wave. Rocks do not regrow as fast as crops - a stripped quarry should stay stripped for a while, so where you fight changes over a run.",
     "initial": {
       "rock": 26,
       "tree": 18,

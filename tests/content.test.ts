@@ -3,7 +3,7 @@
  *
  * These exist because every one of them has actually been wrong in a build that
  * shipped, and none of them was caught by a test that only asked "does the game
- * run" — it ran fine, it just looked wrong.
+ * run" - it ran fine, it just looked wrong.
  */
 import { describe, it, expect } from 'vitest'
 import { WEAPONS, ELEMENTS, ITEMS, TUNING, MAPS, ENEMIES, projectileScaleFor, mapIsBlighted } from '../src/content/index'
@@ -11,8 +11,8 @@ import { WEAPONS, ELEMENTS, ITEMS, TUNING, MAPS, ENEMIES, projectileScaleFor, ma
 /**
  * Behaviours that put a travelling object on screen.
  *
- * The Chem Sprayer is `ranged` but sprays an aura — a ring around the player,
- * not a round in flight — so it is correctly clipless. Keying off behaviour
+ * The Chem Sprayer is `ranged` but sprays an aura - a ring around the player,
+ * not a round in flight - so it is correctly clipless. Keying off behaviour
  * rather than type is what tells "fires nothing visible" apart from "fires
  * something that is not a projectile".
  */
@@ -117,7 +117,7 @@ describe('camera zoom', () => {
    * A fixed zoom made screen size and DPI control how much world you see, so a
    * bigger or denser monitor zoomed OUT. At 1920x1080 dpr 1.5 that was 810
    * world pixels of vertical view, the farmer 2% of screen width, and every
-   * round a speck — which is why six distinct bullets still read as one after
+   * round a speck - which is why six distinct bullets still read as one after
    * the art was fixed. Zoom must hold the world scale roughly constant instead.
    */
   it('keeps the visible world about the same height on any screen', async () => {
@@ -146,8 +146,8 @@ describe('camera zoom', () => {
 
 describe('card art', () => {
   /**
-   * `items.json` used to carry an `icon` field holding plain words — `clover`,
-   * `coffee`, `hat` — which were never atlas keys, so 17 of 22 items rendered
+   * `items.json` used to carry an `icon` field holding plain words - `clover`,
+   * `coffee`, `hat` - which were never atlas keys, so 17 of 22 items rendered
    * as text-only cards in the shop, the level-up and the Homestead alike. It
    * was invisible because a missing sprite degrades to nothing rather than
    * erroring, which is exactly why it survived to M7.
@@ -258,7 +258,7 @@ describe('card art', () => {
    *
    * The third has no `idle`; its clip is whatever the loop was named. Matching
    * any packed frame under the key's own prefix covers all three and still
-   * fails on what this is for — a key that points at nothing, from a typo or
+   * fails on what this is for - a key that points at nothing, from a typo or
    * from art that was renamed or dropped.
    */
   it('gives every scale entry something real to scale', async () => {
@@ -288,14 +288,14 @@ describe('enemy art', () => {
    *
    * `baseOperator` and `baseBreacher` shipped wired into `enemies.json` and
    * given spawn weights in two sector maps while neither was ever declared in
-   * `art/sprites.json` — so neither had a single packed frame, and both would
+   * `art/sprites.json` - so neither had a single packed frame, and both would
    * have walked into the lab as plain coloured rectangles. Nothing caught it:
    * the maps test asserts a biased enemy is a DEFINED enemy, which they were,
    * and the renderer degrades a missing frame to `null` and draws the fallback
    * box rather than erroring. A defect that only shows up by looking is exactly
    * the kind this file exists for.
    *
-   * Spawnable means `weight > 0` (the default) or ANY map raising it by name —
+   * Spawnable means `weight > 0` (the default) or ANY map raising it by name -
    * `enemyBias` replaces the weight rather than multiplying it, which is the
    * whole mechanism by which the base cast sits at 0 and still appears
    * underground.
@@ -357,7 +357,7 @@ describe('enemy art', () => {
 })
 
 /**
- * Ambient field motion — the generated loops and the code-driven sway.
+ * Ambient field motion - the generated loops and the code-driven sway.
  *
  * Both of these fail SILENTLY when they are wrong, which is the only reason
  * they are worth a test. A loop whose frames are missing falls back to the
@@ -444,7 +444,7 @@ describe('ambient field motion', () => {
       expect(amp, `${prefix} amplitude`).toBeLessThanOrEqual(0.1)
     }
     // A gust that reached zero would stall the sway dead for a moment, and one
-    // over 1 would invert it — the plant would snap the other way.
+    // over 1 would invert it - the plant would snap the other way.
     expect(sway.rate).toBeGreaterThan(0)
     expect(sway.gustRate).toBeGreaterThan(0)
     expect(sway.gustRate).toBeLessThan(sway.rate)
@@ -453,14 +453,14 @@ describe('ambient field motion', () => {
 })
 
 /**
- * Element impacts — the moment of contact, which is the moment you are looking.
+ * Element impacts - the moment of contact, which is the moment you are looking.
  *
  * `World.elementalFx` builds `<clip>.<element>` for every element except None,
  * and BOTH lookups that key feeds have to tolerate the suffix being absent:
  * `playFx` reads `tuning.fx` for the timing, `Renderer.drawEffects` reads the
  * atlas for the art. The renderer had that fallback and the sim did not, so
  * every elemental impact resolved to `undefined` timing and `playFx` returned
- * before spawning anything. Equipping ANY element — fire included — removed the
+ * before spawning anything. Equipping ANY element - fire included - removed the
  * impact effect rather than recolouring it, and it stayed that way through the
  * sessions that were trying to fix the complaint it caused.
  */
@@ -485,7 +485,7 @@ describe('element impacts', () => {
 
          The first version of this test recomputed the fallback here and then
          asserted on its own arithmetic, which passed just as happily with the
-         fix reverted — it was testing the test. Building a World, setting the
+         fix reverted - it was testing the test. Building a World, setting the
          element and asking `playFx` to spawn is the only version that fails
          when `playFx` stops resolving the key.
       */
@@ -520,7 +520,7 @@ describe('element impacts', () => {
 })
 
 /**
- * Blighted crops — the field turning with the ground.
+ * Blighted crops - the field turning with the ground.
  *
  * The design asks for a blighted map to SWAP the crop art rather than remove
  * the crop, because a field that empties as the run darkens takes the harvest
@@ -529,7 +529,7 @@ describe('element impacts', () => {
  * crop at a time instead of going half-empty.
  *
  * Driven through `tools/draw-world.ts`'s real resolver rather than a
- * restatement of it — a test that recomputes the rule it is checking passes
+ * restatement of it - a test that recomputes the rule it is checking passes
  * just as happily when the rule is deleted.
  */
 describe('blighted crops', () => {

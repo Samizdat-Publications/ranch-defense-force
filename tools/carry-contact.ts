@@ -7,7 +7,7 @@
  * PNG can answer: `gun.rifle.0` is a perfectly good rifle at 22x7 and is still
  * wrong, because it was drawn to be held by a 32px character and ours is 52.
  * The only way to see that is to put the weapon next to the man at the same
- * zoom, which is what this does — out of the PACKED atlas, so it proves the
+ * zoom, which is what this does - out of the PACKED atlas, so it proves the
  * manifest entry and the frame key too, the way `npm run contact` does.
  *
  * One row per weapon: the old bundled `gun.*` sheet frame on the left, the
@@ -39,7 +39,7 @@ const COL = 34 * ZOOM + PAD * 2
 const MAN = 'hand.idle.right.0'
 
 const man = atlas.frames[MAN]
-if (!man) throw new Error(`no ${MAN} in the atlas — run npm run atlas`)
+if (!man) throw new Error(`no ${MAN} in the atlas - run npm run atlas`)
 
 // A row is as tall as the MAN, because he is the ruler. Sizing it to the
 // weapons is how the first version of this sheet overlapped every row and
@@ -55,7 +55,7 @@ for (let i = 0; i < img.data.length; i += 4) {
   img.data[i] = 0x3a; img.data[i + 1] = 0x40; img.data[i + 2] = 0x38; img.data[i + 3] = 0xff
 }
 
-/** Nearest-neighbour blit at an integer zoom — the only honest way to enlarge. */
+/** Nearest-neighbour blit at an integer zoom - the only honest way to enlarge. */
 function drawZoomed(key: string, dx: number, dy: number): boolean {
   const f = atlas.frames[key]
   if (!f) return false

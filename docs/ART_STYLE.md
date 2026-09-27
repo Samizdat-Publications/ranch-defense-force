@@ -21,7 +21,7 @@ Roughly 45°, so you see faces, chests and silhouettes.
 Chosen because **horror needs a face.** The premise is a ranch where the crop
 dusters turned everyone; a cursed animal's sunken eyes and slack jaw are the
 whole payload, and a high top-down view looks at the top of its head. It is also
-what Brotato and Vampire Survivors use, and — conveniently — what all sixteen
+what Brotato and Vampire Survivors use, and - conveniently - what all sixteen
 generated animals already are, so it costs no regeneration there.
 
 The cost is paid on the ground, which was generated `high top-down` and is being
@@ -38,7 +38,7 @@ The atlas, the 64px collision hash, the terrain bake and the 2× integer camera
 zoom are all built on 32. Nothing about bigger sprites is worth re-tuning all of
 that, and a bullet-heaven wants MORE things on screen rather than larger ones.
 
-Animals are deliberately bigger than the grid — 56–68px — and that is correct. A
+Animals are deliberately bigger than the grid - 56–68px - and that is correct. A
 bull should dwarf you. The grid is the unit, not a cap.
 
 **Integer zoom only.** If something should look smaller, it moves further away.
@@ -46,7 +46,7 @@ Scaling pixel art by 1.5 is how it stops being pixel art.
 
 ### 3. Palette: **muted daylight, sick green when cursed**
 
-The healthy farm is warm, dusty and desaturated — believable afternoon light.
+The healthy farm is warm, dusty and desaturated - believable afternoon light.
 The cursed version shifts to grey-green rot with sickly yellow eyes.
 
 **The horror works because it is a departure.** If the whole game is already
@@ -57,7 +57,7 @@ day, the infected version at night.*
     healthy   dusty sage green, pale brown earth, warm straw, weathered timber
     cursed    grey-green rot, ashen soil, raw grey skin, sickly yellow eyes
 
-**`art/palette.json` is that palette, and it is AUTHORED — not extracted.** It
+**`art/palette.json` is that palette, and it is AUTHORED - not extracted.** It
 used to be 32 colours k-means'd out of the LimeZu sheets, which was right while
 LimeZu was the art and is wrong now.
 
@@ -65,7 +65,7 @@ This matters more than it sounds, because **the generator will not give you a
 muted palette by asking.** `create_topdown_tileset` has a hard prior for bright
 saturated green; "dry muted sage green, dusty, desaturated" still comes back
 arcade. Quantising is the answer, and quantising through the OLD palette made it
-worse — conform matches a palette, it cannot shift one, and a palette sampled
+worse - conform matches a palette, it cannot shift one, and a palette sampled
 from LimeZu is full of saturated green, so the nearest entry to a bright green
 was a bright green.
 
@@ -74,7 +74,7 @@ returns. That is the only reliable way to get consistency out of a generator
 with its own opinions, and every generated tileset now goes through it.
 
 **Coverage beats taste when editing that file.** A quantiser sends every pixel
-to its nearest entry, so a missing region lands somewhere absurd — session 3
+to its nearest entry, so a missing region lands somewhere absurd - session 3
 lost a day to an explosion turning magenta because nothing in the palette sat
 between hue 20 and 40. The cursed greens in particular must stay distinct from
 the healthy pasture greens, or a diseased animal quantises back into a healthy
@@ -86,14 +86,14 @@ one.
 
 Everything below was measured, usually by getting it wrong first.
 
-### Ground tilesets — `create_topdown_tileset`
+### Ground tilesets - `create_topdown_tileset`
 
     detail: 'low detail'      shading: 'flat shading'
     outline: 'lineless'       text_guidance_scale: 15
     tile_size: 32             view: 'low top-down'
 
 **Ask for a TEXTURE, not a scene.** "Dry cracked dirt with small stones and tyre
-ruts" is a scene, and it comes back as a *pattern* — literally purple paving.
+ruts" is a scene, and it comes back as a *pattern* - literally purple paving.
 "Bare earth, smooth, matte, almost featureless" comes back as ground.
 
 `lineless` is the single most important setting: `selective outline` draws a hard
@@ -108,18 +108,18 @@ are read against. Interest belongs in props and decals on top of it.
 `lower_base_tile_id`; the two then share that terrain exactly. Every ground set
 should chain off one canonical grass.
 
-### 8-direction objects — `create_8_direction_object`
+### 8-direction objects - `create_8_direction_object`
 
 `view: 'low top-down'`, and pass `style_object_id` pointing at an existing
 finished object to keep the family consistent. Note that a style object
-**overrides the view** — if you are testing a camera angle, pass no style
+**overrides the view** - if you are testing a camera angle, pass no style
 reference or you will measure nothing. That mistake cost one inconclusive test.
 
 `reference_image_base64` is intermittently truncated in transit, and 3898 bytes
 is a payload size that has now failed twice. Prefer `style_object_id`; if a real
 reference image is needed, expect to retry.
 
-### Characters — `create_character`
+### Characters - `create_character`
 
     mode: 'pro'          size: 64
     view: 'low top-down' style_character_id: <the anchor>
@@ -132,26 +132,26 @@ figure, so the sprite occupies roughly **76% of the canvas height**:
                                   next to a 32x46 LimeZu character)
     size 64  ->  30x52 content   (the house setting)
 
-At 64 the figure is 30x52 against LimeZu's 32x46 — near-identical width, a
+At 64 the figure is 30x52 against LimeZu's 32x46 - near-identical width, a
 little taller, and it still fits the 32x64 cell with feet on the y=52 baseline
 that `pixellab-cut.ts` places to. **Every character is generated at 64.**
 
 **One anchor, then `style_character_id` for everyone else.** `pro` is the only
 mode that accepts it, and it is what keeps six classes and the enemies looking
 like one artist drew them. Generate the anchor first, look at it, and only then
-batch the rest — a bad anchor is six bad characters.
+batch the rest - a bad anchor is six bad characters.
 
 `create_character` also exposes a large library of TEMPLATE animations (`walk`,
 `walking-6-frames`, `breathing-idle`, `scary-walk`, `falling-back-death`…), so a
 walk cycle is a named template rather than a described motion.
 
-### Portraits — `create_portrait_character`
+### Portraits - `create_portrait_character`
 
 `direction: 'character_to_portrait'` turns a finished character sprite into a
 bust portrait. The class cards get portraits that match their sprite **by
 construction** rather than by prompting twice and hoping.
 
-### Cursed variants — `create_object_state`
+### Cursed variants - `create_object_state`
 
 Takes a finished object, applies an edit, and returns a new object **with all
 eight rotations intact**. That satisfies the pairing rule by construction: the
@@ -171,7 +171,7 @@ An edit that only ADDS detail is resisted by the base image; an edit that
 RESTATES the base colour replaces it. Dark animals curse easily because the
 disease palette already sits near their coat. Pale ones have to be told.
 
-### Animations — `animate_image`
+### Animations - `animate_image`
 
 Works on any loose sprite, needs no object id, and **a 64×64 8-frame animation
 is one generation.** Sixteen animations across every frozen actor in both scenes
@@ -183,16 +183,16 @@ cost sixteen.
 - `npm run anim -- <job-id> <name> [frames]` assembles the strip, compositing
   every frame **bottom-centred on a uniform cell** so feet do not travel.
 - **Judge the contact sheet, never a single frame.** The failure mode is one
-  frame belonging to a different animal — invisible alone, obvious in a row.
+  frame belonging to a different animal - invisible alone, obvious in a row.
 
-### UI — narrow, on purpose
+### UI - narrow, on purpose
 
 Generate the **small fixed-size chrome**: rarity and rank plates, buttons, the
 punch, the clip. Those are stamped metal at a fixed size, and CSS cannot make
 them look struck.
 
 Do NOT generate the large paper surfaces. CSS paper scales to any card for free
-and cannot break — with one caveat learned the hard way: **stock is authored for
+and cannot break - with one caveat learned the hard way: **stock is authored for
 a shape.** The seed-packet gradient is a gentle wash down a tall card and a
 visible band across a short wide one, and a 4px dot grid that reads as fibre at
 210px reads as halftone at 300×130. A surface of a different shape needs its own
@@ -200,7 +200,7 @@ stock, not the same one stretched.
 
 Two failures worth not repeating: the `elements` scaffold auto-positions badly
 and silently drops pieces, and `no_background: true` **keys out light interiors**
-— kraft fill gets eaten, leaving an outline with stains floating in nothing.
+- kraft fill gets eaten, leaving an outline with stains floating in nothing.
 
 ---
 
@@ -209,7 +209,7 @@ and silently drops pieces, and `no_background: true` **keys out light interiors*
 - **Tier 2: 5,000 generations a month, 10 concurrent jobs, up to 512×512.**
 - A tileset is ~100s; an 8-direction object 2–4 min; an `animate_image` 30–180s.
 - **If a generation comes back refused, check WHICH layer refused it.** One did,
-  once, and it was the Claude Code permission classifier rather than PixelLab —
+  once, and it was the Claude Code permission classifier rather than PixelLab -
   the prompt never reached the API, and retrying it unchanged went straight
   through. Rewriting the wording would have solved the wrong problem.
 
@@ -222,7 +222,7 @@ and silently drops pieces, and `no_background: true` **keys out light interiors*
 | Scene animations | **Ours.** Generated from the sprites already in the scene. |
 | Characters | LimeZu generator, plus one PixelLab farmhand. Not yet replaced. |
 | Props, buildings, weapons, FX | LimeZu. Not yet replaced. |
-| UI | CSS, plus LimeZu's `panel.png` — which is dead and unreferenced. |
+| UI | CSS, plus LimeZu's `panel.png` - which is dead and unreferenced. |
 
 **Nothing here forces a big-bang replacement.** The atlas keys are stable, so art
 swaps one manifest line at a time, and a missing sprite already degrades to a

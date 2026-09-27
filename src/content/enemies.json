@@ -4,7 +4,9 @@
     "sheet": "zombie",
     "_sheetsNote": "The blighted repaint, and it is a readability fix rather than a dressing change. The delivered farmhand wore the player's straw hat and blue dungarees at the player's own size, so at wave 6 -- with the density pass putting 2.2x as many of them on the field -- you could not pick yourself out of the crowd. `farmhandBlight` is that same rig repainted offline by `npm run recolour`: rotted-black hat, rot-green cloth, pale sick-green skin. Stated here rather than in art/sprites.json because WHICH SHEET AN ENEMY WEARS is content, and `world.spawnEnemy` already reads this field.",
     "sheets": [
-      "farmhandBlight"
+      "farmhandBlight",
+      "farmhandCoat",
+      "farmhandFlannel"
     ],
     "hp": 8,
     "speed": 82,
@@ -44,7 +46,7 @@
     "speed": 160,
     "damage": 2,
     "radius": 8,
-    "firstWave": 2,
+    "firstWave": 1,
     "threatCost": 2,
     "groupSize": 8,
     "behaviour": "erratic",
@@ -176,7 +178,7 @@
       "cloudGrowth": 10,
       "cloudDps": 10,
       "cloudDuration": 6,
-      "_note": "Growth was 30/s over 6s, which is a final radius of 270 \u2014 a cloud wider than the 520px camera view. That was survivable while the cloud was decoration; once it damaged the player it was not a hazard you could play around, it was a tax with no visible edge. 10/s lands at 150, which fills half the screen and can still be walked out of."
+      "_note": "Growth was 30/s over 6s, which is a final radius of 270 - a cloud wider than the 520px camera view. That was survivable while the cloud was decoration; once it damaged the player it was not a hazard you could play around, it was a tax with no visible edge. 10/s lands at 150, which fills half the screen and can still be walked out of."
     },
     "xp": 4,
     "teaches": "punishes indiscriminate clearing"
@@ -202,13 +204,15 @@
   },
   "_lateRosterNote": "The five below all existed as complete 8-direction rigs in the atlas -- walk, attack, death and idle, 224 frames each -- and were wired to nothing. 1,120 frames, 26% of the packed atlas, already paid for and never drawn. They are placed at waves 3, 8, 13, 16 and 19 rather than spread evenly, because the roster's real gap was the back half: before this, the last new enemy arrived at wave 14 and waves 15-25 introduced nothing at all. Nearly half a run was the same eight things getting bigger numbers.",
   "infectedHen": {
+    "sheets": ["infectedHen", "brahmaHenBlight", "beardedHenBlight", "buffHenBlight", "silkieHenBlight", "polishHenBlight", "leghornHenBlight", "barredHenBlight"],
+    "_sheetsNote": "v2: seven of the eight blighted breeds the title's cursed stock already uses (the bantam has no up-left walk), cycled through the flock. One sprite fourteen times over read as a rendering loop (critic round 10: waves 1-2 were one repeated sprite).",
     "name": "Infected Hen",
     "sheet": "infectedHen",
     "hp": 4,
     "speed": 148,
     "damage": 3,
     "radius": 9,
-    "firstWave": 3,
+    "firstWave": 1,
     "threatCost": 2,
     "groupSize": 12,
     "behaviour": "erratic",
@@ -374,7 +378,7 @@
   "bossCockerel": {
    "name": "The Cockerel",
    "_note": "The fast boss. Every boss the roster had was heavy and slow -- the bull charges in a straight line, the duster does not chase at all -- so the shape missing was something light that closes distance and keeps closing. Suggested around wave 9, before the bull.",
-   "_rotationNote": "BUILT AND NOT IN ROTATION. `weight: 0` keeps it out of the ordinary spawn pool -- the spawner reads `map.enemyBias[id] ?? def.weight ?? 1`, so an enemy with neither defaults to ONE and spawns on every map. A boss additionally only appears if `waves.json` -> `bossWaves` names it against a wave, so switching this on is ONE line there. Held out because a boss changes the shape of a run and that is the owner's call; the art, the stats and the wiring are done and tested.",
+   "_rotationNote": "IN ROTATION since v2 (owner's call, 2026-09-26): named in waves.json bossWaves. `weight: 0` still keeps it out of the ordinary spawn pool, which is right for a boss.",
    "sheet": "bossCockerel",
    "weight": 0,
    "hp": 700,
@@ -395,10 +399,10 @@
   "bossSow": {
    "name": "The Sow",
    "_note": "The slow boss, and the opposite of the Cockerel. Enormous, never hurries, and cannot be outrun forever in an arena with walls. The fight is about where you are standing when it arrives. Suggested around wave 15.",
-   "_rotationNote": "BUILT AND NOT IN ROTATION. `weight: 0` keeps it out of the ordinary spawn pool -- the spawner reads `map.enemyBias[id] ?? def.weight ?? 1`, so an enemy with neither defaults to ONE and spawns on every map. A boss additionally only appears if `waves.json` -> `bossWaves` names it against a wave, so switching this on is ONE line there. Held out because a boss changes the shape of a run and that is the owner's call; the art, the stats and the wiring are done and tested.",
+   "_rotationNote": "IN ROTATION since v2 (owner's call, 2026-09-26): named in waves.json bossWaves. `weight: 0` still keeps it out of the ordinary spawn pool, which is right for a boss.",
    "sheet": "bossSow",
    "weight": 0,
-   "hp": 1400,
+   "hp": 990,
    "speed": 58,
    "damage": 30,
    "radius": 34,
@@ -416,12 +420,12 @@
   "bossScarecrow": {
    "name": "The Thing in the North Pasture",
    "_note": "The name the HUD's boss bar has carried since M5 with nothing behind it. Now it has a body. Suggested around wave 18, where session 23 measured the run as having nothing in it that could kill you.",
-   "_rotationNote": "BUILT AND NOT IN ROTATION. `weight: 0` keeps it out of the ordinary spawn pool -- the spawner reads `map.enemyBias[id] ?? def.weight ?? 1`, so an enemy with neither defaults to ONE and spawns on every map. A boss additionally only appears if `waves.json` -> `bossWaves` names it against a wave, so switching this on is ONE line there. Held out because a boss changes the shape of a run and that is the owner's call; the art, the stats and the wiring are done and tested.",
+   "_rotationNote": "IN ROTATION since v2 (owner's call, 2026-09-26): named in waves.json bossWaves. `weight: 0` still keeps it out of the ordinary spawn pool, which is right for a boss.",
    "sheet": "bossScarecrow",
    "weight": 0,
-   "hp": 1600,
-   "speed": 66,
-   "damage": 36,
+   "hp": 520,
+   "speed": 60,
+   "damage": 18,
    "radius": 28,
    "xp": 110,
    "threatCost": 0,
@@ -437,10 +441,10 @@
   "bossCombine": {
    "name": "The Combine",
    "_note": "The Duster's sibling and its opposite: the Duster patrols a fixed pattern and never deviates, and this one does nothing but come for you. 136px of sheet, the biggest in the game. Suggested around wave 21.",
-   "_rotationNote": "BUILT AND NOT IN ROTATION. `weight: 0` keeps it out of the ordinary spawn pool -- the spawner reads `map.enemyBias[id] ?? def.weight ?? 1`, so an enemy with neither defaults to ONE and spawns on every map. A boss additionally only appears if `waves.json` -> `bossWaves` names it against a wave, so switching this on is ONE line there. Held out because a boss changes the shape of a run and that is the owner's call; the art, the stats and the wiring are done and tested.",
+   "_rotationNote": "IN ROTATION since v2 (owner's call, 2026-09-26): named in waves.json bossWaves. `weight: 0` still keeps it out of the ordinary spawn pool, which is right for a boss.",
    "sheet": "bossCombine",
    "weight": 0,
-   "hp": 2000,
+   "hp": 1060,
    "speed": 62,
    "damage": 32,
    "radius": 46,
@@ -469,7 +473,8 @@
     "behaviour": "charge",
     "knockbackImmune": true,
     "boss": true,
-    "drawScale": 2,
+    "drawScale": 1,
+    "_drawScaleNote": "1 since the bull was redrawn natively at 128 px (art/sprites.json prizeBull); at 2x the 68 px bull's pixels were twice everyone else's",
     "animFrameScale": 0.5,
     "special": {
       "stampedeBelowPct": 50,
@@ -482,30 +487,39 @@
   "duster": {
     "name": "The Duster",
     "sheet": "duster",
-    "_note": "Wave 25 boss (\u00a79). Nobody is driving it. Phase 1 is a fixed agricultural back-and-forth that NEVER chases \u2014 the whole fight is where you stand relative to a machine that will not deviate. Phase 2 breaks the pattern and comes for you while the rows burn inward.",
-    "hp": 2400,
-    "speed": 54,
+    "_note": "Wave 25 boss (§9): the crop duster itself, flown by nobody. v2 made it the plane the story is about (it was the rusted tractor, which is now the Spray Rig at wave 21). Phase 1 flies crop-dusting passes lane by lane down the field and NEVER chases; phase 2 makes strafing runs straight through where you stand while the rows burn inward. Drawn by the renderer from `plane`, not from the sheet.",
+    "plane": {
+      "sprite": "boss.dusterPlane",
+      "altitude": 70,
+      "_note": "Top-down, nose up, rotated to its heading. altitude is how high above its own shadow it is drawn, in art px. The art is a native 256 px PixelLab render (about 240 px of wingspan), not a scaled sprite: critic round 10 found the 128 px plane the least visible thing at the climax, and doubling it would have doubled its pixels against everything else's."
+    },
+    "separation": false,
+    "hp": 1800,
+    "speed": 150,
     "damage": 34,
-    "radius": 52,
+    "radius": 76,
     "xp": 200,
     "threatCost": 0,
     "groupSize": 1,
     "behaviour": "duster",
     "knockbackImmune": true,
     "boss": true,
-    "drawScale": 2,
-    "_drawScaleNote": "Drawn at 2x since v2 critic round 2: at 1x the final boss read smaller than the Prize Bull (97px at 2x) and much like the farm's own tractor. Render only; the hitbox is `radius`.",
+    "drawScale": 1,
     "animFrameScale": 0.45,
     "special": {
-      "_note": "Phase 2 starts below phase2BelowPct. gasEvery is how often it drops a strip; the strip is a real gas hazard and hurts you exactly like a Bloated Farmhand cloud.",
+      "_note": "Phase 2 starts below phase2BelowPct. gasEvery is how often it sprays a strip; the strip is a real gas hazard and hurts you exactly like a Bloated Farmhand cloud. Speeds are px/s, turn rates rad/s: a plane banks round in an arc of speed/turnRate.",
       "phase2BelowPct": 50,
-      "gasEvery": 0.5,
+      "gasEvery": 0.4,
       "gasRadius": 44,
       "gasSeconds": 7,
       "gasDps": 9,
-      "laneStep": 150,
-      "patrolSpeed": 54,
-      "chaseSpeed": 38,
+      "laneStep": 170,
+      "laneMargin": 170,
+      "patrolSpeed": 125,
+      "turnRate": 1.5,
+      "strafeSpeed": 170,
+      "strafeTurnRate": 2.1,
+      "overshootSeconds": 0.9,
       "shrinkSeconds": 90,
       "shrinkToFraction": 0.34,
       "shrinkDps": 18,
@@ -513,7 +527,42 @@
       "summons": "farmhand",
       "summonCount": 2
     },
-    "teaches": "a machine that will not deviate"
+    "teaches": "a machine that will not deviate, until it does",
+    "deathSeconds": 1.8
+  },
+  "sprayRig": {
+    "name": "The Spray Rig",
+    "sheet": "duster",
+    "sheets": [
+      "duster"
+    ],
+    "_note": "Wave 21 boss. The rusted tractor that was the Duster until v2: the ground rig from the same spraying outfit, still driving its rows with the boom open. The Duster's own behaviour at tractor speed with no second phase, so it is the fixed back-and-forth the original design described, and it teaches the lanes the plane will fly four waves later.",
+    "separation": false,
+    "hp": 1100,
+    "speed": 54,
+    "damage": 30,
+    "radius": 50,
+    "xp": 150,
+    "threatCost": 0,
+    "groupSize": 1,
+    "behaviour": "duster",
+    "knockbackImmune": true,
+    "boss": true,
+    "drawScale": 1,
+    "_drawScaleNote": "1, not 2: the tractor art is 110 px wide at its own size, already a big machine beside a 52 px farmhand, and at 2x its pixels were twice everyone else's (critic rounds 14 and 16: \"mixed pixel sizes\")",
+    "animFrameScale": 0.45,
+    "special": {
+      "phase2BelowPct": 0,
+      "gasEvery": 0.55,
+      "gasRadius": 40,
+      "gasSeconds": 6,
+      "gasDps": 8,
+      "laneStep": 150,
+      "laneMargin": 110,
+      "patrolSpeed": 58,
+      "turnRate": 1.6
+    },
+    "teaches": "the lanes, before they come from the air"
   },
   "_baseCastNote": "THE BASE CAST SITS AT `weight: 0` AND SPAWNS NOWHERE UNTIL A MAP ASKS FOR IT BY NAME. That is the same mechanism biome node variants use in nodes.json, and it is why adding five enemies to this file changes not one surface wave and not one recorded seed. A map's `enemyBias` entry REPLACES the weight rather than multiplying it, so a base map can raise a zero.\nTHE NUMBERS BELOW ARE A FIRST PASS AND WANT A PLAY SESSION. They are interpolated from the existing enemies either side of each first-wave -- a guard sits between blownSheep and sickHog, a breacher above maskedHauler -- which is a defensible starting point and is not the same thing as tuned. Balance in this project is a joint activity; nothing here has been measured against a human playing it.",
   "baseTech": {
@@ -529,7 +578,7 @@
     "groupSize": 5,
     "behaviour": "chase",
     "xp": 2,
-    "teaches": "base chaff \u2014 the first thing down there that used to have a badge"
+    "teaches": "base chaff: the first thing down there that used to have a badge"
   },
   "baseGuard": {
     "name": "Facility Guard",
@@ -559,7 +608,7 @@
     "groupSize": 2,
     "behaviour": "flank",
     "xp": 5,
-    "teaches": "the base's flanker \u2014 fast, and it goes around you rather than at you"
+    "teaches": "the base's flanker: fast, and it goes around you rather than at you"
   },
   "baseHazmat": {
     "name": "Containment Crew",

@@ -130,7 +130,7 @@ export class Hud {
 
     this.bossFill = el('div', { class: 'hud-boss-fill' })
     this.bossName = el('div', { class: 'hud-boss-name' })
-    this.bossBar = el('div', { class: 'hud-boss' }, [el('div', { class: 'hud-boss-track' }, [this.bossFill]), this.bossName])
+    this.bossBar = el('div', { class: 'hud-boss' }, [this.bossName, el('div', { class: 'hud-boss-track' }, [this.bossFill])])
     this.bossBar.style.display = 'none'
 
     this.bannerWave = el('div', { class: 'hud-banner-wave' })
@@ -155,9 +155,11 @@ export class Hud {
           el('div', { class: 'hud-wave-line' }, [this.waveN, this.waveLeft]),
           el('div', { class: 'hud-wave-track' }, [this.waveFill]),
         ]),
-        this.bossBar,
       ]),
-      el('div', { class: 'hud-feed' }, [el('div', { class: 'hud-feed-icon' }), this.feed]),
+      this.bossBar,
+      // The sack you pick up, not a gold coin: round 16 counted three names
+      // for one currency (coin, feed, sack).
+      el('div', { class: 'hud-feed' }, [spriteEl('pickup.feedBig', 22) ?? el('div', { class: 'hud-feed-icon' }), this.feed]),
       this.ability,
       el('div', { class: 'hud-kit' }, [this.load, this.weapons]),
     ])
@@ -185,8 +187,11 @@ export class Hud {
     const armour = Math.max(0, Math.round(p.stats.armor))
     if (armour !== this.armourShown) {
       this.armourShown = armour
+      // A labelled figure, not a row of unexplained diamonds (critic round 9).
       this.armour.replaceChildren(
-        ...Array.from({ length: Math.min(12, armour) }, () => el('span', { class: 'hud-armour-pip' })),
+        ...(armour > 0
+          ? [el('span', { class: 'hud-armour-pip' }), el('span', { class: 'hud-armour-text', text: `ARMOR ${armour}` })]
+          : []),
       )
     }
 
@@ -231,7 +236,7 @@ export class Hud {
       const boss = (WAVES.bossWaves as Record<string, string>)[String(wave)]
       // The boss's name is on its plate under the bar; saying it here as well
       // made three of it on one screen (critic round 5).
-      this.waveN.textContent = wave >= count && boss ? 'LAST LIGHT' : `WAVE ${Math.min(wave, count - 1)} / ${count - 1}`
+      this.waveN.textContent = wave >= count && boss ? 'LAST LIGHT' : `WAVE ${Math.min(wave, count - 1)}/${count - 1}`
       this.lastWave = wave
       // The wave card: drops in, holds, lifts away. Restarted by re-adding the class.
       const bossName = boss ? ENEMIES[boss]?.name : undefined
@@ -255,7 +260,10 @@ export class Hud {
         this.bannerAt = world.elapsed
       }
     }
-    const left = `${Math.max(0, Math.ceil(world.spawner.waveRemaining))}s`
+    // "· 0:36", not "36s": after "WAVE 1 / 24" a bare "36s" read as
+    // 24 minutes 36 seconds (round 16).
+    const secs = Math.max(0, Math.ceil(world.spawner.waveRemaining))
+    const left = `· ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`
     if (left !== this.lastLeft) {
       this.waveLeft.textContent = left
       this.lastLeft = left
@@ -269,7 +277,7 @@ export class Hud {
       this.bossBar.style.display = ''
       this.bossFill.style.transform = `scaleX(${pct.toFixed(3)})`
       // One name at a time: the card says it first, then the plate takes over.
-      this.bossName.style.visibility = world.elapsed - this.bannerAt < 3.3 ? 'hidden' : ''
+      this.bossName.style.visibility = world.elapsed - this.bannerAt < 2.4 ? 'hidden' : ''
       const name = ENEMIES[boss.typeId]?.name ?? 'BOSS'
       if (this.lastBossName !== name) {
         this.bossName.textContent = name
@@ -295,14 +303,16 @@ export class Hud {
         const window_ = el('div', { class: 'hud-slot-art' })
         if (art) window_.appendChild(art)
         else window_.appendChild(el('span', { class: 'hud-slot-art-fallback', text: name.slice(0, 3) }))
-        const pips = el('span', { class: 'hud-slot-pips' },
-          Array.from({ length: Math.min(4, slot.tier) }, () => el('i')))
+        const pips = el('span', { class: 'hud-slot-pips', text: `T${Math.min(4, slot.tier)}` })
         this.weapons.appendChild(
           el('div', { class: `hud-slot tier-${Math.min(4, slot.tier)}`, data: { id: slot.id }, title: name }, [
             window_, el('span', { class: 'hud-slot-cd' }), pips,
           ]),
         )
       }
+      // As many columns as there are weapons, up to three: one pitchfork in
+      // the corner of a three-wide plate read as an empty box (critic round 9).
+      this.weapons.style.gridTemplateColumns = `repeat(${Math.max(1, Math.min(3, p.weapons.length))}, calc(60 * var(--u)))`
       this.lastSlotSig = sig
     }
 
@@ -316,7 +326,7 @@ export class Hud {
         this.load.style.display = ''
         const itemId = loadItemFor(p.element)
         const key = itemId ? itemCardSprite(itemId) : null
-        const art = key && frameOf(key) ? spriteEl(key, 34) : null
+        const art = key && frameOf(key) ? spriteEl(key, 28) : null
         const name = ELEMENTS[p.element]?.name ?? p.element
         const window_ = el('div', { class: 'hud-slot-art' })
         if (art) window_.appendChild(art)

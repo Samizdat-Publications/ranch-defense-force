@@ -3,11 +3,11 @@
  *
  * The screens are DOM, not canvas, so a card cannot just blit a frame. This
  * points a div's `background-image` at the same atlas the renderer uses and
- * positions it by the frame's rect — a CSS sprite sheet, with the atlas we
+ * positions it by the frame's rect - a CSS sprite sheet, with the atlas we
  * already generate standing in for a hand-built one.
  *
- * The atlas is PAGED — several images of at most 2048x2048, for reasons
- * measured and recorded on `Atlas` — so an element's background url is the url
+ * The atlas is PAGED - several images of at most 2048x2048, for reasons
+ * measured and recorded on `Atlas` - so an element's background url is the url
  * of ITS frame's page and its `background-size` is that page's size. Get
  * either from the wrong page and the sprite is a window onto the wrong art,
  * which is why both go through `pageOf` below rather than being typed twice.
@@ -80,7 +80,7 @@ export function spriteEl(
  *
  * The colours live in `rarity.json` because a tier is a balance knob and a
  * visual language at the same time. Pushing them into `:root` means the
- * stylesheet can use `var(--rarity-epic)` and the two can never disagree —
+ * stylesheet can use `var(--rarity-epic)` and the two can never disagree -
  * which they would the moment someone tuned a colour in one place only.
  */
 export function installRarityTheme(tiers: Record<string, { colour: string; dark: string }>): void {
@@ -96,7 +96,7 @@ export function installRarityTheme(tiers: Record<string, { colour: string; dark:
  * One atlas frame as a standalone data URL, for tiling.
  *
  * `spriteEl` positions a window onto the whole atlas, which is right for a
- * single sprite and catastrophically wrong with `background-repeat` — the
+ * single sprite and catastrophically wrong with `background-repeat` - the
  * repeat tiles the ENTIRE ATLAS, so the home screen's ground band came out as a
  * wall of every sprite in the game. A tiled background needs a texture that
  * contains only the tile.

@@ -1,5 +1,5 @@
 /**
- * Pooled entity shapes. These are plain mutable structs — every field is
+ * Pooled entity shapes. These are plain mutable structs - every field is
  * present from construction so the JIT keeps one hidden class per pool and
  * `acquire()` never allocates. Nothing here is ever `new`ed during play.
  *
@@ -58,11 +58,14 @@ export interface Enemy {
   stun: number
   /** Facing, radians. Drives the lean transform later. */
   facing: number
-  /** Per-behaviour scratch — meaning depends on `behaviour`. */
+  /** Per-behaviour scratch - meaning depends on `behaviour`. */
   t0: number
   t1: number
   s0: number
   s1: number
+  /** A fifth scratch value, for a behaviour that needs a remembered position
+   *  (the Duster's lane). Same ownership rules as the four above. */
+  a0: number
   /** Contact damage cooldown so touching the player isn't 60 hits a second. */
   touchCd: number
   knockbackImmune: boolean
@@ -73,8 +76,8 @@ export interface Enemy {
    * attack clip.
    *
    * A RENDER-FACING flag on purpose. The behaviours encode their own state in
-   * the `t0`/`s0` scratch — `charge` uses `s0` for "0 approach, 1 winding up,
-   * 2 charging, 3 staggered" — and that encoding is private to each behaviour.
+   * the `t0`/`s0` scratch - `charge` uses `s0` for "0 approach, 1 winding up,
+   * 2 charging, 3 staggered" - and that encoding is private to each behaviour.
    * A renderer that decoded it would break the moment a behaviour renumbered
    * its states, silently and only in the art. So the behaviour says "I am
    * attacking" and the renderer never learns why.
@@ -94,7 +97,7 @@ export interface Enemy {
   /** Seconds since spawn, for animation phase. Kept out of the t0/s0 scratch
    *  because behaviours own those and would clobber it. */
   anim: number
-  /** Distance travelled, which drives bob and step timing — a sprite that bobs
+  /** Distance travelled, which drives bob and step timing - a sprite that bobs
    *  with distance rather than time stops looking like it is treadmilling. */
   travelled: number
 
@@ -138,7 +141,7 @@ export interface Enemy {
   slowLife: number
   /**
    * Which weapon's hit landed last, by id. `''` for a hit that carries none
-   * (a chain, a burst, a corpse split) — see `applyHit`. Batch 2's Straw
+   * (a chain, a burst, a corpse split) - see `applyHit`. Batch 2's Straw
    * Chopper is the only reader today: a per-weapon "this weapon's kills do
    * X" card needs to know whose kill it was, and nothing before it did.
    */
@@ -150,7 +153,7 @@ export function makeEnemy(): Enemy {
     active: false, typeId: '', sheetId: '', x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0,
     kx: 0, ky: 0, hp: 1, maxHp: 1, speed: 0, damage: 0, radius: 10, xp: 1,
     behaviour: 'chase', elite: false, flash: 0, flashLock: 0, stun: 0, facing: 0,
-    t0: 0, t1: 0, s0: 0, s1: 0, touchCd: 0, knockbackImmune: false, attackT: 0, hitT: 0,
+    t0: 0, t1: 0, s0: 0, s1: 0, a0: 0, touchCd: 0, knockbackImmune: false, attackT: 0, hitT: 0,
     dying: 0, hpBuffPct: 0, anim: 0, travelled: 0,
     burnDps: 0, burnLife: 0, burnAcc: 0, burnGen: 0,
     bleedDps: 0, bleedLife: 0, bleedAcc: 0,
@@ -190,8 +193,8 @@ export interface Projectile {
   /**
    * `'placeable'` (docs/UPGRADE_ROSTER.md batch 3, H8): a turret, trap or coop
    * planted at a fixed point. Like `'minion'`, an `attached` one is exempt from
-   * `collideProjectiles`' pierce-based free — its own update loop manages its
-   * life — but UNLIKE `'minion'` it is NOT exempt when it is not attached,
+   * `collideProjectiles`' pierce-based free - its own update loop manages its
+   * life - but UNLIKE `'minion'` it is NOT exempt when it is not attached,
    * so a coop's hen (moving, not attached) is freed on its first hit the same
    * way any ordinary shot is. That single distinction is why the type exists
    * separately from `'minion'` rather than reusing it.
@@ -230,7 +233,7 @@ export interface Projectile {
    * the top of the payload block: the scratch means a different thing per
    * behaviour, and `bounceSplit` is already using both of them for its bounce
    * count and its shard budget. A rider sharing that would be a bug waiting
-   * for the next weapon — which is exactly what the payload fields exist to
+   * for the next weapon - which is exactly what the payload fields exist to
    * avoid.
    */
   ricochets: number
@@ -239,13 +242,13 @@ export interface Projectile {
   // H1 and H4 already exist as PLAYER-WIDE fields on `World`'s `specialItems`
   // (Fence Charge's chain, Burr Load's homing) because those cards apply to
   // every shot the player owns. A weapon-upgrade card is scoped to the ONE
-  // weapon that granted it — Live Wire's chain is the Drum Gun's shards only,
-  // Match Barrel's homing is the Varmint Rifle's own round — so it rides the
+  // weapon that granted it - Live Wire's chain is the Drum Gun's shards only,
+  // Match Barrel's homing is the Varmint Rifle's own round - so it rides the
   // PROJECTILE instead: set once at spawn by the behaviour that owns it, read
   // once by the same generic call sites the player-wide fields already use.
-  /** H4 — Match Barrel. Zero for every projectile that is not one. */
+  /** H4 - Match Barrel. Zero for every projectile that is not one. */
   homingRate: number
-  /** H1 — Live Wire. Zero for every projectile that is not a Drum Gun shard
+  /** H1 - Live Wire. Zero for every projectile that is not a Drum Gun shard
    *  carrying it. */
   chainCount: number
   chainRange: number
@@ -253,7 +256,7 @@ export interface Projectile {
   /**
    * Backpack Tank (Chem Sprayer epic): the LOAD this shot stamps on lasts
    * this many times as long. Read once, in `World.applyElementTo`, where
-   * every other weapon's shot already picks up the player's element — 1 for
+   * every other weapon's shot already picks up the player's element - 1 for
    * every projectile that is not the Chem Sprayer's jet with the card taken,
    * so this is arithmetically identical to the line it multiplies onto for
    * every other weapon.
@@ -275,7 +278,7 @@ export function makeProjectile(): Projectile {
 }
 
 /**
- * Harvestable crops standing in the field. They do not move or fight — they
+ * Harvestable crops standing in the field. They do not move or fight - they
  * soak a couple of hits and pay out feed, which gives a player with spare
  * seconds something to do with them and turns "the wave is thin right now"
  * into an economic decision rather than dead time.
@@ -284,7 +287,7 @@ export interface Prop {
   active: boolean
   /** Atlas frame key, e.g. `crop.pumpkin` or `node.oreGold`. */
   sprite: string
-  /** Which harvest kind this is — `rock`, `tree` or `crop`. Decides which tool
+  /** Which harvest kind this is - `rock`, `tree` or `crop`. Decides which tool
    *  works it and therefore how fast it comes apart. */
   kind: string
   x: number
@@ -349,7 +352,7 @@ export interface Pickup {
   vx: number
   vy: number
   value: number
-  /** Once magnetised it accelerates rather than lerping — the greed curve. */
+  /** Once magnetised it accelerates rather than lerping - the greed curve. */
   magnetised: boolean
   speed: number
   bob: number
@@ -377,7 +380,7 @@ export interface Hazard {
   x: number
   y: number
   radius: number
-  /** Radius growth per second — gas clouds expand. */
+  /** Radius growth per second - gas clouds expand. */
   growth: number
   life: number
   maxLife: number
@@ -390,7 +393,7 @@ export interface Hazard {
   slowPct: number
   /**
    * How much this hazard slows the PLAYER, 0-100. Separate from `slowPct`,
-   * which has only ever slowed enemies — the Watering Can's rind slick is a
+   * which has only ever slowed enemies - the Watering Can's rind slick is a
    * player tool and must keep behaving exactly as it did. Only the map's own
    * ambient hazards set this.
    */
@@ -398,7 +401,7 @@ export interface Hazard {
   pullForce: number
   /**
    * Batch 2, Spoiled Feed: a `lure` hazard can mark whatever it pulls, 0 for
-   * every hazard this weapon did not make — which is every hazard that
+   * every hazard this weapon did not make - which is every hazard that
    * existed before this card, so this is arithmetically identical for them.
    */
   markPct: number
@@ -414,7 +417,7 @@ export interface Hazard {
    * is the render layer asking the map what kind of hazard this is on every
    * hazard every frame. Assigned once at spawn from content; the hot loop only
    * ever reads it. Weapon-made hazards leave it empty and keep the plain circle
-   * they have always had — art here marks the ones the MAP put down.
+   * they have always had - art here marks the ones the MAP put down.
    */
   sprite: string
 }
@@ -464,11 +467,11 @@ export function makeParticle(): Particle {
 }
 
 /**
- * One playing FX clip — a hit spark, a muzzle flash, an explosion.
+ * One playing FX clip - a hit spark, a muzzle flash, an explosion.
  *
  * These are pure decoration: nothing reads an effect back, so the sim can drop
  * one on the floor when the pool is full without changing the run. That is also
- * why they carry no previous position — an effect lasts a few frames at a fixed
+ * why they carry no previous position - an effect lasts a few frames at a fixed
  * point and interpolating it would buy nothing.
  */
 export interface Effect {
@@ -485,7 +488,7 @@ export interface Effect {
   /** Radians. Directional clips (muzzle, slash) point along this. */
   rotation: number
   scale: number
-  /** Drawn under the sprite layer rather than over it — for ground effects
+  /** Drawn under the sprite layer rather than over it - for ground effects
    *  like the dash dust, which should not cover the player's feet. */
   under: boolean
 }

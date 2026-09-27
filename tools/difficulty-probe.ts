@@ -1,5 +1,5 @@
 /**
- * Difficulty probe — the compact instrument the session-23 retune iterated on.
+ * Difficulty probe - the compact instrument the session-23 retune iterated on.
  *
  *   npm run probe -- [runs] [what] [coefficient sweep] [class subset]
  *
@@ -50,6 +50,14 @@ function applySpec(spec: string): void {
     else if (k === 'gmin') WAVES.spawn.groupInterval.min = n
     else if (k === 'gmax') WAVES.spawn.groupInterval.max = n
     else if (k === 'mind') (WAVES.spawn as { minDistanceFromPlayer: number }).minDistanceFromPlayer = n
+    else if (k === 'ring') (WAVES.spawn as unknown as { ring: { chance: number } }).ring.chance = n
+    else if (k === 'hc') (WAVES.horde as { count: number }).count = n
+    else if (k === 'hcw') (WAVES.horde as { countPerWave: number }).countPerWave = n
+    else if (k === 'hhp') (WAVES.horde as { hp: number }).hp = n
+    else if (k === 'hdmg') (WAVES.horde as { damage: number }).damage = n
+    else if (k === 'hdw') (WAVES.horde as { damagePerWave: number }).damagePerWave = n
+    else if (k === 'hhpw') (WAVES.horde as { hpPerWave: number }).hpPerWave = n
+    else if (k === 'hxp') (WAVES.horde as { xp: number }).xp = n
     else if (k === 'elite') (WAVES as { eliteEveryNWaves: number }).eliteEveryNWaves = n
     else if (k === 'ec') WAVES.elite.chance = n
     else if (k === 'em') WAVES.elite.hpMultiplier = n
@@ -111,6 +119,9 @@ interface Probe {
   kills: number
   /** Mean enemies alive, sampled once a second, per wave index 1..25. */
   alivePerWave: number[]
+  /** The same, counting only enemies inside a 16:9 view at the game's view
+   *  height around the player: what a screenshot of the run would show. */
+  onScreenPerWave: number[]
   aliveSamples: number[]
   /** The most that were ever alive at once, and how many seconds the pressure
    *  ceiling was withholding. A ceiling that binds is a difficulty CAP. */
@@ -135,6 +146,7 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
   let damageTakenByW10 = -1
 
   const alivePerWave = new Array<number>(WAVES.waveCount + 2).fill(0)
+  const onScreenPerWave = new Array<number>(WAVES.waveCount + 2).fill(0)
   const aliveSamples = new Array<number>(WAVES.waveCount + 2).fill(0)
   let peakAlive = 0
   let ceilingSeconds = 0
@@ -208,6 +220,14 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
       if (w >= 1 && w < alivePerWave.length) {
         alivePerWave[w] += world.enemies.live
         aliveSamples[w]++
+        const vh = (TUNING as unknown as { render: { viewHeight: number } }).render.viewHeight / 2
+        const vw = vh * 16 / 9
+        let seen = 0
+        for (let k = 0; k < world.enemies.live; k++) {
+          const en = world.enemies.items[k]
+          if (Math.abs(en.x - world.player.x) < vw && Math.abs(en.y - world.player.y) < vh) seen++
+        }
+        onScreenPerWave[w] += seen
       }
     }
 
@@ -253,6 +273,7 @@ function simulate(seed: number, classId: string, pilot: Pilot): Probe {
     level: world.player.level,
     kills: world.kills,
     alivePerWave,
+    onScreenPerWave,
     aliveSamples,
     peakAlive,
     ceilingSeconds,
@@ -329,6 +350,13 @@ function report(): void {
     for (const w of [12, 16, 20, 24]) late.push(`w${w} ${mid(w).toFixed(1)}`)
     console.log('  ' + late.join('   '))
     console.log(`  waves 1-5 mean alive: ${([1, 2, 3, 4, 5].reduce((a, w) => a + mid(w), 0) / 5).toFixed(1)}`)
+    const seen = (w: number): number => {
+      let tot = 0
+      let n = 0
+      for (const r of rs) { tot += r.onScreenPerWave[w]; n += r.aliveSamples[w] }
+      return n ? tot / n : 0
+    }
+    console.log('  on screen: ' + [1, 2, 3, 5, 7, 10, 12, 16, 20, 24].map((w) => `w${w} ${seen(w).toFixed(1)}`).join('  '))
     const at60 = rs.map((r) => r.aliveAt60s).sort((a, b) => a - b)
     console.log(`  alive at t=60s: median ${at60[at60.length >> 1]}  min ${at60[0]}  max ${at60[at60.length - 1]}`)
     console.log(`  peak alive mean ${(rs.reduce((a, r) => a + r.peakAlive, 0) / rs.length).toFixed(0)}` +

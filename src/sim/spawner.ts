@@ -20,7 +20,7 @@ export interface SpawnRequest {
   count: number
   /**
    * Whether this wave can produce elites at all. The per-enemy roll happens in
-   * the world, NOT here — see the note at the assignment below.
+   * the world, NOT here - see the note at the assignment below.
    */
   eliteEligible: boolean
 }
@@ -40,7 +40,7 @@ export class Spawner {
   private readonly weights: number[] = []
 
   /**
-   * @param map The run's map. Its `enemyBias` multiplies the roster weights —
+   * @param map The run's map. Its `enemyBias` multiplies the roster weights -
    *            the only thing the spawner reads off it, and the reason a
    *            Scrapyard run feels heavy and a Salt Flats run feels fast
    *            without either one changing a single number in enemies.json.
@@ -57,9 +57,15 @@ export class Spawner {
   beginWave(n: number): void {
     this.wave = n
     this.waveTime = 0
-    this.budget = threatBudget(n)
+    this.budget = threatBudget(n) * this.hordeScale(n)
     this.spent = 0
     this.nextIn = 0.4
+  }
+
+  /** The horde multiplier for wave n: waves.json -> horde. */
+  private hordeScale(n: number): number {
+    const h = WAVES.horde
+    return h ? h.count + (h.countPerWave ?? 0) * (n - 1) : 1
   }
 
   /**
@@ -94,10 +100,11 @@ export class Spawner {
     const idx = this.rng.weightedIndex(this.weights)
     const typeId = this.available[idx]
     const def = ENEMIES[typeId]
-    const count = Math.max(1, def.groupSize)
+    // Bigger groups as the horde grows, so a late wave arrives as crowds.
+    const count = Math.max(1, Math.round(def.groupSize * Math.sqrt(this.hordeScale(this.wave))))
     const cost = def.threatCost * count
 
-    // Eligibility only. The chance roll used to live here, on the group — one
+    // Eligibility only. The chance roll used to live here, on the group - one
     // 10% success turned every member of a group of three to six into an elite
     // at once, which is a squad of 4x-health enemies arriving together rather
     // than the sprinkle §8 describes. "One in ten" is one in ten *enemies*, so
@@ -109,7 +116,7 @@ export class Spawner {
     // Groups arrive on a rhythm that tightens as the wave escalates. The
     // interval is CONTENT, not code: it was `rng.range(0.5, 1.5)` here, which
     // made it both a balance constant in the wrong place and the director's
-    // real throughput cap — one group a second is all it could emit however
+    // real throughput cap - one group a second is all it could emit however
     // much budget it had left.
     const gap = spawnCfg.groupInterval
     this.nextIn = this.rng.range(gap.min, gap.max) / bias
@@ -124,7 +131,7 @@ export class Spawner {
       if (def.firstWave > this.wave) continue
       // Cheaper enemies appear more often; the 1/sqrt keeps heavies rare
       // without making them vanish once the budget grows. The map then biases
-      // that curve — a multiplier rather than a replacement, so an unbiased
+      // that curve - a multiplier rather than a replacement, so an unbiased
       // map is bit-for-bit the roster the game always had.
       /*
          The map's say, or the enemy's own default.
@@ -158,11 +165,54 @@ export class Spawner {
   }
 
   /**
+   * Where the next enemy comes from.
+   *
+   * Mostly just beyond the edge of the screen, all round the player, the way
+   * the genre does it: the arena is ten screens big, and enemies that entered
+   * at its fence spent a wave walking in and were never on screen at once
+   * (v2 critic rounds 1-9, "no horde"). The ring is a rectangle the size of a
+   * 16:9 view at the game's view height plus a margin, so an enemy steps on
+   * from off-screen whichever way it comes. The rest still come over the
+   * fence, and when the ring would put a spawn outside the arena (the player
+   * standing near a fence) the fence takes it.
+   */
+  pickSpawnPoint(
+    playerX: number,
+    playerY: number,
+    arenaW: number,
+    arenaH: number,
+    out: { x: number; y: number },
+  ): void {
+    const ring = spawnCfg.ring
+    if (ring && this.rng.chance(ring.chance)) {
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const a = this.rng.range(0, Math.PI * 2)
+        const c = Math.cos(a)
+        const s = Math.sin(a)
+        // Distance from the player to the view rectangle's edge along this ray.
+        const toEdge = Math.min(
+          Math.abs(c) > 1e-6 ? ring.halfW / Math.abs(c) : Infinity,
+          Math.abs(s) > 1e-6 ? ring.halfH / Math.abs(s) : Infinity,
+        )
+        const d = toEdge + ring.margin + this.rng.range(0, ring.depth)
+        const x = playerX + c * d
+        const y = playerY + s * d
+        if (x >= 8 && y >= 8 && x <= arenaW - 8 && y <= arenaH - 8) {
+          out.x = x
+          out.y = y
+          return
+        }
+      }
+    }
+    this.pickEdgePoint(playerX, playerY, arenaW, arenaH, out)
+  }
+
+  /**
    * A spawn point on an arena edge, at least `minDistanceFromPlayer` away.
    * Falls back to the furthest of a few candidates rather than looping forever
    * when the player is cornered.
    */
-  pickSpawnPoint(
+  private pickEdgePoint(
     playerX: number,
     playerY: number,
     arenaW: number,

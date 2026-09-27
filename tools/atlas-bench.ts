@@ -9,7 +9,7 @@
  * The handoff nominates the atlas as the reason the owner sees ~2fps: one
  * 4096x8192 image, ~134MB decoded, plus a second canvas the same size for the
  * hit flash, and every sprite is a `drawImage` off one of them. A CPU profile
- * cannot answer that — the cost, if it exists, is in the compositor and the
+ * cannot answer that - the cost, if it exists, is in the compositor and the
  * driver, not in JS.
  *
  * So this measures ONLY that: N random 32x64 blits per frame onto a 1600x900
@@ -20,12 +20,12 @@
  * atlas is exonerated on this hardware and the next hypothesis is somebody
  * else's.
  *
- *   a  a 4096x8192 `<img>` — what `public/atlas.png` was before this bench's
+ *   a  a 4096x8192 `<img>` - what `public/atlas.png` was before this bench's
  *      own result split it into pages. Composed from `atlas-0.png` now, since
  *      no single sheet that size is built any more; see `bigCopy` below.
  *   b  a 2048x2048 crop of it, round-tripped through toBlob -> <img>
  *   c  a 1024x1024 crop, same
- *   d  a 4096x8192 <canvas> holding the white silhouette — exactly what
+ *   d  a 4096x8192 <canvas> holding the white silhouette - exactly what
  *      `src/core/atlas.ts` builds for the hit flash
  *   e  alternating a/d every draw: what the flash path actually does, and the
  *      case where source switching could defeat whatever caching exists
@@ -33,7 +33,7 @@
  *      1024x1024 window of it. (a) minus (f) is the cost of reading all over a
  *      big texture; (f) minus (c) is the cost of the texture merely being big.
  *      Without this the bench cannot tell those two apart, and they call for
- *      completely different fixes — repack for locality, or shrink.
+ *      completely different fixes - repack for locality, or shrink.
  *
  * ## Two things that would silently ruin the numbers, and what is done instead
  *
@@ -47,7 +47,7 @@
  * queued GPU work into measurable wall time, and it is a trap: Chrome watches
  * readback frequency and will drop an accelerated canvas to software, which is
  * the very thing being measured. Frame time under rAF is used instead, at two
- * loads — one (600) near what the game issues, one (4000) chosen to sit well
+ * loads - one (600) near what the game issues, one (4000) chosen to sit well
  * past the vsync ceiling so the display refresh cannot flatten the result.
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -102,7 +102,7 @@ const PAGE = [
   '   into 2048-vs-2048 and it would report "no difference" forever.',
   '',
   '   So the big source is composed from a page, tiled to 4096x8192, and',
-  '   round-tripped through toBlob into a real decoded <img> — the same trip',
+  '   round-tripped through toBlob into a real decoded <img> - the same trip',
   "   `crop` already makes, so (a) is the same KIND of source it always was.",
   '   The content is repetitive and the pixels are irrelevant: this measures',
   '   texture size, not what is drawn on it. */',
@@ -255,7 +255,7 @@ try {
 
   const med = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] ?? 0
   const lines = [
-    `# Atlas source microbenchmark${swrast ? ' — SOFTWARE RASTER (--disable-gpu)' : ''}`,
+    `# Atlas source microbenchmark${swrast ? ' - SOFTWARE RASTER (--disable-gpu)' : ''}`,
     '',
     `${REPEATS} repeats, 1s warmup + 3s measured per cell, 1600x900 alpha:false`,
     `canvas, imageSmoothingEnabled=false, random 32x64 sub-rects. Atlas ${size.w}x${size.h}.`,
@@ -272,7 +272,7 @@ try {
       const r = rows.filter((x) => x.cond === cond && x.load === load)
       const fs = r.map((x) => x.frameMedian)
       lines.push(
-        `| ${cond} — ${LABEL[cond]} | ${med(fs).toFixed(2)} | `
+        `| ${cond} - ${LABEL[cond]} | ${med(fs).toFixed(2)} | `
         + `${Math.min(...fs).toFixed(2)}–${Math.max(...fs).toFixed(2)} | `
         + `${med(r.map((x) => x.frameP95)).toFixed(2)} | `
         + `${med(r.map((x) => x.fps)).toFixed(0)} | `

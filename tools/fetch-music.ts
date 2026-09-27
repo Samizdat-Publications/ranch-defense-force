@@ -5,13 +5,13 @@
  *   GEMINI_API_KEY=... npm run music          # only what is missing
  *   GEMINI_API_KEY=... npm run music -- --force   # regenerate everything
  *
- * Offline, like the atlas. The game never calls this — a network round trip
+ * Offline, like the atlas. The game never calls this - a network round trip
  * inside a game loop is not a soundtrack, it is a stutter. The prompts live in
  * `src/content/audio.json` and are the source of truth for the score: tune the
  * prose there and re-run, do not edit the audio.
  *
  * Sound EFFECTS are not here on purpose. Gemini has Lyria for music and TTS for
- * speech and no sound-effects model — verified against the API docs. Asking a
+ * speech and no sound-effects model - verified against the API docs. Asking a
  * music model for a 90ms shotgun report gets you a short piece of music about a
  * shotgun. Effects are synthesised in `src/core/audio.ts` instead.
  */
@@ -73,7 +73,7 @@ async function generate(name: string, prompt: string, file: string): Promise<voi
     const body = await res.text()
     throw new Error(
       `${res.status} ${res.statusText}\n${body.slice(0, 600)}\n\n` +
-      `If this is a 404 on the model, Lyria may not be enabled for this key — ` +
+      `If this is a 404 on the model, Lyria may not be enabled for this key - ` +
       `it is a preview model and access is gated separately from ordinary Gemini.`,
     )
   }
@@ -103,7 +103,7 @@ async function main(): Promise<void> {
       'NOTE: the bash form is a PARSE ERROR in PowerShell. That is what\n' +
       '"is not recognized as the name of a cmdlet" means. Use the $env: form.\n\n' +
       'The three prompts live in src/content/audio.json under music.layers.\n' +
-      'Nothing else is needed — sound effects are synthesised at runtime and do\n' +
+      'Nothing else is needed - sound effects are synthesised at runtime and do\n' +
       'not come from this tool.\n',
     )
     process.exit(1)

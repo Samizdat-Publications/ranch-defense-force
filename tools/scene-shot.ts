@@ -10,7 +10,7 @@
  *
  * Every scene failure this project has had came from the same place: nobody
  * could look. `npm run shot` photographs the SIM through `tools/draw-world.ts`,
- * which is canvas and knows nothing about the title screen — the scenes are
+ * which is canvas and knows nothing about the title screen - the scenes are
  * DOM, built by `src/ui/scene.ts`, and until now the only way to see one was to
  * open a browser by hand. So the owner was the sole pair of eyes on it, and
  * every round trip cost a screenshot and a message. "Everything is floating on
@@ -18,7 +18,7 @@
  * were both caught that way, late, by a human.
  *
  * This drives the actual dev server with the actual code. It is not a
- * re-implementation of the scene, and that is the point — a second renderer
+ * re-implementation of the scene, and that is the point - a second renderer
  * that agrees with itself proves nothing.
  *
  * Chromium is pre-installed in this environment; `playwright` is a dev-only
@@ -55,8 +55,8 @@ const settle = Number(process.argv[4] ?? 1200)
  * Which beat of the home screen's sequence to photograph.
  *
  * `calm` is the default and is what this tool always used to shoot, because it
- * was all there was. The screen now runs a loop — calm, three strikes, the
- * blight, a three-second descent through the ground into the lab — and TIMING a
+ * was all there was. The screen now runs a loop - calm, three strikes, the
+ * blight, a three-second descent through the ground into the lab - and TIMING a
  * screenshot against a 640ms flash is a race nobody wins. So `MenuScreen` reads
  * `rdf.homePhase`, parks on the named state and stops; this writes it.
  *
@@ -68,7 +68,7 @@ const phase = process.argv[5] ?? devPhase
  * `scene` frames the backdrop alone; `page` frames the whole window.
  *
  * The default is the scene, which is right for judging a composition and wrong
- * for judging the interface over it — the class rail, the print panel and the
+ * for judging the interface over it - the class rail, the print panel and the
  * scene picker are in `.home-ui`, a sibling, and a `.home-scene` screenshot has
  * never contained a single pixel of them.
  */
@@ -174,11 +174,11 @@ try {
   */
   const KINDS = ['yard', 'field', 'lab', 'homestead']
   if (!KINDS.includes(kind)) {
-    throw new Error(`unknown scene '${kind}' — expected one of ${KINDS.join(', ')}`)
+    throw new Error(`unknown scene '${kind}' - expected one of ${KINDS.join(', ')}`)
   }
   const PHASES = ['', 'calm', 'flash', 'blight', 'down', 'lab']
   if (!PHASES.includes(phase)) {
-    throw new Error(`unknown phase '${phase}' — expected one of ${PHASES.slice(1).join(', ')}`)
+    throw new Error(`unknown phase '${phase}' - expected one of ${PHASES.slice(1).join(', ')}`)
   }
   await page.addInitScript(
     `try {

@@ -3,7 +3,7 @@
  *
  * Four cards you can reroll at an escalating cost and individually lock to
  * carry to the next shop. That lock is what turns the shop from "more upgrades"
- * into the place you go hunting for the one item that finishes a build — the
+ * into the place you go hunting for the one item that finishes a build - the
  * level-up gives you what the run offers, the shop lets you go get what you
  * need.
  *
@@ -21,13 +21,13 @@ import { buildLedger } from './ledger'
 
 const SLOTS = 4
 
-/** `items.json`'s Reroll Chit — see `buy()`. */
+/** `items.json`'s Reroll Chit - see `buy()`. */
 const REROLL_CHIT_ID = 'rerollChit'
 
 /**
  * Handbill (batch 5, epic, shop-only): the shop shows five cards instead of
  * four, and the first reroll each visit is free. Both are read off the item
- * count directly rather than flattened into `specialItems` — this is the one
+ * count directly rather than flattened into `specialItems` - this is the one
  * card whose effect is the SHOP SCREEN's own shape, not the sim's, so it has
  * no business in the tick loop.
  */
@@ -111,7 +111,7 @@ export class ShopScreen {
        reshowed an id from the previous one and a reroll was free to hand back
        the board it had just swept away. This is the call that rolls the last
        visit into the ban list and opens a fresh seen-set. HELD cards are
-       exempt for free — a held slot is never redrawn, so it is never a draw.
+       exempt for free - a held slot is never redrawn, so it is never a draw.
     */
     pool.beginShopVisit()
 
@@ -127,8 +127,8 @@ export class ShopScreen {
     // Snapshot the stat block so the sheet can mark what changed.
     Object.assign(this.opening, world.player.stats)
 
-    // Handbill: a fifth slot. Grown, never shrunk — `locked` only ever
-    // carries what a PREVIOUS visit held, and a run does not lose an item —
+    // Handbill: a fifth slot. Grown, never shrunk - `locked` only ever
+    // carries what a PREVIOUS visit held, and a run does not lose an item -
     // so a slot that has already existed keeps whatever was pinned in it.
     while (this.locked.length < this.slotCount()) this.locked.push(null)
 
@@ -142,7 +142,7 @@ export class ShopScreen {
 
   /**
    * §7.7: "the shop shows what it uniquely sells and why a visit is worth
-   * stopping for." Counted rather than asserted — a run that has bought out
+   * stopping for." Counted rather than asserted - a run that has bought out
    * the exclusive pool for this visit should not keep reading a line that is
    * no longer true.
    */
@@ -203,7 +203,7 @@ export class ShopScreen {
     this.locked[index] = null
     /*
        Reroll Chit (batch 6 shop sink, `items.json` id `rerollChit`): spending
-       it turns the WHOLE board over for free, right now — no cost, no bump to
+       it turns the WHOLE board over for free, right now - no cost, no bump to
        `rerollsThisShop`'s escalating price, held cards untouched. A UI-only
        effect (the board it redraws belongs to this screen, not the sim), so
        it is special-cased here rather than routed through `Player.addItem`
@@ -249,7 +249,7 @@ export class ShopScreen {
         // §5: a weapon-upgrade card names its weapon; `swap` shows plainly.
         kind: offer.band ?? offer.kind,
         category: categoryLabel(offer.category),
-        // §7.7: the shop's own pitch — a card here that a level-up could
+        // §7.7: the shop's own pitch - a card here that a level-up could
         // never have dealt you.
         exclusive: offer.exclusive,
         name: offer.name,
@@ -260,7 +260,7 @@ export class ShopScreen {
         stack: stackLabel(offer.stacks),
         price: offer.cost,
         affordable,
-        // Unaffordable is UNPRINTED STOCK, not disabled chrome — pulpboard
+        // Unaffordable is UNPRINTED STOCK, not disabled chrome - pulpboard
         // grey, and the plate drops its emboss. It reads as "not for you yet"
         // rather than "broken".
         dead: !affordable,
@@ -270,7 +270,7 @@ export class ShopScreen {
 
       // Hovering previews the card against the live build, in the counter. The
       // listener is on the SLOT rather than the card, because `dead` disables
-      // the card's button and a disabled button fires no pointer events — and
+      // the card's button and a disabled button fires no pointer events - and
       // the card you cannot afford is exactly the one you most want to price.
       const slot = el('div', { class: 'pshop-slot' }, [
         c,
@@ -327,8 +327,8 @@ export class ShopScreen {
    * The counter: who you are, what you are carrying, what it costs.
    *
    * The mockup draws five stat rows against placeholder content. This keeps the
-   * real thing — weapons with their tiers, passives with their stack counts,
-   * every non-zero stat — because the panel's job is to answer "do I need this"
+   * real thing - weapons with their tiers, passives with their stack counts,
+   * every non-zero stat - because the panel's job is to answer "do I need this"
    * and five rows cannot. The chrome is the mockup's; the content is the game's.
    */
   private renderSheet(): void {
@@ -350,11 +350,11 @@ export class ShopScreen {
     }, [el('span', { text: label }), el('b', { text: value })])
 
     /*
-       The ledger CANNOT push the buttons below off screen — the third shop
+       The ledger CANNOT push the buttons below off screen - the third shop
        problem the owner hit at wave 24: 34 items plus 14-odd stat rows ran
        the panel past the bottom of a 1366x768 window with no way to reach
        "BACK TO THE FIELD". Everything that can grow without bound (the
-       ledger sections AND the stat rows — both scale with how long the run
+       ledger sections AND the stat rows - both scale with how long the run
        has gone on) lives inside `.pshop-counter-body`, which is the ONLY
        part of the counter with `overflow-y: auto`; the head above it and the
        feed/reroll/continue footer below it are outside that box and cannot
@@ -403,7 +403,7 @@ export class ShopScreen {
       const changedThisWave = this.opening[key] !== value
       const previewed = preview !== null && preview[key] !== value
       // A stat you have none of is hidden, so the panel stays a build sheet
-      // rather than a table of zeroes — but NOT when the card under the cursor
+      // rather than a table of zeroes - but NOT when the card under the cursor
       // would give you some. "This is the thing that gets you luck at all" is
       // the most interesting answer this panel has, and it was the one row it
       // could never show.

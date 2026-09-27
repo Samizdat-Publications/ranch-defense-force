@@ -15,7 +15,7 @@
  * browser.
  *
  * `/animate-with-text-v3` costs ONE generation for a small frame and takes any
- * still — it does not need a PixelLab object id, so every sprite already sitting
+ * still - it does not need a PixelLab object id, so every sprite already sitting
  * in `assets/` is eligible. That is the whole reason the "bring the map alive"
  * pass is affordable: the art is bought, only the motion is new.
  *

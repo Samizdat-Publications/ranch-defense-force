@@ -28,7 +28,7 @@
  * It only SUBMITS. `npm run character -- <id> <name>` is what pulls the result
  * down and cuts it onto the game's grid, and it already scans every animation
  * in a download rather than just `walk`, so a clip added here needs no change
- * there — only a manifest entry, which that tool prints for you.
+ * there - only a manifest entry, which that tool prints for you.
  */
 import { readFileSync } from 'node:fs'
 import { pixellabKey } from './pixellab-key.ts'
@@ -71,7 +71,7 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
  *
  * `/v2/balance` reports the USD pot; the monthly GENERATION allowance is not on
  * it under any name this tool can rely on, and an earlier version printed
- * `generations 0` from a field that does not exist — which reads as "the
+ * `generations 0` from a field that does not exist - which reads as "the
  * account is empty" when it is nothing of the sort. Report the number that is
  * really there and say nothing about the one that is not.
  */
@@ -95,7 +95,7 @@ if (listOnly) {
 /**
  * Submit one clip.
  *
- * A 429 here is the account-wide ten-job ceiling and NOT a failure — the right
+ * A 429 here is the account-wide ten-job ceiling and NOT a failure - the right
  * response is to wait and try the same clip again, because giving up on it
  * leaves a gap that looks identical to a clip nobody asked for.
  */
@@ -106,7 +106,7 @@ async function submit(j: Job): Promise<boolean> {
        `POST /v2/animate-character`, NOT `/v2/characters/{id}/animations`.
 
        That second path exists and answers OPTIONS with `allow: DELETE`, so
-       posting to it returns 405 rather than 404 — which reads as "wrong verb on
+       posting to it returns 405 rather than 404 - which reads as "wrong verb on
        the right endpoint" and sent the first version of this tool looking for a
        bug in its own body. The endpoints were found by asking the API:
        `/v2/openapi.json` is readable with the same key.

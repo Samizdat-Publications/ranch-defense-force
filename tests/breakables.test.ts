@@ -409,7 +409,7 @@ describe('hit reactions and the injured state', () => {
     expect(e.hitT).toBe(0)
   })
 
-  it('is refractory — a second hit inside the window does not re-arm it', () => {
+  it('is refractory - a second hit inside the window does not re-arm it', () => {
     const w = new World(107, 'hand')
     const i = w.enemies.live
     const e = w.spawnEnemy('farmhand', w.player.x + 200, w.player.y, false)!
@@ -436,8 +436,8 @@ describe('hit reactions and the injured state', () => {
   })
 
   it('the injured threshold is a fraction, and the clip length is positive', () => {
-    // Both are render-only — neither changes damage, speed, or any decision the
-    // sim makes — so this guards a typo rather than a balance choice.
+    // Both are render-only - neither changes damage, speed, or any decision the
+    // sim makes - so this guards a typo rather than a balance choice.
     const c = TUNING.combat as unknown as Record<string, number>
     expect(c.hitClipSeconds).toBeGreaterThan(0)
     expect(c.hitClipSeconds).toBeLessThan(1)
@@ -446,7 +446,7 @@ describe('hit reactions and the injured state', () => {
   })
 
   it('both renderers agree on the state machine order', () => {
-    // Separate copies by design — sim and render never import each other's
+    // Separate copies by design - sim and render never import each other's
     // internals, and draw-world is a tool. Separate copies drift, and a shot
     // that picks a different clip is a picture of a different program.
     const game = readFileSync('src/render/renderer.ts', 'utf8')

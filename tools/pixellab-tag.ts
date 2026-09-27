@@ -1,7 +1,7 @@
 /**
  * Write the ledger's verdicts back onto the PixelLab account as tags.
  *
- *     npm run tag                       # dry run — prints, changes nothing
+ *     npm run tag                       # dry run - prints, changes nothing
  *     npm run tag -- --write
  *     npm run tag -- --write --only=retired
  *
@@ -11,7 +11,7 @@
  * ## Why the account needs to carry this and not just the repo
  *
  * `docs/PIXELLAB_LEDGER.md` is in the repo, which is exactly where a session
- * that is about to generate something is NOT looking — it is looking at the
+ * that is about to generate something is NOT looking - it is looking at the
  * PixelLab web UI, or at `list_objects`, deciding whether the thing it wants
  * already exists. So the verdict has to be visible from that side too, and a
  * tag is the only thing the account carries that a human reads.
@@ -32,8 +32,8 @@
  *
  * ## What it will not do
  *
- * It never REMOVES a tag it does not own. The account's own vocabulary —
- * `rdf-crop-corn`, `rdf-scene-barn`, `wired-carry-drumGun` — is how the
+ * It never REMOVES a tag it does not own. The account's own vocabulary -
+ * `rdf-crop-corn`, `rdf-scene-barn`, `wired-carry-drumGun` - is how the
  * inventory groups itself, and those tags predate this tool and outlive it.
  * Only the seven verdict tags below are managed, and PATCH replaces the whole
  * set, so every run rebuilds `kept + verdict` and nothing else is disturbed.
@@ -52,7 +52,7 @@ let ledger: Sidecar
 try {
   ledger = JSON.parse(readFileSync('docs/pixellab-ledger.json', 'utf8')) as Sidecar
 } catch {
-  console.error('docs/pixellab-ledger.json is missing — run `npm run ledger` first')
+  console.error('docs/pixellab-ledger.json is missing - run `npm run ledger` first')
   process.exit(1)
 }
 const inv = JSON.parse(readFileSync('docs/pixellab-inventory.json', 'utf8')) as
@@ -72,12 +72,12 @@ const MANAGED = /^rdf-(wired|packed-unused|surplus|unclaimed|review|retired|open
  * A tag safe for the account's own vocabulary: lower case, hyphens, short.
  *
  * PixelLab caps a tag at 50 characters and the reason is the useful half, so
- * the slug keeps the FRONT of the sentence — "packed weapon icon no weapon owns
+ * the slug keeps the FRONT of the sentence - "packed weapon icon no weapon owns
  * it" survives, the paragraph about the upgrade roster does not, and the full
  * text is one lookup away in the ledger.
  */
 function slug(s: string): string {
-  const head = s.replace(/^OPEN:\s*/, '').split(/[—;(]|\s--\s|,\s/)[0] ?? s
+  const head = s.replace(/^OPEN:\s*/, '').split(/[ - ;(]|\s--\s|,\s/)[0] ?? s
   return `ledger-${head}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-')
     .slice(0, 50).replace(/-+$/, '')
 }
@@ -152,7 +152,7 @@ await Promise.all(Array.from({ length: LANES }, async () => {
 
 console.log(`\nverdicts: ${Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(', ')}`)
 if (!write) {
-  console.log(`\n${changed} asset(s) would be retagged. Dry run — nothing was written.`)
+  console.log(`\n${changed} asset(s) would be retagged. Dry run - nothing was written.`)
   console.log('re-run with --write (and PIXELLAB_API_KEY set) to apply.')
 } else {
   console.log(`\n${changed - failed} asset(s) retagged${failed ? `, ${failed} FAILED` : ''}.`)

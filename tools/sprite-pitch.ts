@@ -9,7 +9,7 @@
  * walk bands are on a 64px pitch with the animal centred in each frame; read as
  * 32px cells they look like twice as many frames, each one half an animal. That
  * misreading survived a whole milestone and got written up in NOTES as "the
- * front and back clips are drawn at incompatible proportions" — the art was
+ * front and back clips are drawn at incompatible proportions" - the art was
  * fine, the ruler was wrong.
  *
  * Run this on any new sheet before writing a manifest entry for it. If the

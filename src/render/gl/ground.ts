@@ -132,11 +132,14 @@ void main() {
     // Ploughed ground: furrows across the plot, seven pixels apart, from a
     // soil ramp. The tile only adds grain. The wang tiles for tilled soil
     // either carry transparent holes or read as camouflage at this scale.
-    float row = mod(w.y, 7.0);
+    // Softer bands that wander a pixel or two, and grit from noise rather
+    // than a tiling texture: hard straight bands read as wooden planks with a
+    // seam where the texture repeated (critic round 11).
+    float row = mod(w.y + floor((n(w, 90.0) - 0.5) * 5.0), 7.0);
     vec3 ridge = vec3(0.53, 0.4, 0.26);
-    vec3 s = row < 1.0 ? ridge * 1.18 : (row < 3.0 ? ridge : (row < 5.0 ? ridge * 0.8 : ridge * 0.56));
-    float grit = dot(tile(4, p).rgb, vec3(0.333));
-    s *= 0.86 + grit * 0.32;
+    vec3 s = row < 1.0 ? ridge * 1.1 : (row < 3.0 ? ridge : (row < 5.0 ? ridge * 0.88 : ridge * 0.74));
+    float grit = n(w, 3.0) * 0.6 + hash(floor(w / vec2(2.0, 1.0))) * 0.4;
+    s *= 0.9 + grit * 0.2;
     if (row >= 1.0 && row < 3.0 && hash(floor(w / vec2(4.0, 1.0)) + 5.0) > 0.9) s *= 0.78;
     c = vec4(s, 1.0);
   } else if (t == 1) {
@@ -145,7 +148,9 @@ void main() {
     // The lighter grass only in the broadest swells, and toned toward the
     // base: big pale patches read as camouflage (critic round 7).
     float d = (n(w, 31.0) - 0.5) * 0.08;
-    c = gp + d > 0.74 ? tile(1, p) * vec4(0.95, 0.95, 0.95, 1.0) : (gp + d < 0.3 ? tile(2, p) : tile(0, p));
+    // The darker grass only half as dark as its tile: at full strength its
+    // patches read as big dark circles with no cause (critic round 9).
+    c = gp + d > 0.74 ? tile(1, p) * vec4(0.95, 0.95, 0.95, 1.0) : (gp + d < 0.3 ? mix(tile(2, p), tile(0, p), 0.5) : tile(0, p));
   }
 
   // Blight turns grass and paths alike, in bands that never reorder.
@@ -185,7 +190,8 @@ void main() {
     vec2 cell = floor(w / 14.0);
     float h = hash(cell * 1.7 + 3.1);
     float drift = smoothstep(0.5, 0.72, n(cell * 14.0, 150.0));
-    if (h < 0.12 + 0.5 * drift) {
+    // Sparser (round 16: "a visibly repeating grid of grass tufts").
+    if (h < 0.07 + 0.38 * drift) {
       ivec2 origin = ivec2(cell * 14.0) + ivec2(int(hash(cell + 7.0) * 9.0), int(hash(cell + 11.0) * 9.0));
       ivec2 q = p - origin;
       float kind = hash(cell + 19.0);
@@ -194,9 +200,10 @@ void main() {
         int shape = kind < 0.3 ? 0x73880 : 0x23940;
         if (stamp(shape, q)) c.rgb *= 0.66;
         else if (stamp(0x224, q)) c.rgb = mix(c.rgb, vec3(0.78, 0.86, 0.42), 0.6);
-      } else if (kind < 0.8) {
-        // a small flower
-        vec3 petal = kind < 0.64 ? vec3(0.95, 0.93, 0.82) : (kind < 0.72 ? vec3(0.96, 0.8, 0.3) : vec3(0.72, 0.56, 0.86));
+      } else if (kind < 0.66) {
+        // a small flower, cream or buttercup: lavender ones read as mould on
+        // the grass (round 15), and there were twice as many
+        vec3 petal = kind < 0.6 ? vec3(0.9, 0.88, 0.78) : vec3(0.93, 0.78, 0.3);
         if (stamp(0x23880, q)) c.rgb = petal;
         if (q == ivec2(2, 2)) c.rgb = vec3(0.9, 0.65, 0.2);
       } else if (kind < 0.9) {

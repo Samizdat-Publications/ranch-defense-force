@@ -5,7 +5,7 @@
  *   npm run shot -- [ticks] [out.png] [seed] [class]
  *
  * This exists because verifying "does it look right" through a browser is slow
- * and awkward, and because the sim already runs headlessly — the only missing
+ * and awkward, and because the sim already runs headlessly - the only missing
  * piece was a blitter, and `tools/png.ts` already had one. The drawing lives in
  * `draw-world.ts`; this file is the run that produces something worth drawing.
  */

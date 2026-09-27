@@ -13,7 +13,7 @@
  */
 import type { World } from '../sim/world'
 import { Camera } from './camera'
-import {
+import { type EnemyDef,
   CARRY, ENEMIES, ITEMS, NODES, TUNING, WEAPONS, assignCarrySlots, carryAimsOf, carryAngleOf,
   isHeldSlot, carryAnchorOf, carryHeightOf, carryPivotOf, carrySpriteOf, carryThrustOf,
   itemCardSprite, mapIsBlighted, projectileScaleFor, swingStyleOf, thrustPhase, type CarrySlot,
@@ -51,8 +51,17 @@ const PALLOR = RENDER.enemyPallor ?? 0
 const EYE_DAY = RENDER.eyeGlowDay ?? 0
 const XP_TINT = (RENDER_ANY.xpTint as number[] | undefined) ?? [1, 1, 1]
 const STAIN_KEEP = Math.max(1, Math.round(RENDER.stainKeep ?? 3))
+const CRIT_NUMBERS_ONLY = (RENDER as { damageNumbers?: string }).damageNumbers !== 'all'
 const STAIN_WEATHER = RENDER.stainWeather ?? 0.94
 const FX_SCALE = RENDER.fxScale ?? 1
+/** Seed value from which a merged seed draws big (see world.dropSeed). */
+const XP_BIG = 3
+/** Feed value from which a merged sack draws as the full-size token. */
+const FEED_BIG = 8
+/** Enemies drawn as a flying top-down sprite (the Duster), and everything
+ *  that sprays like one (the Duster and the Spray Rig): plume and lamps. */
+const PLANE_TYPES = new Set(Object.keys(ENEMIES).filter((k) => !!(ENEMIES[k] as EnemyDef).plane))
+const SPRAY_TYPES = new Set(Object.keys(ENEMIES).filter((k) => (ENEMIES[k] as EnemyDef).behaviour === 'duster'))
 
 const JAB = TUNING.fx.jab as {
   tines: number; tineSpacing: number; lengthFraction: number
@@ -95,7 +104,10 @@ const COL = {
   telegraph: parseColour('rgba(220, 90, 90, 0.28)'),
   blood: parseColour('#8a2626'),
   outlineEnemy: parseColour('rgba(14, 10, 8, 1)'),
-  outlineMoon: parseColour('rgba(120, 138, 182, 0.75)'),
+  // Dark at night as by day (round 12): a pale body inside a dark line is
+  // what separates the crowd from dark soil. A moonlit line read as an x-ray
+  // (round 11) and a dim violet one as ghosts the colour of the ground.
+  outlineMoon: parseColour('rgba(22, 18, 30, 0.9)'),
   outlineElite: parseColour('#f0d060'),
   outlineText: parseColour('#1a1410'),
   outlinePlayer: parseColour('rgba(255, 232, 168, 0.9)'),
@@ -117,6 +129,8 @@ interface DrawItem {
   h: number
   /** How far toward white this draw is flashed, 0..1. */
   flash: number
+  /** Multiplies a framed sprite; null draws it as it is. */
+  tint: RGBA | null
   scaleX: number
   scaleY: number
   rotation: number
@@ -128,6 +142,8 @@ interface DrawItem {
   caster: boolean
   /** Gets a soft contact shadow at its feet (actors, not buildings or fences). */
   contact: boolean
+  /** Drawn after every depth-sorted item (the player and what he carries). */
+  top: boolean
   /** Glows in the dark and feeds the bloom, 0..1. */
   emissive: number
 }
@@ -145,6 +161,8 @@ export interface DrawExtra {
   alpha: number
   emissive: number
   casts: boolean
+  /** Multiplies a framed sprite's colour (the colour above is a frameless quad's fill). */
+  tint?: RGBA
 }
 
 /** A light the sim does not own. */
@@ -176,6 +194,8 @@ export class GLRenderer {
   private readonly dev: GLDevice
   /** String-free frame lookups; null until the atlas is here. */
   private readonly frames: FrameCache | null
+  /** The full feed token, looked up once. */
+  private readonly feedBig: AtlasFrame | null
   private terrainTex: WebGLTexture | null = null
   private bakedSet = ''
   private readonly day = newDayState()
@@ -185,9 +205,13 @@ export class GLRenderer {
   /** The same outline, alpha 1 + pallor: the sprite shader reads the excess as the curse. */
   private readonly cursedOutline: RGBA = [0, 0, 0, 0]
   private readonly cursedElite: RGBA = [0, 0, 0, 0]
+  /** Loose crops' brightness (tuning.render.cropBed.shade). */
+  private readonly cropTint: RGBA = TUNING.render.cropBed.shade as RGBA
   /** A boss: the day's outline with a trace of curse, which buys it the
    *  moonlit rim and self-light after dark without draining its colours. */
   private readonly bossOutline: RGBA = [0, 0, 0, 0]
+  /** The plane's moonlit rim; alpha set per frame from the night. */
+  private readonly planeRim: RGBA = [0.62, 0.64, 0.74, 0]
   private readonly fogRgb = [0, 0, 0]
   private readonly decals: Target
   private scenery: Placed[] = []
@@ -212,6 +236,10 @@ export class GLRenderer {
   /** World y that maps to bucket 0: the top of the margin the camera can see. */
   private readonly bucketOffset: number
   private readonly digits = new Int8Array(12)
+  /** One ordinary damage number per 30x14 patch of screen a frame: the late
+   *  waves stacked ten identical "115"s on one spot (round 12), and at 22
+   *  px two neighbours still ran together into "5085" (round 13). */
+  private readonly numberCells = new Uint8Array(16384)
   private lastWeather = -1
   /** This frame's fireflies (x, y, strength), lit in the light pass. */
   private readonly fireflyLights = new Float32Array(36 * 3)
@@ -238,6 +266,7 @@ export class GLRenderer {
   ) {
     this.dev = GLDevice.for(canvas)
     this.frames = atlas ? new FrameCache(atlas) : null
+    this.feedBig = atlas?.get('pickup.feedBig') ?? null
     if (atlas) this.dev.useAtlas(atlas)
     this.camera = new Camera(this.dev.viewW, this.dev.viewH, world.arenaW, world.arenaH)
 
@@ -260,9 +289,9 @@ export class GLRenderer {
 
   private blankItem(): DrawItem {
     return {
-      x: 0, y: 0, liftY: 0, frame: null, colour: COL.void, w: 0, h: 0, flash: 0,
+      x: 0, y: 0, liftY: 0, frame: null, colour: COL.void, w: 0, h: 0, flash: 0, tint: null,
       scaleX: 1, scaleY: 1, rotation: 0, outline: NO_OUTLINE, alpha: 1, pivotX: 0, pivotY: 0,
-      caster: false, contact: false, emissive: 0,
+      caster: false, contact: false, emissive: 0, top: false,
     }
   }
 
@@ -382,11 +411,17 @@ export class GLRenderer {
     dev.texQuad(this.decals.tex, 0, 0, w.arenaW, w.arenaH, 0, 1, 1, 0, this.vx, this.vy, this.tw, this.th)
     this.drawFog(day.fog, day.night)
     dev.bindSpriteTextures()
+    this.drawCropBeds()
+    this.drawUnderBackdrop()
     this.drawArenaBurn()
     this.drawHazards()
     this.drawTelegraphs()
     this.flushShapes()
     this.drawEffects(true)
+    this.drawPlanes(alpha, true)
+    // Pickups lie on the ground: under whatever stands on them, a boss
+    // included. Drawn after the sprites they sat on top of a bull's back.
+    this.drawPickups(alpha)
     this.flushSprites()
     this.drawPlayerMark(pxi, pyi)
     this.drawLevelPulse(pxi, pyi)
@@ -401,13 +436,19 @@ export class GLRenderer {
     this.drawJabs()
     this.flushShapes()
     this.sortAndDraw(day.shadowX, day.shadowY, day.shadowAlpha)
-    this.drawDusterPlume(alpha)
+    this.drawDusterPlume(alpha, false)
     this.flushShapes()
 
     this.drawEffects(false)
-    this.drawPickups(alpha)
     this.drawParticles()
     this.drawOverhead(pxi, pyi)
+    // What flies, over everything that stands: its spray, then the plane.
+    this.flushSprites()
+    this.drawDusterPlume(alpha, true)
+    // The spray is faintly phosphorescent, so it reads over the dark field.
+    this.dev.shapes.flush(this.vx, this.vy, this.tw, this.th, 0.35)
+    this.drawPlanes(alpha, false)
+    this.drawPropBlur(alpha)
     // The player's outline, over everything: findable in any crowd.
     if (this.playerFrame) {
       this.spr(this.playerFrame, this.playerX, this.playerY, 0, 0, 0, 1, 1, -1, 0, COL.outlinePlayer)
@@ -418,7 +459,9 @@ export class GLRenderer {
     }
     this.flushSprites()
     this.drawBossMarker()
-    this.flushShapes()
+    // Self-lit: drawn into the lit layer, the arrow to an off-screen boss
+    // went dark with the field (round 16: "nothing points to it").
+    this.dev.shapes.flush(this.vx, this.vy, this.tw, this.th, 1.2)
     this.drawDamageNumbers()
     this.flushSprites()
 
@@ -442,7 +485,9 @@ export class GLRenderer {
     cp.time = w.elapsed
     cp.originX = this.vx
     cp.originY = this.vy
-    cp.clouds = 0.45 * (1 - day.night)
+    // Cloud shadows at a whisper: stronger, reviewers read them as big dark
+    // circles on the field with no cause (critic rounds 5, 9).
+    cp.clouds = 0.22 * (1 - day.night)
     // Lightning lights the whole field for a moment: you see what is out there.
     const bolt = this.holdCamera ? 0 : lightning(w.elapsed, day.t)
     if (bolt > 0) {
@@ -498,10 +543,20 @@ export class GLRenderer {
       const h0 = 3 + ((h >> 6) & 1)
       batch.push(x - 1, y, 0, 0, w0, h0, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
       batch.push(x, y - 1, 0, 0, w0 - 2, h0 + 2, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a, 0, 0, 0, 0, 0, 0)
-      const sx = ((h >> 7) & 1) ? 1 : -1
-      batch.push(x + sx * (w0 + 1), y + ((h >> 8) & 1), 0, 0, 2, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.85, 0, 0, 0, 0, 0, 0)
-      if ((h >> 9) & 1) batch.push(x - sx * 3, y + h0 + 1, 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.8, 0, 0, 0, 0, 0, 0)
-      if ((h >> 10) & 1) batch.push(x + sx * 2, y - 3, 0, 0, 1, 1, 0, 0, PAGE_SOLID, 0, 1, 1, c[0], c[1], c[2], a * 0.7, 0, 0, 0, 0, 0, 0)
+      // A thrown spray off one side, tapering: rounds 12 and 13 read the old
+      // pool-and-two-flecks as "evenly spaced round red dots", confetti.
+      const ang = ((h >> 13) & 7) * (Math.PI / 4) + ((h >> 16) & 3) * 0.19
+      const dx = Math.cos(ang)
+      const dy = Math.sin(ang) * 0.6
+      const len = 4 + ((h >> 18) & 3)
+      for (let k = 0; k < len; k++) {
+        const d = w0 * 0.5 + 2 + k * 2.4
+        const sz = k < 2 ? 2 : 1
+        batch.push(Math.round(x + dx * d), Math.round(y + dy * d), 0, 0, sz, sz, 0, 0, PAGE_SOLID, 0, 1, 1,
+          c[0], c[1], c[2], a * (0.95 - k * 0.1), 0, 0, 0, 0, 0, 0)
+      }
+      const dk = acid ? COL.acid : COL.bloodDark
+      batch.push(x, y, 0, 0, Math.max(2, w0 - 3), Math.max(1, h0 - 1), 0, 0, PAGE_SOLID, 0, 1, 1, dk[0] * 0.8, dk[1] * 0.8, dk[2] * 0.8, a, 0, 0, 0, 0, 0, 0)
     }
     s.length = 0
     this.decals.bind()
@@ -541,6 +596,7 @@ export class GLRenderer {
     const it = this.items[this.itemCount++]
     it.frame = null
     it.flash = 0
+    it.tint = null
     it.liftY = 0
     it.scaleX = 1
     it.scaleY = 1
@@ -553,6 +609,7 @@ export class GLRenderer {
     it.h = 0
     it.caster = false
     it.contact = false
+    it.top = false
     it.emissive = 0
     return it
   }
@@ -650,7 +707,16 @@ export class GLRenderer {
       const f = sprite ? atlas.get(sprite) : undefined
       if (f) return f
     }
-    const def = WEAPONS[p.weaponId] as { projectileClip?: string; shardClip?: string; sprite?: string } | undefined
+    const def = WEAPONS[p.weaponId] as { projectileClip?: string; shardClip?: string; sprite?: string; tierSprites?: string[] } | undefined
+    // What orbits you is the weapon itself, spinning: the Scythe's blades drew
+    // a pack "death wave" clip that five reviewers read as ghost skulls.
+    if (p.type === 'orbit' && def?.tierSprites) {
+      let tier = 1
+      const ws = this.world.player.weapons
+      for (let i = 0; i < ws.length; i++) if (ws[i].id === p.weaponId) { tier = ws[i].tier; break }
+      const f = atlas.get(def.tierSprites[Math.min(def.tierSprites.length, Math.max(1, tier)) - 1])
+      if (f) return f
+    }
     const element = this.world.player.element
     const base = p.behaviour === 'stream' && def?.shardClip && p.weaponId === 'drumGun'
       ? def.shardClip
@@ -692,6 +758,7 @@ export class GLRenderer {
 
     for (let i = 0; i < this.backdrop.length; i++) {
       const sc = this.backdrop[i]
+      if (sc.under) continue
       const f = sc.frame
       if (sc.x + f.ox + f.w < left || sc.x + f.ox > right || sc.y < top || sc.y + f.oy > bottom) continue
       const it = this.push()
@@ -700,6 +767,7 @@ export class GLRenderer {
       it.y = sc.y
       it.frame = f
       it.caster = true
+      if (sc.tint) it.tint = sc.tint
     }
 
     for (let i = 0; i < this.scenery.length; i++) {
@@ -724,6 +792,9 @@ export class GLRenderer {
       it.frame = this.propFrame(blighted && this.frames && c.sprite.startsWith('crop.') ? this.frames.blighted(c.sprite) : c.sprite, c.x, c.y)
       it.flash = c.flash > 0 ? HIT_FLASH : 0
       it.colour = COL.crop
+      // Crops sit back a shade, as the rows do: scenery you can harvest, not
+      // loot (round 11's "orange mush").
+      if (c.kind === 'crop') it.tint = this.cropTint
       it.caster = true
       it.contact = true
       it.w = c.radius * 2
@@ -768,6 +839,7 @@ export class GLRenderer {
       const x = e.px + (e.x - e.px) * alpha
       const y = e.py + (e.y - e.py) * alpha
       if (x < left || x > right || y < top || y > bottom) continue
+      if (PLANE_TYPES.has(e.typeId)) continue
       const it = this.push()
       if (!it) break
 
@@ -794,7 +866,7 @@ export class GLRenderer {
       it.emissive = -Math.max(EYE_DAY, this.day.night)
 
       const bossScale = Math.round(bossDef?.drawScale ?? 1)
-      if (bossScale > 1 || e.typeId === 'duster') it.flash *= 0.4
+      if (bossScale > 1 || SPRAY_TYPES.has(e.typeId)) it.flash *= 0.4
       const scale = (e.elite ? 1.5 : 1) * bossScale
       it.scaleX = scale
       it.scaleY = scale
@@ -845,7 +917,7 @@ export class GLRenderer {
       it.y = y
       it.frame = frame ?? null
       it.colour = p.type === 'melee' || p.type === 'orbit' ? COL.melee : COL.projectile
-      it.emissive = p.type === 'melee' || p.type === 'orbit' || p.behaviour === 'minionHunt' || p.type === 'placeable' ? 0 : 0.3
+      it.emissive = p.type === 'melee' || p.type === 'orbit' || p.behaviour === 'minionHunt' || p.type === 'placeable' ? 0 : 0.06 + 0.16 * this.day.night
       it.caster = p.behaviour === 'minionHunt' || p.type === 'placeable'
       it.w = p.radius * 2
       it.h = p.radius * 2
@@ -877,11 +949,15 @@ export class GLRenderer {
       it.emissive = e.emissive
       it.caster = e.casts
       it.contact = e.casts
+      if (e.tint) it.tint = e.tint
     }
 
     this.playerFrame = null
     if (this.hidePlayer) return
     assignCarrySlots(w.player.weapons, this.carrySlots, w.player.classId)
+    // The player and his kit draw over the crowd, not among it: round 18 found
+    // a zombie standing in front of him leaving only his outline showing.
+    const firstOwn = this.itemCount
     this.collectCarried(true)
     this.collectHarvestTools(true)
 
@@ -906,6 +982,7 @@ export class GLRenderer {
 
     this.collectCarried(false)
     this.collectHarvestTools(false)
+    for (let i = firstOwn; i < this.itemCount; i++) this.items[i].top = true
   }
 
   private collectCarried(behind: boolean): void {
@@ -1017,7 +1094,7 @@ export class GLRenderer {
     const rows = this.bucketRows
     const off = this.bucketOffset
     for (let i = 0; i < n; i++) {
-      let b = ((this.items[i].y + off) / BUCKET) | 0
+      let b = this.items[i].top ? rows - 1 : ((this.items[i].y + off) / BUCKET) | 0
       if (b < 0) b = 0
       else if (b >= rows) b = rows - 1
       this.bucketCounts[b]++
@@ -1029,7 +1106,7 @@ export class GLRenderer {
       running += this.bucketCounts[b]
     }
     for (let i = 0; i < n; i++) {
-      let b = ((this.items[i].y + off) / BUCKET) | 0
+      let b = this.items[i].top ? rows - 1 : ((this.items[i].y + off) / BUCKET) | 0
       if (b < 0) b = 0
       else if (b >= rows) b = rows - 1
       this.order[this.bucketCursor[b]++] = i
@@ -1041,8 +1118,9 @@ export class GLRenderer {
       const f = it.frame
       const y = it.y - it.liftY
       if (f) {
+        const t = it.tint
         this.spr(f, it.x, y, it.pivotX, it.pivotY, it.rotation, it.scaleX, it.scaleY, it.alpha, it.flash,
-          it.outline, 1, 1, 1, it.emissive, it.caster, it.liftY)
+          it.outline, t ? t[0] : 1, t ? t[1] : 1, t ? t[2] : 1, it.emissive, it.caster, it.liftY)
       } else {
         const c = it.colour
         const fl = it.flash
@@ -1124,7 +1202,9 @@ export class GLRenderer {
       }
     }
 
-    const shot = 0.1 + 0.5 * night
+    // Rounds glint rather than blaze: at 0.6 a volley of cold rounds drew
+    // white blobs bigger than the player after dark (round 13 tour).
+    const shot = 0.08 + 0.3 * night
     let budget = 360
     for (let i = 0; i < w.projectiles.live && budget > 0; i++) {
       const q = w.projectiles.items[i]
@@ -1147,7 +1227,12 @@ export class GLRenderer {
       if (e.under) continue
       if (e.x < left || e.x > right || e.y < top || e.y > bottom) continue
       const k = Math.max(0, e.life / e.maxLife)
-      L.point(e.x, e.y, 44 * Math.max(0.6, e.scale), 1, 0.62, 0.32, (0.2 + 0.7 * night) * k)
+      // A blast lights the field; a spark on a hit only glints. Every hit
+      // lighting a 44 px pool put a warm halo on each knot of the late crowd
+      // (round 12).
+      const big = e.clip.startsWith('explosion') || e.clip.startsWith('shockwave') || e.clip.startsWith('bigImpact')
+      if (big) L.point(e.x, e.y, 40 * Math.max(0.6, e.scale), 1, 0.62, 0.32, (0.15 + 0.4 * night) * k)
+      else L.point(e.x, e.y, 20, 1, 0.7, 0.4, (0.05 + 0.18 * night) * k)
     }
 
     for (let i = 0; i < w.hazards.live; i++) {
@@ -1156,9 +1241,12 @@ export class GLRenderer {
       const fade = h.life < 0.5 ? Math.max(0, h.life / 0.5) : 1
       if (h.kind === 'damage') {
         const fl = 0.85 + 0.15 * Math.sin(t * 17 + h.x)
-        L.point(h.x, h.y, h.radius * 1.6, 1, 0.52, 0.2, (0.25 + 0.7 * night) * fl * fade)
+        // A fire on the ground glows; it does not floodlight. At 0.95 after
+        // dark every burning patch threw its own spotlight (round 16: "blotchy
+        // with random spotlights"); the lantern is the light at night.
+        L.point(h.x, h.y, h.radius * 1.15, 1, 0.52, 0.2, (0.1 + 0.3 * night) * fl * fade)
       } else if (h.kind === 'gas') {
-        L.point(h.x, h.y, h.radius * 1.2, 0.72, 0.92, 0.3, (0.03 + 0.14 * night) * fade)
+        L.point(h.x, h.y, h.radius * 0.9, 0.72, 0.92, 0.3, (0.01 + 0.05 * night) * fade)
       } else if (h.kind === 'acid') {
         L.point(h.x, h.y, h.radius * 1.3, 0.5, 1, 0.3, (0.05 + 0.3 * night) * fade)
       }
@@ -1176,11 +1264,29 @@ export class GLRenderer {
 
     for (let i = 0; i < w.enemies.live; i++) {
       const e = w.enemies.items[i]
-      if (e.typeId !== 'duster' || e.dying > 0) continue
+      if (!SPRAY_TYPES.has(e.typeId) || e.dying > 0) continue
       const x = e.px + (e.x - e.px) * alpha
       const y = e.py + (e.y - e.py) * alpha
       const dx = Math.cos(e.facing)
       const dy = Math.sin(e.facing)
+      const plane = (ENEMIES[e.typeId] as EnemyDef).plane
+      if (plane) {
+        // The plane lights the field it is flying over: a wide, soft
+        // searchlight thrown ahead along its heading (inner and outer far
+        // apart, so there is no hard edge to read as a fault) and a hot glow
+        // at the engine. At the climax it should be the brightest thing out
+        // there (critic round 10: "the least visible thing on screen").
+        // Thrown from well ahead of the nose: lighting reaches every pixel at
+        // its screen position, altitude or not, and from under the plane the
+        // beam bleached its own wings white (round 13 tour).
+        // Three soft pools along the heading rather than a cone: the cone's
+        // apex drew a hard white triangle on the ground (round 15).
+        L.point(x + dx * 130, y + dy * 100, 90, 1, 0.9, 0.72, 0.15 + 0.6 * night, 0.8)
+        L.point(x + dx * 220, y + dy * 170, 120, 1, 0.9, 0.72, 0.12 + 0.5 * night, 0.8)
+        L.point(x + dx * 320, y + dy * 245, 140, 1, 0.9, 0.72, 0.08 + 0.35 * night, 0.8)
+        L.point(x + dx * 46, y - plane.altitude + dy * 46, 34, 1, 0.55, 0.25, 0.15 + 0.3 * night, 1)
+        continue
+      }
       // A pool of lamp light on the ground ahead of it; the cone it replaced
       // drew a hard-edged trapezoid that read as a rendering fault.
       L.point(x + dx * 90, y - 10 + dy * 50, 120, 1, 0.82, 0.55, 0.1 + 0.4 * night, 0.85)
@@ -1189,33 +1295,152 @@ export class GLRenderer {
   }
 
   /**
-   * The Duster trails its spray: a drift of sour yellow-green puffs off the
-   * boom behind it, so the thing reads as a crop-dusting rig and not the farm's
-   * tractor, and you can see which way it is heading from its wake. Pure
-   * function of the boss's position, heading and the sim clock.
+   * The spray: a drift of sour yellow-green puffs. A ground rig trails one
+   * plume off the boom behind it; the plane trails two, one from under each
+   * wing, falling from its altitude to the ground over the length of the wake,
+   * so you can see where the strip is landing and which way it is heading.
+   * Pure function of position, heading and the sim clock.
    */
-  private drawDusterPlume(alpha: number): void {
+  private drawDusterPlume(alpha: number, planes: boolean): void {
     const w = this.world
     const S = this.dev.shapes
     for (let i = 0; i < w.enemies.live; i++) {
       const e = w.enemies.items[i]
-      if (e.typeId !== 'duster' || e.dying > 0) continue
+      if (!SPRAY_TYPES.has(e.typeId) || e.dying > 0) continue
+      const plane = (ENEMIES[e.typeId] as EnemyDef).plane
+      if (!!plane !== planes) continue
       const x = e.px + (e.x - e.px) * alpha
       const y = e.py + (e.y - e.py) * alpha
       const bx = -Math.cos(e.facing)
       const by = -Math.sin(e.facing)
       const t = w.elapsed
       const drift = (t * 26) % 18
-      for (let k = 0; k < 9; k++) {
-        const d = 58 + k * 18 + drift
-        const side = Math.sin(k * 1.9 + t * 1.3) * (4 + k * 2.4)
-        const px = x + bx * d - by * side
-        const py = y - 18 + by * d * 0.7 + bx * side - k * 2
-        const fade = 1 - (k + drift / 18) / 9
-        S.disc(Math.round(px), Math.round(py), 7 + k * 2.4, 0.64, 0.66, 0.32, 0.2 * fade)
-        S.disc(Math.round(px + 2), Math.round(py - 2), 4 + k * 1.6, 0.8, 0.82, 0.46, 0.12 * fade)
+      if (!plane) {
+        for (let k = 0; k < 9; k++) {
+          const d = 58 + k * 18 + drift
+          const side = Math.sin(k * 1.9 + t * 1.3) * (4 + k * 2.4)
+          const px = x + bx * d - by * side
+          const py = y - 18 + by * d * 0.7 + bx * side - k * 2
+          const fade = 1 - (k + drift / 18) / 9
+          S.disc(Math.round(px), Math.round(py), 7 + k * 2.4, 0.64, 0.66, 0.32, 0.2 * fade)
+          S.disc(Math.round(px + 2), Math.round(py - 2), 4 + k * 1.6, 0.8, 0.82, 0.46, 0.12 * fade)
+        }
+        continue
+      }
+      // Wingtip booms: perpendicular to the heading, a little behind centre,
+      // at a fraction of the art's own width so a bigger plane sprays wider.
+      const alt = plane.altitude
+      const boom = (this.atlas?.get(plane.sprite)?.w ?? 96) * 0.36
+      for (let side = -1; side <= 1; side += 2) {
+        // (by, -bx) is the heading turned a right angle.
+        const wx = x + by * side * boom + bx * 14
+        const wy = y - bx * side * boom + by * 14
+        for (let k = 0; k < 10; k++) {
+          const d = 12 + k * 15 + drift
+          const fall = Math.min(1, (k + drift / 18) / 7)
+          const px = wx + bx * d + Math.sin(k * 2.3 + t * 1.7 + side) * (2 + k * 1.6)
+          const py = wy + by * d - alt * (1 - fall)
+          const fade = 1 - (k + drift / 18) / 10
+          // Sickly green and thick enough to dodge (round 16: "no spray").
+          S.disc(Math.round(px), Math.round(py), 5 + k * 1.9, 0.6, 0.8, 0.28, 0.32 * fade)
+          S.disc(Math.round(px + 1), Math.round(py - 1), 3 + k * 1.2, 0.78, 0.92, 0.45, 0.2 * fade)
+        }
       }
     }
+  }
+
+  /**
+   * The plane: its drop shadow on the ground layer, or the plane itself above
+   * everything that stands. Rotated on its own centre to its heading (the art
+   * is top-down with the nose up). Dying, it spirals down to its shadow.
+   */
+  private drawPlanes(alpha: number, shadow: boolean): void {
+    const w = this.world
+    const atlas = this.atlas
+    if (!atlas) return
+    for (let i = 0; i < w.enemies.live; i++) {
+      const e = w.enemies.items[i]
+      if (!PLANE_TYPES.has(e.typeId)) continue
+      const def = ENEMIES[e.typeId] as EnemyDef
+      const plane = def.plane
+      if (!plane) continue
+      const f = atlas.get(plane.sprite)
+      if (!f) continue
+      const x = e.px + (e.x - e.px) * alpha
+      const y = e.py + (e.y - e.py) * alpha
+      let alt = plane.altitude
+      let rot = e.facing + Math.PI / 2
+      let sc = 1
+      if (e.dying > 0) {
+        const total = (def.deathSeconds as number | undefined) ?? TUNING.combat.deathSpinSeconds
+        const t = Math.max(0, Math.min(1, e.dying / total))
+        alt *= t
+        rot += (1 - t) * (1 - t) * 7
+        sc = 0.8 + 0.2 * t
+      }
+      const ox = -f.w / 2 - f.ox
+      const oy = -f.h / 2 - f.oy
+      if (shadow) {
+        // No sun, no hard shadow: after dark a full one read as a second plane
+        // stacked under the first (round 12), and none at all as a plane
+        // parked on the ground (round 13). A faint moon shadow says airborne.
+        const a = 0.34 * (1 - this.day.night) * (1 - this.day.night) + 0.3 * this.day.night
+        this.spr(f, Math.round(x + this.day.shadowX * alt * 0.35), Math.round(y + 6), ox, oy, rot, sc * 0.92, sc * 0.92, a, 0,
+          NO_OUTLINE, 0.05, 0.04, 0.06)
+      } else {
+        const flash = e.flash > 0 ? HIT_FLASH * 0.4 : 0
+        // Self-lit, more after dark: its own lamps and the moon on the
+        // wings. Unlit, the climax was a brown smear (round 12).
+        // A shade toward rust: the art is a cream plane with rust on it. Full
+        // strength it read as a pale decal (round 14); at 0.8 it was the
+        // colour of the dirt (round 16).
+        this.spr(f, Math.round(x), Math.round(y - alt), ox, oy, rot, sc, sc, 1, flash, this.bossOutline,
+          0.92, 0.84, 0.76, 0.05 + 0.1 * this.day.night)
+        // After dark, a moonlit rim of its own, drawn as an outline alone over
+        // everything: the crowd had one and the boss did not.
+        const night = this.day.night
+        if (night > 0.05) {
+          const rim = this.planeRim
+          rim[3] = 0.12 * night
+          this.spr(f, Math.round(x), Math.round(y - alt), ox, oy, rot, sc, sc, -1, 0, rim)
+        }
+      }
+    }
+  }
+
+  /**
+   * A spinning propeller seen from above: a pale blur across the nose with a
+   * blade glinting through it. Round 11 could not tell the Duster was a
+   * plane at normal size; nothing else on the field has one.
+   */
+  private drawPropBlur(alpha: number): void {
+    const w = this.world
+    const atlas = this.atlas
+    if (!atlas) return
+    let any = false
+    const S = this.dev.shapes
+    const t = w.elapsed
+    for (let i = 0; i < w.enemies.live; i++) {
+      const e = w.enemies.items[i]
+      if (!PLANE_TYPES.has(e.typeId) || e.dying > 0) continue
+      const plane = (ENEMIES[e.typeId] as EnemyDef).plane
+      if (!plane) continue
+      const f = atlas.get(plane.sprite)
+      if (!f) continue
+      if (!any) { this.flushSprites(); any = true }
+      const x = e.px + (e.x - e.px) * alpha
+      const y = e.py + (e.y - e.py) * alpha - plane.altitude
+      const fx = Math.cos(e.facing)
+      const fy = Math.sin(e.facing)
+      const reach = f.h * 0.5 - 5
+      const nx = x + fx * reach
+      const ny = y + fy * reach
+      const half = f.w * 0.1
+      S.line(nx - fy * half, ny + fx * half, nx + fy * half, ny - fx * half, 4, 0.86, 0.86, 0.8, 0.22 + 0.08 * Math.sin(t * 91))
+      const blade = half * Math.abs(Math.cos(t * 37))
+      S.line(nx - fy * blade, ny + fx * blade, nx + fy * blade, ny - fx * blade, 2, 0.95, 0.94, 0.88, 0.55)
+    }
+    if (any) this.flushShapes()
   }
 
   private drawEffects(under: boolean): void {
@@ -1248,6 +1473,53 @@ export class GLRenderer {
       // flesh give off something nearer lamp-light.
       this.spr(frame, e.x, e.y, 0, 0, e.rotation, s, s, 0.92, 0, NO_OUTLINE, 1, 0.86, 0.64)
     }
+  }
+
+  /**
+   * A hill of turned soil under every standing crop. The crop art is the
+   * fruit alone (sized for a 13px harvest radius), and on grass a lone tomato
+   * or pumpkin read as something dropped: critic round 11 took them for
+   * pickups. On a mound it is planted.
+   */
+  private drawCropBeds(): void {
+    const w = this.world
+    const cam = this.camera
+    const bed = TUNING.render.cropBed
+    const soil = parseColourCached(bed.soil)
+    const ridge = parseColourCached(bed.ridge)
+    const s = this.dev.shapes
+    for (let i = 0; i < w.props.live; i++) {
+      const c = w.props.items[i]
+      if (c.kind !== 'crop') continue
+      if (c.x < cam.x - 40 || c.x > cam.x + cam.viewW + 40 || c.y < cam.y - 40 || c.y > cam.y + cam.viewH + 40) continue
+      const k = c.dying > 0 ? c.dying / TUNING.combat.deathSpinSeconds : 1
+      const rx = bed.radiusX * k
+      const ry = bed.radiusY * k
+      const y = c.y + bed.offsetY
+      s.wedge(c.x, y, rx, ry, 0, Math.PI * 2, soil[0], soil[1], soil[2], soil[3])
+      s.wedge(c.x, y - 1, rx * 0.72, ry * 0.6, Math.PI, Math.PI * 2, ridge[0], ridge[1], ridge[2], ridge[3])
+    }
+    this.flushShapes()
+  }
+
+  /** Rows planted inside the fight, flat on the ground under every actor. */
+  private drawUnderBackdrop(): void {
+    const cam = this.camera
+    const left = cam.x - 64
+    const right = cam.x + cam.viewW + 64
+    const top = cam.y - 16
+    const bottom = cam.y + cam.viewH + 96
+    let any = false
+    for (let i = 0; i < this.backdrop.length; i++) {
+      const sc = this.backdrop[i]
+      if (!sc.under) continue
+      const f = sc.frame
+      if (sc.x + f.ox + f.w < left || sc.x + f.ox > right || sc.y < top || sc.y + f.oy > bottom) continue
+      const t = sc.tint
+      this.spr(f, sc.x, sc.y, 0, 0, 0, 1, 1, 1, 0, NO_OUTLINE, t ? t[0] : 1, t ? t[1] : 1, t ? t[2] : 1)
+      any = true
+    }
+    if (any) this.flushSprites()
   }
 
   private drawArenaBurn(): void {
@@ -1285,7 +1557,8 @@ export class GLRenderer {
       if (h.x + h.radius < cam.x - 8 || h.x - h.radius > cam.x + cam.viewW + 8) continue
       if (h.y + h.radius < cam.y - 8 || h.y - h.radius > cam.y + cam.viewH + 8) continue
       const fade = h.life < 0.5 ? Math.max(0, h.life / 0.5) : 1
-      hz.push(h.x, h.y, h.radius, HAZARD_KIND[h.kind] ?? 0, fade, (i * 0.618) % 1)
+      hz.push(h.x, h.y, h.radius, HAZARD_KIND[h.kind] ?? 0, fade, (i * 0.618) % 1,
+        h.playerDps <= 0 && h.playerSlowPct <= 0)
     }
     this.flushShapes()
     hz.flush(this.dev.noise, w.elapsed, this.vx, this.vy, this.tw, this.th)
@@ -1304,16 +1577,33 @@ export class GLRenderer {
   private drawTelegraphs(): void {
     const s = this.dev.shapes
     const c = COL.telegraph
-    // A faint fill with a hard pixel edge: where the danger ends is the
-    // information. A flat filled wedge read as debug geometry.
+    // A warning, not a hitbox: a fill that thins toward the edge in bands, a
+    // pulsing rim, and chevrons marching out along the line of the charge.
+    // A flat wedge with a 1 px outline read as debug geometry in rounds 5 and
+    // 17, and its straight side lines were the most debug part of it.
+    const pulse = 0.75 + 0.25 * Math.sin(this.world.elapsed * 9)
     for (const t of this.world.telegraphs) {
       const half = ((t.spread / 2) * Math.PI) / 180
       const a0 = t.angle - half
       const a1 = t.angle + half
-      s.wedge(t.x, t.y, t.range, t.range, a0, a1, c[0], c[1], c[2], c[3] * 0.45)
-      s.arc(t.x, t.y, t.range - 1, a0, a1, 2, c[0], c[1], c[2], Math.min(1, c[3] * 2.2))
-      s.line(t.x, t.y, t.x + Math.cos(a0) * t.range, t.y + Math.sin(a0) * t.range, 1, c[0], c[1], c[2], Math.min(1, c[3] * 1.6))
-      s.line(t.x, t.y, t.x + Math.cos(a1) * t.range, t.y + Math.sin(a1) * t.range, 1, c[0], c[1], c[2], Math.min(1, c[3] * 1.6))
+      for (let b = 0; b < 3; b++) {
+        const r = t.range * (1 - b * 0.28)
+        s.wedge(t.x, t.y, r, r, a0, a1, c[0], c[1], c[2], c[3] * (0.22 + b * 0.12))
+      }
+      s.arc(t.x, t.y, t.range - 1, a0, a1, 3, c[0], c[1], c[2], Math.min(1, c[3] * 2.4 * pulse))
+      const dx = Math.cos(t.angle)
+      const dy = Math.sin(t.angle)
+      const w = Math.min(14, t.range * Math.tan(half) * 0.35)
+      const march = (this.world.elapsed * 1.4) % 1
+      for (let k = 0; k < 3; k++) {
+        const d = t.range * (0.22 + ((k / 3 + march) % 1) * 0.66)
+        const cx = t.x + dx * d
+        const cy = t.y + dy * d
+        const bx = cx - dx * 8
+        const by = cy - dy * 8
+        s.line(bx - dy * w, by + dx * w, cx, cy, 3, 1, 0.55, 0.4, 0.8 * pulse)
+        s.line(bx + dy * w, by - dx * w, cx, cy, 3, 1, 0.55, 0.4, 0.8 * pulse)
+      }
     }
   }
 
@@ -1400,8 +1690,11 @@ export class GLRenderer {
       const x = g.px + (g.x - g.px) * alpha
       const y = g.py + (g.y - g.py) * alpha
       const bob = g.magnetised ? 0 : Math.sin(g.bob * 4) * 1.5
+      // A seed that several kills merged into (world.dropSeed) is drawn as the
+      // big seed, so a crowd's payout reads as a few heavy drops.
       const f = g.kind === 'gear' && g.itemId
         ? atlas?.get(itemCardSprite(g.itemId)) ?? atlas?.get('pickup.feed')
+        : g.kind === 'feed' && g.value >= FEED_BIG && this.feedBig ? this.feedBig
         : this.frames ? this.propFrame(this.frames.named.get('pickup', g.kind), g.x, g.y) : null
       // Loot left lying settles into the ground: full strength for its first
       // five seconds, then down to 40% over ten more, so a field of old
@@ -1411,8 +1704,25 @@ export class GLRenderer {
         const xp = g.kind === 'xp'
         // Seeds sit back after dark: the eye should find the threats first.
         const dim = xp ? 1 - 0.4 * this.day.night : 1
-        this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, settle, 0, NO_OUTLINE,
-          xp ? XP_TINT[0] * dim : 1, xp ? XP_TINT[1] * dim : 1, xp ? XP_TINT[2] * dim : 1)
+        // A dark outline so loot stands off the ground, and feed lifted to a
+        // pale cream: brown burlap on tilled soil read as a clod (round 10),
+        // and gold read as one more pumpkin (round 11).
+        const feed = g.kind === 'feed'
+        const tr = xp ? XP_TINT[0] * dim : feed ? 1.14 : 1
+        const tg = xp ? XP_TINT[1] * dim : feed ? 1.12 : 1
+        const tb = xp ? XP_TINT[2] * dim : feed ? 1.04 : 1
+        if (xp && g.value >= XP_BIG) {
+          // A merged seed is a little pile of the same seeds, not one big
+          // one: the big seed's art is an oval with a swirl, and round 15
+          // read it as "blue eggs with numbers on them".
+          const rx = Math.round(x)
+          const ry = Math.round(y + bob)
+          this.spr(f, rx - 4, ry + 1, 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
+          this.spr(f, rx + 4, ry + 1, 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
+          this.spr(f, rx, ry - 3, 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
+        } else {
+          this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
+        }
       } else {
         const c = g.kind === 'xp' ? COL.xp : COL.feed
         const s = g.kind === 'xp' ? 5 : 7
@@ -1482,10 +1792,10 @@ export class GLRenderer {
     const s = this.dev.shapes
     const c = Math.cos(ang)
     const n = Math.sin(ang)
-    const tipX = x + c * 12
-    const tipY = y + n * 12
-    s.tri(tipX, tipY, x - c * 6 - n * 9, y - n * 6 + c * 9, x - c * 6 + n * 9, y - n * 6 - c * 9, 0.95, 0.35, 0.18, pulse)
-    s.ring(x - c * 16, y - n * 16, 7, 2, 0.95, 0.35, 0.18, pulse)
+    const tipX = x + c * 16
+    const tipY = y + n * 16
+    s.tri(tipX, tipY, x - c * 8 - n * 12, y - n * 8 + c * 12, x - c * 8 + n * 12, y - n * 8 - c * 12, 0.95, 0.35, 0.18, pulse)
+    s.ring(x - c * 20, y - n * 20, 9, 3, 0.95, 0.35, 0.18, pulse)
   }
 
   /**
@@ -1551,15 +1861,36 @@ export class GLRenderer {
   private drawDamageNumbers(): void {
     const w = this.world
     const batch = this.dev.sprites
+    // Paused under a sheet (results, cards, the shop) or over: the fight's numbers must
+    // not float over it (round 13 found a stray "5" by the title).
+    if (w.over || w.paused) return
     const ol = COL.outlineText
+    const cam = this.camera
+    const occ = this.numberCells
+    const cols = Math.ceil(cam.viewW / 30) + 2
+    const rows = Math.min(Math.floor(occ.length / cols), Math.ceil(cam.viewH / 14) + 2)
+    occ.fill(0, 0, cols * rows)
     for (let i = 0; i < w.damageNumbers.live; i++) {
       const d = w.damageNumbers.items[i]
       // Tick damage (a 1 or a 2 from a cloud, a pool, a rider) is real but not
       // worth reading, and fifty of them stacked into '1111' smears.
       if (!d.crit && d.value < 3) continue
+      // Crits only, by default: four review rounds running read the ordinary
+      // numbers as clutter ("3232", "googly eyes"). tuning.render.damageNumbers.
+      if (!d.crit && CRIT_NUMBERS_ONLY) continue
+      if (!d.crit) {
+        const cx = Math.floor((d.x - cam.x) / 30) + 1
+        const cy = Math.floor((d.y - cam.y) / 14) + 1
+        if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) continue
+        const k = cy * cols + cx
+        if (occ[k] !== 0) continue
+        occ[k] = 1
+      }
       const t = d.life / d.maxLife
       const a = Math.min(1, t * 1.6)
-      const glyphs = d.crit || d.value >= 40 ? this.dev.glyphsBig : this.dev.glyphs
+      // Only a crit earns the big face. Every hit was over 40 by the late
+      // waves, so the big face stacked into slabs over the fight (round 11).
+      const glyphs = d.crit ? this.dev.glyphsBig : this.dev.glyphs
       const c = d.crit ? COL.crit : COL.number
       let v = Math.max(0, Math.round(d.value))
       let n = 0

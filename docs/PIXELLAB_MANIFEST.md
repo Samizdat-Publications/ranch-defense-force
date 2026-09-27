@@ -3,7 +3,7 @@
 24 sheets, generated with **Create from style reference (Pro)** against `limezu_style_256.png`.
 See `PIXELLAB.md` for the recipe and the tool notes.
 
-Every sheet is **256×256 — a 4×4 grid of 64px cells**. `cell` is the one wired
+Every sheet is **256×256 - a 4×4 grid of 64px cells**. `cell` is the one wired
 into the mockups (`r1c1` = top-left, row then column). The other fifteen cells in
 each sheet are usable variants, already paid for.
 
@@ -76,16 +76,16 @@ Trimmed, so these are content bounds, not canvas size.
 4. In `content/items.json`, the 24 entries already carry `_mockArt` pointing at
    these files and `_art: "generated (PixelLab, LimeZu style-referenced)"`. Swap
    `_mockArt` for the real sprite key when the atlas is rebuilt, and drop the
-   `_mock*` and `_atlas` fields — they are mockup metadata, not game data.
+   `_mock*` and `_atlas` fields - they are mockup metadata, not game data.
 
 ## Still standing in
 
 These five item entries still borrow art that means something else, and are
 marked `_atlas: "NEW ATLAS KEY"`. They need *field* art at 32×32 with directional
-frames, not card icons — see "What to generate next" in `PIXELLAB.md`.
+frames, not card icons - see "What to generate next" in `PIXELLAB.md`.
 
-- `dogWhistle` summons a barn dog — the dog itself does not exist
-- `whitacreBull` — the bull does not exist
-- `cropDuster` — the biplane does not exist
-- `ironLung` / `cropDuster` gas — no gas cloud sprite
-- `saltCircle` — the card icon exists now; the ground decal does not
+- `dogWhistle` summons a barn dog - the dog itself does not exist
+- `whitacreBull` - the bull does not exist
+- `cropDuster` - the biplane does not exist
+- `ironLung` / `cropDuster` gas - no gas cloud sprite
+- `saltCircle` - the card icon exists now; the ground decal does not

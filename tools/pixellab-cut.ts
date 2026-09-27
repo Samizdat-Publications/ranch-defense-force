@@ -1,5 +1,5 @@
 /**
- * PixelLab post-processing — turns a raw PixelLab export into game-ready cells.
+ * PixelLab post-processing - turns a raw PixelLab export into game-ready cells.
  *
  * PixelLab never returns art on the game's grid. Icons come back as a 4x4 grid
  * of variations on a 256px sheet; characters come back centred on a square
@@ -10,7 +10,7 @@
  * This does the four things that have to happen every time, and nothing else:
  * slice, trim, place on a cell with a fixed baseline, and assemble strips.
  *
- * No new dependencies — it runs on `tools/png.ts`, the same hand-rolled PNG
+ * No new dependencies - it runs on `tools/png.ts`, the same hand-rolled PNG
  * codec the atlas builder uses.
  *
  *   npx tsx tools/pixellab-cut.ts grid    sheets/cow_bell.png            → 16 cells + a bbox report
@@ -38,7 +38,7 @@ const ALPHA_FLOOR = 8
  *
  * 52 was LimeZu's, and it fit LimeZu: their characters are 46px tall, so feet
  * at 52 left six pixels of headroom in the 64px cell. The generated cast is
- * 51-55 tall — a 55px Kid placed feet-at-52 would start at y=-3 and lose the
+ * 51-55 tall - a 55px Kid placed feet-at-52 would start at y=-3 and lose the
  * top of his cap, silently, because a cut that overflows just clips.
  *
  * 58 clears the tallest of them with room to spare. It is safe ONLY because
@@ -99,10 +99,10 @@ function toCell(img: Image): Image {
   const b = bounds(img)
   if (b.empty) return blankImage(CELL_W, CELL_H)
   if (b.w > CELL_W) {
-    console.warn(`  ! content is ${b.w}px wide, cell is ${CELL_W} — cropping equally at both edges`)
+    console.warn(`  ! content is ${b.w}px wide, cell is ${CELL_W} - cropping equally at both edges`)
   }
   if (b.h > BASELINE_Y) {
-    console.warn(`  ! content is ${b.h}px tall, baseline is at y${BASELINE_Y} — head will clip`)
+    console.warn(`  ! content is ${b.h}px tall, baseline is at y${BASELINE_Y} - head will clip`)
   }
   const cell = blankImage(CELL_W, CELL_H)
   const dx = Math.round((CELL_W - b.w) / 2)
@@ -176,7 +176,7 @@ if (cmd === 'grid') {
   const sheet = read(args[0])
   const cw = sheet.width / 4
   const ch = sheet.height / 4
-  console.log(`${args[0]} — ${sheet.width}x${sheet.height}, cells ${cw}x${ch}`)
+  console.log(`${args[0]} - ${sheet.width}x${sheet.height}, cells ${cw}x${ch}`)
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
       const b = bounds(sheet, c * cw, r * ch, cw, ch)
@@ -198,7 +198,7 @@ if (cmd === 'grid') {
     out = downscale(out, n)
   }
   write(dst, out)
-  console.log(`${dst} — ${out.width}x${out.height}`)
+  console.log(`${dst} - ${out.width}x${out.height}`)
 } else if (cmd === 'single') {
   /*
     Trim ONE image to content. The `icon` command above assumes a 4x4 sheet,
@@ -217,24 +217,24 @@ if (cmd === 'grid') {
     out = downscale(out, n)
   }
   write(dst, out)
-  console.log(`${dst} — ${out.width}x${out.height}`)
+  console.log(`${dst} - ${out.width}x${out.height}`)
 } else if (cmd === 'cell') {
   // One character frame onto the 32x64 grid.
   const [src, dst] = args
   const out = toCell(read(src))
   write(dst, out)
-  console.log(`${dst} — ${CELL_W}x${CELL_H}, feet on y${BASELINE_Y}`)
+  console.log(`${dst} - ${CELL_W}x${CELL_H}, feet on y${BASELINE_Y}`)
 } else if (cmd === 'strip') {
   const dst = args[args.length - 1]
   const frames = args.slice(0, -1).map(read)
   const out = strip(frames)
   write(dst, out)
-  console.log(`${dst} — ${out.width}x${out.height}, ${frames.length} frames`)
+  console.log(`${dst} - ${out.width}x${out.height}, ${frames.length} frames`)
 } else if (cmd === 'scale') {
   const img = read(args[0])
   const n = detectScale(img)
   const b = bounds(img)
-  console.log(`${args[0]} — canvas ${img.width}x${img.height}, content ${b.w}x${b.h}, pixel scale ${n}x`)
+  console.log(`${args[0]} - canvas ${img.width}x${img.height}, content ${b.w}x${b.h}, pixel scale ${n}x`)
 } else {
-  console.log('commands: grid | icon | single | cell | strip | scale — see the header of this file')
+  console.log('commands: grid | icon | single | cell | strip | scale - see the header of this file')
 }

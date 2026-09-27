@@ -10,7 +10,7 @@
  * `tools/pixellab-key.ts`). Override with `PIXELLAB_API_KEY=... npm run pixellab`,
  * or on PowerShell: `$env:PIXELLAB_API_KEY="..."; npm run pixellab`.
  *
- * Every request goes through **one style anchor** — `limezu_style_256.png`, a
+ * Every request goes through **one style anchor** - `limezu_style_256.png`, a
  * 4x4 sheet of real LimeZu icons. That single control is most of the quality:
  * the same prompt without it comes back cold blue-grey, and with it comes back
  * warm and in the pack's palette. Do not rebuild the anchor casually; the
@@ -20,7 +20,7 @@
  *   - tool: generate-with-style-v2 (the Pro style-reference tool)
  *   - the style image carries palette, outline weight, shading and colour count
  *   - the description is THE SUBJECT ONLY, in plain words. Nothing about
- *     palette, outline, "no text" or view angle — a long style suffix actively
+ *     palette, outline, "no text" or view angle - a long style suffix actively
  *     fights the anchor.
  *
  * Cost is real money: Pro tools are 20 generations each against a 2,000/month
@@ -139,7 +139,7 @@ async function generate(s: Subject): Promise<void> {
 
 async function main(): Promise<void> {
   if (queue.length === 0) {
-    console.log('nothing to generate — every subject already has a sheet.')
+    console.log('nothing to generate - every subject already has a sheet.')
     console.log('use --force to re-roll, or add subjects to art/pixellab-queue.json')
     return
   }
@@ -160,7 +160,7 @@ async function main(): Promise<void> {
 
   if (!key) {
     console.error(
-      '\nno PixelLab API key found (checked PIXELLAB_API_KEY and .mcp.json — '
+      '\nno PixelLab API key found (checked PIXELLAB_API_KEY and .mcp.json - '
       + 'see tools/pixellab-key.ts).\n\n'
       + '  PowerShell:  $env:PIXELLAB_API_KEY="your-key"; npm run pixellab\n'
       + '  bash/zsh:    PIXELLAB_API_KEY=your-key npm run pixellab\n\n'
@@ -181,7 +181,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `\ndone. Sheets are 4x4 grids of 16 variations — pick a cell, trim it to\n`
+    `\ndone. Sheets are 4x4 grids of 16 variations - pick a cell, trim it to\n`
     + `content bounds, save it under assets/pixellab/picked/, then add it to\n`
     + `art/sprites.json and run npm run atlas. Keep the other fifteen cells:\n`
     + `they are free variants and are already paid for.`,
