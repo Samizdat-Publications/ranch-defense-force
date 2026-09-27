@@ -23,7 +23,7 @@ import { GLDevice, newCompositeParams } from './gl/device'
 import { dayProgress, evaluateDay, lightning, newDayState, rainAt } from './daylight'
 import { bakeLayout, buildBackdrop, groundTiles, placeOf, type Layout, type PlaceConfig } from './place'
 import { Target, parseColour, textureFrom } from './gl/glutil'
-import { PAGE_GLYPH, PAGE_SOLID } from './gl/sprites'
+import { PAGE_GLYPH, PAGE_SOLID, type SpriteBatch } from './gl/sprites'
 import { HAZARD_KIND } from './gl/hazards'
 import { FrameCache } from './frames'
 import {
@@ -52,6 +52,7 @@ const EYE_DAY = RENDER.eyeGlowDay ?? 0
 const XP_TINT = (RENDER_ANY.xpTint as number[] | undefined) ?? [1, 1, 1]
 const STAIN_KEEP = Math.max(1, Math.round(RENDER.stainKeep ?? 3))
 const CRIT_NUMBERS_ONLY = (RENDER as { damageNumbers?: string }).damageNumbers !== 'all'
+const SEED = (RENDER as unknown as { seed: { size: number; color: [number, number, number, number] } }).seed
 const STAIN_WEATHER = RENDER.stainWeather ?? 0.94
 const FX_SCALE = RENDER.fxScale ?? 1
 /** Seed value from which a merged seed draws big (see world.dropSeed). */
@@ -1711,15 +1712,24 @@ export class GLRenderer {
         const tr = xp ? XP_TINT[0] * dim : feed ? 1.14 : 1
         const tg = xp ? XP_TINT[1] * dim : feed ? 1.12 : 1
         const tb = xp ? XP_TINT[2] * dim : feed ? 1.04 : 1
-        if (xp && g.value >= XP_BIG) {
-          // A merged seed is a little pile of the same seeds, not one big
-          // one: the big seed's art is an oval with a swirl, and round 15
-          // read it as "blue eggs with numbers on them".
+        if (xp) {
+          // A seed is a small crisp diamond, not the 16 px gem: round 18 found
+          // the gems "as big as a chicken" and the field a soup of loot. A
+          // merged seed is a little pile of three (the big seed art read as
+          // an egg, round 15). Faintly self-lit and pulsing, so it reads as
+          // something to pick up without shouting over the fight.
           const rx = Math.round(x)
           const ry = Math.round(y + bob)
-          this.spr(f, rx - 4, ry + 1, 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
-          this.spr(f, rx + 4, ry + 1, 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
-          this.spr(f, rx, ry - 3, 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
+          const pulse = 0.85 + 0.15 * Math.sin(this.world.elapsed * 5 + g.x * 0.07)
+          const glow = (0.12 + 0.25 * this.day.night) * pulse
+          const sc = SEED.color
+          if (g.value >= XP_BIG) {
+            this.seed(batch, rx - 4, ry + 1, settle, sc, glow)
+            this.seed(batch, rx + 4, ry + 1, settle, sc, glow)
+            this.seed(batch, rx, ry - 3, settle, sc, glow)
+          } else {
+            this.seed(batch, rx, ry, settle, sc, glow)
+          }
         } else {
           this.spr(f, Math.round(x), Math.round(y + bob), 0, 0, 0, 1, 1, settle, 0, COL.outlineEnemy, tr, tg, tb)
         }
@@ -1730,6 +1740,14 @@ export class GLRenderer {
           0, 1, 1, c[0], c[1], c[2], 1, 0, 0, 0, 0, 0, 0)
       }
     }
+  }
+
+  /** One seed: a 5 px square turned 45 degrees, with a dark 1 px outline. */
+  private seed(batch: SpriteBatch, x: number, y: number, a: number, c: RGBA, glow: number): void {
+    const s = SEED.size
+    const o = COL.outlineEnemy
+    batch.push(x, y, -s / 2, -s / 2, s, s, 0, 0, PAGE_SOLID, Math.PI / 4, 1, 1,
+      c[0], c[1], c[2], a, 0, glow, o[0], o[1], o[2], o[3], 0, 0)
   }
 
   private drawParticles(): void {

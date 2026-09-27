@@ -156,7 +156,9 @@ void main() {
     // the eyes keep their colour, which is the point of them.
     float l = dot(c.rgb, vec3(0.3, 0.59, 0.11));
     // Bruised lilac-grey: the complement of every green the field is made of.
-    vec3 pale = vec3(l) * vec3(1.06, 0.86, 1.18) * 1.18 + vec3(0.05, 0.02, 0.06);
+    // Cooler since round 18: the pink-lilac sat in one hue band with the
+    // blighted ground of the afternoon ("mauve enemies on maroon dirt").
+    vec3 pale = vec3(l) * vec3(0.96, 0.9, 1.2) * 1.18 + vec3(0.03, 0.03, 0.07);
     c.rgb = mix(c.rgb, pale, curse * (1.0 - eye));
     c.rgb = mix(c.rgb, vec3(1.0, 0.86, 0.36), eye * curse * 0.6);
     // The spray's mark: blotches of chemical green on every cursed body, in
