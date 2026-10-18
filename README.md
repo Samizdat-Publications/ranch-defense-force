@@ -1,5 +1,7 @@
 # Ranch Defense Force
 
+![Status: in development](https://img.shields.io/badge/status-in%20development-d29922)
+
 *Work the field until the light goes.*
 
 A pixel-art bullet-heaven set on the Whitacre place outside Canton, Ohio, in
@@ -90,3 +92,7 @@ Music by **Abstraction**, from the
 [Music Loop Bundle](https://tallbeard.itch.io/music-loop-bundle) by Benjamin
 Burnes / Tallbeard Studios, released CC-0. Sound effects generated with
 [ElevenLabs](https://elevenlabs.io/); ambience synthesised in code.
+
+## Licence
+
+Code is MIT (see [LICENSE](LICENSE)). The LimeZu art packs are included by LimeZu's permission for this repo only and are not MIT; please don't reuse them elsewhere. Other third-party assets listed above keep their own licences.

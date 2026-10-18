@@ -1,0 +1,27 @@
+{
+  "name": "Ranch Defense Force",
+  "repo": "ranch-defense-force",
+  "pitch": "Pixel-art bullet-heaven on a cursed Ohio farm: work the field from first light to full dark, one day per run.",
+  "status": "in-development",
+  "version": "0.3.0",
+  "kind": "game",
+  "started": "2026-08-10",
+  "updated": "2026-09-27",
+  "tech": ["TypeScript", "WebGL2", "Web Audio", "PixelLab"],
+  "links": {
+    "landing": "https://samizdat-publications.github.io/ranch-defense-force/",
+    "play": "https://samizdat-publications.github.io/ranch-defense-force/",
+    "devlog": ""
+  },
+  "hero": {
+    "gif": "",
+    "poster": "screenshots/final/05-run-mid.png",
+    "clip": ""
+  },
+  "credits": [
+    { "what": "Modern Farm and Modern User Interface pixel-art packs", "who": "LimeZu (limezu.itch.io), included by LimeZu's permission for this repo only", "licence": "Not MIT; commercial licence plus permission, do not reuse" },
+    { "what": "Character, animal, building and item art", "who": "Generated with PixelLab", "licence": "Generated" },
+    { "what": "Music (Abstraction)", "who": "Benjamin Burnes / Tallbeard Studios, Music Loop Bundle", "licence": "CC0" },
+    { "what": "Sound effects", "who": "Generated with ElevenLabs; ambience synthesised in code", "licence": "Generated" }
+  ]
+}
