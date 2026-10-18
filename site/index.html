@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ranch Defense Force: work the field until the light goes</title>
+<meta name="description" content="A pixel-art bullet-heaven on a cursed Ohio farm. A run is one day, from first light to full dark. Plays in the browser. In development.">
+<meta name="theme-color" content="#14100b">
+<meta property="og:title" content="Ranch Defense Force">
+<meta property="og:description" content="Pixel-art bullet-heaven on a cursed Ohio farm: work the field from first light to full dark, one day per run.">
+<meta property="og:image" content="media/og.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23251a10'/%3E%3Crect x='5' y='5' width='6' height='2' fill='%23e8a53a'/%3E%3Crect x='4' y='7' width='8' height='2' fill='%23e8a53a'/%3E%3Crect x='0' y='9' width='16' height='7' fill='%234a5a2a'/%3E%3Crect x='0' y='11' width='16' height='1' fill='%23384520'/%3E%3Crect x='0' y='14' width='16' height='1' fill='%23384520'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/rye-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#first-light">Skip to the game</a>
+
+<header class="bar">
+  <a class="bar-mark" href="#top" aria-label="Ranch Defense Force, back to the top">Ranch Defense Force</a>
+  <nav class="bar-links" aria-label="Sections">
+    <a href="#first-light">First light</a>
+    <a href="#the-crowd">The crowd</a>
+    <a href="#the-big-ones">The big ones</a>
+    <a href="#full-dark">Full dark</a>
+    <a href="#making">How it was made</a>
+  </nav>
+  <a class="btn btn-small" href="https://github.com/Samizdat-Publications/ranch-defense-force">Source</a>
+</header>
+
+<aside class="clock" aria-hidden="true">
+  <span class="clock-label">THE DAY</span>
+  <span class="clock-rail"><span class="clock-dot" id="clock-dot"></span></span>
+  <span class="clock-value" id="clock-value">6:30 AM</span>
+</aside>
+
+<main>
+
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <video class="hero-video" id="hero-video" muted loop playsinline autoplay preload="auto" poster="media/hero.jpg" aria-label="Late morning on the Home Field: the farmhand circles a wheat plot while dozens of the turned close in and his weapons fire on their own.">
+    <source src="media/hero.mp4" type="video/mp4">
+  </video>
+  <div class="hero-shade"></div>
+  <div class="hero-text">
+    <p class="pill"><span class="pill-dot"></span>In development: playable in your browser</p>
+    <p class="kicker">The Whitacre place, outside Canton, Ohio, 1987</p>
+    <h1 id="hero-title" class="wordmark">Ranch Defense Force</h1>
+    <p class="tagline">Pixel-art bullet-heaven on a cursed Ohio farm: work the field from first light to full dark, one day per run.</p>
+    <div class="cta">
+      <a class="btn" href="https://samizdat-publications.github.io/ranch-defense-force/">Play in your browser</a>
+      <a class="btn btn-ghost" href="https://github.com/Samizdat-Publications/ranch-defense-force">Source on GitHub</a>
+    </div>
+    <p class="hero-note">WASD or arrows to move. Your weapons fire on their own. Space for the class ability.</p>
+  </div>
+  <a class="scroll-cue" href="#first-light" aria-label="Scroll down">FIRST LIGHT</a>
+</section>
+
+<section class="beat" id="first-light" aria-labelledby="first-light-title">
+  <div class="beat-grid">
+    <div class="beat-copy">
+      <p class="stamp">6:30 AM &middot; Wave 1</p>
+      <h2 id="first-light-title">First light</h2>
+      <p>A crop duster went over low on Tuesday, and whatever it sprayed turned the hands, the neighbours and the stock into cursed, shambling things. You are the last one on the property with a job to do.</p>
+      <p>A run is one day. Wave 1 starts at first light with one farmhand, a pitchfork and a few hens that are not quite right.</p>
+    </div>
+    <figure class="beat-media">
+      <video data-inview muted loop playsinline preload="none" poster="media/early.jpg" aria-label="Wave 1 at first light: the farmhand in a plowed field fights off a handful of turned hens and small animals.">
+        <source src="media/early.mp4" type="video/mp4">
+      </video>
+      <figcaption>Wave 1, captured from the live game.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="beat flip" id="the-crowd" aria-labelledby="the-crowd-title">
+  <div class="beat-grid">
+    <div class="beat-copy">
+      <p class="stamp">4:20 PM &middot; Wave 16</p>
+      <h2 id="the-crowd-title">The crowd grows with the day</h2>
+      <p>Enemies step on from just past the edge of the screen, all the way round you, and there are more of them every wave. Seeds drop and level you up; each level deals a hand of cards.</p>
+      <p>Feed buys from the shop after waves 5, 10, 15, 20 and 24. Weapons merge up through tiers as you pick your cards. The light is the clock, and the clock is the difficulty.</p>
+    </div>
+    <figure class="beat-media">
+      <video data-inview muted loop playsinline preload="none" poster="media/dusk.jpg" aria-label="Golden hour, wave 16: a swarm of turned farmhands, hogs and horses surrounds the player while fire bursts and tracer lines cross the field.">
+        <source src="media/dusk.mp4" type="video/mp4">
+      </video>
+      <figcaption>Golden hour. The weapons are firing themselves.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="beat" id="the-big-ones" aria-labelledby="the-big-ones-title">
+  <div class="beat-grid beat-grid-wide">
+    <div class="beat-copy">
+      <p class="stamp">Every third wave</p>
+      <h2 id="the-big-ones-title">Something big comes out of the field</h2>
+      <p>The Cockerel at wave 6, the Thing in the North Pasture at 9, the Prize Bull at 12, the Sow at 15, the Combine at 18, the Spray Rig at 21. At the end of the day the Duster comes over low with its lamps on: the crop duster itself, with nobody flying it.</p>
+    </div>
+    <div class="shots">
+      <figure><img src="media/shot-bull.jpg" width="1280" height="720" loading="lazy" alt="The Prize Bull, a huge dark bull, standing in a plowed field beside the farmhand with its health bar along the bottom."><figcaption>The Prize Bull, wave 12.</figcaption></figure>
+      <figure><img src="media/shot-duster.jpg" width="1280" height="720" loading="lazy" alt="The Duster, a rusted biplane, flying over the dark field with its lamps lit and a green glow at its wingtip, the player below."><figcaption>The Duster, last light.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="beat flip" id="full-dark" aria-labelledby="full-dark-title">
+  <div class="beat-grid">
+    <div class="beat-copy">
+      <p class="stamp">8:20 PM &middot; Wave 22</p>
+      <h2 id="full-dark-title">Full dark</h2>
+      <p>By the end the sun is gone and you are fighting by lantern light in the rain, with eyes shining in the corn. Outside the lantern the field is near-dark, but the turned still carry a moonlit rim and glowing eyes, so you can read what is killing you.</p>
+      <p>A couple of hundred of them were alive on the field when this clip was cut.</p>
+    </div>
+    <figure class="beat-media">
+      <video data-inview muted loop playsinline preload="none" poster="media/night.jpg" aria-label="Night, wave 22: the farmhand stands in a pool of lantern light surrounded by shapes in the dark, with red warning lanes from the Spray Rig and a boss bar at the bottom.">
+        <source src="media/night.mp4" type="video/mp4">
+      </video>
+      <figcaption>The Spray Rig, wave 22, by lantern light.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="beat" id="between" aria-labelledby="between-title">
+  <div class="beat-grid beat-grid-wide">
+    <div class="beat-copy">
+      <p class="stamp">Between runs</p>
+      <h2 id="between-title">The Homestead</h2>
+      <p>Six classes, each on a different axis: the Hand anchors, the Kid runs, and so on. Four of them unlock at the Homestead, paid for with the acres a run earns. The title screen and the Homestead are the game's own renderer too: the farm at sundown, live.</p>
+    </div>
+    <div class="shots">
+      <figure><img src="media/shot-title.jpg" width="1280" height="720" loading="lazy" alt="The title screen: the farm at sundown with six classes standing round a burning barrel and their class cards along the bottom."><figcaption>The title screen.</figcaption></figure>
+      <figure><img src="media/shot-homestead.jpg" width="1280" height="720" loading="lazy" alt="The Homestead: the farm at sundown with signs for the Seed Catalog, the Feed Store, the Bunkhouse and the County Fair."><figcaption>The Homestead.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="making" id="making" aria-labelledby="making-title">
+  <p class="stamp">How it was made</p>
+  <h2 id="making-title">A farm, a day, and a lot of light</h2>
+  <div class="making-grid">
+    <div>
+      <h3>No engine</h3>
+      <p>TypeScript, Vite and a hand-written WebGL2 renderer. The world is drawn at the art's own resolution, one art pixel to one texel, and scaled to the screen once with a sharp filter, so every sprite shares one pixel density and the camera glides without crawling.</p>
+    </div>
+    <div>
+      <h3>Light is the clock</h3>
+      <p>A colour buffer, an emissive buffer, a light buffer and a shadow mask are composited every frame. Sun shadows are the sprites themselves, projected along the sun from their feet. The whole day is one keyframed curve in a content file. Birds, wind, crickets, an owl and thunder are synthesised in code and follow the hour.</p>
+    </div>
+    <div>
+      <h3>Photograph, critique, fix</h3>
+      <p>A photo tour boots the real game, plays it with a bot and photographs fixed moments. A fresh reviewer who sees only the photos and the pitch lists the worst problems, they get fixed, and the loop repeats. It has run for more than twenty rounds. The baseline review scored the earlier version 4 out of 10.</p>
+    </div>
+    <div>
+      <h3>Bugs that taught something</h3>
+      <p>Every tilled plot once read as camouflage because the layout mask used an unsigned distance, so half of each plot flipped back to grass at the edges. The day looked flat for ten rounds of colour grading because the lantern's highlight curve was also easing the sun. Both are written up in the repo's notes.</p>
+    </div>
+    <div>
+      <h3>Art</h3>
+      <p>Characters, animals, buildings and items are generated with PixelLab and cut into 8-direction clips; the farm tiles and interface pieces are LimeZu's packs. The sim underneath is fixed-step and deterministic, with bot pilots and a test suite that plays whole runs.</p>
+    </div>
+    <div>
+      <h3>These clips</h3>
+      <p>Recorded by a script, frame by frame, from the live game: the game's own bot pilots the farmhand, the sim steps one frame at a time and a screenshot is taken each step. On late waves the bot's health is topped up so it survives the camera. Nobody played by hand.</p>
+    </div>
+  </div>
+  <p class="making-links"><a href="https://github.com/Samizdat-Publications/ranch-defense-force/blob/main/NOTES.md">Read NOTES.md</a> &middot; <a href="https://github.com/Samizdat-Publications/ranch-defense-force/blob/main/docs/V2.md">Read the plan and decisions log</a></p>
+</section>
+
+<section class="credits" id="credits" aria-labelledby="credits-title">
+  <h2 id="credits-title">Credits and licences</h2>
+  <dl>
+    <div><dt>Pixel-art packs: Modern Farm and Modern User Interface</dt><dd>By <a href="https://limezu.itch.io/">LimeZu</a>, used and published with LimeZu's permission for this repository only. Not MIT; please do not lift the art from this project.</dd></div>
+    <div><dt>Character, animal, building and item art</dt><dd>Generated with <a href="https://pixellab.ai/">PixelLab</a>.</dd></div>
+    <div><dt>Music: Abstraction</dt><dd>From the <a href="https://tallbeard.itch.io/music-loop-bundle">Music Loop Bundle</a> by Benjamin Burnes / Tallbeard Studios. CC0.</dd></div>
+    <div><dt>Sound effects</dt><dd>Generated with <a href="https://elevenlabs.io/">ElevenLabs</a>; the ambience is synthesised in code.</dd></div>
+    <div><dt>Typefaces on this page</dt><dd>Rye by Sorkin Type and IBM Plex Mono by IBM, both under the SIL Open Font License 1.1 (<a href="fonts/OFL-Rye.txt">Rye</a>, <a href="fonts/OFL-IBMPlexMono.txt">IBM Plex Mono</a>).</dd></div>
+    <div><dt>Code</dt><dd>MIT. See the <a href="https://github.com/Samizdat-Publications/ranch-defense-force">repository</a>.</dd></div>
+  </dl>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p><strong>Ranch Defense Force</strong> is a Samizdat Publications game. In development, version 0.3.0.</p>
+  <p><a href="https://samizdat-publications.github.io/ranch-defense-force/">Play</a> &middot; <a href="https://github.com/Samizdat-Publications/ranch-defense-force">Source on GitHub</a></p>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

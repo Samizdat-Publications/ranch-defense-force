@@ -21,6 +21,8 @@ TypeScript, Vite and a hand-written WebGL2 renderer. No engine.
 
 ## Play
 
+[Play it in your browser](https://samizdat-publications.github.io/ranch-defense-force/) or see the [landing page](https://ranch-defense-force.pages.dev) with clips of a full day. To run it locally:
+
 ```bash
 npm install
 npm run atlas    # builds the sprite atlas from assets/ (required once)
